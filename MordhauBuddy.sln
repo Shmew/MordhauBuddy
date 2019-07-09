@@ -1,0 +1,89 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{63297B98-5CED-492C-A5B7-A5B4F73CF142}"
+	ProjectSection(SolutionItems) = preProject
+		paket.dependencies = paket.dependencies
+		paket.lock = paket.lock
+		paket.references = paket.references
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60BC93-E09B-4E5F-9D85-95A519479D54}"
+	ProjectSection(SolutionItems) = preProject
+		azure-pipelines.yml = azure-pipelines.yml
+		LICENSE.md = LICENSE.md
+		PULL_REQUEST_TEMPLATE.md = PULL_REQUEST_TEMPLATE.md
+		README.md = README.md
+		RELEASE_NOTES.md = RELEASE_NOTES.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D5255-776D-4B61-85F9-73C37AA1FB9A}"
+	ProjectSection(SolutionItems) = preProject
+		docsrc\content\contributing.fsx = docsrc\content\contributing.fsx
+		docsrc\content\index.fsx = docsrc\content\index.fsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "MordhauBuddy.Core.Tests", "tests\MordhauBuddy.Core.Tests\MordhauBuddy.Core.Tests.fsproj", "{66036380-05C9-4EFC-BAC8-BEA9C5CC74AF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "git", "git", "{078A9C52-DDC1-46F4-9235-9E6C89C87AFD}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{7C6D08E7-3EAC-4335-8F4B-252C193C27C9}"
+	ProjectSection(SolutionItems) = preProject
+		build.cmd = build.cmd
+		build.fsx = build.fsx
+		build.proj = build.proj
+		build.sh = build.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{55637037-300B-4FA5-8D14-B2CECCCD4B0D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{D3D47A52-41D2-4E7E-A93C-0FF0E6F70BFA}"
+	ProjectSection(SolutionItems) = preProject
+		docsrc\tools\templates\template.cshtml = docsrc\tools\templates\template.cshtml
+	EndProjectSection
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "tools", "tools\tools.fsproj", "{E03A3045-EEAB-4616-B0D8-A50A1B75F72B}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "MordhauBuddy.Core", "src\MordhauBuddy.Core\MordhauBuddy.Core.fsproj", "{B32CF16C-ED06-427D-89D9-494020E3FEA9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{66036380-05C9-4EFC-BAC8-BEA9C5CC74AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66036380-05C9-4EFC-BAC8-BEA9C5CC74AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66036380-05C9-4EFC-BAC8-BEA9C5CC74AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66036380-05C9-4EFC-BAC8-BEA9C5CC74AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E03A3045-EEAB-4616-B0D8-A50A1B75F72B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E03A3045-EEAB-4616-B0D8-A50A1B75F72B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E03A3045-EEAB-4616-B0D8-A50A1B75F72B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E03A3045-EEAB-4616-B0D8-A50A1B75F72B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B32CF16C-ED06-427D-89D9-494020E3FEA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B32CF16C-ED06-427D-89D9-494020E3FEA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B32CF16C-ED06-427D-89D9-494020E3FEA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B32CF16C-ED06-427D-89D9-494020E3FEA9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8E6D5255-776D-4B61-85F9-73C37AA1FB9A} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
+		{66036380-05C9-4EFC-BAC8-BEA9C5CC74AF} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+		{D3D47A52-41D2-4E7E-A93C-0FF0E6F70BFA} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
+		{E03A3045-EEAB-4616-B0D8-A50A1B75F72B} = {55637037-300B-4FA5-8D14-B2CECCCD4B0D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {96DAE6A9-B1CC-4FF7-B08C-D5FBFD55B385}
+	EndGlobalSection
+EndGlobal

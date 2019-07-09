@@ -1,0 +1,80 @@
+name: $(Rev:r)
+trigger:
+  branches:
+    include:
+    - '*'
+pool:
+  vmImage: 'windows-2019'
+stages:
+- stage: Setup
+  jobs:
+  - job: Install dotnet
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Install .NET Core CLI'
+      inputs:
+        packageType: sdk
+        version: 2.x
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+- stage: Test
+  jobs:
+  - job: Lint code
+    steps: 
+    - powershell: '.\build.cmd -t Lint'
+      displayName: 'Perform linting'
+      failOnStderr: true
+    - powershell: 'if(Test-Path .\bin\Lint*.xml -PathType Leaf) {echo "##vso[task.setVariable variable=LINTFILEEXISTS]true"}'
+      displayName: 'Check for lint results to publish'
+    - task: PublishTestResults@2
+      displayName: 'Publish linting results'
+      condition: eq(variables.LINTFILEEXISTS, 'true')
+      inputs:
+        testResultsFormat: 'NUnit'
+        testResultsFiles: 'bin/Lint*.xml'
+        failTaskOnFailedTests: true
+  - job: Run tests
+    steps:
+    - powershell: '.\build.cmd -t RunTests'
+      displayName: 'Run tests'
+      failOnStderr: true
+    - powershell: 'if(Test-Path .\bin\Test*.xml -PathType Leaf) {echo "##vso[task.setVariable variable=TESTFILEEXISTS]true"}'
+      displayName: 'Check for test results to publish'
+    - task: PublishTestResults@2
+      displayName: 'Publish testing results'
+      condition: eq(variables.TESTFILEEXISTS, 'true')
+      inputs:
+        testResultsFormat: 'NUnit'
+        testResultsFiles: 'bin/Test*.xml'
+        failTaskOnFailedTests: true
+- stage: Build
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  - job: Build solution and documentation
+    steps:
+    - powershell: '.\build.cmd'
+      failOnStderr: true
+- stage: Release
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - job: Deploy Docs
+    condition: and(succeeded(), contains(['refs/heads/master', 'refs/heads/Release', 'refs/heads/Develop'], variables['Build.SourceBranch']))
+    steps:
+    - powershell: '.\build.cmd -t DeployDocs'
+      displayName: 'Deploy documents to IIS server'
+      failOnStderr: true
+      env:
+        IIS_USER: $(iisUser)
+        IIS_PASS: $(iisPass)
+  - job: Publish NuGet
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+    steps:
+    - powershell: '.\build.cmd -t PublishNuGet'
+      displayName: 'Publish nupkg to Azure Artifacts'
+      failOnStderr: true
+      env:
+        NUGET_KEY: $(system.accesstoken)
+  - job: Tag release
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+    steps:
+    - powershell: '.\build.cmd -t GitTag'
+      displayName: 'Tag commit with release version'
+      failOnStderr: true
