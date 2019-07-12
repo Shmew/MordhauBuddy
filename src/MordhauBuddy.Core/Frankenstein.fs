@@ -2,8 +2,8 @@ namespace MordhauBuddy.Core
 
 open FSharp.Data
 open MordhauBuddy.Core.INIReader
-open INIExtensions
-open Options
+open MordhauBuddy.Core.INIReader.INIExtensions
+open MordhauBuddy.Core.INIReader.Options
 open System.IO
 
 module Lib =
@@ -14,10 +14,9 @@ module Lib =
             //|> Async.AwaitTask
             //|> Async.RunSynchronously
             //|> INIValue.TryParse
-
-            File.ReadAllText(@"C:\Users\Shmew\source\repos\MordhauBuddy\Game.ini")
-            |> INIValue.Parse
+            File.ReadAllText(@"C:\Users\Shmew\source\repos\MordhauBuddy\Game.ini") |> INIValue.Parse
         | false -> failwith "Unable to parse file."
 
     let result = ast.GetProperty(@"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C")
-    File.WriteAllText(@"C:\temp\test.ini",ast.ToString())
+
+    File.WriteAllText(@"C:\temp\test.ini", ast.ToString())

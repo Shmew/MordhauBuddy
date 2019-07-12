@@ -1,11 +1,11 @@
 namespace MordhauBuddy.Core.INIReader
 
 open FParsec
+open FSharp.Data
 open System
 open System.ComponentModel
 open System.Globalization
 open System.IO
-open FSharp.Data
 
 [<RequireQualifiedAccess>]
 [<StructuredFormatDisplay("{_Print}")>]
@@ -19,51 +19,52 @@ type INIValue =
 
     /// [omit]
     [<EditorBrowsableAttribute(EditorBrowsableState.Never)>]
-    [<CompilerMessageAttribute("This method is intended for use in generated code only.", 10001, IsHidden=true, IsError=false)>]
+    [<CompilerMessageAttribute("This method is intended for use in generated code only.", 10001, IsHidden = true,
+                               IsError = false)>]
     member x._Print =
-      match x.ToString() with
-      | str when str.Length > 512 -> str.Substring(0, 509) + "..."
-      | str -> str
+        match x.ToString() with
+        | str when str.Length > 512 -> str.Substring(0, 509) + "..."
+        | str -> str
 
     /// Serializes INIValue to TextWriter
-    member this.WriteTo (w: TextWriter) =
-        let rec serialize = function
-        | String(Some(s)) -> w.Write(s)
-        | String(None) -> ()
-        | FieldText(s,iniValue) ->
-            w.Write(s)
-            serialize iniValue
-        | Tuple(iList) ->
-            let len = iList.Length - 1
-            w.Write("(")
-            iList
-            |> List.indexed
-            |> List.iter (fun (ind, i) ->
-                serialize i
-                if ind < len then w.Write(","))
-            w.Write(")")
-        | KeyValue(s, iniValue) ->
-            w.Write(s + "=")
-            serialize iniValue
-        | Section(s, iList) ->
-            w.Write("[" + s + "]")
-            w.WriteLine()
-            iList 
-            |> List.iter (fun i ->
-                serialize i
-                w.WriteLine())
-            w.WriteLine()
-        | File(iList) ->
-            iList |> List.iter serialize
-
+    member this.WriteTo(w : TextWriter) =
+        let rec serialize =
+            function
+            | String(Some(s)) -> w.Write(s)
+            | String(None) -> ()
+            | FieldText(s, iniValue) ->
+                w.Write(s)
+                serialize iniValue
+            | Tuple(iList) ->
+                let len = iList.Length - 1
+                w.Write("(")
+                iList
+                |> List.indexed
+                |> List.iter (fun (ind, i) ->
+                       serialize i
+                       if ind < len then w.Write(","))
+                w.Write(")")
+            | KeyValue(s, iniValue) ->
+                w.Write(s + "=")
+                serialize iniValue
+            | Section(s, iList) ->
+                w.Write("[" + s + "]")
+                w.WriteLine()
+                iList
+                |> List.iter (fun i ->
+                       serialize i
+                       w.WriteLine())
+                w.WriteLine()
+            | File(iList) -> iList |> List.iter serialize
         serialize this
 
-    override this.ToString () : string =
+    override this.ToString() : string =
         let w = new StringWriter(CultureInfo.InvariantCulture)
         this.WriteTo(w)
         w.GetStringBuilder().ToString()
 
-type private INIParser(iniText: string) =
+type private INIParser(iniText : string) =
+
     /// Parses text surrounded by zero or more white spaces but stopping at newline
     let ws p = spaces >>. p .>> (skipMany (pchar ' ' <|> pchar '\t'))
 
@@ -99,8 +100,7 @@ type private INIParser(iniText: string) =
 
     /// Parse quoted string returning string with quotes
     let parseQuotedInc =
-        pchar '"' .>>. manySatisfy (fun c -> c <> '"') .>>. pchar '"'
-        |>> (fun ((c, s), c2) -> string c + s + string c2)
+        pchar '"' .>>. manySatisfy (fun c -> c <> '"') .>>. pchar '"' |>> (fun ((c, s), c2) -> string c + s + string c2)
 
     /// Create parser and reference cell
     let iValue, iValueRef = createParserForwardedToRef()
@@ -116,7 +116,7 @@ type private INIParser(iniText: string) =
     /// Parse a string
     let iniString = parseQuoted <|> anyText |>> (Some >> INIValue.String) .>> spaces
 
-    /// Parse a field text value 
+    /// Parse a field text value
     ///
     /// e.g. `SomeField("look at my text")`
     let iniFieldText =
@@ -155,59 +155,68 @@ type private INIParser(iniText: string) =
 type INIValue with
 
     /// Parses the specified INI string
-    static member Parse(text: string) =
-        INIParser(text).Parse()
+    static member Parse(text : string) = INIParser(text).Parse()
 
     /// Attempts to parse the specified INI string
-    static member TryParse(text: string) =
-        INIParser(text).TryParse()
-        
+    static member TryParse(text : string) = INIParser(text).TryParse()
+
     /// Loads INI from the specified stream
-    static member Load(stream: Stream) =
+    static member Load(stream : Stream) =
         use reader = new StreamReader(stream)
         let text = reader.ReadToEnd()
         INIParser(text).Parse()
 
 type INIConversions =
 
-    static member AsString = function
+    static member AsString =
+        function
         | INIValue.String(s) -> s
         | _ -> None
 
-    static member AsInteger (cultureInfo: IFormatProvider) = function
+    static member AsInteger(cultureInfo : IFormatProvider) =
+        function
         | INIValue.String(s) -> TextConversions.AsInteger cultureInfo <| defaultArg s ""
         | _ -> None
 
-    static member AsInteger64 (cultureInfo: IFormatProvider) = function
+    static member AsInteger64(cultureInfo : IFormatProvider) =
+        function
         | INIValue.String(s) -> TextConversions.AsInteger64 cultureInfo <| defaultArg s ""
         | _ -> None
 
-    static member AsDecimal (cultureInfo: IFormatProvider) = function
+    static member AsDecimal(cultureInfo : IFormatProvider) =
+        function
         | INIValue.String(s) -> TextConversions.AsDecimal cultureInfo <| defaultArg s ""
         | _ -> None
 
-    static member AsFloat (missingValues: string []) (useNoneForMissingValues: bool) (cultureInfo: IFormatProvider) = function
-        | INIValue.String(s) -> TextConversions.AsFloat missingValues useNoneForMissingValues cultureInfo <| defaultArg s ""
+    static member AsFloat (missingValues : string []) (useNoneForMissingValues : bool) (cultureInfo : IFormatProvider) =
+        function
+        | INIValue.String(s) ->
+            TextConversions.AsFloat missingValues useNoneForMissingValues cultureInfo <| defaultArg s ""
         | _ -> None
 
-    static member AsBoolean = function
+    static member AsBoolean =
+        function
         | INIValue.String(s) when (defaultArg s "") = "1" -> Some(true)
         | INIValue.String(s) when (defaultArg s "") = "0" -> Some(false)
         | INIValue.String(s) -> TextConversions.AsBoolean <| defaultArg s ""
         | _ -> None
 
-    static member AsDateTimeOffset (cultureInfo: IFormatProvider) = function
+    static member AsDateTimeOffset(cultureInfo : IFormatProvider) =
+        function
         | INIValue.String(s) -> TextConversions.AsDateTimeOffset cultureInfo <| defaultArg s ""
         | _ -> None
 
-    static member AsDateTime (cultureInfo: IFormatProvider) = function
+    static member AsDateTime(cultureInfo : IFormatProvider) =
+        function
         | INIValue.String(s) -> TextConversions.AsDateTime cultureInfo <| defaultArg s ""
         | _ -> None
 
-    static member AsTimeSpan (cultureInfo: CultureInfo) = function
+    static member AsTimeSpan(cultureInfo : CultureInfo) =
+        function
         | INIValue.String(s) -> TextConversions.AsTimeSpan cultureInfo <| defaultArg s ""
         | _ -> None
 
-    static member AsGuid = function
+    static member AsGuid =
+        function
         | INIValue.String(s) -> TextConversions.AsGuid <| defaultArg s ""
         | _ -> None
