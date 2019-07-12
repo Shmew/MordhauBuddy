@@ -160,7 +160,7 @@ type INIExtensions =
 module INIExtensions =
 
     /// Get a property of a INI object  
-    let (?) (jsonObject:INIValue) propertyName = jsonObject.GetProperty(propertyName)
+    let (?) (iValue: INIValue) propertyName = iValue.GetProperty(propertyName)
 
     type INIValue with
         member x.Properties =

@@ -2,12 +2,13 @@ namespace MordhauBuddy.Core.INIReader
 
 open FParsec
 open System
+open System.ComponentModel
 open System.Globalization
 open System.IO
 open FSharp.Data
 
 [<RequireQualifiedAccess>]
-[<StructuredFormatDisplay("_Print")>]
+[<StructuredFormatDisplay("{_Print}")>]
 type INIValue =
     | String of string option
     | FieldText of string * INIValue
@@ -15,6 +16,14 @@ type INIValue =
     | KeyValue of string * INIValue
     | Section of string * INIValue list
     | File of INIValue list
+
+    /// [omit]
+    [<EditorBrowsableAttribute(EditorBrowsableState.Never)>]
+    [<CompilerMessageAttribute("This method is intended for use in generated code only.", 10001, IsHidden=true, IsError=false)>]
+    member x._Print =
+      match x.ToString() with
+      | str when str.Length > 512 -> str.Substring(0, 509) + "..."
+      | str -> str
 
     /// Serializes INIValue to TextWriter
     member this.WriteTo (w: TextWriter) =
@@ -25,17 +34,24 @@ type INIValue =
             w.Write(s)
             serialize iniValue
         | Tuple(iList) ->
+            let len = iList.Length - 1
             w.Write("(")
-            iList |> List.iter serialize
+            iList
+            |> List.indexed
+            |> List.iter (fun (ind, i) ->
+                serialize i
+                if ind < len then w.Write(","))
             w.Write(")")
         | KeyValue(s, iniValue) ->
             w.Write(s + "=")
             serialize iniValue
-            w.WriteLine()
         | Section(s, iList) ->
             w.Write("[" + s + "]")
             w.WriteLine()
-            iList |> List.iter serialize
+            iList 
+            |> List.iter (fun i ->
+                serialize i
+                w.WriteLine())
             w.WriteLine()
         | File(iList) ->
             iList |> List.iter serialize
@@ -122,7 +138,7 @@ type private INIParser(iniText: string) =
     do iValueRef := choice [ iniTuple; iniKV; iniFieldText; iniString; iniEmpty ]
 
     /// Parses all sections in the file
-    let ini = many (spaces >>. skipMany comment >>. iniSection .>> spaces)
+    let ini = many (spaces >>. skipMany comment >>. iniSection .>> spaces) |>> INIValue.File
 
     /// Parses text and fails on error
     member this.Parse() =
