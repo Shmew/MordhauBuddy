@@ -5,8 +5,8 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="INI Parser\INIReader.fs" />
-    <Compile Include="INI Parser\INIExtensions.fs" />
+    <Compile Include="INIParser\INIReader.fs" />
+    <Compile Include="INIParser\INIExtensions.fs" />
     <Compile Include="Frankenstein.fs" />
     <None Include="paket.references" />
   </ItemGroup>
