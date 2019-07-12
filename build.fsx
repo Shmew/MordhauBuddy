@@ -45,7 +45,7 @@ let website = "/MordhauBuddy"
 // --------------------------------------------------------------------------------------
 
 // Read additional information from the release notes document
-let release = ReleaseNotes.load "RELEASE_NOTES.md"
+let release = ReleaseNotes.load (__SOURCE_DIRECTORY__ @@ "RELEASE_NOTES.md")
 
 // Get main Azure repo url
 let repo = Git.CommandHelper.getGitResult __SOURCE_DIRECTORY__ "config --get remote.origin.url" |> List.head
@@ -198,6 +198,68 @@ Target.create "Build" <| fun _ ->
                 ]
          }
     MSBuild.build setParams solutionFile
+
+Target.create "MergeLibraries" <| fun _ ->
+    let runILMerge (paths: string list, proj: string) =
+        paths
+        |> List.iter (fun pBuild ->
+            let out = (pBuild @@ "merged" @@ (proj + ".dll"))
+            let target = (pBuild @@ (proj + ".dll"))
+                
+            !! (pBuild @@ "*.pdb")
+            |> File.deleteAll
+                
+            Directory.create (pBuild @@ "merged")
+                
+            ILMerge.run
+                { ILMerge.Params.Create() with
+                    DebugInfo = true
+                    TargetKind = ILMerge.TargetKind.Library
+                    Internalize = ILMerge.InternalizeTypes.Internalize
+                    Libraries = [!! (pBuild @@ "*.dll") -- (pBuild @@ (proj + ".dll"))] |> Seq.concat
+                    AttributeFile = target
+                    ToolPath = (!! (__SOURCE_DIRECTORY__ @@ "packages/ILMerge/tools/**/ILMerge.exe") |> Seq.head) 
+                } out target
+
+            File.Copy((pBuild @@ (proj + ".xml")), (pBuild @@ "merged" @@ (proj + ".xml"))) )
+
+    let runPublish (project: string) =
+        let setParams (defaults:MSBuildParams) =
+            { defaults with
+                Verbosity = Some(Quiet)
+                Targets = ["Publish"]
+                Properties =
+                    [
+                        "Optimize", "True"
+                        "DebugSymbols", "True"
+                        "Configuration", configuration
+                        "Version", release.AssemblyVersion
+                    ]
+            }
+        MSBuild.build setParams project
+
+    !! srcGlob
+    -- "src/**/*.shproj"
+    |> Seq.map 
+        ((fun f -> (((Path.getDirectory f) @@ "bin" @@ configuration), (Path.GetFileNameWithoutExtension f)) )
+        >> 
+        (fun f ->
+            Directory.EnumerateDirectories(fst f) 
+            |> Seq.filter (fun frFolder -> not <| frFolder.Contains("netcoreapp")) 
+            |> List.ofSeq, snd f))
+    |> Seq.iter runILMerge
+
+    !! srcGlob
+    -- "src/**/*.shproj"
+    -- "src/**/*.vbproj"
+    |> Seq.map
+        ((fun f -> (((Path.getDirectory f) @@ "bin" @@ configuration), f) )
+        >>
+        (fun f ->
+            Directory.EnumerateDirectories(fst f) 
+            |> Seq.filter (fun frFolder -> frFolder.Contains("netcoreapp")), snd f))
+    |> Seq.filter (fun (f,_) -> f |> Seq.isEmpty |> not)
+    |> Seq.iter (fun (_,p) -> runPublish p)
 
 // --------------------------------------------------------------------------------------
 // Lint and format source code to ensure consistency
@@ -424,7 +486,7 @@ Target.create "PublishNuGet" <| fun _ ->
 
     Paket.push(fun p ->
         { p with
-            PublishUrl = "https://pkgs.dev.azure.com/geha/_packaging"
+            PublishUrl = ""
             WorkingDir = "bin"
             EndPoint = sprintf "/%s/nuget/v2" repoName
             ApiKey = nugetKey })
@@ -441,6 +503,7 @@ Target.create "All" ignore
   ==> "Restore"
   ==> "Build"
   ==> "PostBuildClean" 
+  ==> "MergeLibraries"
   ==> "CopyBinaries"
 
 "Build" ==> "RunTests"
