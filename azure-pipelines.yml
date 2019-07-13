@@ -5,6 +5,9 @@ trigger:
     - '*'
 pool:
   vmImage: 'windows-2019'
+variables:
+  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
+  isFBranch: $[contains(['refs/heads/master', 'refs/heads/Release', 'refs/heads/Develop'], variables['Build.SourceBranch'])]
 stages:
 - stage: Setup
   jobs:
@@ -23,11 +26,11 @@ stages:
     - powershell: '.\build.cmd -t Lint'
       displayName: 'Perform linting'
       failOnStderr: true
-    - powershell: 'if(Test-Path .\bin\Lint*.xml -PathType Leaf) {echo "##vso[task.setVariable variable=LINTFILEEXISTS]true"}'
+    - powershell: 'if(Test-Path .\bin\Lint*.xml -PathType Leaf) {echo "##vso[task.setVariable variable=LintFileExists]true"}'
       displayName: 'Check for lint results to publish'
     - task: PublishTestResults@2
       displayName: 'Publish linting results'
-      condition: eq(variables.LINTFILEEXISTS, 'true')
+      condition: eq(variables['LintFileExists'], 'true')
       inputs:
         testResultsFormat: 'NUnit'
         testResultsFiles: 'bin/Lint*.xml'
@@ -37,26 +40,39 @@ stages:
     - powershell: '.\build.cmd -t RunTests'
       displayName: 'Run tests'
       failOnStderr: true
-    - powershell: 'if(Test-Path .\bin\Test*.xml -PathType Leaf) {echo "##vso[task.setVariable variable=TESTFILEEXISTS]true"}'
+    - powershell: 'if(Test-Path .\bin\Test*.xml -PathType Leaf) {echo "##vso[task.setVariable variable=TestFileExists]true"}'
       displayName: 'Check for test results to publish'
     - task: PublishTestResults@2
       displayName: 'Publish testing results'
-      condition: eq(variables.TESTFILEEXISTS, 'true')
+      condition: eq(variables['TestFileExists'], 'true')
       inputs:
         testResultsFormat: 'NUnit'
         testResultsFiles: 'bin/Test*.xml'
         failTaskOnFailedTests: true
 - stage: Build
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   - job: Build solution and documentation
     steps:
     - powershell: '.\build.cmd'
       failOnStderr: true
+- stage: Scan
+  condition: and(succeeded(),or(and(variables['isPR'], variables['isFBranch']),not(and(variables['isPR'],variables['isFBranch']))))
+  jobs:
+  - job: Veracode Scan
+    steps:
+    - task: Veracode.veracode-vsts-build-extension.veracode-scanner-task.Veracode@2
+      displayName: 'Upload and scan: $(Build.SourcesDirectory)\VeracodeStaging'
+      inputs:
+        AnalysisService: 'AzureAPI - Veracode'
+        veracodeAppProfile: 'TIO Miscellaneous'
+        version: '$(Build.Repository.Name).$(Build.BuildNumber)'
+        filepath: '$(Build.SourcesDirectory)\VeracodeStaging' -- CHECK THIS!
+        importResults: true
+        failBuildOnPolicyFail: true
 - stage: Release
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeeded(), not(variables['isPR']))
   jobs:
   - job: Deploy Docs
-    condition: and(succeeded(), contains(['refs/heads/master', 'refs/heads/Release', 'refs/heads/Develop'], variables['Build.SourceBranch']))
+    condition: and(succeeded(), not(variables['isFBranch']))
     steps:
     - powershell: '.\build.cmd -t DeployDocs'
       displayName: 'Deploy documents to IIS server'
@@ -65,7 +81,7 @@ stages:
         IIS_USER: $(iisUser)
         IIS_PASS: $(iisPass)
   - job: Publish NuGet
-    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     steps:
     - powershell: '.\build.cmd -t PublishNuGet'
       displayName: 'Publish nupkg to Azure Artifacts'
@@ -73,7 +89,7 @@ stages:
       env:
         NUGET_KEY: $(system.accesstoken)
   - job: Tag release
-    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     steps:
     - powershell: '.\build.cmd -t GitTag'
       displayName: 'Tag commit with release version'

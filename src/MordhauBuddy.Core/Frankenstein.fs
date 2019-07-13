@@ -1,9 +1,9 @@
 namespace MordhauBuddy.Core
 
 open FSharp.Data
-open MordhauBuddy.Core.INIReader
-open MordhauBuddy.Core.INIReader.INIExtensions
-open MordhauBuddy.Core.INIReader.Options
+open INIReader
+open INIReader.INIExtensions
+open INIReader.INIExtensions.Options
 open System.IO
 
 module Lib =

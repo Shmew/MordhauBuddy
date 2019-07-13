@@ -40,18 +40,15 @@ let testAssemblies = "tests/**/bin" </> configuration </> "**" </> "*Tests.exe"
 // Build docs website root
 let website = "/MordhauBuddy"
 
+// Github repository
+let repo = @"https://github.com/Shmew/MordhauBuddy"
+
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
 
 // Read additional information from the release notes document
 let release = ReleaseNotes.load (__SOURCE_DIRECTORY__ @@ "RELEASE_NOTES.md")
-
-// Get main Azure repo url
-let repo = Git.CommandHelper.getGitResult __SOURCE_DIRECTORY__ "config --get remote.origin.url" |> List.head
-
-// Get repo name
-let repoName = repo.Split('/') |> Array.last
 
 // Helper active pattern for project types
 let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
@@ -91,22 +88,6 @@ let setCmd f args =
     match Environment.isWindows with
     | true -> Command.RawCommand(f, Arguments.OfArgs args)
     | false -> Command.RawCommand("mono", Arguments.OfArgs (f::args))
-
-let getEnvFromAllOrNone (s: string) =
-    let envOpt (envVar: string) =
-        if String.isNullOrEmpty envVar then None
-        else Some(envVar)
-
-    let procVar = Environment.GetEnvironmentVariable(s) |> envOpt
-    let userVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.User) |> envOpt
-    let machVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.Machine) |> envOpt
-
-    match procVar,userVar,machVar with
-    | Some(v), _, _
-    | _, Some(v), _
-    | _, _, Some(v)
-        -> Some(v)
-    | _ -> None
 
 // --------------------------------------------------------------------------------------
 // Generate assembly info files with the right version & up-to-date information
@@ -177,6 +158,12 @@ Target.create "PostBuildClean" <| fun _ ->
     |> (Seq.concat >> Seq.concat)
     |> Seq.iter Directory.delete
 
+Target.create "PostPublishClean" <| fun _ ->
+    !! (__SOURCE_DIRECTORY__ @@ "src/**/bin" @@ configuration @@ "/**/publish")
+    |> Seq.map (Directory.EnumerateDirectories >> Seq.toList )
+    |> Seq.concat
+    |> Seq.iter Directory.delete
+
 // --------------------------------------------------------------------------------------
 // Restore then build library
 
@@ -195,9 +182,13 @@ Target.create "Build" <| fun _ ->
                     "DebugSymbols", "True"
                     "Configuration", configuration
                     "Version", release.AssemblyVersion
+                    "GenerateDocumentationFile", "true"
                 ]
          }
     MSBuild.build setParams solutionFile
+
+// --------------------------------------------------------------------------------------
+// Merge internal references in .Net framework applications
 
 Target.create "MergeLibraries" <| fun _ ->
     let runILMerge (paths: string list, proj: string) =
@@ -223,21 +214,6 @@ Target.create "MergeLibraries" <| fun _ ->
 
             File.Copy((pBuild @@ (proj + ".xml")), (pBuild @@ "merged" @@ (proj + ".xml"))) )
 
-    let runPublish (project: string) =
-        let setParams (defaults:MSBuildParams) =
-            { defaults with
-                Verbosity = Some(Quiet)
-                Targets = ["Publish"]
-                Properties =
-                    [
-                        "Optimize", "True"
-                        "DebugSymbols", "True"
-                        "Configuration", configuration
-                        "Version", release.AssemblyVersion
-                    ]
-            }
-        MSBuild.build setParams project
-
     !! srcGlob
     -- "src/**/*.shproj"
     |> Seq.map 
@@ -249,6 +225,26 @@ Target.create "MergeLibraries" <| fun _ ->
             |> List.ofSeq, snd f))
     |> Seq.iter runILMerge
 
+// --------------------------------------------------------------------------------------
+// Publish net core applications
+
+Target.create "PublishDotNet" <| fun _ ->
+    let runPublish (project: string) =
+        let setParams (defaults:MSBuildParams) =
+            { defaults with
+                Verbosity = Some(Quiet)
+                Targets = ["Publish"]
+                Properties =
+                    [
+                        "Optimize", "True"
+                        "DebugSymbols", "True"
+                        "Configuration", configuration
+                        "Version", release.AssemblyVersion
+                        "GenerateDocumentationFile", "true"
+                    ]
+            }
+        MSBuild.build setParams project
+
     !! srcGlob
     -- "src/**/*.shproj"
     -- "src/**/*.vbproj"
@@ -258,7 +254,6 @@ Target.create "MergeLibraries" <| fun _ ->
         (fun f ->
             Directory.EnumerateDirectories(fst f) 
             |> Seq.filter (fun frFolder -> frFolder.Contains("netcoreapp")), snd f))
-    |> Seq.filter (fun (f,_) -> f |> Seq.isEmpty |> not)
     |> Seq.iter (fun (_,p) -> runPublish p)
 
 // --------------------------------------------------------------------------------------
@@ -378,8 +373,7 @@ Target.create "ReferenceDocs" <| fun _ ->
                 dInfo.GetFiles()
                 |> Array.filter (fun x ->
                     x.Name.ToLower() = (sprintf "%s.dll" name).ToLower())
-                |> Array.map (fun x -> x.FullName)
-                )
+                |> Array.map (fun x -> x.FullName))
             |> List.ofArray
 
         conventionBased @ manuallyAdded
@@ -391,8 +385,8 @@ Target.create "ReferenceDocs" <| fun _ ->
             LayoutRoots =  layoutRootsAll.["en"]
             ProjectParameters =  info
             LibDirs = lDirs
-            ToolPath = toolPath }
-           )
+            ToolPath = toolPath
+            SourceRepository = repo @@ "tree/master" })
 
 let copyFiles () =
     Shell.copyRecursive files output true
@@ -406,7 +400,7 @@ Target.create "Docs" <| fun _ ->
     Shell.copyFile "docsrc/content/" "RELEASE_NOTES.md"
     Shell.rename "docsrc/content/release-notes.md" "docsrc/content/RELEASE_NOTES.md"
 
-    [ "# ControlMApi"
+    [ "# MordhauBuddy"
       ""
       sprintf "The documentation for this project can be found [here](%s/index.html)." website] 
     |> Seq.ofList
@@ -422,7 +416,7 @@ Target.create "Docs" <| fun _ ->
                                        formatting @@ "templates/reference" ]))
     copyFiles ()
 
-    for dir in  [ content; ] do
+    for dir in  [ content ] do
         let langSpecificPath(lang, path:string) =
             path.Split([|'/'; '\\'|], StringSplitOptions.RemoveEmptyEntries)
             |> Array.exists(fun i -> i = lang)
@@ -438,7 +432,7 @@ Target.create "Docs" <| fun _ ->
                 OutputDirectory = output
                 LayoutRoots = layoutRoots
                 ProjectParameters  = info
-                Template = docTemplate } )
+                Template = docTemplate })
 
 // --------------------------------------------------------------------------------------
 // Release Scripts
@@ -463,34 +457,6 @@ Target.create "GitTag" <| fun _ ->
     Git.Branches.tag "" release.NugetVersion
     Git.Branches.pushTag "" "origin" release.NugetVersion
 
-// --------------------------------------------------------------------------------------
-// Build and release NuGet package
-
-Target.create "NuGet" <| fun _ ->
-    Paket.pack(fun p ->
-        { p with
-            OutputPath = bin
-            Version = release.NugetVersion
-            ReleaseNotes = Fake.Core.String.toLines release.Notes
-            ProjectUrl = repo })
-
-// Gets ApiKey by default via NUGET_KEY env var
-Target.create "PublishNuGet" <| fun _ ->
-    let nugetKey =
-        match (getEnvFromAllOrNone "NUGET_KEY"), (getEnvFromAllOrNone "nugetkey") with
-        | Some(k), _
-        | _, Some(k)
-            -> k
-        | None, None -> failwith "Error fetching NUGET_KEY environment variable"
-    TraceSecrets.register "<NUGET_KEY>" nugetKey
-
-    Paket.push(fun p ->
-        { p with
-            PublishUrl = ""
-            WorkingDir = "bin"
-            EndPoint = sprintf "/%s/nuget/v2" repoName
-            ApiKey = nugetKey })
-
 Target.create "GenerateDocs" ignore
 
 // --------------------------------------------------------------------------------------
@@ -508,11 +474,18 @@ Target.create "All" ignore
 
 "Build" ==> "RunTests"
 
+"Build"
+  ==> "PostBuildClean"
+  ==> "PublishDotNet"
+  ==> "PostPublishClean"
+  ==> "CopyBinaries"
+
 "Restore" ==> "Lint"
 "Restore" ==> "Format"
 
 "Format"
   ?=> "Lint" 
+  ?=> "Build"
   ?=> "RunTests"
   ?=> "CleanDocs"
 
@@ -523,14 +496,10 @@ Target.create "All" ignore
   ==> "ReferenceDocs"
   ==> "GenerateDocs"
 
-"CopyBinaries"
-  ==> "NuGet"
-  ?=> "PublishNuGet"
-
 "Clean" 
   ==> "GitPush"
   ?=> "GitTag"
 
-"All" <== ["Format"; "Lint"; "RunTests"; "GenerateDocs"; "NuGet"]
+"All" <== ["Format"; "Lint"; "RunTests"; "GenerateDocs"]
 
 Target.runOrDefaultWithArguments "All"
