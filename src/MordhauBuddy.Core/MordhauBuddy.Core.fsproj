@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0; net462</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="INIReader.fs" />

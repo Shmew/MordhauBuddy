@@ -298,14 +298,14 @@ Target.create "LoadScripts" <| fun _ ->
             |> List.ofSeq)
         |> List.ofSeq
         |> List.reduce List.append
-        |> List.reduce (fun acc elem -> sprintf "%s %s" elem acc)
+        |> List.reduce (fun acc elem -> sprintf "%s --framework %s" elem acc)
         |> function
         | e when e.Length > 0 ->
             Some (sprintf "--framework %s" e)
         | _ -> None
 
     let arguments =
-        [Some("generate-load-scripts");Some("--type fsx"); frameworks]
+        [Some("generate-load-scripts"); frameworks]
         |> List.choose id
         |> List.reduce (fun acc elem -> sprintf "%s %s" acc elem)
 
