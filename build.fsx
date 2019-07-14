@@ -183,6 +183,7 @@ Target.create "Build" <| fun _ ->
                     "Configuration", configuration
                     "Version", release.AssemblyVersion
                     "GenerateDocumentationFile", "true"
+                    "DependsOnNETStandard", "true"
                 ]
          }
     MSBuild.build setParams solutionFile
@@ -229,7 +230,7 @@ Target.create "MergeLibraries" <| fun _ ->
 // Publish net core applications
 
 Target.create "PublishDotNet" <| fun _ ->
-    let runPublish (project: string) =
+    let runPublish (project: string) (framework: string) =
         let setParams (defaults:MSBuildParams) =
             { defaults with
                 Verbosity = Some(Quiet)
@@ -241,6 +242,7 @@ Target.create "PublishDotNet" <| fun _ ->
                         "Configuration", configuration
                         "Version", release.AssemblyVersion
                         "GenerateDocumentationFile", "true"
+                        "TargetFramework", framework
                     ]
             }
         MSBuild.build setParams project
@@ -253,8 +255,9 @@ Target.create "PublishDotNet" <| fun _ ->
         >>
         (fun f ->
             Directory.EnumerateDirectories(fst f) 
-            |> Seq.filter (fun frFolder -> frFolder.Contains("netcoreapp")), snd f))
-    |> Seq.iter (fun (_,p) -> runPublish p)
+            |> Seq.filter (fun frFolder -> frFolder.Contains("netcoreapp"))
+            |> Seq.map (fun frFolder -> DirectoryInfo(frFolder).Name), snd f))
+    |> Seq.iter (fun (l,p) -> l |> Seq.iter (runPublish p))
 
 // --------------------------------------------------------------------------------------
 // Lint and format source code to ensure consistency

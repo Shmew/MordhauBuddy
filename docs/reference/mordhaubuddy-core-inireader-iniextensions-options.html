@@ -60,8 +60,8 @@ This module also provides the dynamic operator.</p>
             ( ? ) x propertyName
           </code>
           <div class="tip" id="4">
-            <strong>Signature:</strong> x:^?8248 -&gt; propertyName:string -&gt; &#39;?8249<br />
-                          <strong>Type parameters:</strong> ^?8248, '?8249                      </div>
+            <strong>Signature:</strong> x:^?8245 -&gt; propertyName:string -&gt; &#39;?8246<br />
+                          <strong>Type parameters:</strong> ^?8245, '?8246                      </div>
         </td>
         <td class="xmldoc">
                       <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/MordhauBuddy.Core/INIReader.fs#L672-672" class="github-link">
@@ -110,7 +110,7 @@ This module also provides the dynamic operator.</p>
             x.AsDateTime(?cultureInfo)
           </code>
           <div class="tip" id="6">
-            <strong>Signature:</strong> (cultureInfo:(type) option) -&gt; DateTime<br />
+            <strong>Signature:</strong> (cultureInfo:(type) option) -&gt; (type)<br />
                                   </div>
         </td>
         <td class="xmldoc">
@@ -132,7 +132,7 @@ containing well-formed ISO date or MSFT INI date)</p>
             x.AsDateTimeOffset(?cultureInfo)
           </code>
           <div class="tip" id="7">
-            <strong>Signature:</strong> (cultureInfo:(type) option) -&gt; DateTimeOffset<br />
+            <strong>Signature:</strong> (cultureInfo:(type) option) -&gt; (type)<br />
                                   </div>
         </td>
         <td class="xmldoc">
@@ -196,7 +196,7 @@ containing well-formed ISO date time with offset or MSFT INI datetime with offse
             x.AsGuid()
           </code>
           <div class="tip" id="10">
-            <strong>Signature:</strong> unit -&gt; Guid<br />
+            <strong>Signature:</strong> unit -&gt; (type)<br />
                                   </div>
         </td>
         <td class="xmldoc">
@@ -303,7 +303,7 @@ Returns the empty string for INIValue.Null</p>
             x.AsTimeSpan(?cultureInfo)
           </code>
           <div class="tip" id="15">
-            <strong>Signature:</strong> (cultureInfo:(type) option) -&gt; TimeSpan<br />
+            <strong>Signature:</strong> (cultureInfo:(type) option) -&gt; (type)<br />
                                   </div>
         </td>
         <td class="xmldoc">
