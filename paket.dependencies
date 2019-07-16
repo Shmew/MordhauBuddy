@@ -8,6 +8,8 @@ nuget Expecto
 nuget Expecto.BenchmarkDotNet
 nuget Expecto.FsCheck
 nuget Expecto.TestResults 8.10.1
+nuget Fake.Core.Environment
+nuget Fake.IO.FileSystem
 nuget Foq
 nuget FParsec
 nuget FSharp.Core
@@ -16,8 +18,6 @@ nuget FSharpLint.Core
 
 clitool dotnet-fantomas
 clitool dotnet-fake
-
-nuget ilmerge
 
 group Formatting
 source https://nuget.org/api/v2
@@ -40,5 +40,4 @@ nuget Fake.Core.ReleaseNotes
 nuget Fake.DotNet.AssemblyInfoFile
 nuget Fake.DotNet.Paket
 nuget Fake.DotNet.FSFormatting 
-nuget Fake.DotNet.ILMerge
 nuget FSharpLint.Core

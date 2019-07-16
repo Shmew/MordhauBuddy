@@ -239,7 +239,10 @@ module INIReader =
                     match x with
                     | INIValue.File(sList) -> ("", sList)
                     | INIValue.Section(s, vList) -> (s, vList)
-                    | INIValue.KeyValue(s, v) -> (s, [ v ])
+                    | INIValue.KeyValue(s, v) ->
+                        match v with
+                        | INIValue.Tuple(tList) -> (s, tList)
+                        | _ -> (s, [ v ])
                     | INIValue.FieldText(s, v) -> (s, [ v ])
                     | _ -> ("", [])
                 props x
@@ -276,7 +279,11 @@ module INIReader =
                 match x with
                 | INIValue.File(sList) -> sList
                 | INIValue.Section(_, vList) -> vList
-                | INIValue.KeyValue(_, v) -> [ v ]
+                | INIValue.KeyValue(_, v) ->
+                    match v with
+                    | INIValue.Tuple(tList) -> tList
+                    | _ -> [ v ]
+                | INIValue.Tuple(tList) -> tList
                 | INIValue.FieldText(_, v) -> [ v ]
                 | _ -> []
 
@@ -383,6 +390,49 @@ module INIReader =
                     |> List.map (fun e -> INIExtensions.InnerText(e))
                     |> String.Concat
 
+            /// Map INIValue based on matching conditions --EXPAND THIS
+            [<Extension>]
+            static member Map(matchConditions : string list, ast : INIValue, newValue : INIValue) =
+                let rec mapAst (s : string list) (iVal : INIValue) : INIValue =
+                    let testVal (x : INIValue) : bool =
+                        match x with
+                        | INIValue.Section(n, _) -> n <> (s.Head)
+                        | INIValue.FieldText(n, _) -> n <> (s.Head)
+                        | INIValue.KeyValue(n, _) -> n <> (s.Head)
+                        | INIValue.String(n) -> defaultArg n "" <> s.Head
+                        | _ -> false
+
+                    let getResults (iList : INIValue list) (sendTail : bool) =
+                        let matchers =
+                            match sendTail with
+                            | true -> s.Tail
+                            | false -> s
+                        if iList.IsEmpty && s.Head = "()" then [ mapAst (s.Tail) (INIValue.String(None)) ]
+                        else
+                            iList
+                            |> List.map (fun iVal ->
+                                   match testVal iVal with
+                                   | false -> mapAst matchers iVal
+                                   | true -> iVal)
+
+                    match iVal with
+                    | _ when s.IsEmpty -> newValue
+                    | INIValue.File e -> getResults e true |> INIValue.File
+                    | INIValue.Section(secName, secL) ->
+                        getResults secL false |> (fun res -> INIValue.Section(secName, res))
+                    | INIValue.KeyValue(kName, kL) -> mapAst (s.Tail) kL |> (fun res -> INIValue.KeyValue(kName, res))
+                    | INIValue.Tuple(tL) -> getResults tL false |> INIValue.Tuple
+                    | INIValue.FieldText(fName, fTup) ->
+                        match fName = s.Head with
+                        | true -> mapAst (s.Tail) fTup
+                        | false -> fTup
+                        |> (fun res -> INIValue.FieldText(fName, res))
+                    | INIValue.String(_) as kvStr ->
+                        match testVal kvStr with
+                        | true -> kvStr
+                        | false -> mapAst (s.Tail) kvStr
+                mapAst matchConditions ast
+
         /// Get a property of a INI object
         let (?) (iValue : INIValue) propertyName = iValue.GetProperty(propertyName)
 
@@ -392,7 +442,10 @@ module INIReader =
                     match x with
                     | INIValue.File(sList) -> ("", sList)
                     | INIValue.Section(s, vList) -> (s, vList)
-                    | INIValue.KeyValue(s, v) -> (s, [ v ])
+                    | INIValue.KeyValue(s, v) ->
+                        match v with
+                        | INIValue.Tuple(tList) -> (s, tList)
+                        | _ -> (s, [ v ])
                     | INIValue.FieldText(s, v) -> (s, [ v ])
                     | _ -> ("", [])
                 props this
@@ -410,7 +463,10 @@ module INIReader =
                         match x with
                         | INIValue.File(sList) -> ("", sList)
                         | INIValue.Section(s, vList) -> (s, vList)
-                        | INIValue.KeyValue(s, v) -> (s, [ v ])
+                        | INIValue.KeyValue(s, v) ->
+                            match v with
+                            | INIValue.Tuple(tList) -> (s, tList)
+                            | _ -> (s, [ v ])
                         | INIValue.FieldText(s, v) -> (s, [ v ])
                         | _ -> ("", [])
                     props this
@@ -443,7 +499,11 @@ module INIReader =
                     match this with
                     | INIValue.File(sList) -> sList
                     | INIValue.Section(_, vList) -> vList
-                    | INIValue.KeyValue(_, v) -> [ v ]
+                    | INIValue.KeyValue(_, v) ->
+                        match v with
+                        | INIValue.Tuple(tList) -> tList
+                        | _ -> [ v ]
+                    | INIValue.Tuple(tList) -> tList
                     | INIValue.FieldText(_, v) -> [ v ]
                     | _ -> []
 
@@ -458,8 +518,7 @@ module INIReader =
 
                 /// Get the string value of an element (assuming that the value is a scalar)
                 /// Returns the empty string for INIValue.Null
-                member this.AsString([<Optional>] ?cultureInfo) =
-                    let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
+                member this.AsString() =
                     match INIConversions.AsString this with
                     | Some s -> s
                     | _ -> failwithf "Not a string: %s" <| this.ToString()
@@ -538,6 +597,10 @@ module INIReader =
                         |> List.map (fun e -> INIExtensions.InnerText(e))
                         |> String.Concat
 
+                /// Map INIValue based on matching conditions --EXPAND THIS
+                member this.Map(matchConditions : string list, newValue : INIValue) =
+                    INIExtensions.Map(matchConditions, this, newValue)
+
             [<Extension>]
             [<AbstractClass>]
             type INIValueOptionExtensions() =
@@ -549,7 +612,10 @@ module INIReader =
                         match x with
                         | INIValue.File(sList) -> ("", sList)
                         | INIValue.Section(s, vList) -> (s, vList)
-                        | INIValue.KeyValue(s, v) -> (s, [ v ])
+                        | INIValue.KeyValue(s, v) ->
+                            match v with
+                            | INIValue.Tuple(tList) -> (s, tList)
+                            | _ -> (s, [ v ])
                         | INIValue.FieldText(s, v) -> (s, [ v ])
                         | _ -> ("", [])
                     props x
@@ -576,7 +642,11 @@ module INIReader =
                     match x with
                     | INIValue.File(sList) -> sList
                     | INIValue.Section(_, vList) -> vList
-                    | INIValue.KeyValue(_, v) -> [ v ]
+                    | INIValue.KeyValue(_, v) ->
+                        match v with
+                        | INIValue.Tuple(tList) -> tList
+                        | _ -> [ v ]
+                    | INIValue.Tuple(tList) -> tList
                     | INIValue.FieldText(_, v) -> [ v ]
                     | _ -> []
 
@@ -593,7 +663,7 @@ module INIReader =
 
                 /// Get the string value of an element (assuming that the value is a scalar)
                 [<Extension>]
-                static member AsString(x, [<Optional>] ?cultureInfo) = x |> Option.bind INIConversions.AsString
+                static member AsString(x) = x |> Option.bind INIConversions.AsString
 
                 /// Get a number as an integer (assuming that the value fits in integer)
                 [<Extension>]
@@ -622,7 +692,7 @@ module INIReader =
 
                 /// Get the boolean value of an element (assuming that the value is a boolean)
                 [<Extension>]
-                static member AsBoolean(x, [<Optional>] ?cultureInfo) = x |> Option.bind INIConversions.AsBoolean
+                static member AsBoolean(x) = x |> Option.bind INIConversions.AsBoolean
 
                 /// Get the datetime value of an element (assuming that the value is a string
                 /// containing well-formed ISO date or MSFT INI date)
@@ -660,6 +730,11 @@ module INIReader =
                                |> List.map (fun e -> e.InnerText())
                                |> String.Concat
                                |> Some)
+
+                /// Map INIValue based on matching conditions --EXPAND THIS
+                [<Extension>]
+                static member Map(matchConditions : string list, ast : INIValue option, newValue : INIValue) =
+                    ast |> Option.bind (fun res -> INIExtensions.Map(matchConditions, res, newValue) |> Some)
 
             /// [omit]
             type INIValueOverloads = INIValueOverloads

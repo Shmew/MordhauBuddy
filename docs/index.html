@@ -33,7 +33,32 @@
         <div class="span9" id="main">
           
 <h1><a name="What-is-MordhauBuddy" class="anchor" href="#What-is-MordhauBuddy">What is MordhauBuddy?</a></h1>
-<p>fill in</p>
+<p>let ast =
+match File.Exists(@"C:\Users\Shmew\source\repos\MordhauBuddy\Game.ini") with
+| true -&gt;
+//File.ReadAllTextAsync(@"C:\Users\Shmew\source\repos\MordhauBuddy\Game.ini")
+//|&gt; Async.AwaitTask
+//|&gt; Async.RunSynchronously
+//|&gt; INIValue.TryParse
+File.ReadAllText(@"C:\Users\Shmew\source\repos\MordhauBuddy\Game.ini") |&gt; INIValue.Parse
+| false -&gt; failwith "Unable to parse file."</p>
+<p>let result = ast.GetProperty(@"/Script/Mordhau.MordhauGameSession") |&gt; List.tail |&gt; List.tail |&gt; List.head |&gt; (fun r -&gt; r.AsList())
+let result2 =
+ast.Map
+([ @"/Script/Mordhau.MordhauGameSession"; "ServerName"; "Server" ],
+INIValue.String(Some("\"332 Bardiche Test\"")))</p>
+<p>let result3 =
+ast.Map
+([@"/Game/Mordhau/Blueprints/BP<em>MordhauSingleton.BP</em>MordhauSingleton_C"; "CharacterProfiles"; "Name";"INVTEXT";"\"332 Bardiche\""],
+INIValue.String(Some("\"332 Bardiche Test\"")))</p>
+<p>let result4 =
+ast.Map
+([@"/Game/Mordhau/Blueprints/BP<em>MordhauSingleton.BP</em>MordhauSingleton_C"; "CharacterProfiles"; "FaceCustomization"; "Translate"; "15360"],
+INIValue.String(Some("00000")))</p>
+<p>File.WriteAllText(@"C:\temp\test.ini", ast.ToString())
+File.WriteAllText(@"C:\temp\test2.ini", result2.ToString())
+File.WriteAllText(@"C:\temp\test3.ini", result3.ToString())
+File.WriteAllText(@"C:\temp\test4.ini", result4.ToString())</p>
 <h2><a name="How-to-get-MordhauBuddy" class="anchor" href="#How-to-get-MordhauBuddy">How to get MordhauBuddy</a></h2>
 <p>fill in</p>
 <h2><a name="Documentation" class="anchor" href="#Documentation">Documentation</a></h2>

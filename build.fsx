@@ -189,44 +189,6 @@ Target.create "Build" <| fun _ ->
     MSBuild.build setParams solutionFile
 
 // --------------------------------------------------------------------------------------
-// Merge internal references in .Net framework applications
-
-Target.create "MergeLibraries" <| fun _ ->
-    let runILMerge (paths: string list, proj: string) =
-        paths
-        |> List.iter (fun pBuild ->
-            let out = (pBuild @@ "merged" @@ (proj + ".dll"))
-            let target = (pBuild @@ (proj + ".dll"))
-                
-            !! (pBuild @@ "*.pdb")
-            |> File.deleteAll
-                
-            Directory.create (pBuild @@ "merged")
-                
-            ILMerge.run
-                { ILMerge.Params.Create() with
-                    DebugInfo = true
-                    TargetKind = ILMerge.TargetKind.Library
-                    Internalize = ILMerge.InternalizeTypes.Internalize
-                    Libraries = [!! (pBuild @@ "*.dll") -- (pBuild @@ (proj + ".dll"))] |> Seq.concat
-                    AttributeFile = target
-                    ToolPath = (!! (__SOURCE_DIRECTORY__ @@ "packages/ILMerge/tools/**/ILMerge.exe") |> Seq.head) 
-                } out target
-
-            File.Copy((pBuild @@ (proj + ".xml")), (pBuild @@ "merged" @@ (proj + ".xml"))) )
-
-    !! srcGlob
-    -- "src/**/*.shproj"
-    |> Seq.map 
-        ((fun f -> (((Path.getDirectory f) @@ "bin" @@ configuration), (Path.GetFileNameWithoutExtension f)) )
-        >> 
-        (fun f ->
-            Directory.EnumerateDirectories(fst f) 
-            |> Seq.filter (fun frFolder -> not <| frFolder.Contains("netcoreapp")) 
-            |> List.ofSeq, snd f))
-    |> Seq.iter runILMerge
-
-// --------------------------------------------------------------------------------------
 // Publish net core applications
 
 Target.create "PublishDotNet" <| fun _ ->
@@ -437,6 +399,8 @@ Target.create "Docs" <| fun _ ->
                 ProjectParameters  = info
                 Template = docTemplate })
 
+Target.create "GenerateDocs" ignore
+
 // --------------------------------------------------------------------------------------
 // Release Scripts
 
@@ -460,8 +424,6 @@ Target.create "GitTag" <| fun _ ->
     Git.Branches.tag "" release.NugetVersion
     Git.Branches.pushTag "" "origin" release.NugetVersion
 
-Target.create "GenerateDocs" ignore
-
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build -t <Target>' to override
 
@@ -472,7 +434,6 @@ Target.create "All" ignore
   ==> "Restore"
   ==> "Build"
   ==> "PostBuildClean" 
-  ==> "MergeLibraries"
   ==> "CopyBinaries"
 
 "Build" ==> "RunTests"
