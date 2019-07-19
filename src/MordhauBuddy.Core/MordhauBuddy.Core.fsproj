@@ -7,7 +7,7 @@
   <ItemGroup>
     <Compile Include="INIReader.fs" />
     <Compile Include="FileOps.fs" />
-    <Compile Include="Frankenstein.fs" />
+    <Compile Include="MordhauConfig.fs" />
     <None Include="paket.references" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />

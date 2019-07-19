@@ -3,11 +3,12 @@ namespace MordhauBuddy.Core
 open Fake.Core
 open Fake.IO
 open Fake.IO.FileSystemOperators
-open Fake.IO.Globbing.Operators
 open INIReader
 open System
 
+/// Module for doing file operations
 module FileOps =
+    /// Try to find the configuration directory
     let defConfigDir =
         let mordPath = "Mordhau/Saved/Config/WindowsClient"
 
@@ -31,6 +32,7 @@ module FileOps =
                    (fun dir -> dir @@ "steamapps/compatdata/629760/pfx/drive_c/Users/steamuser/AppData/Local" |> Some)
             |> Option.bind bindDirectory
 
+    /// Create a backup of the given file into sub directory MordhauBuddy_backups
     let createBackup (file : string) =
         let fi = FileInfo.ofPath (file)
         match File.exists file with
@@ -42,7 +44,15 @@ module FileOps =
             File.exists (backups @@ ts @@ (fi.Name))
         | false -> false
 
+    /// Write `INIValue` to file path
     let writeINI (iVal : INIValue) (outFile : string) =
         let fi = FileInfo.ofPath (outFile)
         Directory.ensure fi.DirectoryName
         File.writeString false fi.FullName (iVal.ToString())
+
+    /// Try to read an INI file
+    let tryReadINI (file: string) =
+        if File.exists file then
+            try File.readAsString file |> INIReader.INIValue.TryParse
+            with _ -> None
+        else None 
