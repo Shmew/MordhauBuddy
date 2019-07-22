@@ -2,8 +2,11 @@
 
 open System
 
-module JsonPackage =
+[<RequireQualifiedAccess>]
+module Json =
     open FSharp.Json
+    open Fake.IO
+    open Fake.IO.FileSystemOperators
 
     type Scripts = {
         Dev: string
@@ -32,9 +35,18 @@ module JsonPackage =
         Dependencies: obj
         DevDependencies: obj
     }
+
     let config = JsonConfig.create(jsonFieldNaming = Json.lowerCamelCase,allowUntyped = true)
 
-    let test = Json.deserializeEx<JsonPackage> config (System.IO.File.ReadAllText(@"C:\Users\shmew\source\repos\MordhauBuddy\package.json"))
-    let test2 = Json.serializeEx config test
-    
-    System.IO.File.WriteAllText(@"C:\Users\shmew\source\repos\MordhauBuddy\packageTest.json",test2)
+    let jsonPath = (__SOURCE_DIRECTORY__ @@ "../package.json")
+
+    let getJsonPkg () = 
+        File.readAsString jsonPath
+        |> Json.deserializeEx<JsonPackage> config
+
+    let setJsonPkg (f: JsonPackage -> JsonPackage) =
+        getJsonPkg()
+        |> f
+        |> Json.serializeEx config
+        |> File.writeString false jsonPath
+

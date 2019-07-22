@@ -46,6 +46,7 @@ group Tooling
 	source https://nuget.org/api/v2
 	source https://api.nuget.org/v3/index.json
 
+	nuget Fake.IO.FileSystem
 	nuget FSharp.Core
 	nuget FSharp.Json
 	nuget FSharpLint.Core
@@ -75,6 +76,7 @@ group FakeBuild
 	nuget Fake.DotNet.AssemblyInfoFile
 	nuget Fake.DotNet.Paket
 	nuget Fake.DotNet.FSFormatting 
+	nuget FSharp.Json
 	nuget FSharpLint.Core
 	nuget Fake.JavaScript.Yarn
 	nuget Fake.JavaScript.Npm

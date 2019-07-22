@@ -4,6 +4,7 @@
 #nowarn "0213"
 #r "paket: groupref FakeBuild //"
 #load "./tools/FSharpLint.fs"
+#load "./tools/ElectronTools.fs"
 #load "./.fake/build.fsx/intellisense.fsx"
 
 open Fake.Core
@@ -15,6 +16,7 @@ open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 open Fake.Tools
 open Tools.Linting
+open Tools.Electron
 open System
 open System.IO
 
@@ -141,8 +143,17 @@ Target.create "AssemblyInfo" <| fun _ ->
         | Fsproj -> AssemblyInfoFile.createFSharp (folderName </> "AssemblyInfo.fs") attributes
         | Csproj -> AssemblyInfoFile.createCSharp ((folderName </> "Properties") </> "AssemblyInfo.cs") attributes
         | Vbproj -> AssemblyInfoFile.createVisualBasic ((folderName </> "My Project") </> "AssemblyInfo.vb") attributes
-        | Shproj -> ()
-        ) 
+        | Shproj -> () )
+
+// --------------------------------------------------------------------------------------
+// Update package.json version & name      
+Target.create "PackageJson" <| fun _ ->
+    let setValues (current: Json.JsonPackage) =
+        { current with
+            Name = project.ToLower()
+            Version = release.NugetVersion }
+    
+    Json.setJsonPkg setValues
 
 // --------------------------------------------------------------------------------------
 // Copies binaries from default VS location to expected bin folder
@@ -499,6 +510,7 @@ Target.create "All" ignore
 "Clean"
   ==> "AssemblyInfo"
   ==> "Restore"
+  ==> "PackageJson"
   ==> "YarnInstall"
   ==> "Build"
   ==> "BuildElectron"
