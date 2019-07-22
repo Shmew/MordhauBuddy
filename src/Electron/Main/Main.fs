@@ -47,6 +47,36 @@ module Main =
             abstract maximize : bool option with get, set
 
         let getState : Options -> State = importDefault "electron-window-state"
+
+    module AppStore =
+        type Store =
+            abstract set : string * string -> unit
+            abstract set : obj -> unit
+            abstract get : string * ?defaultValue:string -> obj
+            abstract has : string -> bool
+            abstract delete : string -> unit
+            abstract clear : unit
+            abstract onDidChange : string * Browser.Types.Event -> unit
+            abstract onDidAnyChange : Browser.Types.Event -> unit
+            abstract size : int
+            abstract store : obj
+            abstract path : string
+            abstract openInEditor : unit
+
+        type StoreNum =
+            { Type : string
+              Maximum : int
+              Minimum : int
+              Default : int }
+
+        type StoreString =
+            { Type : string
+              Format : string }
+
+        type Schema =
+            { Test : StoreNum }
+
+        let getStore() : Store = importDefault "electron-store"
 #if DEBUG
 
     module DevTools =
@@ -98,9 +128,10 @@ module Main =
 
         let win = main.BrowserWindow.Create(options)
 
-        //JS.JSON.parse ("../../../package.json") |> JS.JSON.stringify
         let onLoad (browser : BrowserWindow) =
-            browser.setTitle (sprintf "MordhauBuddy %s" version)
+            let store = AppStore.getStore()
+            store.set ("Test", "wow")
+            browser.setTitle <| string (store.get ("Test", "default")) //(sprintf "MordhauBuddy %s" version)
             browser.show()
         win.once ("ready-to-show", fun _ -> onLoad win) |> ignore
         mainWinState.manage win

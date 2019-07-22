@@ -1,5 +1,6 @@
 {
-  "name": "MordhauBuddy",
+  "name": "mordhau-buddy",
+  "description": "Compilation of Mordhau Tools",
   "version": "0.0.1",
   "scripts": {
     "dev": "electron-webpack dev",
@@ -7,6 +8,16 @@
     "dist": "yarn compile && electron-builder",
     "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shmew/MordhauBuddy.git"
+  },
+  "author": "Shmew",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Shmew/MordhauBuddy/issues"
+  },
+  "homepage": "https://github.com/Shmew/MordhauBuddy",
   "electronWebpack": {
     "title": true,
     "main": {

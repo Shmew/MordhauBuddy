@@ -150,8 +150,16 @@ Target.create "AssemblyInfo" <| fun _ ->
 Target.create "PackageJson" <| fun _ ->
     let setValues (current: Json.JsonPackage) =
         { current with
-            Name = project.ToLower()
-            Version = release.NugetVersion }
+            Name = Str.toKebabCase project
+            Description = summary
+            Version = release.NugetVersion
+            Repository = 
+                { Type = "git"
+                  Url = repo + ".git" }
+            Author = author
+            License = (File.readLine(__SOURCE_DIRECTORY__ @@ "LICENSE.md").Split(' ')) |> Array.head
+            Bugs = {Url = repo + "/issues"}
+            Homepage = repo }
     
     Json.setJsonPkg setValues
 

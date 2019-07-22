@@ -27,10 +27,25 @@ module Json =
         Renderer: ProjectsWebpack
     }
 
+    type Repo = {
+        Type: string
+        Url: string
+    }
+
+    type Bugs = {
+        Url: string
+    }
+
     type JsonPackage = {
         Name: string
+        Description: string
         Version: string
         Scripts: Scripts
+        Repository: Repo
+        Author: string
+        License: string
+        Bugs: Bugs
+        Homepage: string
         ElectronWebpack: ElectronWebpack
         Dependencies: obj
         DevDependencies: obj
@@ -50,3 +65,12 @@ module Json =
         |> Json.serializeEx config
         |> File.writeString false jsonPath
 
+module Str =
+    open System.Text.RegularExpressions
+
+    let setLowerFirst (s: string) = 
+        sprintf "%s%s" (s.Substring(0,1).ToLower()) (s.Substring(1))
+
+    let toKebabCase (s: string) =
+        MatchEvaluator(fun m ->  "-" + m.Value.ToLower())
+        |> (fun m -> Regex.Replace(setLowerFirst s,"[A-Z]",m))
