@@ -1,7 +1,8 @@
-Expecto
-Expecto.BenchmarkDotNet
-Expecto.FsCheck
-Expecto.TestResults
-Foq
-FSharp.Core
-FSharp.Data
+group Testing
+	Expecto
+	Expecto.BenchmarkDotNet
+	Expecto.FsCheck
+	Expecto.TestResults
+	Foq
+	FSharp.Core
+	FSharp.Data

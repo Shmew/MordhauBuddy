@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Process - MordhauBuddy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Shmew"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/style.css" />
+    <script type="text/javascript" src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://fsharp.org">fsharp.org</a></li>
+        </ul>
+        <h3 class="muted"><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">MordhauBuddy</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+
+
+<h1>Process</h1>
+<p>
+
+    <span>Namespace: MordhauBuddy.App</span><br />
+        <span>Parent Module: <a href="mordhaubuddy-app-electron-nodeextensions.html">NodeExtensions</a></span><br />
+    </p>
+<div class="xmldoc">
+</div>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3495', 3495)" onmouseover="showTip(event, '3495', 3495)">
+            x.addListenerLoaded(listener)
+          </code>
+          <div class="tip" id="3495">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; Process<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.addListener(&#39;loaded&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8298-8298" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3496', 3496)" onmouseover="showTip(event, '3496', 3496)">
+            x.crash()
+          </code>
+          <div class="tip" id="3496">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8304-8304" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Causes the main thread of the current process crash.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3497', 3497)" onmouseover="showTip(event, '3497', 3497)">
+            x.defaultApp()
+          </code>
+          <div class="tip" id="3497">
+            <strong>Signature:</strong> unit -&gt; bool option<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8344-8344" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean. When app is started by being passed as parameter to the default app,
+this property is true in the main process, otherwise it is undefined.</p>
+
+
+              <p>CompiledName: <code>set_defaultApp</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3498', 3498)" onmouseover="showTip(event, '3498', 3498)">
+            x.defaultApp()
+          </code>
+          <div class="tip" id="3498">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8344-8344" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean. When app is started by being passed as parameter to the default app,
+this property is true in the main process, otherwise it is undefined.</p>
+
+
+              <p>CompiledName: <code>get_defaultApp</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3499', 3499)" onmouseover="showTip(event, '3499', 3499)">
+            x.enablePromiseAPIs()
+          </code>
+          <div class="tip" id="3499">
+            <strong>Signature:</strong> unit -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8349-8349" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls whether or not deprecation warnings are printed to
+stderr when formerly callback-based APIs converted to Promises are invoked using
+callbacks. Setting this to true will enable deprecation warnings.</p>
+
+
+              <p>CompiledName: <code>set_enablePromiseAPIs</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3500', 3500)" onmouseover="showTip(event, '3500', 3500)">
+            x.enablePromiseAPIs()
+          </code>
+          <div class="tip" id="3500">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8349-8349" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls whether or not deprecation warnings are printed to
+stderr when formerly callback-based APIs converted to Promises are invoked using
+callbacks. Setting this to true will enable deprecation warnings.</p>
+
+
+              <p>CompiledName: <code>get_enablePromiseAPIs</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3501', 3501)" onmouseover="showTip(event, '3501', 3501)">
+            x.getCPUUsage()
+          </code>
+          <div class="tip" id="3501">
+            <strong>Signature:</strong> unit -&gt; CPUUsage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8306-8306" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3502', 3502)" onmouseover="showTip(event, '3502', 3502)">
+            x.getCreationTime()
+          </code>
+          <div class="tip" id="3502">
+            <strong>Signature:</strong> unit -&gt; float option<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8311-8311" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Indicates the creation time of the application. The time is represented as
+number of milliseconds since epoch. It returns null if it is unable to get the
+process creation time.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3503', 3503)" onmouseover="showTip(event, '3503', 3503)">
+            x.getHeapStatistics()
+          </code>
+          <div class="tip" id="3503">
+            <strong>Signature:</strong> unit -&gt; HeapStatistics<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8315-8315" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Returns an object with V8 heap statistics. Note that all statistics are reported
+in Kilobytes.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3504', 3504)" onmouseover="showTip(event, '3504', 3504)">
+            x.getIOCounters()
+          </code>
+          <div class="tip" id="3504">
+            <strong>Signature:</strong> unit -&gt; IOCounters<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8317-8317" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3505', 3505)" onmouseover="showTip(event, '3505', 3505)">
+            x.getProcessMemoryInfo()
+          </code>
+          <div class="tip" id="3505">
+            <strong>Signature:</strong> unit -&gt; ProcessMemoryInfo<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8326-8326" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Returns an object giving memory usage statistics about the current process. Note
+that all statistics are reported in Kilobytes. This api should be called after
+app ready. Chromium does not provide residentSet value for macOS. This is
+because macOS performs in-memory compression of pages that haven't been recently
+used. As a result the resident set size value is not what one would expect.
+private memory is more representative of the actual pre-compression memory usage
+of the process on macOS.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3506', 3506)" onmouseover="showTip(event, '3506', 3506)">
+            x.getSystemMemoryInfo()
+          </code>
+          <div class="tip" id="3506">
+            <strong>Signature:</strong> unit -&gt; SystemMemoryInfo<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8330-8330" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Returns an object giving memory usage statistics about the entire  Note
+that all statistics are reported in Kilobytes.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3507', 3507)" onmouseover="showTip(event, '3507', 3507)">
+            x.hang()
+          </code>
+          <div class="tip" id="3507">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8333-8333" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Causes the main thread of the current process hang.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3508', 3508)" onmouseover="showTip(event, '3508', 3508)">
+            x.isMainFrame()
+          </code>
+          <div class="tip" id="3508">
+            <strong>Signature:</strong> unit -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8353-8353" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean, true when the current renderer context is the "main" renderer frame.
+If you want the ID of the current frame you should use webFrame.routingId.</p>
+
+
+              <p>CompiledName: <code>set_isMainFrame</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3509', 3509)" onmouseover="showTip(event, '3509', 3509)">
+            x.isMainFrame()
+          </code>
+          <div class="tip" id="3509">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8353-8353" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean, true when the current renderer context is the "main" renderer frame.
+If you want the ID of the current frame you should use webFrame.routingId.</p>
+
+
+              <p>CompiledName: <code>get_isMainFrame</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3510', 3510)" onmouseover="showTip(event, '3510', 3510)">
+            x.mas()
+          </code>
+          <div class="tip" id="3510">
+            <strong>Signature:</strong> unit -&gt; bool option<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8357-8357" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean. For Mac App Store build, this property is true, for other builds it
+is undefined.</p>
+
+
+              <p>CompiledName: <code>set_mas</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3511', 3511)" onmouseover="showTip(event, '3511', 3511)">
+            x.mas()
+          </code>
+          <div class="tip" id="3511">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8357-8357" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean. For Mac App Store build, this property is true, for other builds it
+is undefined.</p>
+
+
+              <p>CompiledName: <code>get_mas</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3512', 3512)" onmouseover="showTip(event, '3512', 3512)">
+            x.noAsar()
+          </code>
+          <div class="tip" id="3512">
+            <strong>Signature:</strong> unit -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8361-8361" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls ASAR support inside your application. Setting this to
+true will disable the support for asar archives in Node's built-in modules.</p>
+
+
+              <p>CompiledName: <code>set_noAsar</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3513', 3513)" onmouseover="showTip(event, '3513', 3513)">
+            x.noAsar()
+          </code>
+          <div class="tip" id="3513">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8361-8361" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls ASAR support inside your application. Setting this to
+true will disable the support for asar archives in Node's built-in modules.</p>
+
+
+              <p>CompiledName: <code>get_noAsar</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3514', 3514)" onmouseover="showTip(event, '3514', 3514)">
+            x.noDeprecation()
+          </code>
+          <div class="tip" id="3514">
+            <strong>Signature:</strong> unit -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8366-8366" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls whether or not deprecation warnings are printed to
+stderr. Setting this to true will silence deprecation warnings. This property is
+used instead of the --no-deprecation command line flag.</p>
+
+
+              <p>CompiledName: <code>set_noDeprecation</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3515', 3515)" onmouseover="showTip(event, '3515', 3515)">
+            x.noDeprecation()
+          </code>
+          <div class="tip" id="3515">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8366-8366" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls whether or not deprecation warnings are printed to
+stderr. Setting this to true will silence deprecation warnings. This property is
+used instead of the --no-deprecation command line flag.</p>
+
+
+              <p>CompiledName: <code>get_noDeprecation</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3516', 3516)" onmouseover="showTip(event, '3516', 3516)">
+            x.onceLoaded(listener)
+          </code>
+          <div class="tip" id="3516">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; Process<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.once(&#39;loaded&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8295-8295" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3517', 3517)" onmouseover="showTip(event, '3517', 3517)">
+            x.onLoaded(listener)
+          </code>
+          <div class="tip" id="3517">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; Process<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.on(&#39;loaded&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8292-8292" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Emitted when Electron has loaded its internal initialization script and is
+beginning to load the web page or the main script. It can be used by the preload
+script to add removed Node global symbols back to the global scope when node
+integration is turned off:</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3518', 3518)" onmouseover="showTip(event, '3518', 3518)">
+            x.removeListenerLoaded(listener)
+          </code>
+          <div class="tip" id="3518">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; Process<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.removeListener(&#39;loaded&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8301-8301" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3519', 3519)" onmouseover="showTip(event, '3519', 3519)">
+            x.resourcesPath()
+          </code>
+          <div class="tip" id="3519">
+            <strong>Signature:</strong> unit -&gt; string<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8369-8369" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A String representing the path to the resources directory.</p>
+
+
+              <p>CompiledName: <code>set_resourcesPath</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3520', 3520)" onmouseover="showTip(event, '3520', 3520)">
+            x.resourcesPath()
+          </code>
+          <div class="tip" id="3520">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8369-8369" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A String representing the path to the resources directory.</p>
+
+
+              <p>CompiledName: <code>get_resourcesPath</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3521', 3521)" onmouseover="showTip(event, '3521', 3521)">
+            x.sandboxed()
+          </code>
+          <div class="tip" id="3521">
+            <strong>Signature:</strong> unit -&gt; bool option<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8373-8373" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean. When the renderer process is sandboxed, this property is true,
+otherwise it is undefined.</p>
+
+
+              <p>CompiledName: <code>set_sandboxed</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3522', 3522)" onmouseover="showTip(event, '3522', 3522)">
+            x.sandboxed()
+          </code>
+          <div class="tip" id="3522">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8373-8373" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean. When the renderer process is sandboxed, this property is true,
+otherwise it is undefined.</p>
+
+
+              <p>CompiledName: <code>get_sandboxed</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3523', 3523)" onmouseover="showTip(event, '3523', 3523)">
+            x.setFdLimit(maxDescriptors)
+          </code>
+          <div class="tip" id="3523">
+            <strong>Signature:</strong> maxDescriptors:int -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8337-8337" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Sets the file descriptor soft limit to maxDescriptors or the OS hard limit,
+whichever is lower for the current process.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3524', 3524)" onmouseover="showTip(event, '3524', 3524)">
+            x.takeHeapSnapshot(filePath)
+          </code>
+          <div class="tip" id="3524">
+            <strong>Signature:</strong> filePath:string -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8340-8340" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Takes a V8 heap snapshot and saves it to filePath.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3525', 3525)" onmouseover="showTip(event, '3525', 3525)">
+            x.throwDeprecation()
+          </code>
+          <div class="tip" id="3525">
+            <strong>Signature:</strong> unit -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8378-8378" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls whether or not deprecation warnings will be thrown as
+exceptions. Setting this to true will throw errors for deprecations. This
+property is used instead of the --throw-deprecation command line flag.</p>
+
+
+              <p>CompiledName: <code>set_throwDeprecation</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3526', 3526)" onmouseover="showTip(event, '3526', 3526)">
+            x.throwDeprecation()
+          </code>
+          <div class="tip" id="3526">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8378-8378" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls whether or not deprecation warnings will be thrown as
+exceptions. Setting this to true will throw errors for deprecations. This
+property is used instead of the --throw-deprecation command line flag.</p>
+
+
+              <p>CompiledName: <code>get_throwDeprecation</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3527', 3527)" onmouseover="showTip(event, '3527', 3527)">
+            x.traceDeprecation()
+          </code>
+          <div class="tip" id="3527">
+            <strong>Signature:</strong> unit -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8384-8384" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls whether or not deprecations printed to stderr include
+their stack trace. Setting this to true will print stack traces for
+deprecations. This property is instead of the --trace-deprecation command line
+flag.</p>
+
+
+              <p>CompiledName: <code>set_traceDeprecation</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3528', 3528)" onmouseover="showTip(event, '3528', 3528)">
+            x.traceDeprecation()
+          </code>
+          <div class="tip" id="3528">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8384-8384" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls whether or not deprecations printed to stderr include
+their stack trace. Setting this to true will print stack traces for
+deprecations. This property is instead of the --trace-deprecation command line
+flag.</p>
+
+
+              <p>CompiledName: <code>get_traceDeprecation</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3529', 3529)" onmouseover="showTip(event, '3529', 3529)">
+            x.traceProcessWarnings()
+          </code>
+          <div class="tip" id="3529">
+            <strong>Signature:</strong> unit -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8390-8390" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls whether or not process warnings printed to stderr
+include their stack trace. Setting this to true will print stack traces for
+process warnings (including deprecations). This property is instead of the
+--trace-warnings command line flag.</p>
+
+
+              <p>CompiledName: <code>set_traceProcessWarnings</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3530', 3530)" onmouseover="showTip(event, '3530', 3530)">
+            x.traceProcessWarnings()
+          </code>
+          <div class="tip" id="3530">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8390-8390" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean that controls whether or not process warnings printed to stderr
+include their stack trace. Setting this to true will print stack traces for
+process warnings (including deprecations). This property is instead of the
+--trace-warnings command line flag.</p>
+
+
+              <p>CompiledName: <code>get_traceProcessWarnings</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3531', 3531)" onmouseover="showTip(event, '3531', 3531)">
+            x.type()
+          </code>
+          <div class="tip" id="3531">
+            <strong>Signature:</strong> unit -&gt; ProcessType<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8394-8394" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A String representing the current process's type, can be "browser" (i.e. main
+process), "renderer", or "worker" (i.e. web worker).</p>
+
+
+              <p>CompiledName: <code>set_type</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3532', 3532)" onmouseover="showTip(event, '3532', 3532)">
+            x.type()
+          </code>
+          <div class="tip" id="3532">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8394-8394" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A String representing the current process's type, can be "browser" (i.e. main
+process), "renderer", or "worker" (i.e. web worker).</p>
+
+
+              <p>CompiledName: <code>get_type</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3533', 3533)" onmouseover="showTip(event, '3533', 3533)">
+            x.versions()
+          </code>
+          <div class="tip" id="3533">
+            <strong>Signature:</strong> unit -&gt; ProcessVersions<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8400-8400" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>set_versions</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3534', 3534)" onmouseover="showTip(event, '3534', 3534)">
+            x.versions()
+          </code>
+          <div class="tip" id="3534">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8400-8400" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_versions</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3535', 3535)" onmouseover="showTip(event, '3535', 3535)">
+            x.windowsStore()
+          </code>
+          <div class="tip" id="3535">
+            <strong>Signature:</strong> unit -&gt; bool option<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8398-8398" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean. If the app is running as a Windows Store app (appx), this property is
+true, for otherwise it is undefined.</p>
+
+
+              <p>CompiledName: <code>set_windowsStore</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3536', 3536)" onmouseover="showTip(event, '3536', 3536)">
+            x.windowsStore()
+          </code>
+          <div class="tip" id="3536">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L8398-8398" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>A Boolean. If the app is running as a Windows Store app (appx), this property is
+true, for otherwise it is undefined.</p>
+
+
+              <p>CompiledName: <code>get_windowsStore</code></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+        </div>
+        <div class="span3">
+          <img src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />  
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">MordhauBuddy</li>
+            <li class="divider"></li>
+            <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/release-notes.html">Release Notes</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/contributing.html">Contributing</a></li>
+            
+            <li class="nav-header">Documentation</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">Introduction</a></li>
+            <li class="divider"></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/a.html">a</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/b.html">b</a></li>
+
+            <li class="nav-header">Tutorials</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/at.html">at</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/bt.html">bt</a></li>
+
+            <li class="nav-header">Reference</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/reference/index.html">API Reference</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>

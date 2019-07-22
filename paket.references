@@ -1,1 +1,3 @@
-dotnet-fake
+group Tooling
+	dotnet-fake
+	dotnet-fable

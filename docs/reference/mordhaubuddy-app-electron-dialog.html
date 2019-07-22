@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Dialog - MordhauBuddy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Shmew"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/style.css" />
+    <script type="text/javascript" src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://fsharp.org">fsharp.org</a></li>
+        </ul>
+        <h3 class="muted"><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">MordhauBuddy</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+
+
+<h1>Dialog</h1>
+<p>
+
+    <span>Namespace: MordhauBuddy.App</span><br />
+        <span>Parent Module: <a href="mordhaubuddy-app-electron.html">Electron</a></span><br />
+    </p>
+<div class="xmldoc">
+</div>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1206', 1206)" onmouseover="showTip(event, '1206', 1206)">
+            x.showCertificateTrustDialog(...)
+          </code>
+          <div class="tip" id="1206">
+            <strong>Signature:</strong> (options:CertificateTrustDialogOptions * callback:(Event -&gt; unit)) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2640-2640" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>On macOS, this displays a modal dialog that shows a message and certificate
+information, and gives the user the option of trusting/importing the
+certificate. If you provide a browserWindow argument the dialog will be attached
+to the parent window, making it modal. On Windows the options are more limited,
+due to the Win32 APIs used:</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1207', 1207)" onmouseover="showTip(event, '1207', 1207)">
+            x.showCertificateTrustDialog(...)
+          </code>
+          <div class="tip" id="1207">
+            <strong>Signature:</strong> (browserWindow:BrowserWindow * options:CertificateTrustDialogOptions * callback:(Event -&gt; unit)) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2632-2632" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>On macOS, this displays a modal dialog that shows a message and certificate
+information, and gives the user the option of trusting/importing the
+certificate. If you provide a browserWindow argument the dialog will be attached
+to the parent window, making it modal. On Windows the options are more limited,
+due to the Win32 APIs used:</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1208', 1208)" onmouseover="showTip(event, '1208', 1208)">
+            x.showErrorBox(title, content)
+          </code>
+          <div class="tip" id="1208">
+            <strong>Signature:</strong> (title:string * content:string) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2646-2646" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Displays a modal dialog that shows an error message. This API can be called
+safely before the ready event the app module emits, it is usually used to report
+errors in early stage of startup. If called before the app readyevent on Linux,
+the message will be emitted to stderr, and no GUI dialog will appear.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1209', 1209)" onmouseover="showTip(event, '1209', 1209)">
+            x.showMessageBox(options)
+          </code>
+          <div class="tip" id="1209">
+            <strong>Signature:</strong> options:MessageBoxOptions -&gt; int<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2679-2679" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Shows a message box, it will block the process until the message box is closed.
+It returns the index of the clicked button. The browserWindow argument allows
+the dialog to attach itself to a parent window, making it modal. If the callback
+and browserWindow arguments are passed, the dialog will not block the process.
+The API call will be asynchronous and the result will be passed via
+callback(response).</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1210', 1210)" onmouseover="showTip(event, '1210', 1210)">
+            x.showMessageBox(options, callback)
+          </code>
+          <div class="tip" id="1210">
+            <strong>Signature:</strong> (options:MessageBoxOptions * callback:(int -&gt; bool -&gt; unit)) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2671-2671" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Shows a message box, it will block the process until the message box is closed.
+It returns the index of the clicked button. The browserWindow argument allows
+the dialog to attach itself to a parent window, making it modal. If the callback
+and browserWindow arguments are passed, the dialog will not block the process.
+The API call will be asynchronous and the result will be passed via
+callback(response).</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1211', 1211)" onmouseover="showTip(event, '1211', 1211)">
+            x.showMessageBox(browserWindow, options)
+          </code>
+          <div class="tip" id="1211">
+            <strong>Signature:</strong> (browserWindow:BrowserWindow * options:MessageBoxOptions) -&gt; int<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2663-2663" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Shows a message box, it will block the process until the message box is closed.
+It returns the index of the clicked button. The browserWindow argument allows
+the dialog to attach itself to a parent window, making it modal. If the callback
+and browserWindow arguments are passed, the dialog will not block the process.
+The API call will be asynchronous and the result will be passed via
+callback(response).</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1212', 1212)" onmouseover="showTip(event, '1212', 1212)">
+            x.showMessageBox(...)
+          </code>
+          <div class="tip" id="1212">
+            <strong>Signature:</strong> (browserWindow:BrowserWindow * options:MessageBoxOptions * callback:(int -&gt; bool -&gt; unit)) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2654-2654" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Shows a message box, it will block the process until the message box is closed.
+It returns the index of the clicked button. The browserWindow argument allows
+the dialog to attach itself to a parent window, making it modal. If the callback
+and browserWindow arguments are passed, the dialog will not block the process.
+The API call will be asynchronous and the result will be passed via
+callback(response).</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1213', 1213)" onmouseover="showTip(event, '1213', 1213)">
+            x.showOpenDialog(options)
+          </code>
+          <div class="tip" id="1213">
+            <strong>Signature:</strong> options:OpenDialogOptions -&gt; string []<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2728-2728" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The browserWindow argument allows the dialog to attach itself to a parent
+window, making it modal. The filters specifies an array of file types that can
+be displayed or selected when you want to limit the user to a specific type. For
+example: The extensions array should contain extensions without wildcards or
+dots (e.g. 'png' is good but '.png' and '<em>.png' are bad). To show all files, use
+the '</em>' wildcard (no other wildcard is supported). If a callback is passed, the
+API call will be asynchronous and the result will be passed via
+callback(filenames). Note: On Windows and Linux an open dialog can not be both a
+file selector and a directory selector, so if you set properties to ['openFile',
+'openDirectory'] on these platforms, a directory selector will be shown.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1214', 1214)" onmouseover="showTip(event, '1214', 1214)">
+            x.showOpenDialog(browserWindow, options)
+          </code>
+          <div class="tip" id="1214">
+            <strong>Signature:</strong> (browserWindow:BrowserWindow * options:OpenDialogOptions) -&gt; string []<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2716-2716" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The browserWindow argument allows the dialog to attach itself to a parent
+window, making it modal. The filters specifies an array of file types that can
+be displayed or selected when you want to limit the user to a specific type. For
+example: The extensions array should contain extensions without wildcards or
+dots (e.g. 'png' is good but '.png' and '<em>.png' are bad). To show all files, use
+the '</em>' wildcard (no other wildcard is supported). If a callback is passed, the
+API call will be asynchronous and the result will be passed via
+callback(filenames). Note: On Windows and Linux an open dialog can not be both a
+file selector and a directory selector, so if you set properties to ['openFile',
+'openDirectory'] on these platforms, a directory selector will be shown.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1215', 1215)" onmouseover="showTip(event, '1215', 1215)">
+            x.showOpenDialog(options, callback)
+          </code>
+          <div class="tip" id="1215">
+            <strong>Signature:</strong> (options:OpenDialogOptions * callback:(string [] option -&gt; string [] -&gt; unit)) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2704-2704" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The browserWindow argument allows the dialog to attach itself to a parent
+window, making it modal. The filters specifies an array of file types that can
+be displayed or selected when you want to limit the user to a specific type. For
+example: The extensions array should contain extensions without wildcards or
+dots (e.g. 'png' is good but '.png' and '<em>.png' are bad). To show all files, use
+the '</em>' wildcard (no other wildcard is supported). If a callback is passed, the
+API call will be asynchronous and the result will be passed via
+callback(filenames). Note: On Windows and Linux an open dialog can not be both a
+file selector and a directory selector, so if you set properties to ['openFile',
+'openDirectory'] on these platforms, a directory selector will be shown.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1216', 1216)" onmouseover="showTip(event, '1216', 1216)">
+            x.showOpenDialog(...)
+          </code>
+          <div class="tip" id="1216">
+            <strong>Signature:</strong> (browserWindow:BrowserWindow * options:OpenDialogOptions * callback:(string [] -&gt; string [] -&gt; unit)) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2691-2691" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The browserWindow argument allows the dialog to attach itself to a parent
+window, making it modal. The filters specifies an array of file types that can
+be displayed or selected when you want to limit the user to a specific type. For
+example: The extensions array should contain extensions without wildcards or
+dots (e.g. 'png' is good but '.png' and '<em>.png' are bad). To show all files, use
+the '</em>' wildcard (no other wildcard is supported). If a callback is passed, the
+API call will be asynchronous and the result will be passed via
+callback(filenames). Note: On Windows and Linux an open dialog can not be both a
+file selector and a directory selector, so if you set properties to ['openFile',
+'openDirectory'] on these platforms, a directory selector will be shown.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1217', 1217)" onmouseover="showTip(event, '1217', 1217)">
+            x.showSaveDialog(options)
+          </code>
+          <div class="tip" id="1217">
+            <strong>Signature:</strong> options:SaveDialogOptions -&gt; string option<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2757-2757" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The browserWindow argument allows the dialog to attach itself to a parent
+window, making it modal. The filters specifies an array of file types that can
+be displayed, see dialog.showOpenDialog for an example. If a callback is passed,
+the API call will be asynchronous and the result will be passed via
+callback(filename).</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1218', 1218)" onmouseover="showTip(event, '1218', 1218)">
+            x.showSaveDialog(browserWindow, options)
+          </code>
+          <div class="tip" id="1218">
+            <strong>Signature:</strong> (browserWindow:BrowserWindow * options:SaveDialogOptions) -&gt; string option<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2750-2750" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The browserWindow argument allows the dialog to attach itself to a parent
+window, making it modal. The filters specifies an array of file types that can
+be displayed, see dialog.showOpenDialog for an example. If a callback is passed,
+the API call will be asynchronous and the result will be passed via
+callback(filename).</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1219', 1219)" onmouseover="showTip(event, '1219', 1219)">
+            x.showSaveDialog(options, callback)
+          </code>
+          <div class="tip" id="1219">
+            <strong>Signature:</strong> (options:SaveDialogOptions * callback:(string option -&gt; string option -&gt; unit)) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2743-2743" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The browserWindow argument allows the dialog to attach itself to a parent
+window, making it modal. The filters specifies an array of file types that can
+be displayed, see dialog.showOpenDialog for an example. If a callback is passed,
+the API call will be asynchronous and the result will be passed via
+callback(filename).</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1220', 1220)" onmouseover="showTip(event, '1220', 1220)">
+            x.showSaveDialog(...)
+          </code>
+          <div class="tip" id="1220">
+            <strong>Signature:</strong> (browserWindow:BrowserWindow * options:SaveDialogOptions * callback:(string option -&gt; string option -&gt; unit)) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2735-2735" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The browserWindow argument allows the dialog to attach itself to a parent
+window, making it modal. The filters specifies an array of file types that can
+be displayed, see dialog.showOpenDialog for an example. If a callback is passed,
+the API call will be asynchronous and the result will be passed via
+callback(filename).</p>
+
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+        </div>
+        <div class="span3">
+          <img src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />  
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">MordhauBuddy</li>
+            <li class="divider"></li>
+            <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/release-notes.html">Release Notes</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/contributing.html">Contributing</a></li>
+            
+            <li class="nav-header">Documentation</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">Introduction</a></li>
+            <li class="divider"></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/a.html">a</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/b.html">b</a></li>
+
+            <li class="nav-header">Tutorials</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/at.html">at</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/bt.html">bt</a></li>
+
+            <li class="nav-header">Reference</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/reference/index.html">API Reference</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>

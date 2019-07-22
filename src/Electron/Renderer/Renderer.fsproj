@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.0; net462</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="scss/main.scss" />
+    <None Include="main.js" />
+    <Compile Include="Utils.fs" />
+    <Compile Include="SnackbarLib.fs" />
+    <Compile Include="AutoComplete.fs" />
+    <Compile Include="Badges.fs" />
+    <Compile Include="Dialogs.fs" />
+    <Compile Include="SaveLoad.fs" />
+    <Compile Include="Selects.fs" />
+    <Compile Include="Snackbars.fs" />
+    <Compile Include="TextFields.fs" />
+    <Compile Include="App.fs" />
+    <Compile Include="Entry.fs" />
+    <None Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bindings\Bindings.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\..\.paket\Paket.Restore.targets" />
+</Project>

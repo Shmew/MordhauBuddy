@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Debugger - MordhauBuddy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Shmew"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/style.css" />
+    <script type="text/javascript" src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://fsharp.org">fsharp.org</a></li>
+        </ul>
+        <h3 class="muted"><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">MordhauBuddy</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+
+
+<h1>Debugger</h1>
+<p>
+
+    <span>Namespace: MordhauBuddy.App</span><br />
+        <span>Parent Module: <a href="mordhaubuddy-app-electron.html">Electron</a></span><br />
+    </p>
+<div class="xmldoc">
+</div>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1151', 1151)" onmouseover="showTip(event, '1151', 1151)">
+            x.addListenerDetach(listener)
+          </code>
+          <div class="tip" id="1151">
+            <strong>Signature:</strong> (listener:(Event -&gt; string -&gt; unit)) -&gt; Debugger<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.addListener(&#39;detach&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2552-2552" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1152', 1152)" onmouseover="showTip(event, '1152', 1152)">
+            x.addListenerMessage(listener)
+          </code>
+          <div class="tip" id="1152">
+            <strong>Signature:</strong> (listener:(Event -&gt; string -&gt; obj option -&gt; unit)) -&gt; Debugger<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.addListener(&#39;message&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2565-2565" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1153', 1153)" onmouseover="showTip(event, '1153', 1153)">
+            x.attach(protocolVersion)
+          </code>
+          <div class="tip" id="1153">
+            <strong>Signature:</strong> protocolVersion:string -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2571-2571" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Attaches the debugger to the webContents.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1154', 1154)" onmouseover="showTip(event, '1154', 1154)">
+            x.detach()
+          </code>
+          <div class="tip" id="1154">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2574-2574" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Detaches the debugger from the webContents.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1155', 1155)" onmouseover="showTip(event, '1155', 1155)">
+            x.isAttached()
+          </code>
+          <div class="tip" id="1155">
+            <strong>Signature:</strong> unit -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2576-2576" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1156', 1156)" onmouseover="showTip(event, '1156', 1156)">
+            x.onceDetach(listener)
+          </code>
+          <div class="tip" id="1156">
+            <strong>Signature:</strong> (listener:(Event -&gt; string -&gt; unit)) -&gt; Debugger<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.once(&#39;detach&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2549-2549" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1157', 1157)" onmouseover="showTip(event, '1157', 1157)">
+            x.onceMessage(listener)
+          </code>
+          <div class="tip" id="1157">
+            <strong>Signature:</strong> (listener:(Event -&gt; string -&gt; obj option -&gt; unit)) -&gt; Debugger<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.once(&#39;message&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2562-2562" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1158', 1158)" onmouseover="showTip(event, '1158', 1158)">
+            x.onDetach(listener)
+          </code>
+          <div class="tip" id="1158">
+            <strong>Signature:</strong> (listener:(Event -&gt; string -&gt; unit)) -&gt; Debugger<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.on(&#39;detach&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2546-2546" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Emitted when debugging session is terminated. This happens either when
+webContents is closed or devtools is invoked for the attached webContents.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1159', 1159)" onmouseover="showTip(event, '1159', 1159)">
+            x.onMessage(listener)
+          </code>
+          <div class="tip" id="1159">
+            <strong>Signature:</strong> (listener:(Event -&gt; string -&gt; obj option -&gt; unit)) -&gt; Debugger<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.on(&#39;message&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2559-2559" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Emitted whenever debugging target issues instrumentation event.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1160', 1160)" onmouseover="showTip(event, '1160', 1160)">
+            x.removeListenerDetach(listener)
+          </code>
+          <div class="tip" id="1160">
+            <strong>Signature:</strong> (listener:(Event -&gt; string -&gt; unit)) -&gt; Debugger<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.removeListener(&#39;detach&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2555-2555" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1161', 1161)" onmouseover="showTip(event, '1161', 1161)">
+            x.removeListenerMessage(listener)
+          </code>
+          <div class="tip" id="1161">
+            <strong>Signature:</strong> (listener:(Event -&gt; string -&gt; obj option -&gt; unit)) -&gt; Debugger<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.removeListener(&#39;message&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2568-2568" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1162', 1162)" onmouseover="showTip(event, '1162', 1162)">
+            x.sendCommand(method, commandParams)
+          </code>
+          <div class="tip" id="1162">
+            <strong>Signature:</strong> (method:string * commandParams:obj option) -&gt; Promise&lt;obj option&gt;<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2582-2582" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Send given command to the debugging target.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1163', 1163)" onmouseover="showTip(event, '1163', 1163)">
+            x.sendCommand(...)
+          </code>
+          <div class="tip" id="1163">
+            <strong>Signature:</strong> (method:string * commandParams:obj option * callback:(obj option -&gt; obj option -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2579-2579" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Send given command to the debugging target. Deprecated Soon</p>
+
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+        </div>
+        <div class="span3">
+          <img src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />  
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">MordhauBuddy</li>
+            <li class="divider"></li>
+            <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/release-notes.html">Release Notes</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/contributing.html">Contributing</a></li>
+            
+            <li class="nav-header">Documentation</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">Introduction</a></li>
+            <li class="divider"></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/a.html">a</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/b.html">b</a></li>
+
+            <li class="nav-header">Tutorials</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/at.html">at</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/bt.html">bt</a></li>
+
+            <li class="nav-header">Reference</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/reference/index.html">API Reference</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>

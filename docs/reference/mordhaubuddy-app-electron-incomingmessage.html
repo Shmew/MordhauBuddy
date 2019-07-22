@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>IncomingMessage - MordhauBuddy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Shmew"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/style.css" />
+    <script type="text/javascript" src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://fsharp.org">fsharp.org</a></li>
+        </ul>
+        <h3 class="muted"><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">MordhauBuddy</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+
+
+<h1>IncomingMessage</h1>
+<p>
+
+    <span>Namespace: MordhauBuddy.App</span><br />
+        <span>Parent Module: <a href="mordhaubuddy-app-electron.html">Electron</a></span><br />
+    </p>
+<div class="xmldoc">
+</div>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1476', 1476)" onmouseover="showTip(event, '1476', 1476)">
+            x.addListenerAborted(listener)
+          </code>
+          <div class="tip" id="1476">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.addListener(&#39;aborted&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3003-3003" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1477', 1477)" onmouseover="showTip(event, '1477', 1477)">
+            x.addListenerData(listener)
+          </code>
+          <div class="tip" id="1477">
+            <strong>Signature:</strong> (listener:(Buffer -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.addListener(&#39;data&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3017-3017" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1478', 1478)" onmouseover="showTip(event, '1478', 1478)">
+            x.addListenerEnd(listener)
+          </code>
+          <div class="tip" id="1478">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.addListener(&#39;end&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3030-3030" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1479', 1479)" onmouseover="showTip(event, '1479', 1479)">
+            x.addListenerError(listener)
+          </code>
+          <div class="tip" id="1479">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.addListener(&#39;error&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3047-3047" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1480', 1480)" onmouseover="showTip(event, '1480', 1480)">
+            x.headers()
+          </code>
+          <div class="tip" id="1480">
+            <strong>Signature:</strong> unit -&gt; obj option<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3052-3052" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>set_headers</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1481', 1481)" onmouseover="showTip(event, '1481', 1481)">
+            x.headers()
+          </code>
+          <div class="tip" id="1481">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3052-3052" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_headers</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1482', 1482)" onmouseover="showTip(event, '1482', 1482)">
+            x.httpVersion()
+          </code>
+          <div class="tip" id="1482">
+            <strong>Signature:</strong> unit -&gt; string<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3053-3053" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>set_httpVersion</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1483', 1483)" onmouseover="showTip(event, '1483', 1483)">
+            x.httpVersion()
+          </code>
+          <div class="tip" id="1483">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3053-3053" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_httpVersion</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1484', 1484)" onmouseover="showTip(event, '1484', 1484)">
+            x.httpVersionMajor()
+          </code>
+          <div class="tip" id="1484">
+            <strong>Signature:</strong> unit -&gt; int<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3054-3054" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>set_httpVersionMajor</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1485', 1485)" onmouseover="showTip(event, '1485', 1485)">
+            x.httpVersionMajor()
+          </code>
+          <div class="tip" id="1485">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3054-3054" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_httpVersionMajor</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1486', 1486)" onmouseover="showTip(event, '1486', 1486)">
+            x.httpVersionMinor()
+          </code>
+          <div class="tip" id="1486">
+            <strong>Signature:</strong> unit -&gt; int<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3055-3055" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>set_httpVersionMinor</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1487', 1487)" onmouseover="showTip(event, '1487', 1487)">
+            x.httpVersionMinor()
+          </code>
+          <div class="tip" id="1487">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3055-3055" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_httpVersionMinor</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1488', 1488)" onmouseover="showTip(event, '1488', 1488)">
+            x.onAborted(listener)
+          </code>
+          <div class="tip" id="1488">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.on(&#39;aborted&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L2997-2997" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Emitted when a request has been canceled during an ongoing HTTP transaction.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1489', 1489)" onmouseover="showTip(event, '1489', 1489)">
+            x.onceAborted(listener)
+          </code>
+          <div class="tip" id="1489">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.once(&#39;aborted&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3000-3000" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1490', 1490)" onmouseover="showTip(event, '1490', 1490)">
+            x.onceData(listener)
+          </code>
+          <div class="tip" id="1490">
+            <strong>Signature:</strong> (listener:(Buffer -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.once(&#39;data&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3014-3014" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1491', 1491)" onmouseover="showTip(event, '1491', 1491)">
+            x.onceEnd(listener)
+          </code>
+          <div class="tip" id="1491">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.once(&#39;end&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3027-3027" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1492', 1492)" onmouseover="showTip(event, '1492', 1492)">
+            x.onceError(listener)
+          </code>
+          <div class="tip" id="1492">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.once(&#39;error&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3044-3044" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1493', 1493)" onmouseover="showTip(event, '1493', 1493)">
+            x.onData(listener)
+          </code>
+          <div class="tip" id="1493">
+            <strong>Signature:</strong> (listener:(Buffer -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.on(&#39;data&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3011-3011" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The data event is the usual method of transferring response data into
+applicative code.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1494', 1494)" onmouseover="showTip(event, '1494', 1494)">
+            x.onEnd(listener)
+          </code>
+          <div class="tip" id="1494">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.on(&#39;end&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3024-3024" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Indicates that response body has ended.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1495', 1495)" onmouseover="showTip(event, '1495', 1495)">
+            x.onError(listener)
+          </code>
+          <div class="tip" id="1495">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.on(&#39;error&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3041-3041" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>error Error - Typically holds an error string identifying failure root cause.
+Emitted when an error was encountered while streaming response data events. For
+instance, if the server closes the underlying while the response is still
+streaming, an error event will be emitted on the response object and a close
+event will subsequently follow on the request object.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1496', 1496)" onmouseover="showTip(event, '1496', 1496)">
+            x.removeListenerAborted(listener)
+          </code>
+          <div class="tip" id="1496">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.removeListener(&#39;aborted&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3006-3006" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1497', 1497)" onmouseover="showTip(event, '1497', 1497)">
+            x.removeListenerData(listener)
+          </code>
+          <div class="tip" id="1497">
+            <strong>Signature:</strong> (listener:(Buffer -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.removeListener(&#39;data&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3020-3020" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1498', 1498)" onmouseover="showTip(event, '1498', 1498)">
+            x.removeListenerEnd(listener)
+          </code>
+          <div class="tip" id="1498">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.removeListener(&#39;end&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3033-3033" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1499', 1499)" onmouseover="showTip(event, '1499', 1499)">
+            x.removeListenerError(listener)
+          </code>
+          <div class="tip" id="1499">
+            <strong>Signature:</strong> (listener:(Event -&gt; unit)) -&gt; IncomingMessage<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.removeListener(&#39;error&#39;,$1)&quot;)&gt;]<br />
+          </span>
+          </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3050-3050" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1500', 1500)" onmouseover="showTip(event, '1500', 1500)">
+            x.statusCode()
+          </code>
+          <div class="tip" id="1500">
+            <strong>Signature:</strong> unit -&gt; int<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3056-3056" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>set_statusCode</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1501', 1501)" onmouseover="showTip(event, '1501', 1501)">
+            x.statusCode()
+          </code>
+          <div class="tip" id="1501">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3056-3056" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_statusCode</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1502', 1502)" onmouseover="showTip(event, '1502', 1502)">
+            x.statusMessage()
+          </code>
+          <div class="tip" id="1502">
+            <strong>Signature:</strong> unit -&gt; string<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3057-3057" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>set_statusMessage</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1503', 1503)" onmouseover="showTip(event, '1503', 1503)">
+            x.statusMessage()
+          </code>
+          <div class="tip" id="1503">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L3057-3057" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_statusMessage</code></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+        </div>
+        <div class="span3">
+          <img src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />  
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">MordhauBuddy</li>
+            <li class="divider"></li>
+            <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/release-notes.html">Release Notes</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/contributing.html">Contributing</a></li>
+            
+            <li class="nav-header">Documentation</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">Introduction</a></li>
+            <li class="divider"></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/a.html">a</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/b.html">b</a></li>
+
+            <li class="nav-header">Tutorials</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/at.html">at</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/bt.html">bt</a></li>
+
+            <li class="nav-header">Reference</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/reference/index.html">API Reference</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>

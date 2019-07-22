@@ -4,7 +4,8 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Linting\FSharpLint.fs" />
+    <Compile Include="ElectronTools.fs" />
+    <Compile Include="FSharpLint.fs" />
     <None Include="paket.references" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />

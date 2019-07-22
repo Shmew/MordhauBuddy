@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>WebRequest - MordhauBuddy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Shmew"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/style.css" />
+    <script type="text/javascript" src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://fsharp.org">fsharp.org</a></li>
+        </ul>
+        <h3 class="muted"><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">MordhauBuddy</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+
+
+<h1>WebRequest</h1>
+<p>
+
+    <span>Namespace: MordhauBuddy.App</span><br />
+        <span>Parent Module: <a href="mordhaubuddy-app-electron.html">Electron</a></span><br />
+    </p>
+<div class="xmldoc">
+</div>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3460', 3460)" onmouseover="showTip(event, '3460', 3460)">
+            x.onBeforeRedirect(filter, listener)
+          </code>
+          <div class="tip" id="3460">
+            <strong>Signature:</strong> (filter:OnBeforeRedirectFilter * listener:(OnBeforeRedirectDetails -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6211-6211" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details) when a server initiated
+redirect is about to occur.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3461', 3461)" onmouseover="showTip(event, '3461', 3461)">
+            x.onBeforeRedirect(listener)
+          </code>
+          <div class="tip" id="3461">
+            <strong>Signature:</strong> (listener:(OnBeforeRedirectDetails -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6207-6207" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details) when a server initiated
+redirect is about to occur.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3462', 3462)" onmouseover="showTip(event, '3462', 3462)">
+            x.onBeforeRequest(filter, listener)
+          </code>
+          <div class="tip" id="3462">
+            <strong>Signature:</strong> (filter:OnBeforeRequestFilter * listener:(OnBeforeRequestDetails -&gt; (OnBeforeRequestResponse -&gt; unit) -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6223-6223" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details, callback) when a request is
+about to occur. The uploadData is an array of UploadData objects. The callback
+has to be called with an response object.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3463', 3463)" onmouseover="showTip(event, '3463', 3463)">
+            x.onBeforeRequest(listener)
+          </code>
+          <div class="tip" id="3463">
+            <strong>Signature:</strong> (listener:(OnBeforeRequestDetails -&gt; (OnBeforeRequestResponse -&gt; unit) -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6217-6217" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details, callback) when a request is
+about to occur. The uploadData is an array of UploadData objects. The callback
+has to be called with an response object.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3464', 3464)" onmouseover="showTip(event, '3464', 3464)">
+            x.onBeforeSendHeaders(listener)
+          </code>
+          <div class="tip" id="3464">
+            <strong>Signature:</strong> (listener:(OnBeforeSendHeadersDetails -&gt; (OnBeforeSendHeadersResponse -&gt; unit) -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6237-6237" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details, callback) before sending an
+HTTP request, once the request headers are available. This may occur after a TCP
+connection is made to the server, but before any http data is sent. The callback
+has to be called with an response object.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3465', 3465)" onmouseover="showTip(event, '3465', 3465)">
+            x.onBeforeSendHeaders(filter, listener)
+          </code>
+          <div class="tip" id="3465">
+            <strong>Signature:</strong> (filter:OnBeforeSendHeadersFilter * listener:(OnBeforeSendHeadersDetails -&gt; (OnBeforeSendHeadersResponse -&gt; unit) -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6230-6230" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details, callback) before sending an
+HTTP request, once the request headers are available. This may occur after a TCP
+connection is made to the server, but before any http data is sent. The callback
+has to be called with an response object.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3466', 3466)" onmouseover="showTip(event, '3466', 3466)">
+            x.onCompleted(listener)
+          </code>
+          <div class="tip" id="3466">
+            <strong>Signature:</strong> (listener:(OnCompletedDetails -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6244-6244" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details) when a request is completed.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3467', 3467)" onmouseover="showTip(event, '3467', 3467)">
+            x.onCompleted(filter, listener)
+          </code>
+          <div class="tip" id="3467">
+            <strong>Signature:</strong> (filter:OnCompletedFilter * listener:(OnCompletedDetails -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6241-6241" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details) when a request is completed.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3468', 3468)" onmouseover="showTip(event, '3468', 3468)">
+            x.onErrorOccurred(filter, listener)
+          </code>
+          <div class="tip" id="3468">
+            <strong>Signature:</strong> (filter:OnErrorOccurredFilter * listener:(OnErrorOccurredDetails -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6250-6250" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details) when an error occurs.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3469', 3469)" onmouseover="showTip(event, '3469', 3469)">
+            x.onErrorOccurred(listener)
+          </code>
+          <div class="tip" id="3469">
+            <strong>Signature:</strong> (listener:(OnErrorOccurredDetails -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6247-6247" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details) when an error occurs.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3470', 3470)" onmouseover="showTip(event, '3470', 3470)">
+            x.onHeadersReceived(listener)
+          </code>
+          <div class="tip" id="3470">
+            <strong>Signature:</strong> (listener:(OnHeadersReceivedDetails -&gt; (OnHeadersReceivedResponse -&gt; unit) -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6262-6262" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details, callback) when HTTP response
+headers of a request have been received. The callback has to be called with an
+response object.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3471', 3471)" onmouseover="showTip(event, '3471', 3471)">
+            x.onHeadersReceived(filter, listener)
+          </code>
+          <div class="tip" id="3471">
+            <strong>Signature:</strong> (filter:OnHeadersReceivedFilter * listener:(OnHeadersReceivedDetails -&gt; (OnHeadersReceivedResponse -&gt; unit) -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6256-6256" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details, callback) when HTTP response
+headers of a request have been received. The callback has to be called with an
+response object.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3472', 3472)" onmouseover="showTip(event, '3472', 3472)">
+            x.onResponseStarted(filter, listener)
+          </code>
+          <div class="tip" id="3472">
+            <strong>Signature:</strong> (filter:OnResponseStartedFilter * listener:(OnResponseStartedDetails -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6273-6273" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details) when first byte of the
+response body is received. For HTTP requests, this means that the status line
+and response headers are available.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3473', 3473)" onmouseover="showTip(event, '3473', 3473)">
+            x.onResponseStarted(listener)
+          </code>
+          <div class="tip" id="3473">
+            <strong>Signature:</strong> (listener:(OnResponseStartedDetails -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6268-6268" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details) when first byte of the
+response body is received. For HTTP requests, this means that the status line
+and response headers are available.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3474', 3474)" onmouseover="showTip(event, '3474', 3474)">
+            x.onSendHeaders(listener)
+          </code>
+          <div class="tip" id="3474">
+            <strong>Signature:</strong> (listener:(OnSendHeadersDetails -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6284-6284" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details) just before a request is
+going to be sent to the server, modifications of previous onBeforeSendHeaders
+response are visible by the time this listener is fired.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3475', 3475)" onmouseover="showTip(event, '3475', 3475)">
+            x.onSendHeaders(filter, listener)
+          </code>
+          <div class="tip" id="3475">
+            <strong>Signature:</strong> (filter:OnSendHeadersFilter * listener:(OnSendHeadersDetails -&gt; unit) option) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/Electron.fs#L6279-6279" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>The listener will be called with listener(details) just before a request is
+going to be sent to the server, modifications of previous onBeforeSendHeaders
+response are visible by the time this listener is fired.</p>
+
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+        </div>
+        <div class="span3">
+          <img src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />  
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">MordhauBuddy</li>
+            <li class="divider"></li>
+            <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/release-notes.html">Release Notes</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/contributing.html">Contributing</a></li>
+            
+            <li class="nav-header">Documentation</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">Introduction</a></li>
+            <li class="divider"></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/a.html">a</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/b.html">b</a></li>
+
+            <li class="nav-header">Tutorials</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/at.html">at</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/bt.html">bt</a></li>
+
+            <li class="nav-header">Reference</li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/reference/index.html">API Reference</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>

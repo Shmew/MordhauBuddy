@@ -3,41 +3,78 @@ version 5.203.0
 framework: auto-detect
 
 source https://nuget.org/api/v2
-
-nuget Expecto
-nuget Expecto.BenchmarkDotNet
-nuget Expecto.FsCheck
-nuget Expecto.TestResults 8.10.1
-nuget Fake.Core.Environment
-nuget Fake.IO.FileSystem
-nuget Foq
-nuget FParsec
-nuget FSharp.Core
-nuget FSharp.Data
-nuget FSharpLint.Core
-
-clitool dotnet-fantomas
-clitool dotnet-fake
-
-group Formatting
-source https://nuget.org/api/v2
-source https://ci.appveyor.com/nuget/fsharp-formatting
-
-nuget FSharp.Formatting
-nuget FSharp.Formatting.CommandTool
-
-group FakeBuild
 source https://api.nuget.org/v3/index.json
 
-storage: none
-
-nuget Fake.Core.Target
+nuget Fable.Browser.Dom ~> 1.0
+nuget Fable.Core ~> 3.0
+nuget Fable.Elmish ~> 3.0
+nuget Fable.Elmish.React ~> 3.0
+nuget Fable.Elmish.Debugger ~> 3.0
+nuget Fable.Elmish.HMR ~> 4.0
+nuget Fable.Import.AutosuggestHighlight ~> 1.1
+nuget Fable.Import.Downshift ~> 1.1
+nuget Fable.Import.Electron ~> 0.1.0
+nuget Fable.Import.MatchSorter ~> 1.1
+nuget Fable.Import.Node ~> 0.4.0
+nuget Fable.MaterialUI ~> 4.0
+nuget Fable.MaterialUI.Icons ~> 1.1
+nuget Fable.MaterialUI.MaterialDesignIcons ~> 1.2
+nuget Fable.Node ~> 1.0
+nuget Fable.Promise ~> 2.0
+nuget Fable.React ~> 5.2
+nuget Fake.Core.Environment
 nuget Fake.IO.FileSystem
-nuget Fake.DotNet.Cli
-nuget Fake.Tools.Git
-nuget Fake.DotNet.MSBuild
-nuget Fake.Core.ReleaseNotes 
-nuget Fake.DotNet.AssemblyInfoFile
-nuget Fake.DotNet.Paket
-nuget Fake.DotNet.FSFormatting 
-nuget FSharpLint.Core
+nuget FParsec
+nuget FSharp.Core redirects:force
+nuget FSharp.Data
+nuget Yarnpkg.Yarn
+nuget Microsoft.NETCore.Platforms --version 3.0.0-preview6.19303.8
+
+group Testing
+	source https://nuget.org/api/v2
+	source https://api.nuget.org/v3/index.json
+
+	nuget Expecto
+	nuget Expecto.BenchmarkDotNet
+	nuget Expecto.FsCheck
+	nuget Expecto.TestResults 8.10.1
+	nuget Foq
+	nuget FSharp.Core
+	nuget FSharp.Data
+
+group Tooling
+	source https://nuget.org/api/v2
+	source https://api.nuget.org/v3/index.json
+
+	nuget FSharp.Core
+	nuget FSharp.Json
+	nuget FSharpLint.Core
+
+	clitool dotnet-fable
+	clitool dotnet-fake
+	clitool dotnet-fantomas
+
+group Formatting
+	source https://nuget.org/api/v2
+	source https://ci.appveyor.com/nuget/fsharp-formatting
+
+	nuget FSharp.Formatting
+	nuget FSharp.Formatting.CommandTool
+
+group FakeBuild
+	source https://api.nuget.org/v3/index.json
+
+	storage: none
+
+	nuget Fake.Core.Target
+	nuget Fake.IO.FileSystem
+	nuget Fake.DotNet.Cli
+	nuget Fake.Tools.Git
+	nuget Fake.DotNet.MSBuild
+	nuget Fake.Core.ReleaseNotes 
+	nuget Fake.DotNet.AssemblyInfoFile
+	nuget Fake.DotNet.Paket
+	nuget Fake.DotNet.FSFormatting 
+	nuget FSharpLint.Core
+	nuget Fake.JavaScript.Yarn
+	nuget Fake.JavaScript.Npm

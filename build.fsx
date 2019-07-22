@@ -3,12 +3,13 @@
 // --------------------------------------------------------------------------------------
 #nowarn "0213"
 #r "paket: groupref FakeBuild //"
-#load "./tools/Linting/FSharpLint.fs"
+#load "./tools/FSharpLint.fs"
 #load "./.fake/build.fsx/intellisense.fsx"
 
 open Fake.Core
 open Fake.Core.TargetOperators
 open Fake.DotNet
+open Fake.JavaScript
 open Fake.IO
 open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
@@ -43,6 +44,14 @@ let website = "/MordhauBuddy"
 // Github repository
 let repo = @"https://github.com/Shmew/MordhauBuddy"
 
+// List project directories to avoid formatting
+// Typically projects that have very next lists for web building
+let excludeFormatting = [ (__SOURCE_DIRECTORY__ @@ "src/Electron/Renderer/**")]
+
+// Web or JS related fs projects
+// Projects that have bindings to other languages where name linting needs to be more relaxed.
+let relaxedNameLinting = [ (__SOURCE_DIRECTORY__ @@ "src/Electron/**/*.fs") ]
+
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
@@ -61,15 +70,30 @@ let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
 
 let toolsGlob  = __SOURCE_DIRECTORY__ @@ "tools"
 let srcGlob    = __SOURCE_DIRECTORY__  @@ "src/**/*.??proj"
+let testGlob   = __SOURCE_DIRECTORY__  @@ "tests/**/*.??proj"
 let fsSrcGlob  = __SOURCE_DIRECTORY__  @@ "src/**/*.fs"
 let fsTestGlob = __SOURCE_DIRECTORY__  @@ "tests/**/*.fs"
 let bin        = __SOURCE_DIRECTORY__ @@ "bin"
+
+let foldExcludeGlobs (g: IGlobbingPattern) (d: string) = g -- d
+let foldIncludeGlobs (g: IGlobbingPattern) (d: string) = g ++ d
 
 let fsSrcAndTest =
     !! fsSrcGlob
     ++ fsTestGlob
     -- (__SOURCE_DIRECTORY__  @@ "src/**/obj/**")
     -- (__SOURCE_DIRECTORY__  @@ "tests/**/obj/**")
+
+let fsRelaxedNameLinting =
+    let baseGlob s =
+        !! s
+        -- (__SOURCE_DIRECTORY__  @@ "src/**/AssemblyInfo.*")
+        -- (__SOURCE_DIRECTORY__  @@ "src/**/obj/**")
+        -- (__SOURCE_DIRECTORY__  @@ "tests/**/obj/**")
+    match relaxedNameLinting with
+    | [h] when relaxedNameLinting.Length = 1 -> baseGlob h |> Some
+    | h::t -> List.fold foldIncludeGlobs (baseGlob h) t |> Some
+    | _ -> None
 
 let failOnBadExitAndPrint (p : ProcessResult) =
     if p.ExitCode <> 0 then
@@ -127,7 +151,7 @@ Target.create "AssemblyInfo" <| fun _ ->
 
 Target.create "CopyBinaries" <| fun _ ->
     !! srcGlob
-    -- "src/**/*.shproj"
+    -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")
     |> Seq.map (fun f -> ((Path.getDirectory f) @@ "bin" @@ configuration, "bin" @@ (Path.GetFileNameWithoutExtension f)))
     |> Seq.iter (fun (fromDir, toDir) -> Shell.copyDir toDir fromDir (fun _ -> true))
 
@@ -142,7 +166,7 @@ Target.create "Clean" <| fun _ ->
     ++ (__SOURCE_DIRECTORY__  @@ "src/**/bin")
     ++ (__SOURCE_DIRECTORY__  @@ "src/**/obj")
     |> Seq.toList
-    |> List.append ["bin"; "temp"; "obj"]
+    |> List.append ["bin"; "temp"; "obj"; "dist"; ".fable"]
     |> Shell.cleanDirs
 
 Target.create "CleanDocs" <| fun _ ->
@@ -150,7 +174,7 @@ Target.create "CleanDocs" <| fun _ ->
 
 Target.create "PostBuildClean" <| fun _ ->
     !! srcGlob
-    -- "src/**/*.shproj"
+    -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")
     |> Seq.map (
         (fun f -> (Path.getDirectory f) @@ "bin" @@ configuration) 
         >> (fun f -> Directory.EnumerateDirectories(f) |> Seq.toList )
@@ -165,11 +189,22 @@ Target.create "PostPublishClean" <| fun _ ->
     |> Seq.iter Directory.delete
 
 // --------------------------------------------------------------------------------------
-// Restore then build library
+// Restore tasks
 
 Target.create "Restore" <| fun _ ->
     solutionFile
     |> DotNet.restore id
+
+/// Add task to make Node.js cli ready
+Target.create "YarnInstall" <| fun _ ->
+    let setParams (defaults:Yarn.YarnParams) =
+        { defaults with
+            Yarn.YarnParams.YarnFilePath = (__SOURCE_DIRECTORY__ @@ "packages/Yarnpkg.Yarn/content/bin/yarn.cmd")
+        }
+    Yarn.install setParams
+
+// --------------------------------------------------------------------------------------
+// Build tasks
 
 Target.create "Build" <| fun _ ->
     let setParams (defaults:MSBuildParams) =
@@ -186,7 +221,25 @@ Target.create "Build" <| fun _ ->
                     "DependsOnNETStandard", "true"
                 ]
          }
-    MSBuild.build setParams solutionFile
+    !! srcGlob
+    ++ testGlob
+    |> Seq.iter (MSBuild.build setParams)
+
+Target.create "BuildElectron" <| fun _ ->
+    Npm.exec "rebuild node-sass" id
+    Yarn.exec "compile" id
+
+// Run Devtron
+Target.create "Dev" <| fun _ ->
+    Yarn.exec "dev" id
+
+// Build packed installer
+Target.create "Dist" <| fun _ ->
+    Yarn.exec "dist" id
+
+// Build to unpacked directory
+Target.create "DistDir" <| fun _ ->
+    Yarn.exec "dist:dir" id
 
 // --------------------------------------------------------------------------------------
 // Publish net core applications
@@ -210,8 +263,8 @@ Target.create "PublishDotNet" <| fun _ ->
         MSBuild.build setParams project
 
     !! srcGlob
-    -- "src/**/*.shproj"
-    -- "src/**/*.vbproj"
+    -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")
+    -- (__SOURCE_DIRECTORY__ @@ "src/**/*.vbproj")
     |> Seq.map
         ((fun f -> (((Path.getDirectory f) @@ "bin" @@ configuration), f) )
         >>
@@ -225,7 +278,8 @@ Target.create "PublishDotNet" <| fun _ ->
 // Lint and format source code to ensure consistency
 
 Target.create "Format" <| fun _ ->
-    fsSrcAndTest
+    excludeFormatting
+    |> (fun dirs -> List.fold foldExcludeGlobs fsSrcAndTest dirs)
     |> Seq.iter (fun file ->
         dotnet.fantomas id
             (sprintf "%s --pageWidth 120 --reorderOpenDeclaration" file))
@@ -233,6 +287,13 @@ Target.create "Format" <| fun _ ->
 Target.create "Lint" <| fun _ ->
     fsSrcAndTest
     -- (__SOURCE_DIRECTORY__  @@ "src/**/AssemblyInfo.*")
+    |> (fun src -> List.fold foldExcludeGlobs src relaxedNameLinting)
+    |> (fun fGlob ->
+        match fsRelaxedNameLinting with
+        | Some(glob) ->
+            [(false, fGlob); (true, glob)]
+        | None -> [(false, fGlob)])
+    |> Seq.map (fun (b,glob) -> (b,glob |> List.ofSeq))
     |> List.ofSeq
     |> FSharpLinter.lintFiles (__SOURCE_DIRECTORY__ @@ "bin/LintResults.xml")
 
@@ -281,6 +342,7 @@ Target.create "LoadScripts" <| fun _ ->
 // --------------------------------------------------------------------------------------
 // Generate the documentation
 
+
 // Paths with template/source/output locations
 let content     = __SOURCE_DIRECTORY__ @@ "docsrc/content"
 let output      = __SOURCE_DIRECTORY__ @@ "docs"
@@ -290,13 +352,18 @@ let formatting  = __SOURCE_DIRECTORY__ @@ "packages/formatting/FSharp.Formatting
 let toolPath    = __SOURCE_DIRECTORY__ @@ "packages/formatting/FSharp.Formatting.CommandTool/tools/fsformatting.exe"
 let docTemplate = "docpage.cshtml"
 
+Target.create "LocalDocs" <| fun _ ->
+    FakeVar.set "Website" output
+Target.create "ReleaseDocs" <| fun _ ->
+    FakeVar.set "Website" website
+
 // Specify more information about your project
-let info =
+let info () =
   [ "project-name", project
     "project-author", author
     "project-summary", summary
     "project-repo", repo
-    "root", website ]
+    "root", FakeVar.getOrDefault "Website" website ]
 
 let referenceBinaries = []
 
@@ -348,7 +415,7 @@ Target.create "ReferenceDocs" <| fun _ ->
         { args with
             OutputDirectory = output @@ "reference"
             LayoutRoots =  layoutRootsAll.["en"]
-            ProjectParameters =  info
+            ProjectParameters =  info()
             LibDirs = lDirs
             ToolPath = toolPath
             SourceRepository = repo @@ "tree/master" })
@@ -396,7 +463,7 @@ Target.create "Docs" <| fun _ ->
                 Source = content
                 OutputDirectory = output
                 LayoutRoots = layoutRoots
-                ProjectParameters  = info
+                ProjectParameters  = info()
                 Template = docTemplate })
 
 Target.create "GenerateDocs" ignore
@@ -432,7 +499,9 @@ Target.create "All" ignore
 "Clean"
   ==> "AssemblyInfo"
   ==> "Restore"
+  ==> "YarnInstall"
   ==> "Build"
+  ==> "BuildElectron"
   ==> "PostBuildClean" 
   ==> "CopyBinaries"
 
@@ -466,4 +535,13 @@ Target.create "All" ignore
 
 "All" <== ["Format"; "Lint"; "RunTests"; "GenerateDocs"]
 
-Target.runOrDefaultWithArguments "All"
+"LocalDocs" ?=> "All"
+"ReleaseDocs" ?=> "All"
+
+"Dev" <== ["All"; "LocalDocs"]
+
+"Dist" <== ["All"; "ReleaseDocs"]
+
+"DistDir" <== ["All"; "ReleaseDocs"]
+
+Target.runOrDefaultWithArguments "Dev"
