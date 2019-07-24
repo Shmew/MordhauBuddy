@@ -1,3 +1,4 @@
+Elmish.AnimatedTree
 FSharp.Core
 Fable.Core
 Fable.Elmish
@@ -13,3 +14,4 @@ Fable.MaterialUI.MaterialDesignIcons
 Fable.Node
 Fable.Promise
 Fable.React
+Fable.Validation

@@ -4,8 +4,8 @@
     <TargetFrameworks>netcoreapp3.0; net462</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AppBindings.fs" />
     <Compile Include="Electron.fs" />
+    <Compile Include="AppBindings.fs" />
     <None Include="paket.references" />
   </ItemGroup>
   <Import Project="..\..\..\.paket\Paket.Restore.targets" />

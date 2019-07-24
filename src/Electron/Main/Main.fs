@@ -13,70 +13,6 @@ module Main =
 
     [<Emit("$0.webContents.focus()")>]
     let webContentsFocus (win : BrowserWindow) : unit = jsNative
-
-    module WindowState =
-        type State =
-            abstract x : int
-            abstract y : int
-            abstract width : int
-            abstract height : int
-            abstract isMaximized : bool
-            abstract isFullScreen : bool
-            abstract manage : BrowserWindow -> unit
-            abstract unmanage : unit -> unit
-            abstract saveState : BrowserWindow -> unit
-
-        [<AllowNullLiteral>]
-        type Options =
-
-            /// The height that should be returned if no file exists yet. Defaults to `600`.
-            abstract defaultHeight : int option with get, set
-
-            /// The width that should be returned if no file exists yet. Defaults to `800`.
-            abstract defaultWidth : int option with get, set
-
-            abstract fullScreen : bool option with get, set
-
-            /// The path where the state file should be written to. Defaults to `app.getPath('userData')`.
-            abstract path : string option with get, set
-
-            /// The name of file. Defaults to `window-state.json`.
-            abstract file : string option with get, set
-
-            /// Should we automatically maximize the window, if it was last closed maximized. Defaults to `true`.
-            abstract maximize : bool option with get, set
-
-        let getState : Options -> State = importDefault "electron-window-state"
-
-    module AppStore =
-        type Store =
-            abstract set : string * string -> unit
-            abstract set : obj -> unit
-            abstract get : string * ?defaultValue:string -> obj
-            abstract has : string -> bool
-            abstract delete : string -> unit
-            abstract clear : unit
-            abstract onDidChange : string * Browser.Types.Event -> unit
-            abstract onDidAnyChange : Browser.Types.Event -> unit
-            abstract size : int
-            abstract store : obj
-            abstract path : string
-            abstract openInEditor : unit
-
-        type StoreNum =
-            { Type : string
-              Maximum : int
-              Minimum : int
-              Default : int }
-
-        type StoreString =
-            { Type : string
-              Format : string }
-
-        type Schema =
-            { Test : StoreNum }
-
-        let getStore() : Store = importDefault "electron-store"
 #if DEBUG
 
     module DevTools =
@@ -108,11 +44,13 @@ module Main =
 #endif
 
 
+    let store = AppStore.getStore.Create()
+
     let createMainWindow() =
         let winStateOpts =
             jsOptions<WindowState.Options> (fun o ->
-                o.defaultHeight <- Some 600
-                o.defaultWidth <- Some 800)
+                o.defaultHeight <- Some 700
+                o.defaultWidth <- Some 1200)
 
         let mainWinState = WindowState.getState winStateOpts
 
@@ -124,14 +62,14 @@ module Main =
                 o.webPreferences <- jsOptions<WebPreferences> (fun w ->
                                         w.contextIsolation <- false
                                         w.nodeIntegration <- true)
+                o.frame <- false
+                o.backgroundColor <- "#FFF"
                 o.show <- false)
 
         let win = main.BrowserWindow.Create(options)
 
         let onLoad (browser : BrowserWindow) =
-            let store = AppStore.getStore()
-            store.set ("Test", "wow")
-            browser.setTitle <| string (store.get ("Test", "default")) //(sprintf "MordhauBuddy %s" version)
+            browser.setTitle <| sprintf "%s - %s" Info.name Info.version
             browser.show()
         win.once ("ready-to-show", fun _ -> onLoad win) |> ignore
         mainWinState.manage win

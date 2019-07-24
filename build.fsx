@@ -70,12 +70,15 @@ let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
     | f when f.EndsWith("shproj") -> Shproj
     | _                           -> failwith (sprintf "Project file %s not supported. Unknown project type." projFileName)
 
-let toolsGlob  = __SOURCE_DIRECTORY__ @@ "tools"
+let toolGlob   = __SOURCE_DIRECTORY__  @@ "tools"
 let srcGlob    = __SOURCE_DIRECTORY__  @@ "src/**/*.??proj"
 let testGlob   = __SOURCE_DIRECTORY__  @@ "tests/**/*.??proj"
 let fsSrcGlob  = __SOURCE_DIRECTORY__  @@ "src/**/*.fs"
 let fsTestGlob = __SOURCE_DIRECTORY__  @@ "tests/**/*.fs"
 let bin        = __SOURCE_DIRECTORY__ @@ "bin"
+let fsProjGlob =
+    !! (__SOURCE_DIRECTORY__  @@ "src/**/*.fsproj")
+    ++ (__SOURCE_DIRECTORY__  @@ "tests/**/*.fsproj")
 
 let foldExcludeGlobs (g: IGlobbingPattern) (d: string) = g -- d
 let foldIncludeGlobs (g: IGlobbingPattern) (d: string) = g ++ d
@@ -85,6 +88,8 @@ let fsSrcAndTest =
     ++ fsTestGlob
     -- (__SOURCE_DIRECTORY__  @@ "src/**/obj/**")
     -- (__SOURCE_DIRECTORY__  @@ "tests/**/obj/**")
+    -- (__SOURCE_DIRECTORY__  @@ "src/**/AssemblyInfo.*")
+    -- (__SOURCE_DIRECTORY__  @@ "src/**/**/AssemblyInfo.*")
 
 let fsRelaxedNameLinting =
     let baseGlob s =
@@ -104,11 +109,14 @@ let failOnBadExitAndPrint (p : ProcessResult) =
 
 module dotnet =
     let tool optionConfig command args =
-        DotNet.exec (fun p -> { p with WorkingDirectory = toolsGlob} |> optionConfig ) (sprintf "%s" command) args
+        DotNet.exec (fun p -> { p with WorkingDirectory = toolGlob} |> optionConfig ) (sprintf "%s" command) args
         |> failOnBadExitAndPrint
 
     let fantomas optionConfig args =
         tool optionConfig "fantomas" args
+
+    let femto optionConfig args =
+        tool optionConfig (!!(__SOURCE_DIRECTORY__ @@ "packages/tooling/Femto/tools/**/**/Femto.dll") |> Seq.head) args
 
 let setCmd f args =
     match Environment.isWindows with
@@ -317,6 +325,15 @@ Target.create "Lint" <| fun _ ->
     |> FSharpLinter.lintFiles (__SOURCE_DIRECTORY__ @@ "bin/LintResults.xml")
 
 // --------------------------------------------------------------------------------------
+// Validate JavaScript dependencies
+
+Target.create "ValidateJSPackages" <| fun _ ->
+    fsProjGlob
+    |> Seq.iter (fun file ->
+        dotnet.femto id
+            (sprintf "--resolve %s" file))
+
+// --------------------------------------------------------------------------------------
 // Run the unit test binaries
 
 Target.create "RunTests" <| fun _ ->
@@ -520,6 +537,7 @@ Target.create "All" ignore
   ==> "Restore"
   ==> "PackageJson"
   ==> "YarnInstall"
+  ==> "ValidateJSPackages"
   ==> "Build"
   ==> "BuildElectron"
   ==> "PostBuildClean" 

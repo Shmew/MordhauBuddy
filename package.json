@@ -34,10 +34,13 @@
     "@material-ui/icons": "^3.0",
     "autosuggest-highlight": "^3.1",
     "downshift": "^3.2.10",
+    "electron-context-menu": "^0.13.0",
+    "electron-store": "3.3.0",
     "match-sorter": "^3.0.0",
     "mdi-material-ui": "^5.11.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-spring": "^8.0.27",
     "source-map-support": "^0.5.12",
     "toastr": "^2.1",
     "typeface-roboto": "^0"

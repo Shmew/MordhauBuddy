@@ -13,6 +13,7 @@ module App =
     open Fable.MaterialUI.Props
     open Fable.MaterialUI.MaterialDesignIcons
     open Fable.MaterialUI.Icons
+    open AppBindings
 
     type Page =
         | Home
@@ -24,8 +25,9 @@ module App =
         | Snackbars
         | StaticAssets
         | TextFields
+        | INITest
         static member All =
-            [ Home; AutoComplete; Badges; Dialogs; SaveLoad; Selects; Snackbars; StaticAssets; TextFields ]
+            [ Home; AutoComplete; Badges; Dialogs; SaveLoad; Selects; Snackbars; StaticAssets; TextFields; INITest ]
 
     let pageTitle =
         function
@@ -38,9 +40,12 @@ module App =
         | StaticAssets -> "Static assets"
         | Snackbars -> "Snackbars"
         | TextFields -> "Text fields"
+        | INITest -> "INI Test"
 
     type Msg =
         | Navigate of Page
+        | MinMaxMsg of bool
+        | DarkTheme of bool
         | AutoCompleteMsg of AutoComplete.Msg
         | BadgesMsg of Badges.Msg
         | DialogsMsg of Dialogs.Msg
@@ -48,33 +53,46 @@ module App =
         | SelectsMsg of Selects.Msg
         | SnackbarsMsg of Snackbars.Msg
         | TextFieldsMsg of TextFields.Msg
+        | INITestMsg of INITest.Msg
 
     type Model =
         { Page : Page
+          IsMax : bool
+          IsDarkTheme : bool
           AutoCompleteDownshift : AutoComplete.Model
           Badges : Badges.Model
           Dialogs : Dialogs.Model
           SaveLoad : SaveLoad.Model
           Selects : Selects.Model
           Snackbars : Snackbars.Model
-          TextFields : TextFields.Model }
+          TextFields : TextFields.Model
+          INITest : INITest.Model }
+
+    let private window = Electron.renderer.remote.getCurrentWindow()
 
     let init() =
         let m =
             { Page = Home
+              IsMax = window.isMaximized() 
+              IsDarkTheme = false //use store to get this later
               AutoCompleteDownshift = AutoComplete.init()
               Badges = Badges.init()
               Dialogs = Dialogs.init()
               SaveLoad = SaveLoad.init()
               Selects = Selects.init()
               Snackbars = Snackbars.init()
-              TextFields = TextFields.init() }
+              TextFields = TextFields.init()
+              INITest = INITest.init() } 
         m, Cmd.none
 
     let update msg m =
         match msg with
         | Navigate p ->
             { m with Page = p }, Cmd.none
+        | MinMaxMsg b ->
+            { m with IsMax = b }, Cmd.none
+        | DarkTheme b ->
+            { m with IsDarkTheme = b }, Cmd.none
         | AutoCompleteMsg msg' ->
             { m with AutoCompleteDownshift = AutoComplete.update msg' m.AutoCompleteDownshift }, Cmd.none
         | BadgesMsg msg' ->
@@ -91,6 +109,8 @@ module App =
             { m with Snackbars = m' }, Cmd.map SnackbarsMsg cmd
         | TextFieldsMsg msg' ->
             { m with TextFields = TextFields.update msg' m.TextFields }, Cmd.none
+        | INITestMsg msg' ->
+            { m with INITest = INITest.update msg' m.INITest }, Cmd.none
 
     // Domain/Elmish above, view below
     let private styles (theme : ITheme) : IStyles list =
@@ -99,8 +119,19 @@ module App =
             Styles.Root [
                 Display DisplayOptions.Flex
             ]
+            Styles.Custom ("titleButton", [
+                CSSProp.Padding "5px"
+                CSSProp.PaddingRight "10px"
+                CSSProp.PaddingLeft "10px"
+                CSSProp.Color "#ffffff"
+                CSSProp.Custom ("-webkit-app-region", "no-drag")
+                CSSProp.BorderRadius "0"
+            ])
             Styles.Custom ("appBar", [
                 CSSProp.ZIndex (theme.zIndex.drawer + 1)
+                CSSProp.Cursor "default"
+                CSSProp.Custom("user-select", "none")
+                CSSProp.Display DisplayOptions.Grid
             ])
             Styles.Custom ("drawer", [
                 Width drawerWidth
@@ -145,25 +176,51 @@ module App =
                 avatar [ Src (stat "avatar.jpg") ] []
             ]
         | TextFields -> lazyView2 TextFields.view model.TextFields (TextFieldsMsg >> dispatch)
+        | INITest -> lazyView2 INITest.view model.INITest (INITestMsg >> dispatch)
 
-    let private theme = 
-        createMuiTheme [
-            ThemeProp.Palette [
-                PaletteProp.Type PaletteType.Dark
-                PaletteProp.Primary [
-                    PaletteIntentionProp.Main Colors.deepPurple.``400``
-                    PaletteIntentionProp.Dark Colors.deepPurple.``800``
+    let private getTheme (m: Model) =
+        if m.IsDarkTheme then 
+            createMuiTheme [
+                ThemeProp.Palette [
+                    PaletteProp.Type PaletteType.Dark
+                    PaletteProp.Primary [
+                        PaletteIntentionProp.Main "#BB86FC"
+                        PaletteIntentionProp.Dark "#3700B3"
+                    ]
+                    PaletteProp.Secondary [
+                        PaletteIntentionProp.Main "#03DAC6"
+                    ]
+                    PaletteProp.Error [
+                        PaletteIntentionProp.Main "#CF6679"
+                    ]
                 ]
-                PaletteProp.Secondary [
-                    PaletteIntentionProp.Main "#2196f3"
-                ]
-                PaletteProp.TonalOffset 0.5
-                PaletteProp.ContrastThreshold 3
             ]
-        ]
+            |> ProviderTheme.Theme
+        else
+            createMuiTheme [
+                ThemeProp.Palette [
+                    PaletteProp.Type PaletteType.Light
+                    PaletteProp.Primary [
+                        PaletteIntentionProp.Main "#6200EE"
+                        PaletteIntentionProp.Dark "#3700B3"
+                    ]
+                    PaletteProp.Secondary [
+                        PaletteIntentionProp.Main "#03DAC6"
+                    ]
+                    PaletteProp.Error [
+                        PaletteIntentionProp.Main "#B00020"
+                    ]
+                ]
+            ]
+            |> ProviderTheme.Theme
 
     let private view' (classes : IClasses) model dispatch =
-        muiThemeProvider [Theme <| ProviderTheme.Theme theme] [
+        let hideIfMax (b: bool) =
+            match window.isMaximized() = b with
+            | true -> Display DisplayOptions.None
+            | false -> Display DisplayOptions.Flex
+
+        muiThemeProvider [Theme <| getTheme(model)] [
             div [
                 Class classes?root
             ] [ 
@@ -171,12 +228,77 @@ module App =
                 appBar [
                     Class classes?appBar
                     AppBarProp.Position AppBarPosition.Fixed
+                    Style [
+                        CSSProp.BackgroundColor (if model.IsDarkTheme then "#424242" else "#6200EE")
+                    ]
                 ] [
-                toolbar [] [
+                toolbar [
+                    Style [
+                        CSSProp.Padding "0px"
+                        CSSProp.BackgroundColor (if model.IsDarkTheme then "#212121" else "#3700B3")
+                        CSSProp.MinHeight "0px"
+                        CSSProp.Custom("-webkit-app-region", "drag")
+                    ]
+                ] [
+                    typography [
+                        TypographyProp.Variant TypographyVariant.Subtitle2
+                        Style [
+                            CSSProp.Width "93%"
+                            CSSProp.Padding "5px"
+                            CSSProp.Color "#ffffff"
+                        ]
+                    ] [ sprintf "%s - %s" Info.name Info.version |> str ]
+                    iconButton [
+                        DOMAttr.OnClick (fun _ -> window.minimize())
+                        Class classes?titleButton
+                    ] [
+                        windowMinimizeIcon []
+                    ]
+                    iconButton [
+                        DOMAttr.OnClick (fun _ ->
+                            window.maximize()
+                            true |> MinMaxMsg |> dispatch)
+                        Class classes?titleButton
+                        Style [hideIfMax true]
+                    ] [
+                        windowMaximizeIcon []
+                    ]
+                    iconButton [
+                        DOMAttr.OnClick (fun _ -> 
+                            window.unmaximize()
+                            false |> MinMaxMsg |> dispatch)
+                        Class classes?titleButton
+                        Style [hideIfMax false]
+                    ] [
+                        windowRestoreIcon []
+                    ]
+                    iconButton [
+                        DOMAttr.OnClick (fun _ -> window.close())
+                        Class classes?titleButton
+                    ] [
+                        windowCloseIcon []
+                    ]
+                ]
+                toolbar [ 
+                    Style [CSSProp.PaddingRight "0"]
+                ] [
                     typography [
                         TypographyProp.Variant TypographyVariant.H6
-                        MaterialProp.Color ComponentColor.Inherit
+                        
+                        Style [
+                            CSSProp.Width "100%"
+                            CSSProp.Color "#ffffff"
+                        ]
                     ] [ model.Page |> pageTitle |> str ]
+                    iconButton [
+                        DOMAttr.OnClick (fun _ -> 
+                            model.IsDarkTheme |> not 
+                            |> DarkTheme |> dispatch)
+                        Class classes?titleButton
+                        Style [CSSProp.Color "#ffffff"; CSSProp.BorderRadius "20%"]
+                    ] [
+                        themeLightDarkIcon []
+                    ]
                     ]
                 ]
                 drawer [
@@ -184,12 +306,17 @@ module App =
                     DrawerProp.Variant DrawerVariant.Permanent
                     Classes [ ClassNames.Paper classes?drawerPaper ]
                 ] [
-                    div [ Class classes?toolbar ] []
-                    list [ Component (ReactElementType.ofHtmlElement "nav") ] [
+                    list [ 
+                        Component (ReactElementType.ofHtmlElement "nav")
+                        Style [CSSProp.PaddingTop "108px"]
+                    ] [
                         Page.All |> List.map (pageListItem model dispatch) |> ofList
                     ]
                 ]
-                main [ Class classes?content ] [
+                main [ 
+                    Class classes?content
+                    Style [CSSProp.PaddingTop "108px"]
+                ] [
                     div [ Class classes?toolbar ] []
                     pageView model dispatch
                 ]

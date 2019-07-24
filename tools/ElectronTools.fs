@@ -36,6 +36,7 @@ module Json =
         Url: string
     }
 
+    [<NoComparison>]
     type JsonPackage = {
         Name: string
         Description: string

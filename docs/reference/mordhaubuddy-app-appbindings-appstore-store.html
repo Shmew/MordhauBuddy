@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>State - MordhauBuddy</title>
+    <title>Store - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,11 +34,11 @@
 
 
 
-<h1>State</h1>
+<h1>Store</h1>
 <p>
 
     <span>Namespace: MordhauBuddy.App</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-app-main-windowstate.html">WindowState</a></span><br />
+        <span>Parent Module: <a href="mordhaubuddy-app-appbindings-appstore.html">AppStore</a></span><br />
     </p>
 <div class="xmldoc">
 </div>
@@ -51,178 +51,234 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '3554', 3554)" onmouseover="showTip(event, '3554', 3554)">
-            x.height
+          <code onmouseout="hideTip(event, '112', 112)" onmouseover="showTip(event, '112', 112)">
+            x.clear
           </code>
-          <div class="tip" id="3554">
+          <div class="tip" id="112">
+            <strong>Signature:</strong> unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L69-69" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_clear</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '113', 113)" onmouseover="showTip(event, '113', 113)">
+            x.delete(arg1)
+          </code>
+          <div class="tip" id="113">
+            <strong>Signature:</strong> string -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L68-68" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '114', 114)" onmouseover="showTip(event, '114', 114)">
+            x.get(arg1, defaultValue)
+          </code>
+          <div class="tip" id="114">
+            <strong>Signature:</strong> (string * defaultValue:string option) -&gt; obj<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L66-66" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '115', 115)" onmouseover="showTip(event, '115', 115)">
+            x.has(arg1)
+          </code>
+          <div class="tip" id="115">
+            <strong>Signature:</strong> string -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L67-67" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '116', 116)" onmouseover="showTip(event, '116', 116)">
+            x.onDidAnyChange(arg1)
+          </code>
+          <div class="tip" id="116">
+            <strong>Signature:</strong> Event -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L71-71" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '117', 117)" onmouseover="showTip(event, '117', 117)">
+            x.onDidChange(arg1, arg2)
+          </code>
+          <div class="tip" id="117">
+            <strong>Signature:</strong> (string * Event) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L70-70" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '118', 118)" onmouseover="showTip(event, '118', 118)">
+            x.openInEditor
+          </code>
+          <div class="tip" id="118">
+            <strong>Signature:</strong> unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L75-75" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_openInEditor</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '119', 119)" onmouseover="showTip(event, '119', 119)">
+            x.path
+          </code>
+          <div class="tip" id="119">
+            <strong>Signature:</strong> string<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L74-74" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_path</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '120', 120)" onmouseover="showTip(event, '120', 120)">
+            x.set(arg1)
+          </code>
+          <div class="tip" id="120">
+            <strong>Signature:</strong> obj -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L65-65" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '121', 121)" onmouseover="showTip(event, '121', 121)">
+            x.set(arg1, arg2)
+          </code>
+          <div class="tip" id="121">
+            <strong>Signature:</strong> (string * string) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L64-64" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '122', 122)" onmouseover="showTip(event, '122', 122)">
+            x.size
+          </code>
+          <div class="tip" id="122">
             <strong>Signature:</strong> int<br />
               <strong>Modifiers:</strong> abstract<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L22-22" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L72-72" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>get_height</code></p>
+              <p>CompiledName: <code>get_size</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '3555', 3555)" onmouseover="showTip(event, '3555', 3555)">
-            x.isFullScreen
+          <code onmouseout="hideTip(event, '123', 123)" onmouseover="showTip(event, '123', 123)">
+            x.store
           </code>
-          <div class="tip" id="3555">
-            <strong>Signature:</strong> bool<br />
+          <div class="tip" id="123">
+            <strong>Signature:</strong> obj<br />
               <strong>Modifiers:</strong> abstract<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L24-24" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Bindings/AppBindings.fs#L73-73" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>get_isFullScreen</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '3556', 3556)" onmouseover="showTip(event, '3556', 3556)">
-            x.isMaximized
-          </code>
-          <div class="tip" id="3556">
-            <strong>Signature:</strong> bool<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L23-23" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>get_isMaximized</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '3557', 3557)" onmouseover="showTip(event, '3557', 3557)">
-            x.manage(arg1)
-          </code>
-          <div class="tip" id="3557">
-            <strong>Signature:</strong> BrowserWindow -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L25-25" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '3558', 3558)" onmouseover="showTip(event, '3558', 3558)">
-            x.saveState(arg1)
-          </code>
-          <div class="tip" id="3558">
-            <strong>Signature:</strong> BrowserWindow -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L27-27" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '3559', 3559)" onmouseover="showTip(event, '3559', 3559)">
-            x.unmanage()
-          </code>
-          <div class="tip" id="3559">
-            <strong>Signature:</strong> unit -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L26-26" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '3560', 3560)" onmouseover="showTip(event, '3560', 3560)">
-            x.width
-          </code>
-          <div class="tip" id="3560">
-            <strong>Signature:</strong> int<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L21-21" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>get_width</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '3561', 3561)" onmouseover="showTip(event, '3561', 3561)">
-            x.x
-          </code>
-          <div class="tip" id="3561">
-            <strong>Signature:</strong> int<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L19-19" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>get_x</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '3562', 3562)" onmouseover="showTip(event, '3562', 3562)">
-            x.y
-          </code>
-          <div class="tip" id="3562">
-            <strong>Signature:</strong> int<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L20-20" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>get_y</code></p>
+              <p>CompiledName: <code>get_store</code></p>
         </td>
       </tr>
     </tbody>

@@ -15,6 +15,7 @@
     <Compile Include="Selects.fs" />
     <Compile Include="Snackbars.fs" />
     <Compile Include="TextFields.fs" />
+    <Compile Include="INITest.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Entry.fs" />
     <None Include="paket.references" />
