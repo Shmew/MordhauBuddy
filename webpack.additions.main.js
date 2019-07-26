@@ -6,6 +6,13 @@ function resolve(filePath) {
 
 module.exports = {
     entry: resolve("src/Electron/Main/Main.fsproj"),
+    resolve: {
+        alias: {
+            'react': path.resolve('node_modules/react'),
+            'react-dom': path.resolve('node_modules/react-dom'),
+            'react-spring': path.resolve('node_modules/react-spring')
+        }
+    },
   externals: {
     bufferutil: 'commonjs bufferutil',
     'utf-8-validate': 'commonjs utf-8-validate',

@@ -10,5 +10,6 @@ module Entry =
     |> Program.withReactSynchronous "app"
 #if DEBUG
     |> Program.withDebugger
+    |> Program.withConsoleTrace
 #endif
     |> Program.run

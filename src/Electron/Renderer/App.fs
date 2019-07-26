@@ -124,7 +124,7 @@ module App =
                 CSSProp.PaddingRight "10px"
                 CSSProp.PaddingLeft "10px"
                 CSSProp.Color "#ffffff"
-                CSSProp.Custom ("-webkit-app-region", "no-drag")
+                CSSProp.Custom ("WebkitAppRegion", "no-drag")
                 CSSProp.BorderRadius "0"
             ])
             Styles.Custom ("appBar", [
@@ -194,6 +194,9 @@ module App =
                         PaletteIntentionProp.Main "#CF6679"
                     ]
                 ]
+                ThemeProp.Typography [
+                    ThemeTypographyProp.UseNextVariants true
+                ]
             ]
             |> ProviderTheme.Theme
         else
@@ -210,6 +213,12 @@ module App =
                     PaletteProp.Error [
                         PaletteIntentionProp.Main "#B00020"
                     ]
+                    PaletteProp.Action [
+                        PaletteActionProp.HoverOpacity 0.2
+                    ]
+                ]
+                ThemeProp.Typography [
+                    ThemeTypographyProp.UseNextVariants true
                 ]
             ]
             |> ProviderTheme.Theme
@@ -237,7 +246,7 @@ module App =
                         CSSProp.Padding "0px"
                         CSSProp.BackgroundColor (if model.IsDarkTheme then "#212121" else "#3700B3")
                         CSSProp.MinHeight "0px"
-                        CSSProp.Custom("-webkit-app-region", "drag")
+                        CSSProp.Custom("WebkitAppRegion", "drag")
                     ]
                 ] [
                     typography [
