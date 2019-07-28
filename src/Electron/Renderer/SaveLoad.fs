@@ -12,6 +12,7 @@ module SaveLoad =
     open Fable.MaterialUI
     open Fable.MaterialUI.Core
     open FSharp.Core  // To prevent shadowing None
+    open Utils
 
     let writeUtf8Async text pathAndFilename =
         Promise.create (fun resolve reject ->
@@ -36,21 +37,16 @@ module SaveLoad =
             )
         )
 
-    let showSaveDialogAsync opts =
+    let showSaveDialogAsync (opts: SaveDialogOptions) =
         Promise.create (fun resolve reject ->
-            renderer.remote.dialog.showSaveDialog(
-                opts,
-                fun path _ -> resolve path)
-            |> ignore
+            renderer.remote.dialog.showSaveDialog(opts)
+            |> resolve
         )
 
     let showOpenDialogAsync opts =
         Promise.create (fun resolve reject ->
-            renderer.remote.dialog.showOpenDialog(
-                opts,
-                (fun paths _ ->
-                    paths |> Option.map Seq.toList |> resolve)
-            )
+            Electron.renderer.remote.dialog.showOpenDialog(opts)
+            |> resolve
         )
 
     [<RequireQualifiedAccess>]
@@ -92,17 +88,18 @@ module SaveLoad =
                 o.defaultPath <- renderer.remote.app.getPath AppPathName.Desktop
                 o.filters <-
                 [|
-                    jsOptions<FileDialogFilter>(fun f ->
+                    jsOptions<FileFilter>(fun f ->
                     f.name <- "Text files"
                     f.extensions <- [|"txt"|]
                     )
                 |]
             )
-            match! showSaveDialogAsync opts with
-            | None -> return Ok SaveResult.Canceled
-            | Some pathAndFilename ->
+            let! result = showSaveDialogAsync opts
+            match! result with
+            | res when res.canceled -> return Ok SaveResult.Canceled
+            | res ->
                 let! result =
-                    pathAndFilename
+                    res.filePath
                     |> String.ensureEndsWith ".txt"
                     |> writeUtf8Async text
                 return result |> Result.map (fun () -> SaveResult.Saved)
@@ -116,16 +113,17 @@ module SaveLoad =
                 o.defaultPath <- renderer.remote.app.getPath AppPathName.Desktop
                 o.filters <-
                 [|
-                    jsOptions<FileDialogFilter>(fun f ->
+                    jsOptions<FileFilter>(fun f ->
                     f.name <- "Text files"
                     f.extensions <- [|"txt"|]
                     )
                 |]
             )
-            match! showOpenDialogAsync opts with
-            | None -> return Ok LoadResult.Canceled
-            | Some pathsAndFilenames ->
-                let! result = readUtf8Async (Seq.head pathsAndFilenames)
+            let! result = showOpenDialogAsync opts
+            match! result with
+            | res when res.canceled -> return Ok LoadResult.Canceled
+            | res ->
+                let! result = readUtf8Async (Seq.head res.filePaths)
                 return result |> Result.map LoadResult.Loaded
         }
 

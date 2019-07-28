@@ -1,12 +1,12 @@
 namespace MordhauBuddy.App
 
 module Main =
-    open AppBindings
     open Electron
     open Fable.Core
     open Fable.Core.JsInterop
     open Fable.Import
     open Node.Api
+    open Utils
 
     // A global reference to the window object is required in order to prevent garbage collection
     let mutable mainWindow : BrowserWindow option = Option.None
@@ -44,7 +44,7 @@ module Main =
 #endif
 
 
-    let store = AppStore.getStore.Create()
+    let store = ElectronStore.getStore.Create()
 
     let createMainWindow() =
         let winStateOpts =
@@ -78,7 +78,8 @@ module Main =
         DevTools.installAllDevTools win |> ignore
         DevTools.connectRemoteDevViaExtension()
         // Open dev tools on startup
-        jsOptions<OpenDevToolsOptions> (fun o -> o.activate <- true) |> win.webContents.openDevTools
+        jsOptions<OpenDevToolsOptions> (fun o -> o.activate <- true)
+        |> (fun o -> win.webContents.openDevTools (options = o))
         // Load correct URL
         let port = ``process``.env?ELECTRON_WEBPACK_WDS_PORT
         win.loadURL (sprintf "http://localhost:%s" port) |> ignore
@@ -98,7 +99,7 @@ module Main =
 
     // This method will be called when Electron has finished
     // initialization and is ready to create browser windows.
-    main.app.onReady (fun _ -> createMainWindow()) |> ignore
+    main.app.onReady (fun _ _ -> createMainWindow()) |> ignore
     // Quit when all windows are closed.
     main.app.onWindowAllClosed (fun ev ->
         // On OS X it's common for applications and their menu bar

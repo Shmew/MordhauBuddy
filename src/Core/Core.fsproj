@@ -1,13 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp3.0; net462</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="INIReader.fs" />
     <Compile Include="FileOps.fs" />
     <Compile Include="MordhauConfig.fs" />
+    <Compile Include="Router.fs" />
     <None Include="paket.references" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />

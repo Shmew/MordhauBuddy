@@ -63,11 +63,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "electron", "electron", "{D5
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Core", "src\Core\Core.fsproj", "{63DF6334-FD75-4EC2-BFC7-BDCCCF6AB095}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Bindings", "src\Electron\Bindings\Bindings.fsproj", "{1F74DC20-C0F5-4D46-9726-8B5F6F92E88A}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Main", "src\Electron\Main\Main.fsproj", "{31E99B79-D096-42BA-94F5-C7CC7F655752}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Renderer", "src\Electron\Renderer\Renderer.fsproj", "{8980DB6F-B0DC-4FAA-B015-2A39D4637DD3}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Fable.Electron", "paket-files\fable-compiler\fable-electron\src\Fable.Electron\Fable.Electron.fsproj", "{B22A1178-5C43-4079-A4DB-6ED72A79EDD8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,10 +87,6 @@ Global
 		{63DF6334-FD75-4EC2-BFC7-BDCCCF6AB095}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63DF6334-FD75-4EC2-BFC7-BDCCCF6AB095}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63DF6334-FD75-4EC2-BFC7-BDCCCF6AB095}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F74DC20-C0F5-4D46-9726-8B5F6F92E88A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F74DC20-C0F5-4D46-9726-8B5F6F92E88A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F74DC20-C0F5-4D46-9726-8B5F6F92E88A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F74DC20-C0F5-4D46-9726-8B5F6F92E88A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{31E99B79-D096-42BA-94F5-C7CC7F655752}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{31E99B79-D096-42BA-94F5-C7CC7F655752}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31E99B79-D096-42BA-94F5-C7CC7F655752}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -99,6 +95,10 @@ Global
 		{8980DB6F-B0DC-4FAA-B015-2A39D4637DD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8980DB6F-B0DC-4FAA-B015-2A39D4637DD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8980DB6F-B0DC-4FAA-B015-2A39D4637DD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B22A1178-5C43-4079-A4DB-6ED72A79EDD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B22A1178-5C43-4079-A4DB-6ED72A79EDD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B22A1178-5C43-4079-A4DB-6ED72A79EDD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B22A1178-5C43-4079-A4DB-6ED72A79EDD8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

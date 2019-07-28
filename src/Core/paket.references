@@ -4,3 +4,4 @@ FParsec
 FSharp.Core
 FSharp.Data
 Microsoft.NETCore.Platforms
+ElectronCgi.DotNet

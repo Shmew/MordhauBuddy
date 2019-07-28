@@ -13,7 +13,7 @@ module App =
     open Fable.MaterialUI.Props
     open Fable.MaterialUI.MaterialDesignIcons
     open Fable.MaterialUI.Icons
-    open AppBindings
+    open Utils
 
     type Page =
         | Home
@@ -68,7 +68,7 @@ module App =
           TextFields : TextFields.Model
           INITest : INITest.Model }
 
-    let private window = Electron.renderer.remote.getCurrentWindow()
+    let private window = getRemoteWin()
 
     let init() =
         let m =

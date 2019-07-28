@@ -5,7 +5,6 @@ framework: auto-detect
 source https://nuget.org/api/v2
 source https://api.nuget.org/v3/index.json
 
-nuget Elmish.AnimatedTree
 nuget Fable.Browser.Dom ~> 1.0
 nuget Fable.Core ~> 3.0
 nuget Fable.Elmish ~> 3.0
@@ -14,7 +13,6 @@ nuget Fable.Elmish.Debugger ~> 3.0
 nuget Fable.Elmish.HMR ~> 4.0
 nuget Fable.Import.AutosuggestHighlight ~> 1.1
 nuget Fable.Import.Downshift ~> 1.1
-nuget Fable.Import.Electron ~> 0.1.0
 nuget Fable.Import.MatchSorter ~> 1.1
 nuget Fable.Import.Node ~> 0.4.0
 nuget Fable.MaterialUI ~> 4.0
@@ -31,6 +29,9 @@ nuget FSharp.Core redirects:force
 nuget FSharp.Data
 nuget Yarnpkg.Yarn
 nuget Microsoft.NETCore.Platforms --version 3.0.0-preview6.19303.8
+github fable-compiler/fable-electron
+nuget ElectronCgi.DotNet ~> 0.0.2
+nuget Fable.SimpleJson
 
 group Testing
 	source https://nuget.org/api/v2
@@ -39,7 +40,7 @@ group Testing
 	nuget Expecto
 	nuget Expecto.BenchmarkDotNet
 	nuget Expecto.FsCheck
-	nuget Expecto.TestResults 8.10.1
+	nuget Expecto.TestResults ~> 8.10.1
 	nuget Foq
 	nuget FSharp.Core
 	nuget FSharp.Data

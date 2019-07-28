@@ -6,7 +6,6 @@
   <ItemGroup>
     <None Include="scss/main.scss" />
     <None Include="main.js" />
-    <Compile Include="Utils.fs" />
     <Compile Include="SnackbarLib.fs" />
     <Compile Include="AutoComplete.fs" />
     <Compile Include="Badges.fs" />
@@ -21,7 +20,8 @@
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bindings\Bindings.fsproj" />
+    <ProjectReference Include="..\..\..\paket-files\fable-compiler\fable-electron\src\Fable.Electron\Fable.Electron.fsproj" />
+    <ProjectReference Include="..\Main\Main.fsproj" />
   </ItemGroup>
   <Import Project="..\..\..\.paket\Paket.Restore.targets" />
 </Project>
