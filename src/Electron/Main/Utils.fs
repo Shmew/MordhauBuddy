@@ -1,13 +1,13 @@
 namespace MordhauBuddy.App
 
 module Utils =
-    open Electron
+    open MordhauBuddy.Electron
     open Fable.Core
     open Fable.Core.JsInterop
     open Fable.Import
     open System
 
-    let getRemoteWin() = Electron.renderer.remote.getCurrentWindow()
+    let getRemoteWin() = renderer.remote.getCurrentWindow()
 
     [<Emit("__static + \"/\" + $0")>]
     let private stat' (s : string) : string = jsNative
@@ -132,4 +132,12 @@ module Utils =
 
         let getStore : StoreStatic = importDefault "electron-store"
 
-    /// Add electron-edge-js implementation here
+    module ElectronBridge =
+        type BridgeMsg =
+            | SomeMsg
+            | Text of string
+            | Close
+
+        let port = "8085" |> uint16
+        let endpoint = sprintf "http://localhost:%i" port
+        let socketPath = "/ws"

@@ -4,7 +4,7 @@ module SaveLoad =
     open System
     open Elmish
     open Fable.Core.JsInterop
-    open Electron
+    open MordhauBuddy.Electron
     open Fable.React
     open Fable.React.Props
     open Node.Api
@@ -45,7 +45,7 @@ module SaveLoad =
 
     let showOpenDialogAsync opts =
         Promise.create (fun resolve reject ->
-            Electron.renderer.remote.dialog.showOpenDialog(opts)
+            renderer.remote.dialog.showOpenDialog(opts)
             |> resolve
         )
 

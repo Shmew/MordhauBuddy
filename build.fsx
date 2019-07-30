@@ -35,7 +35,7 @@ let author = "Shmew"
 let solutionFile  = "MordhauBuddy.sln"
 
 // Default target configuration
-let configuration = "Release"
+let configuration = "Debug"
 
 // Pattern specifying assemblies to be tested using Expecto
 let testAssemblies = "tests/**/bin" </> configuration </> "**" </> "*Tests.exe"
@@ -123,6 +123,10 @@ let setCmd f args =
     | true -> Command.RawCommand(f, Arguments.OfArgs args)
     | false -> Command.RawCommand("mono", Arguments.OfArgs (f::args))
 
+let retry (attempts: int) t =
+    let f () = t
+    TaskRunner.runWithRetries f attempts
+
 // --------------------------------------------------------------------------------------
 // Generate assembly info files with the right version & up-to-date information
 
@@ -179,6 +183,7 @@ Target.create "PackageJson" <| fun _ ->
 Target.create "CopyBinaries" <| fun _ ->
     !! srcGlob
     -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")
+    -- (__SOURCE_DIRECTORY__ @@ "src/**/Fable.Electron.fsproj")
     |> Seq.map (fun f -> ((Path.getDirectory f) @@ "bin" @@ configuration, "bin" @@ (Path.GetFileNameWithoutExtension f)))
     |> Seq.iter (fun (fromDir, toDir) -> Shell.copyDir toDir fromDir (fun _ -> true))
 
@@ -186,34 +191,38 @@ Target.create "CopyBinaries" <| fun _ ->
 // Clean build results
 
 Target.create "Clean" <| fun _ ->
-    !! (__SOURCE_DIRECTORY__  @@ "tests/**/bin")
-    ++ (__SOURCE_DIRECTORY__  @@ "tests/**/obj")
-    ++ (__SOURCE_DIRECTORY__  @@ "tools/bin")
-    ++ (__SOURCE_DIRECTORY__  @@ "tools/obj")
-    ++ (__SOURCE_DIRECTORY__  @@ "src/**/bin")
-    ++ (__SOURCE_DIRECTORY__  @@ "src/**/obj")
-    |> Seq.toList
-    |> List.append ["bin"; "temp"; "obj"; "dist"; ".fable"]
-    |> Shell.cleanDirs
+    retry 99 <|
+        !! (__SOURCE_DIRECTORY__  @@ "tests/**/bin")
+        ++ (__SOURCE_DIRECTORY__  @@ "tests/**/obj")
+        ++ (__SOURCE_DIRECTORY__  @@ "tools/bin")
+        ++ (__SOURCE_DIRECTORY__  @@ "tools/obj")
+        ++ (__SOURCE_DIRECTORY__  @@ "src/**/bin")
+        ++ (__SOURCE_DIRECTORY__  @@ "src/**/obj")
+        |> Seq.toList
+        |> List.append ["bin"; "temp"; "obj"; "dist"; ".fable"]
+        |> Shell.cleanDirs
 
 Target.create "CleanDocs" <| fun _ ->
-    Shell.cleanDirs ["docs"]
+    retry 99 <|
+        Shell.cleanDirs ["docs"]
 
 Target.create "PostBuildClean" <| fun _ ->
-    !! srcGlob
-    -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")
-    |> Seq.map (
-        (fun f -> (Path.getDirectory f) @@ "bin" @@ configuration) 
-        >> (fun f -> Directory.EnumerateDirectories(f) |> Seq.toList )
-        >> (fun fL -> fL |> List.map (fun f -> Directory.EnumerateDirectories(f) |> Seq.toList)))
-    |> (Seq.concat >> Seq.concat)
-    |> Seq.iter Directory.delete
+    retry 99 <|
+        !! srcGlob
+        -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")
+        |> Seq.map (
+            (fun f -> (Path.getDirectory f) @@ "bin" @@ configuration) 
+            >> (fun f -> Directory.EnumerateDirectories(f) |> Seq.toList )
+            >> (fun fL -> fL |> List.map (fun f -> Directory.EnumerateDirectories(f) |> Seq.toList)))
+        |> (Seq.concat >> Seq.concat)
+        |> Seq.iter Directory.delete
 
 Target.create "PostPublishClean" <| fun _ ->
-    !! (__SOURCE_DIRECTORY__ @@ "src/**/bin" @@ configuration @@ "/**/publish")
-    |> Seq.map (Directory.EnumerateDirectories >> Seq.toList )
-    |> Seq.concat
-    |> Seq.iter Directory.delete
+    retry 99 <|
+        !! (__SOURCE_DIRECTORY__ @@ "src/**/bin" @@ configuration @@ "/**/publish")
+        |> Seq.map (Directory.EnumerateDirectories >> Seq.toList )
+        |> Seq.concat
+        |> Seq.iter Directory.delete
 
 // --------------------------------------------------------------------------------------
 // Restore tasks
@@ -226,7 +235,7 @@ Target.create "Restore" <| fun _ ->
 Target.create "YarnInstall" <| fun _ ->
     let setParams (defaults:Yarn.YarnParams) =
         { defaults with
-            Yarn.YarnParams.YarnFilePath = (__SOURCE_DIRECTORY__ @@ "packages/Yarnpkg.Yarn/content/bin/yarn.cmd")
+            Yarn.YarnParams.YarnFilePath = (__SOURCE_DIRECTORY__ @@ "packages/tooling/Yarnpkg.Yarn/content/bin/yarn.cmd")
         }
     Yarn.install setParams
 
@@ -309,7 +318,7 @@ Target.create "Format" <| fun _ ->
     |> (fun dirs -> List.fold foldExcludeGlobs fsSrcAndTest dirs)
     |> Seq.iter (fun file ->
         dotnet.fantomas id
-            (sprintf "%s --pageWidth 120 --reorderOpenDeclaration" file))
+            (sprintf "%s --pageWidth 120" file))
 
 Target.create "Lint" <| fun _ ->
     fsSrcAndTest
@@ -328,10 +337,11 @@ Target.create "Lint" <| fun _ ->
 // Validate JavaScript dependencies
 
 Target.create "ValidateJSPackages" <| fun _ ->
-    fsProjGlob
-    |> Seq.iter (fun file ->
-        dotnet.femto id
-            (sprintf "--resolve %s" file))
+    retry 5 <|
+        fsProjGlob
+        |> Seq.iter (fun file ->
+            dotnet.femto id
+                (sprintf "--resolve %s" file))
 
 // --------------------------------------------------------------------------------------
 // Run the unit test binaries
@@ -537,7 +547,7 @@ Target.create "All" ignore
   ==> "Restore"
   ==> "PackageJson"
   ==> "YarnInstall"
-  ==> "ValidateJSPackages"
+  //==> "ValidateJSPackages"
   ==> "Build"
   ==> "BuildElectron"
   ==> "PostBuildClean" 

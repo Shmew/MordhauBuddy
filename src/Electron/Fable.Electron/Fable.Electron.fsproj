@@ -3,14 +3,17 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0; net462</TargetFrameworks>
   </PropertyGroup>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+  </PropertyGroup>
   <ItemGroup>
-    <None Include="main.js" />
-    <Compile Include="Utils.fs" />
-    <Compile Include="Main.fs" />
+    <Compile Include="Bindings.fs" />
+    <Compile Include="Helpers.fs" />
     <None Include="paket.references" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Fable.Electron\Fable.Electron.fsproj" />
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <Content Include="*.fsproj; *.fs" PackagePath="fable\" />
   </ItemGroup>
   <Import Project="..\..\..\.paket\Paket.Restore.targets" />
 </Project>

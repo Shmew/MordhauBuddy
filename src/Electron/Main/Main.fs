@@ -1,7 +1,8 @@
 namespace MordhauBuddy.App
 
 module Main =
-    open Electron
+    open MordhauBuddy.Electron
+    open MordhauBuddy.ElectronHelpers
     open Fable.Core
     open Fable.Core.JsInterop
     open Fable.Import
@@ -33,12 +34,10 @@ module Main =
         let installAllDevTools (win : BrowserWindow) =
             installDevTool REACT_DEVELOPER_TOOLS
             installDevTool REDUX_DEVTOOLS
-            win.webContents.executeJavaScript ("require('devtron').install()")
 
         let uninstallAllDevTools (win : BrowserWindow) =
             main.BrowserWindow.removeDevToolsExtension ("React Developer Tools")
             main.BrowserWindow.removeDevToolsExtension ("Redux DevTools")
-            win.webContents.executeJavaScript ("require('devtron').uninstall()")
 
         let connectRemoteDevViaExtension : unit -> unit = import "connectViaExtension" "remotedev"
 #endif

@@ -1,7 +1,11 @@
-﻿Fake.Core.Environment
-Fake.IO.FileSystem
-FParsec
-FSharp.Core
-FSharp.Data
-Microsoft.NETCore.Platforms
-ElectronCgi.DotNet
+﻿group Core
+	Fake.Core.Environment
+	Fake.IO.FileSystem
+	FParsec
+	FSharp.Core
+	FSharp.Data
+	Microsoft.NETCore.Platforms
+	Giraffe
+	Saturn
+	Fable.Elmish
+	Elmish.Bridge.Giraffe

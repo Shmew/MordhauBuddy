@@ -8,7 +8,7 @@
     <Compile Include="INIReader.fs" />
     <Compile Include="FileOps.fs" />
     <Compile Include="MordhauConfig.fs" />
-    <Compile Include="Router.fs" />
+    <Compile Include="Bridge.fs" />
     <None Include="paket.references" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />

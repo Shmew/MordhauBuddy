@@ -12,8 +12,11 @@ module INITest =
     open Fable.MaterialUI.MaterialDesignIcons
     open Fable.MaterialUI.Icons
     open FSharp.Core
-    open Electron
-    
+    open MordhauBuddy.Electron
+    open Utils
+    open Elmish.Bridge
+    open Utils.ElectronBridge
+
     //type FileItem =
     //    | Directory of {| Id: int; Name: string; IsOpen: bool; Children: FileItem list |}
     //    | File of {| Id: int; Name: string |}
@@ -44,6 +47,8 @@ module INITest =
         //]
         State = {Message = "init state"}
     }
+
+    //myCmd "test" (fun _ result -> System.Console.WriteLine(result.ToString()))
 
     //let rec toggleDirectoryOpened id = function
     //    | File file -> File file
@@ -88,6 +93,7 @@ module INITest =
 
     let private view' (classes: IClasses) model dispatch =
         div [] [
+            str "wow"
             //model.Files |> List.map (renderFile dispatch) |> ofList
         ]
 
@@ -109,4 +115,5 @@ module INITest =
             jsOptions<IProps> (fun p ->
                 p.model <- model
                 p.dispatch <- dispatch)
+        Bridge.NamedSend("testBridge",Text("wow"))
         ofType<Component, _, _> props []
