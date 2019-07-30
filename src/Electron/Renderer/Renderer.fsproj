@@ -6,6 +6,7 @@
   <ItemGroup>
     <None Include="scss/main.scss" />
     <None Include="main.js" />
+    <Compile Include="Toastr.fs" />
     <Compile Include="SnackbarLib.fs" />
     <Compile Include="AutoComplete.fs" />
     <Compile Include="Badges.fs" />
@@ -20,6 +21,7 @@
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Shared.fsproj" />
     <ProjectReference Include="..\Fable.Electron\Fable.Electron.fsproj" />
     <ProjectReference Include="..\Main\Main.fsproj" />
   </ItemGroup>

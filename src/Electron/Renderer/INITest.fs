@@ -12,21 +12,24 @@ module INITest =
     open Fable.MaterialUI.MaterialDesignIcons
     open Fable.MaterialUI.Icons
     open FSharp.Core
-    open MordhauBuddy.Electron
     open Utils
+    open Elmish
     open Elmish.Bridge
-    open Utils.ElectronBridge
+    open MordhauBuddy.Shared.ElectronBridge
+    open Toastr
 
     //type FileItem =
     //    | Directory of {| Id: int; Name: string; IsOpen: bool; Children: FileItem list |}
     //    | File of {| Id: int; Name: string |}
 
-    type State = {Message: string}
+    type State = { Message: string }
 
     type Model = { State : State }
 
     type Msg =
         | ToggleDirectory of int
+        | ServerMsg of RemoteServerMsg
+        | ClientMsg of string
 
     let init() = {
         //Files = [
@@ -63,8 +66,13 @@ module INITest =
 
     let update (msg: Msg) (model: Model) =
         match msg with
-        | ToggleDirectory id -> { model with State = {Message = "updater"} }
-
+        | ToggleDirectory id -> 
+            { model with State = {Message = "updater"} }
+        | ServerMsg sMsg ->
+            model
+            //Bridge.NamedSend("testBridge",bMsg, callback = (fun () -> ()))
+        | ClientMsg cMsg ->
+            { model with State = {Message = cMsg} }
 
     //let fileIcon = i [ Class "fa fa-file" ] [ ]
     //let openFolderIcon = i [ Class "fa fa-folder-open" ] [ ]
@@ -93,8 +101,10 @@ module INITest =
 
     let private view' (classes: IClasses) model dispatch =
         div [] [
-            str "wow"
-            //model.Files |> List.map (renderFile dispatch) |> ofList
+            str (model.State.Message)
+            iconButton [
+                DOMAttr.OnClick (fun _ -> dispatch (ServerMsg(Text("wow"))))
+            ] [ str "Send msg to server" ]
         ]
 
     // Workaround for using JSS with Elmish
@@ -115,5 +125,4 @@ module INITest =
             jsOptions<IProps> (fun p ->
                 p.model <- model
                 p.dispatch <- dispatch)
-        Bridge.NamedSend("testBridge",Text("wow"))
         ofType<Component, _, _> props []

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>BridgeMsg - MordhauBuddy</title>
+    <title>Toastr - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,32 +34,88 @@
 
 
 
-<h1>BridgeMsg</h1>
+<h1>Toastr</h1>
 <p>
-
-    <span>Namespace: MordhauBuddy.App</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-app-utils-electronbridge.html">ElectronBridge</a></span><br />
-    </p>
+  <span>Namespace: MordhauBuddy.App</span><br />
+  </p>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
+
+<!-- Render nested types and modules, if there are any -->
+  <h2>Nested types and modules</h2>
+  <div>
+      <table class="table table-bordered type-list">
+    <thead>
+      <tr><td>Type</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="type-name">
+            <a href="mordhaubuddy-app-toastr-toastrmsg.html">ToastrMsg</a>
+          </td>
+          <td class="xmldoc">
+          
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
+          <code onmouseout="hideTip(event, '73', 73)" onmouseover="showTip(event, '73', 73)">
+            error(msg)
+          </code>
+          <div class="tip" id="73">
+            <strong>Signature:</strong> msg:ToastrMsg -&gt; Cmd&lt;&#39;?9263&gt;<br />
+                          <strong>Type parameters:</strong> '?9263                      </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Toastr.fs#L33-33" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '74', 74)" onmouseover="showTip(event, '74', 74)">
+            info(msg)
+          </code>
+          <div class="tip" id="74">
+            <strong>Signature:</strong> msg:ToastrMsg -&gt; Cmd&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a                      </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Toastr.fs#L38-38" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
           <code onmouseout="hideTip(event, '75', 75)" onmouseover="showTip(event, '75', 75)">
-            Close
+            message(msg)
           </code>
           <div class="tip" id="75">
-            <strong>Signature:</strong> <br />
+            <strong>Signature:</strong> msg:string -&gt; ToastrMsg<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Utils.fs#L139-139" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Toastr.fs#L22-22" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -70,14 +126,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '76', 76)" onmouseover="showTip(event, '76', 76)">
-            SomeMsg
+            success(msg)
           </code>
           <div class="tip" id="76">
-            <strong>Signature:</strong> <br />
-                                  </div>
+            <strong>Signature:</strong> msg:ToastrMsg -&gt; Cmd&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Utils.fs#L137-137" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Toastr.fs#L28-28" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -88,14 +144,32 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '77', 77)" onmouseover="showTip(event, '77', 77)">
-            Text(string)
+            warning(msg)
           </code>
           <div class="tip" id="77">
-            <strong>Signature:</strong> string<br />
+            <strong>Signature:</strong> msg:ToastrMsg -&gt; Cmd&lt;&#39;?9267&gt;<br />
+                          <strong>Type parameters:</strong> '?9267                      </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Toastr.fs#L43-43" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '78', 78)" onmouseover="showTip(event, '78', 78)">
+            withTitle title msg
+          </code>
+          <div class="tip" id="78">
+            <strong>Signature:</strong> title:string -&gt; msg:ToastrMsg -&gt; ToastrMsg<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Utils.fs#L138-138" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Toastr.fs#L26-26" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

@@ -123,10 +123,6 @@ let setCmd f args =
     | true -> Command.RawCommand(f, Arguments.OfArgs args)
     | false -> Command.RawCommand("mono", Arguments.OfArgs (f::args))
 
-let retry (attempts: int) t =
-    let f () = t
-    TaskRunner.runWithRetries f attempts
-
 // --------------------------------------------------------------------------------------
 // Generate assembly info files with the right version & up-to-date information
 
@@ -191,7 +187,7 @@ Target.create "CopyBinaries" <| fun _ ->
 // Clean build results
 
 Target.create "Clean" <| fun _ ->
-    retry 99 <|
+    let clean() =
         !! (__SOURCE_DIRECTORY__  @@ "tests/**/bin")
         ++ (__SOURCE_DIRECTORY__  @@ "tests/**/obj")
         ++ (__SOURCE_DIRECTORY__  @@ "tools/bin")
@@ -201,13 +197,15 @@ Target.create "Clean" <| fun _ ->
         |> Seq.toList
         |> List.append ["bin"; "temp"; "obj"; "dist"; ".fable"]
         |> Shell.cleanDirs
+    TaskRunner.runWithRetries clean 99
 
 Target.create "CleanDocs" <| fun _ ->
-    retry 99 <|
+    let clean() =
         Shell.cleanDirs ["docs"]
+    TaskRunner.runWithRetries clean 99
 
 Target.create "PostBuildClean" <| fun _ ->
-    retry 99 <|
+    let clean() =
         !! srcGlob
         -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")
         |> Seq.map (
@@ -216,13 +214,15 @@ Target.create "PostBuildClean" <| fun _ ->
             >> (fun fL -> fL |> List.map (fun f -> Directory.EnumerateDirectories(f) |> Seq.toList)))
         |> (Seq.concat >> Seq.concat)
         |> Seq.iter Directory.delete
+    TaskRunner.runWithRetries clean 99
 
 Target.create "PostPublishClean" <| fun _ ->
-    retry 99 <|
+    let clean() =
         !! (__SOURCE_DIRECTORY__ @@ "src/**/bin" @@ configuration @@ "/**/publish")
         |> Seq.map (Directory.EnumerateDirectories >> Seq.toList )
         |> Seq.concat
         |> Seq.iter Directory.delete
+    TaskRunner.runWithRetries clean 99
 
 // --------------------------------------------------------------------------------------
 // Restore tasks
@@ -267,7 +267,20 @@ Target.create "BuildElectron" <| fun _ ->
 
 // Run Devtron
 Target.create "Dev" <| fun _ ->
-    Yarn.exec "dev" id
+    let startBridge =
+        async {
+            Shell.Exec(
+                !! (__SOURCE_DIRECTORY__ @@ "bin/core/netcoreapp*/Core.exe") 
+                |> Seq.sort 
+                |> Seq.head)
+            |> ignore
+        }
+    let startDev = async {Yarn.exec "dev" id}
+
+    [startBridge; startDev]
+    |> Async.Parallel
+    |> Async.RunSynchronously
+    |> ignore
 
 // Build packed installer
 Target.create "Dist" <| fun _ ->
@@ -337,11 +350,12 @@ Target.create "Lint" <| fun _ ->
 // Validate JavaScript dependencies
 
 Target.create "ValidateJSPackages" <| fun _ ->
-    retry 5 <|
+    let validate () =
         fsProjGlob
         |> Seq.iter (fun file ->
             dotnet.femto id
                 (sprintf "--resolve %s" file))
+    TaskRunner.runWithRetries validate 5
 
 // --------------------------------------------------------------------------------------
 // Run the unit test binaries

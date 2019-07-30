@@ -1,4 +1,4 @@
-namespace MordhauBuddy
+namespace MordhauBuddy.Bindings
 
 module ElectronHelpers =
     open Fable.Core

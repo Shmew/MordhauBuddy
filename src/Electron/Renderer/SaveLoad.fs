@@ -4,7 +4,7 @@ module SaveLoad =
     open System
     open Elmish
     open Fable.Core.JsInterop
-    open MordhauBuddy.Electron
+    open MordhauBuddy.Bindings.Electron
     open Fable.React
     open Fable.React.Props
     open Node.Api

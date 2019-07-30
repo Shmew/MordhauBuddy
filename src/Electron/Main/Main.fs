@@ -1,8 +1,8 @@
 namespace MordhauBuddy.App
 
 module Main =
-    open MordhauBuddy.Electron
-    open MordhauBuddy.ElectronHelpers
+    open FSharp.Core
+    open MordhauBuddy.Bindings.Electron
     open Fable.Core
     open Fable.Core.JsInterop
     open Fable.Import
@@ -40,6 +40,25 @@ module Main =
             main.BrowserWindow.removeDevToolsExtension ("Redux DevTools")
 
         let connectRemoteDevViaExtension : unit -> unit = import "connectViaExtension" "remotedev"
+
+        let startBridge() =
+            let projPath = path.join (__dirname, @"..\..\Core\Core.fsproj")
+
+            let bridgeProc =
+                let args = ResizeArray<string>()
+                args.Add("watch")
+                args.Add("run")
+                args.Add(projPath)
+                childProcess.spawn ("dotnet", args, options = ({| shell = true |} |> toPlainJsObj))
+            bridgeProc.stdout.on ("data",
+                                  (fun data ->
+                                  if mainWindow.IsSome then JS.console.log data))
+            |> ignore
+            bridgeProc
+            
+            //let bridge = DevTools.startBridge()
+            //bridge.kill()
+
 #endif
 
 
@@ -99,8 +118,11 @@ module Main =
     // This method will be called when Electron has finished
     // initialization and is ready to create browser windows.
     main.app.onReady (fun _ _ -> createMainWindow()) |> ignore
+
     // Quit when all windows are closed.
     main.app.onWindowAllClosed (fun ev ->
+
+
         // On OS X it's common for applications and their menu bar
         // to stay active until the user quits explicitly with Cmd + Q
         if ``process``.platform <> Node.Base.Platform.Darwin then main.app.quit())

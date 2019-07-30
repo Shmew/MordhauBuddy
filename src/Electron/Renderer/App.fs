@@ -14,6 +14,8 @@ module App =
     open Fable.MaterialUI.MaterialDesignIcons
     open Fable.MaterialUI.Icons
     open Utils
+    open Elmish.Bridge
+    open MordhauBuddy.Shared.ElectronBridge
 
     type Page =
         | Home
@@ -54,6 +56,7 @@ module App =
         | SnackbarsMsg of Snackbars.Msg
         | TextFieldsMsg of TextFields.Msg
         | INITestMsg of INITest.Msg
+        | ServerMsg of RemoteClientMsg
 
     type Model =
         { Page : Page
@@ -87,12 +90,12 @@ module App =
 
     let update msg m =
         match msg with
-        | Navigate p ->
-            { m with Page = p }, Cmd.none
-        | MinMaxMsg b ->
-            { m with IsMax = b }, Cmd.none
-        | DarkTheme b ->
-            { m with IsDarkTheme = b }, Cmd.none
+        | Navigate msg' ->
+            { m with Page = msg' }, Cmd.none
+        | MinMaxMsg msg' ->
+            { m with IsMax = msg' }, Cmd.none
+        | DarkTheme msg' ->
+            { m with IsDarkTheme = msg' }, Cmd.none
         | AutoCompleteMsg msg' ->
             { m with AutoCompleteDownshift = AutoComplete.update msg' m.AutoCompleteDownshift }, Cmd.none
         | BadgesMsg msg' ->
@@ -110,7 +113,17 @@ module App =
         | TextFieldsMsg msg' ->
             { m with TextFields = TextFields.update msg' m.TextFields }, Cmd.none
         | INITestMsg msg' ->
-            { m with INITest = INITest.update msg' m.INITest }, Cmd.none
+            match msg' with
+            | INITest.ToggleDirectory _ -> 
+                { m with INITest = INITest.update msg' m.INITest }, Cmd.none
+            | INITest.ServerMsg sMsg ->
+                m, Cmd.batch [ Toastr.info (Toastr.message "Message sent to server!"); Cmd.namedBridgeSend "testBridge" sMsg ]
+            | INITest.ClientMsg _ ->
+                { m with INITest = INITest.update msg' m.INITest }, Cmd.none
+        | ServerMsg msg' ->
+            match msg' with
+            | Resp cMsg ->
+                { m with INITest = INITest.update (INITest.ClientMsg "wowie!") m.INITest }, Toastr.success (Toastr.message cMsg)
 
     // Domain/Elmish above, view below
     let private styles (theme : ITheme) : IStyles list =

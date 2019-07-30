@@ -1,7 +1,7 @@
 namespace MordhauBuddy.App
 
 module Utils =
-    open MordhauBuddy.Electron
+    open MordhauBuddy.Bindings.Electron
     open Fable.Core
     open Fable.Core.JsInterop
     open Fable.Import
@@ -131,13 +131,3 @@ module Utils =
             { Test : StoreNum }
 
         let getStore : StoreStatic = importDefault "electron-store"
-
-    module ElectronBridge =
-        type BridgeMsg =
-            | SomeMsg
-            | Text of string
-            | Close
-
-        let port = "8085" |> uint16
-        let endpoint = sprintf "http://localhost:%i" port
-        let socketPath = "/ws"

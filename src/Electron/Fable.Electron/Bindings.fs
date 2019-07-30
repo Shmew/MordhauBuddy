@@ -1,4 +1,4 @@
-namespace MordhauBuddy
+namespace MordhauBuddy.Bindings
 
 module rec Electron =
     open System

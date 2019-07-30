@@ -1,46 +1,33 @@
 namespace MordhauBuddy.Core
 
-module ElectronBridge =
-    type BridgeMsg =
-        | SomeMsg
-        | Text of string
-        | Close
-
-    let port = "8085" |> uint16
-    let endpoint = sprintf "http://localhost:%i" port
-    let socketPath = "/ws"
-
 module Bridge =
     open Elmish
     open Giraffe
     open Elmish.Bridge
     open FSharp.Control.Tasks.V2
     open Saturn
-    open ElectronBridge
+    open MordhauBuddy.Shared.ElectronBridge
 
-    type Model =
-        | Connected
-        | Disconnected
+    type ServerState = Nothing
 
-    let init (clientDispatch : Dispatch<BridgeMsg>) () =
-        clientDispatch (Text "I came from the server!")
-        Connected, Cmd.none
+    type ServerMsg = ClientMsg of RemoteServerMsg
 
-    let update clientDispatch msg model =
-        match msg with
-        | Text(s) ->
-            System.Console.WriteLine(s)
-            clientDispatch (Text <| sprintf "I came from the update func on server! %s" s)
-            Connected, Cmd.none
-        | Close -> Disconnected, Cmd.none
+    let testHub = ServerHub().RegisterServer(ClientMsg)
+    let init (clientDispatch : Dispatch<RemoteClientMsg>) () = Nothing, Cmd.none
+
+    let update (clientDispatch : Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) currentState =
+        match clientMsg with
+        | Text s ->
+            clientDispatch (Resp("clientDispatch!"))
+            currentState, Cmd.none
+        | Close -> currentState, Cmd.none
 
     let bridge =
         Bridge.mkServer socketPath init update
         |> Bridge.withConsoleTrace
-        //|> Bridge.withServerHub hub
+        |> Bridge.withServerHub testHub
         |> Bridge.run Giraffe.server
 
-    //let hub = ServerHub<State,ServerMsg,OuterMsg>()
     let server =
         router {
             get "/api/helloworld" (fun next ctx -> task { return! Successful.OK "Hello world" next ctx })
