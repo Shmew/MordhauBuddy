@@ -2,35 +2,51 @@ namespace MordhauBuddy.Core
 
 module Bridge =
     open Elmish
-    open Giraffe
     open Elmish.Bridge
-    open FSharp.Control.Tasks.V2
     open Saturn
+    open INIConfiguration.BridgeOperations
     open MordhauBuddy.Shared.ElectronBridge
 
-    type ServerState = Nothing
+    type ServerState = 
+        | Nothing
 
     type ServerMsg = ClientMsg of RemoteServerMsg
 
-    let testHub = ServerHub().RegisterServer(ClientMsg)
+    let hub = ServerHub().RegisterServer(ClientMsg)
     let init (clientDispatch : Dispatch<RemoteClientMsg>) () = Nothing, Cmd.none
 
     let update (clientDispatch : Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) currentState =
         match clientMsg with
-        | Text s ->
-            clientDispatch (Resp("clientDispatch!"))
-            currentState, Cmd.none
-        | Close -> currentState, Cmd.none
+        | INIOperations ops ->
+            match ops with
+            | Operation iCmd ->
+                match iCmd with
+                | Replace(oldI,newI,sels) -> replace oldI newI sels.Selectors
+                | Delete(oldI,sels) -> delete oldI sels.Selectors
+                | Exists(iFile) -> exists iFile
+                | Parse(iFile) -> parse iFile
+                | Backup(iFile) -> backup(iFile)
+                | DefaultDir -> defDir()
+            | Faces fCmd ->
+                match fCmd with
+                | Random(profile,iVal) -> random profile iVal
+                | Frankenstein(profile,iVal) -> frankenstein profile iVal
+                | Custom(profile,iVal,fVal) -> custom profile iVal fVal
+                | ProfileList(iVal) -> profileList iVal
+        |> Resp
+        |> clientDispatch
+            
+        currentState, Cmd.none
 
     let bridge =
+
         Bridge.mkServer socketPath init update
         |> Bridge.withConsoleTrace
-        |> Bridge.withServerHub testHub
+        |> Bridge.withServerHub hub
         |> Bridge.run Giraffe.server
 
     let server =
         router {
-            get "/api/helloworld" (fun next ctx -> task { return! Successful.OK "Hello world" next ctx })
             get "/ws" bridge
         }
 

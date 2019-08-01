@@ -6,64 +6,9 @@ open System
 open System.ComponentModel
 open System.Globalization
 open System.IO
+open MordhauBuddy.Shared.ElectronBridge
 
 module INIReader =
-    [<RequireQualifiedAccess>]
-    [<StructuredFormatDisplay("{_Print}")>]
-    type INIValue =
-        | String of string option
-        | FieldText of string * INIValue
-        | Tuple of INIValue list
-        | KeyValue of string * INIValue
-        | Section of string * INIValue list
-        | File of INIValue list
-
-        /// [omit]
-        [<EditorBrowsableAttribute(EditorBrowsableState.Never)>]
-        [<CompilerMessageAttribute("This method is intended for use in generated code only.", 10001, IsHidden = true,
-                                   IsError = false)>]
-        member x._Print =
-            match x.ToString() with
-            | str when str.Length > 512 -> str.Substring(0, 509) + "..."
-            | str -> str
-
-        /// Serializes INIValue to TextWriter
-        member this.WriteTo(w : TextWriter) =
-            let rec serialize =
-                function
-                | String(Some(s)) -> w.Write(s)
-                | String(None) -> ()
-                | FieldText(s, iniValue) ->
-                    w.Write(s)
-                    serialize iniValue
-                | Tuple(iList) ->
-                    let len = iList.Length - 1
-                    w.Write("(")
-                    iList
-                    |> List.indexed
-                    |> List.iter (fun (ind, i) ->
-                           serialize i
-                           if ind < len then w.Write(","))
-                    w.Write(")")
-                | KeyValue(s, iniValue) ->
-                    w.Write(s + "=")
-                    serialize iniValue
-                | Section(s, iList) ->
-                    w.Write("[" + s + "]")
-                    w.WriteLine()
-                    iList
-                    |> List.iter (fun i ->
-                           serialize i
-                           w.WriteLine())
-                    w.WriteLine()
-                | File(iList) -> iList |> List.iter serialize
-            serialize this
-
-        override this.ToString() : string =
-            let w = new StringWriter(CultureInfo.InvariantCulture)
-            this.WriteTo(w)
-            w.GetStringBuilder().ToString()
-
     type private INIParser(iniText : string) =
 
         /// Parses text surrounded by zero or more white spaces but stopping at newline
@@ -155,6 +100,53 @@ module INIReader =
             | Failure(msg, _, _) -> None
 
     type INIValue with
+
+        /// [omit]
+        [<EditorBrowsableAttribute(EditorBrowsableState.Never)>]
+        [<CompilerMessageAttribute("This method is intended for use in generated code only.", 10001, IsHidden = true,
+                                   IsError = false)>]
+        member x._Print =
+            match x.ToString() with
+            | str when str.Length > 512 -> str.Substring(0, 509) + "..."
+            | str -> str
+
+        /// Serializes INIValue to TextWriter
+        member this.WriteTo(w : TextWriter) =
+            let rec serialize =
+                function
+                | INIValue.String(Some(s)) -> w.Write(s)
+                | INIValue.String(None) -> ()
+                | INIValue.FieldText(s, iniValue) ->
+                    w.Write(s)
+                    serialize iniValue
+                | INIValue.Tuple(iList) ->
+                    let len = iList.Length - 1
+                    w.Write("(")
+                    iList
+                    |> List.indexed
+                    |> List.iter (fun (ind, i) ->
+                           serialize i
+                           if ind < len then w.Write(","))
+                    w.Write(")")
+                | INIValue.KeyValue(s, iniValue) ->
+                    w.Write(s + "=")
+                    serialize iniValue
+                | INIValue.Section(s, iList) ->
+                    w.Write("[" + s + "]")
+                    w.WriteLine()
+                    iList
+                    |> List.iter (fun i ->
+                           serialize i
+                           w.WriteLine())
+                    w.WriteLine()
+                | INIValue.File(iList) -> iList |> List.iter serialize
+            serialize this
+
+        member this.ToString() : string =
+            let w = new StringWriter(CultureInfo.InvariantCulture)
+            this.WriteTo(w)
+            w.GetStringBuilder().ToString()
+
 
         /// Parses the specified INI string
         static member Parse(text : string) = INIParser(text).Parse()

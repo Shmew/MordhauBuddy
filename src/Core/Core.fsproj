@@ -6,8 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="INIReader.fs" />
-    <Compile Include="FileOps.fs" />
-    <Compile Include="MordhauConfig.fs" />
+    <Compile Include="INIConfiguration.fs" />
     <Compile Include="Bridge.fs" />
     <None Include="paket.references" />
   </ItemGroup>
