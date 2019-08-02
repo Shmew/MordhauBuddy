@@ -1,19 +1,16 @@
 namespace MordhauBuddy.App
 
 module Main =
-    open FSharp.Core
-    open MordhauBuddy.Bindings.Electron
     open Fable.Core
     open Fable.Core.JsInterop
     open Fable.Import
+    //open MordhauBuddy.Bindings.Electron
+    open Electron
     open Node.Api
     open Utils
 
     // A global reference to the window object is required in order to prevent garbage collection
     let mutable mainWindow : BrowserWindow option = Option.None
-
-    [<Emit("$0.webContents.focus()")>]
-    let webContentsFocus (win : BrowserWindow) : unit = jsNative
 #if DEBUG
 
     module DevTools =
@@ -40,67 +37,57 @@ module Main =
             main.BrowserWindow.removeDevToolsExtension ("Redux DevTools")
 
         let connectRemoteDevViaExtension : unit -> unit = import "connectViaExtension" "remotedev"
-
-        let startBridge() =
-            let projPath = path.join (__dirname, @"..\..\Core\Core.fsproj")
-
-            let bridgeProc =
-                let args = ResizeArray<string>()
-                args.Add("watch")
-                args.Add("run")
-                args.Add(projPath)
-                childProcess.spawn ("dotnet", args, options = ({| shell = true |} |> toPlainJsObj))
-            bridgeProc.stdout.on ("data",
-                                  (fun data ->
-                                  if mainWindow.IsSome then JS.console.log data))
-            |> ignore
-            bridgeProc
-            
-            //let bridge = DevTools.startBridge()
-            //bridge.kill()
-
 #endif
 
 
+    //let startBridge() =
+    //    let projPath = path.join (__dirname, @"..\..\Core\Core.fsproj")
+    //    let bridgeProc =
+    //        let args = ResizeArray<string>()
+    //        args.Add("watch")
+    //        args.Add("run")
+    //        args.Add(projPath)
+    //        childProcess.spawn ("dotnet", args, options = ({| shell = true |} |> toPlainJsObj))
+    //    bridgeProc.stdout.on ("data",
+    //                          (fun data ->
+    //                          if mainWindow.IsSome then JS.console.log data))
+    //    |> ignore
+    //    bridgeProc
+    //let bridge = DevTools.startBridge()
+    //bridge.kill()
     let store = ElectronStore.getStore.Create()
 
     let createMainWindow() =
-        let winStateOpts =
-            jsOptions<WindowState.Options> (fun o ->
-                o.defaultHeight <- Some 700
-                o.defaultWidth <- Some 1200)
+        let mainWinState =
+            WindowState.getState (jsOptions<WindowState.Options> (fun o ->
+                                      o.defaultHeight <- 900
+                                      o.defaultWidth <- 1200))
 
-        let mainWinState = WindowState.getState winStateOpts
+        let win =
+            main.BrowserWindow.Create(jsOptions<BrowserWindowOptions> (fun o ->
+                                          o.width <- mainWinState.width
+                                          o.height <- mainWinState.height
+                                          o.autoHideMenuBar <- true
+                                          o.webPreferences <- jsOptions<WebPreferences> (fun w ->
+                                                                  w.contextIsolation <- false
+                                                                  w.nodeIntegration <- true)
+                                          o.frame <- false
+                                          o.backgroundColor <- "#FFF"
+                                          o.show <- false))
 
-        let options =
-            jsOptions<BrowserWindowOptions> (fun o ->
-                o.width <- mainWinState.width
-                o.height <- mainWinState.height
-                o.autoHideMenuBar <- true
-                o.webPreferences <- jsOptions<WebPreferences> (fun w ->
-                                        w.contextIsolation <- false
-                                        w.nodeIntegration <- true)
-                o.frame <- false
-                o.backgroundColor <- "#FFF"
-                o.show <- false)
-
-        let win = main.BrowserWindow.Create(options)
-
-        let onLoad (browser : BrowserWindow) =
-            browser.setTitle <| sprintf "%s - %s" Info.name Info.version
-            browser.show()
-        win.once ("ready-to-show", fun _ -> onLoad win) |> ignore
-        mainWinState.manage win
+        win.onceReadyToShow (fun _ ->
+            win.setTitle <| sprintf "%s - %s" Info.name Info.version
+            win.show()
+            mainWinState.manage win)
+        |> ignore
 #if DEBUG
         // Set up dev tools
         DevTools.installAllDevTools win |> ignore
         DevTools.connectRemoteDevViaExtension()
         // Open dev tools on startup
-        jsOptions<OpenDevToolsOptions> (fun o -> o.activate <- true)
-        |> (fun o -> win.webContents.openDevTools (options = o))
+        win.webContents.openDevTools()
         // Load correct URL
-        let port = ``process``.env?ELECTRON_WEBPACK_WDS_PORT
-        win.loadURL (sprintf "http://localhost:%s" port) |> ignore
+        win.loadURL (sprintf "http://localhost:%s" ``process``.env?ELECTRON_WEBPACK_WDS_PORT) |> ignore
 #else
         path.join(__dirname, "index.html")
         |> sprintf "file:///%s"
@@ -111,23 +98,19 @@ module Main =
         // Dereference the window object when closed. If your app supports
         // multiple windows, you can store them in an array and delete the
         // corresponding element here.
-        win.on ("closed", fun ev -> mainWindow <- Option.None) |> ignore
-        win.webContents.on ("devtools-opened", fun ev -> webContentsFocus win) |> ignore
+        win.onClosed (fun _ -> mainWindow <- None) |> ignore
         mainWindow <- Some win
 
     // This method will be called when Electron has finished
     // initialization and is ready to create browser windows.
     main.app.onReady (fun _ _ -> createMainWindow()) |> ignore
-
     // Quit when all windows are closed.
-    main.app.onWindowAllClosed (fun ev ->
-
-
+    main.app.onWindowAllClosed (fun _ ->
         // On OS X it's common for applications and their menu bar
         // to stay active until the user quits explicitly with Cmd + Q
         if ``process``.platform <> Node.Base.Platform.Darwin then main.app.quit())
     |> ignore
-    main.app.onActivate (fun ev _ ->
+    main.app.onActivate (fun _ _ ->
         // On OS X it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
         if mainWindow.IsNone then createMainWindow())

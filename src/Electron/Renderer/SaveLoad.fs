@@ -4,14 +4,14 @@ module SaveLoad =
     open System
     open Elmish
     open Fable.Core.JsInterop
-    open MordhauBuddy.Bindings.Electron
+    open Electron
     open Fable.React
     open Fable.React.Props
     open Node.Api
     open Node.Base
     open Fable.MaterialUI
     open Fable.MaterialUI.Core
-    open FSharp.Core  // To prevent shadowing None
+    open FSharp.Core  // To prevent shadowing Result.Error
     open Utils
 
     let writeUtf8Async text pathAndFilename =
@@ -35,18 +35,6 @@ module SaveLoad =
                     | None -> resolve <| Ok contents
                     | Some err -> resolve <| Error err
             )
-        )
-
-    let showSaveDialogAsync (opts: SaveDialogOptions) =
-        Promise.create (fun resolve reject ->
-            renderer.remote.dialog.showSaveDialog(opts)
-            |> resolve
-        )
-
-    let showOpenDialogAsync opts =
-        Promise.create (fun resolve reject ->
-            renderer.remote.dialog.showOpenDialog(opts)
-            |> resolve
         )
 
     [<RequireQualifiedAccess>]
@@ -94,10 +82,9 @@ module SaveLoad =
                     )
                 |]
             )
-            let! result = showSaveDialogAsync opts
-            match! result with
-            | res when res.canceled -> return Ok SaveResult.Canceled
-            | res ->
+            let! res = renderer.remote.dialog.showSaveDialog opts
+            if res.canceled then return Ok SaveResult.Canceled
+            else
                 let! result =
                     res.filePath
                     |> String.ensureEndsWith ".txt"
@@ -119,10 +106,9 @@ module SaveLoad =
                     )
                 |]
             )
-            let! result = showOpenDialogAsync opts
-            match! result with
-            | res when res.canceled -> return Ok LoadResult.Canceled
-            | res ->
+            let! res = renderer.remote.dialog.showOpenDialog opts
+            if res.canceled then return Ok LoadResult.Canceled
+            else
                 let! result = readUtf8Async (Seq.head res.filePaths)
                 return result |> Result.map LoadResult.Loaded
         }

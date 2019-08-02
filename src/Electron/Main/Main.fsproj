@@ -9,8 +9,5 @@
     <Compile Include="Main.fs" />
     <None Include="paket.references" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Fable.Electron\Fable.Electron.fsproj" />
-  </ItemGroup>
   <Import Project="..\..\..\.paket\Paket.Restore.targets" />
 </Project>

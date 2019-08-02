@@ -1,6 +1,6 @@
 group Electron
-	FSharp.Core
 	Fable.Core
+	Fable.Electron
 	Fable.Elmish
 	Fable.Elmish.React
 	Fable.Elmish.Debugger
@@ -11,8 +11,8 @@ group Electron
 	Fable.MaterialUI
 	Fable.MaterialUI.Icons
 	Fable.MaterialUI.MaterialDesignIcons
-	Fable.Node
 	Fable.Promise
 	Fable.React
 	Fable.Validation
+	FSharp.Core
 	Elmish.Bridge.Client

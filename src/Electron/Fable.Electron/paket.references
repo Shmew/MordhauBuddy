@@ -1,5 +1,0 @@
-group Electron
-	FSharp.Core
-	Fable.Core
-	Fable.Browser.Dom
-	Fable.Node

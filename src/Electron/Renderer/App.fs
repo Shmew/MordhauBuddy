@@ -77,7 +77,7 @@ module App =
         let m =
             { Page = Home
               IsMax = window.isMaximized() 
-              IsDarkTheme = false //use store to get this later
+              IsDarkTheme = true //use store to get this later
               AutoCompleteDownshift = AutoComplete.init()
               Badges = Badges.init()
               Dialogs = Dialogs.init()
@@ -114,16 +114,19 @@ module App =
             { m with TextFields = TextFields.update msg' m.TextFields }, Cmd.none
         | INITestMsg msg' ->
             match msg' with
-            | INITest.ToggleDirectory _ -> 
-                { m with INITest = INITest.update msg' m.INITest }, Cmd.none
             | INITest.ServerMsg sMsg ->
-                m, Cmd.batch [ Toastr.info (Toastr.message "Message sent to server!"); Cmd.namedBridgeSend "testBridge" sMsg ]
+                m, Cmd.batch [ Toastr.info (Toastr.message "Message sent to server!"); Cmd.namedBridgeSend "INI" sMsg ]
             | INITest.ClientMsg _ ->
                 { m with INITest = INITest.update msg' m.INITest }, Cmd.none
+            | INITest.StepperSubmit
+            | INITest.StepperRestart
+            | INITest.StepperNext
+            | INITest.StepperBack
+                -> { m with INITest = INITest.update msg' m.INITest }, Cmd.none
         | ServerMsg msg' ->
             match msg' with
             | Resp cMsg ->
-                { m with INITest = INITest.update (INITest.ClientMsg "wowie!") m.INITest }, Toastr.success (Toastr.message cMsg)
+                { m with INITest = INITest.update (INITest.ClientMsg cMsg) m.INITest }, Toastr.success (Toastr.message "wowie!")
 
     // Domain/Elmish above, view below
     let private styles (theme : ITheme) : IStyles list =
@@ -199,13 +202,17 @@ module App =
                     PaletteProp.Primary [
                         PaletteIntentionProp.Main "#BB86FC"
                         PaletteIntentionProp.Dark "#3700B3"
+                        PaletteIntentionProp.ContrastText "#fff"
                     ]
                     PaletteProp.Secondary [
                         PaletteIntentionProp.Main "#03DAC6"
+                        PaletteIntentionProp.ContrastText "#fff"
                     ]
                     PaletteProp.Error [
                         PaletteIntentionProp.Main "#CF6679"
+                        PaletteIntentionProp.ContrastText "#fff"
                     ]
+                    PaletteProp.ContrastThreshold 3
                 ]
                 ThemeProp.Typography [
                     ThemeTypographyProp.UseNextVariants true
@@ -254,73 +261,73 @@ module App =
                         CSSProp.BackgroundColor (if model.IsDarkTheme then "#424242" else "#6200EE")
                     ]
                 ] [
-                toolbar [
-                    Style [
-                        CSSProp.Padding "0px"
-                        CSSProp.BackgroundColor (if model.IsDarkTheme then "#212121" else "#3700B3")
-                        CSSProp.MinHeight "0px"
-                        CSSProp.Custom("WebkitAppRegion", "drag")
-                    ]
-                ] [
-                    typography [
-                        TypographyProp.Variant TypographyVariant.Subtitle2
+                    toolbar [
                         Style [
-                            CSSProp.Width "93%"
-                            CSSProp.Padding "5px"
-                            CSSProp.Color "#ffffff"
+                            CSSProp.Padding "0px"
+                            CSSProp.BackgroundColor (if model.IsDarkTheme then "#212121" else "#3700B3")
+                            CSSProp.MinHeight "0px"
+                            CSSProp.Custom("WebkitAppRegion", "drag")
                         ]
-                    ] [ sprintf "%s - %s" Info.name Info.version |> str ]
-                    iconButton [
-                        DOMAttr.OnClick (fun _ -> window.minimize())
-                        Class classes?titleButton
                     ] [
-                        windowMinimizeIcon []
+                        typography [
+                            TypographyProp.Variant TypographyVariant.Subtitle2
+                            Style [
+                                CSSProp.Width "93%"
+                                CSSProp.Padding "5px"
+                                CSSProp.Color "#ffffff"
+                            ]
+                        ] [ sprintf "%s - %s" Info.name Info.version |> str ]
+                        iconButton [
+                            DOMAttr.OnClick (fun _ -> window.minimize())
+                            Class classes?titleButton
+                        ] [
+                            windowMinimizeIcon []
+                        ]
+                        iconButton [
+                            DOMAttr.OnClick (fun _ ->
+                                window.maximize()
+                                true |> MinMaxMsg |> dispatch)
+                            Class classes?titleButton
+                            Style [hideIfMax true]
+                        ] [
+                            windowMaximizeIcon []
+                        ]
+                        iconButton [
+                            DOMAttr.OnClick (fun _ -> 
+                                window.unmaximize()
+                                false |> MinMaxMsg |> dispatch)
+                            Class classes?titleButton
+                            Style [hideIfMax false]
+                        ] [
+                            windowRestoreIcon []
+                        ]
+                        iconButton [
+                            DOMAttr.OnClick (fun _ -> window.close())
+                            Class classes?titleButton
+                        ] [
+                            windowCloseIcon []
+                        ]
                     ]
-                    iconButton [
-                        DOMAttr.OnClick (fun _ ->
-                            window.maximize()
-                            true |> MinMaxMsg |> dispatch)
-                        Class classes?titleButton
-                        Style [hideIfMax true]
+                    toolbar [ 
+                        Style [CSSProp.PaddingRight "0"]
                     ] [
-                        windowMaximizeIcon []
-                    ]
-                    iconButton [
-                        DOMAttr.OnClick (fun _ -> 
-                            window.unmaximize()
-                            false |> MinMaxMsg |> dispatch)
-                        Class classes?titleButton
-                        Style [hideIfMax false]
-                    ] [
-                        windowRestoreIcon []
-                    ]
-                    iconButton [
-                        DOMAttr.OnClick (fun _ -> window.close())
-                        Class classes?titleButton
-                    ] [
-                        windowCloseIcon []
-                    ]
-                ]
-                toolbar [ 
-                    Style [CSSProp.PaddingRight "0"]
-                ] [
-                    typography [
-                        TypographyProp.Variant TypographyVariant.H6
+                        typography [
+                            TypographyProp.Variant TypographyVariant.H6
                         
-                        Style [
-                            CSSProp.Width "100%"
-                            CSSProp.Color "#ffffff"
+                            Style [
+                                CSSProp.Width "100%"
+                                CSSProp.Color "#ffffff"
+                            ]
+                        ] [ model.Page |> pageTitle |> str ]
+                        iconButton [
+                            DOMAttr.OnClick (fun _ -> 
+                                model.IsDarkTheme |> not 
+                                |> DarkTheme |> dispatch)
+                            Class classes?titleButton
+                            Style [CSSProp.Color "#ffffff"; CSSProp.BorderRadius "20%"]
+                        ] [
+                            themeLightDarkIcon []
                         ]
-                    ] [ model.Page |> pageTitle |> str ]
-                    iconButton [
-                        DOMAttr.OnClick (fun _ -> 
-                            model.IsDarkTheme |> not 
-                            |> DarkTheme |> dispatch)
-                        Class classes?titleButton
-                        Style [CSSProp.Color "#ffffff"; CSSProp.BorderRadius "20%"]
-                    ] [
-                        themeLightDarkIcon []
-                    ]
                     ]
                 ]
                 drawer [
@@ -339,7 +346,7 @@ module App =
                     Class classes?content
                     Style [CSSProp.PaddingTop "108px"]
                 ] [
-                    div [ Class classes?toolbar ] []
+                    //div [ Class classes?toolbar ] []
                     pageView model dispatch
                 ]
             ]

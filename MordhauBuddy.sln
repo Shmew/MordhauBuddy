@@ -68,9 +68,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Main", "src\Electron\Main\M
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Renderer", "src\Electron\Renderer\Renderer.fsproj", "{8980DB6F-B0DC-4FAA-B015-2A39D4637DD3}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Fable.Electron", "src\Electron\Fable.Electron\Fable.Electron.fsproj", "{9FF539CB-E7FE-4805-AE4E-6C9F92F7412F}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Shared", "src\Shared\Shared.fsproj", "{F59B5EFC-F595-431F-8125-FFFF211FE321}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Shared", "src\Shared\Shared.fsproj", "{F59B5EFC-F595-431F-8125-FFFF211FE321}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -98,10 +96,6 @@ Global
 		{8980DB6F-B0DC-4FAA-B015-2A39D4637DD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8980DB6F-B0DC-4FAA-B015-2A39D4637DD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8980DB6F-B0DC-4FAA-B015-2A39D4637DD3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9FF539CB-E7FE-4805-AE4E-6C9F92F7412F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9FF539CB-E7FE-4805-AE4E-6C9F92F7412F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9FF539CB-E7FE-4805-AE4E-6C9F92F7412F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9FF539CB-E7FE-4805-AE4E-6C9F92F7412F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F59B5EFC-F595-431F-8125-FFFF211FE321}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F59B5EFC-F595-431F-8125-FFFF211FE321}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F59B5EFC-F595-431F-8125-FFFF211FE321}.Release|Any CPU.ActiveCfg = Release|Any CPU

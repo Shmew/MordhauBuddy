@@ -147,7 +147,6 @@ module INIReader =
             this.WriteTo(w)
             w.GetStringBuilder().ToString()
 
-
         /// Parses the specified INI string
         static member Parse(text : string) = INIParser(text).Parse()
 

@@ -1,9 +1,5 @@
 group Electron
-	FSharp.Core
 	Fable.Core
-	Fable.Node
+	Fable.Electron
 	Fable.Promise
-	Fable.React
-	Fable.SimpleJson
-	Fable.Elmish
-	Elmish.Bridge.Client
+	FSharp.Core

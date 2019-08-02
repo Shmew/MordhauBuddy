@@ -16,94 +16,162 @@ module INITest =
     open Elmish
     open Elmish.Bridge
     open MordhauBuddy.Shared.ElectronBridge
-    open Toastr
-
-    //type FileItem =
-    //    | Directory of {| Id: int; Name: string; IsOpen: bool; Children: FileItem list |}
-    //    | File of {| Id: int; Name: string |}
-
-    type State = { Message: string }
-
-    type Model = { State : State }
+    open BridgeUtils
+    open Microsoft.FSharp.Reflection
 
     type Msg =
-        | ToggleDirectory of int
         | ServerMsg of RemoteServerMsg
-        | ClientMsg of string
+        | ClientMsg of BridgeResult
+        | StepperSubmit
+        | StepperRestart
+        | StepperNext
+        | StepperBack
 
-    let init() = {
-        //Files = [
-        //    Directory 
-        //        {| Id = 1
-        //           Name = "Documents"
-        //           IsOpen = false 
-        //           Children = [
-        //            File {| Id = 2; Name = "report.pdf" |}
-        //            File {| Id = 3; Name = "image.png" |}
-        //            Directory 
-        //                {| Id = 4
-        //                   Name = "Programs"
-        //                   IsOpen = false
-        //                   Children = [ File {| Id = 5; Name = "word.exe" |} ] |}
-        //        ]
-        //    |}
-        //]
-        State = {Message = "init state"}
-    }
+    type Steps =
+        | LocateConfig
+        | ChooseFace
+        | ApplyChanges
+        member this.Text =
+            this.ToString()
+            |> String.duToTitle
 
-    //myCmd "test" (fun _ result -> System.Console.WriteLine(result.ToString()))
+        member this.StepCaption =
+            match this with
+            | LocateConfig -> "Find where your configuration files are located."
+            | ChooseFace -> "Choose which type of action you'd like to take."
+            | ApplyChanges -> "Submit the changes."
 
-    //let rec toggleDirectoryOpened id = function
-    //    | File file -> File file
-    //    | Directory directory when directory.Id = id ->
-    //        Directory {| directory with IsOpen = not directory.IsOpen |}
-    //    | Directory directory ->
-    //        Directory {| directory with Children = List.map (toggleDirectoryOpened id) directory.Children |}
+        static member private Cases =
+            FSharpType.GetUnionCases typeof<Steps>
 
-    //let update (msg: Msg) (model: Model) =
-    //    match msg with
-    //    | ToggleDirectory id -> { model with Files = List.map (toggleDirectoryOpened id) model.Files }
+        static member private Instantiate name =
+            Steps.Cases
+            |> Array.tryFind (fun uc -> uc.Name = name)
+            |> Option.map (fun uc -> 
+                Reflection.FSharpValue.MakeUnion( uc, [||] ) :?> Steps)
+            |> Option.get
+
+        static member GetSteps =
+            Steps.Cases
+            |> Array.map (fun uc ->
+                uc.Name |> Steps.Instantiate)
+
+        member this.StepValue =
+            Steps.Cases
+            |> Seq.tryFind (fun uc -> uc.Name = this.ToString())
+            |> Option.map (fun uc -> uc.Tag)
+            |> Option.get
+
+        static member First =
+            Steps.Cases
+            |> Array.head
+            |> (fun t -> t.Name) 
+            |> Steps.Instantiate 
+
+        member this.Last =
+            Steps.Cases 
+            |> Array.last 
+            |> (fun t -> t.Name) 
+            |> Steps.Instantiate 
+            |> (=) this
+            
+        member this.Next =
+            this.StepValue + 1
+            |> Array.tryItem <| Steps.Cases
+            |> function
+            | Some(i) -> i.Name
+            | None -> 
+                Steps.Cases
+                |> Array.head
+                |> (fun t -> t.Name)
+            |> Steps.Instantiate
+
+        member this.Back =
+            this.StepValue - 1
+            |> Array.tryItem <| Steps.Cases
+            |> function
+            | Some(i) -> i.Name
+            | None -> 
+                Steps.Cases
+                |> Array.head
+                |> (fun t -> t.Name)
+            |> Steps.Instantiate
+
+        member this.Buttons dispatch complete =
+            if not complete then
+                div [] [
+                    button [
+                        HTMLAttr.Disabled (this.StepValue = 0)
+                        DOMAttr.OnClick <| fun _ -> dispatch (StepperBack)
+                    ] [ str "Back" ]
+                    button [
+                        ButtonProp.Variant ButtonVariant.Contained
+                        MaterialProp.Color ComponentColor.Primary
+                        DOMAttr.OnClick <| fun _ -> 
+                            dispatch (if this.Last then StepperSubmit else StepperNext)
+                    ] [ str <| if this.Last then "Submit" else "Next" ]
+                ]
+            else
+                div [] [
+                    button [
+                        DOMAttr.OnClick <| fun _ -> dispatch (StepperRestart)
+                    ] [ str "Restart" ]
+                ]
+
+        member this.StepElems complete =
+            let isComplete i =
+                match complete,this.StepValue > i with
+                | true, _ -> true
+                | _, true -> true
+                | _ -> false
+
+            Steps.GetSteps
+            |> Array.map (fun stepCase ->
+                step [StepProp.Completed <| isComplete stepCase.StepValue] [
+                    stepLabel [] [str stepCase.Text]
+                ])
+
+        member this.Content =
+            ()
+
+    type Model = 
+        { Message : string
+          Stepper : Steps
+          StepperComplete : bool }
+
+    let init() =
+        { Message = "init"
+          Stepper = LocateConfig
+          StepperComplete = false }
 
     let update (msg: Msg) (model: Model) =
         match msg with
-        | ToggleDirectory id -> 
-            { model with State = {Message = "updater"} }
         | ServerMsg sMsg ->
             model
-            //Bridge.NamedSend("testBridge",bMsg, callback = (fun () -> ()))
         | ClientMsg cMsg ->
-            { model with State = {Message = cMsg} }
-
-    //let fileIcon = i [ Class "fa fa-file" ] [ ]
-    //let openFolderIcon = i [ Class "fa fa-folder-open" ] [ ]
-    //let closedFolderIcon = i [ Class "fa fa-folder" ] [ ]
-
-    //let rec renderFile dispatch = function
-    //    | File file ->
-    //        AnimatedTree.animatedTree [
-    //            AnimatedTree.Key file.Id
-    //            AnimatedTree.Icon fileIcon
-    //            AnimatedTree.Content (str file.Name)
-    //        ]
-    //    | Directory directory ->
-    //        AnimatedTree.animatedTree [
-    //            AnimatedTree.Key directory.Id
-    //            AnimatedTree.Icon (if directory.IsOpen then openFolderIcon else closedFolderIcon)
-    //            AnimatedTree.Content (str directory.Name)
-    //            AnimatedTree.IsOpen directory.IsOpen
-    //            AnimatedTree.OnToggled (fun _ -> dispatch (ToggleDirectory directory.Id))
-    //            AnimatedTree.Children [ for file in directory.Children -> renderFile dispatch file  ]
-    //        ]
-
+            match cMsg with
+            | BridgeResult.Text(s) ->
+                { model with Message = s}
+            | BridgeResult.TextList(sList) ->
+                { model with Message = sList |> List.reduce (fun acc elem -> acc + " " + elem)}
+            | _ -> model
+        | StepperSubmit -> { model with StepperComplete = true }
+        | StepperRestart -> init()
+        | StepperNext -> { model with Stepper = model.Stepper.Next }
+        | StepperBack -> { model with Stepper = model.Stepper.Back }
 
     // Domain/Elmish above, view below
     let private styles (theme : ITheme) : IStyles list = []
 
     let private view' (classes: IClasses) model dispatch =
         div [] [
-            str (model.State.Message)
+            stepper [ActiveStep (model.Stepper.StepValue)]
+                <| model.Stepper.StepElems model.StepperComplete
+            str model.Stepper.StepCaption
+            model.Stepper.Buttons dispatch model.StepperComplete
+            str (model.Message)
             iconButton [
-                DOMAttr.OnClick (fun _ -> dispatch (ServerMsg(Text("wow"))))
+                DOMAttr.OnClick <| fun _ -> dispatch (INI.Ops.getGameProfiles |> ServerMsg)
             ] [ str "Send msg to server" ]
         ]
 

@@ -4,11 +4,11 @@ module ElectronBridge =
     [<AutoOpen>]
     module INITypes =
         type Selectors =
-            { Selectors: string list }
+            { Selectors : string list }
 
         type INIFile =
-            { File: string
-              WorkingDir: string option }
+            { File : string
+              WorkingDir : string option }
 
         [<RequireQualifiedAccess>]
         [<StructuredFormatDisplay("{_Print}")>]
@@ -19,7 +19,6 @@ module ElectronBridge =
             | KeyValue of string * INIValue
             | Section of string * INIValue list
             | File of INIValue list
-
             /// [omit]
             [<CompilerMessageAttribute("This method is intended for use in generated code only.", 10001, IsHidden = true,
                                        IsError = false)>]
@@ -29,18 +28,17 @@ module ElectronBridge =
                 | str -> str
 
         type FaceValues =
-            { Translate: int list
-              Rotate: int list
-              Scale: int list }
-            member this.getTuples =
-                [this.Translate; this.Rotate; this.Scale]
+            { Translate : int list
+              Rotate : int list
+              Scale : int list }
+            member this.GetTuples =
+                [ this.Translate; this.Rotate; this.Scale ]
                 |> List.map (fun iList ->
-                    iList 
-                    |> List.map (fun i ->
-                        i |> string 
-                        |> Some 
-                        |> INIValue.String) 
-                    |> INIValue.Tuple)
+                       iList
+                       |> List.map (string
+                                    >> Some
+                                    >> INIValue.String)
+                       |> INIValue.Tuple)
 
         type FileOperation =
             | Replace of INIValue * INIValue * Selectors
@@ -59,9 +57,9 @@ module ElectronBridge =
         type INIOperations =
             | Operation of FileOperation
             | Faces of Faces
+            static member Endpoint = "/ws/iniops"
 
-    type RemoteServerMsg =
-        | INIOperations of INIOperations
+    type RemoteServerMsg = INIOps of INIOperations
 
     [<RequireQualifiedAccess>]
     type BridgeResult =
@@ -71,9 +69,7 @@ module ElectronBridge =
         | Success
         | Failure
 
-    type RemoteClientMsg = 
-        | Resp of BridgeResult
+    type RemoteClientMsg = Resp of BridgeResult
 
     let port = "8085" |> uint16
     let endpoint = sprintf "http://localhost:%i" port
-    let socketPath = "/ws"
