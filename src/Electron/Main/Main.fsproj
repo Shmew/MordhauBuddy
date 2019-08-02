@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="main.js" />
-    <Compile Include="Utils.fs" />
+    <Compile Include="Bindings.fs" />
     <Compile Include="Main.fs" />
     <None Include="paket.references" />
   </ItemGroup>

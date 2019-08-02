@@ -7,7 +7,7 @@ module Main =
     //open MordhauBuddy.Bindings.Electron
     open Electron
     open Node.Api
-    open Utils
+    open Bindings
 
     // A global reference to the window object is required in order to prevent garbage collection
     let mutable mainWindow : BrowserWindow option = Option.None
@@ -55,8 +55,6 @@ module Main =
     //    bridgeProc
     //let bridge = DevTools.startBridge()
     //bridge.kill()
-    let store = ElectronStore.getStore.Create()
-
     let createMainWindow() =
         let mainWinState =
             WindowState.getState (jsOptions<WindowState.Options> (fun o ->

@@ -6,7 +6,7 @@
   <ItemGroup>
     <None Include="scss/main.scss" />
     <None Include="main.js" />
-    <Compile Include="BridgeUtils.fs" />
+    <Compile Include="RenderUtils.fs" />
     <Compile Include="Toastr.fs" />
     <Compile Include="SnackbarLib.fs" />
     <Compile Include="AutoComplete.fs" />

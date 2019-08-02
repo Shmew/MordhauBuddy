@@ -12,7 +12,7 @@ module SaveLoad =
     open Fable.MaterialUI
     open Fable.MaterialUI.Core
     open FSharp.Core  // To prevent shadowing Result.Error
-    open Utils
+    open RenderUtils
 
     let writeUtf8Async text pathAndFilename =
         Promise.create (fun resolve reject ->

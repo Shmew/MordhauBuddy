@@ -13,7 +13,8 @@ module App =
     open Fable.MaterialUI.Props
     open Fable.MaterialUI.MaterialDesignIcons
     open Fable.MaterialUI.Icons
-    open Utils
+    open Bindings
+    open RenderUtils
     open Elmish.Bridge
     open MordhauBuddy.Shared.ElectronBridge
 
@@ -43,6 +44,8 @@ module App =
         | Snackbars -> "Snackbars"
         | TextFields -> "Text fields"
         | INITest -> "INI Test"
+
+    
 
     type Msg =
         | Navigate of Page
@@ -309,7 +312,7 @@ module App =
                         ]
                     ]
                     toolbar [ 
-                        Style [CSSProp.PaddingRight "0"]
+                        Style [ CSSProp.PaddingRight "0" ]
                     ] [
                         typography [
                             TypographyProp.Variant TypographyVariant.H6
@@ -324,7 +327,7 @@ module App =
                                 model.IsDarkTheme |> not 
                                 |> DarkTheme |> dispatch)
                             Class classes?titleButton
-                            Style [CSSProp.Color "#ffffff"; CSSProp.BorderRadius "20%"]
+                            Style [ CSSProp.Color "#ffffff"; CSSProp.BorderRadius "20%" ]
                         ] [
                             themeLightDarkIcon []
                         ]
@@ -337,14 +340,15 @@ module App =
                 ] [
                     list [ 
                         Component (ReactElementType.ofHtmlElement "nav")
-                        Style [CSSProp.PaddingTop "108px"]
+                        Style [ CSSProp.PaddingTop "108px" ]
                     ] [
                         Page.All |> List.map (pageListItem model dispatch) |> ofList
                     ]
                 ]
                 main [ 
                     Class classes?content
-                    Style [CSSProp.PaddingTop "108px"]
+                    Style [ CSSProp.PaddingTop "108px" ]
+
                 ] [
                     //div [ Class classes?toolbar ] []
                     pageView model dispatch

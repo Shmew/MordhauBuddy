@@ -12,7 +12,7 @@ module INITest =
     open Fable.MaterialUI.MaterialDesignIcons
     open Fable.MaterialUI.Icons
     open FSharp.Core
-    open Utils
+    open RenderUtils
     open Elmish
     open Elmish.Bridge
     open MordhauBuddy.Shared.ElectronBridge
@@ -26,6 +26,11 @@ module INITest =
         | StepperRestart
         | StepperNext
         | StepperBack
+
+    let trySavedConfigDir () =
+        match ElectronStore.store.get("configDir", defaultValue = "") |> string with
+        | "" -> None
+        | s -> Some(s)
 
     type Steps =
         | LocateConfig
@@ -99,7 +104,9 @@ module INITest =
 
         member this.Buttons dispatch complete =
             if not complete then
-                div [] [
+                div [ 
+                    Style [CSSProp.PaddingTop (string "20px") ] 
+                ] [
                     button [
                         HTMLAttr.Disabled (this.StepValue = 0)
                         DOMAttr.OnClick <| fun _ -> dispatch (StepperBack)
@@ -112,7 +119,9 @@ module INITest =
                     ] [ str <| if this.Last then "Submit" else "Next" ]
                 ]
             else
-                div [] [
+                div [ 
+                    Style [CSSProp.PaddingTop (string "20px") ] 
+                ] [
                     button [
                         DOMAttr.OnClick <| fun _ -> dispatch (StepperRestart)
                     ] [ str "Restart" ]
@@ -131,18 +140,17 @@ module INITest =
                     stepLabel [] [str stepCase.Text]
                 ])
 
-        member this.Content =
-            ()
-
     type Model = 
         { Message : string
           Stepper : Steps
-          StepperComplete : bool }
+          StepperComplete : bool
+          ConfigDir: string option }
 
     let init() =
         { Message = "init"
           Stepper = LocateConfig
-          StepperComplete = false }
+          StepperComplete = false
+          ConfigDir = trySavedConfigDir() }
 
     let update (msg: Msg) (model: Model) =
         match msg with
@@ -161,18 +169,32 @@ module INITest =
         | StepperBack -> { model with Stepper = model.Stepper.Back }
 
     // Domain/Elmish above, view below
-    let private styles (theme : ITheme) : IStyles list = []
+    let private styles (theme : ITheme) : IStyles list = [
+        Styles.Custom' ("toolbar", theme.mixins.toolbar)
+    ]
 
     let private view' (classes: IClasses) model dispatch =
+        let content =
+            match model.Stepper with
+            | LocateConfig ->
+                match model.ConfigDir with
+                | Some(dir) -> str dir
+                | None ->
+                    str "Attempting to automatically locate Mordhau directory."
+            | ChooseFace -> str ""
+            | ApplyChanges -> str ""
+
         div [] [
             stepper [ActiveStep (model.Stepper.StepValue)]
                 <| model.Stepper.StepElems model.StepperComplete
+            
+            div [Style [ CSSProp.Padding (string "50px") ]] [ content ]
             str model.Stepper.StepCaption
             model.Stepper.Buttons dispatch model.StepperComplete
-            str (model.Message)
-            iconButton [
-                DOMAttr.OnClick <| fun _ -> dispatch (INI.Ops.getGameProfiles |> ServerMsg)
-            ] [ str "Send msg to server" ]
+            //str (model.Message)
+            //iconButton [
+            //    DOMAttr.OnClick <| fun _ -> dispatch (INI.Ops.getGameProfiles |> ServerMsg)
+            //] [ str "Send msg to server" ]
         ]
 
     // Workaround for using JSS with Elmish

@@ -1,56 +1,9 @@
 namespace MordhauBuddy.App
 
-module Utils =
+module Bindings =
     open Fable.Core
     open Fable.Core.JsInterop
-    open Fable.Import
     open Electron
-    open Node.Api
-
-    let getRemoteWin() = renderer.remote.getCurrentWindow()
-
-    [<Emit("__static + \"/\" + $0")>]
-    let private stat' (s : string) : string = jsNative
-
-    /// Prefixes the string with the static asset root path.
-    let stat (s : string) =
-#if DEBUG
-        s
-#else
-        stat' s
-#endif
-
-
-    [<AutoOpen>]
-    module Extensions =
-        type Result<'T, 'TError> with
-
-            member this.IsOk =
-                match this with
-                | Ok _ -> true
-                | Error _ -> false
-
-            member this.IsError =
-                match this with
-                | Error _ -> true
-                | Ok _ -> false
-
-            member this.ErrorOr value =
-                match this with
-                | Ok _ -> value
-                | Error err -> err
-
-    module String =
-        open System.Text.RegularExpressions
-
-        let ensureEndsWith (suffix : string) (str : string) =
-            if str.EndsWith suffix then str
-            else str + suffix
-
-        let duToTitle (s : string) =
-            MatchEvaluator(fun m -> " " + m.Value)
-            |> (fun m -> Regex.Replace(s.Substring(1), "[A-Z]", m))
-            |> (+) (s.Substring(0, 1))
 
     module Info =
         let private pkgJson : obj = importDefault "../../../package.json"
@@ -139,37 +92,3 @@ module Utils =
             abstract fullScreen : bool with get, set
 
         let getState : Options -> State = importDefault "electron-window-state"
-
-    module ElectronStore =
-        type Store =
-            abstract set : string * string -> unit
-            abstract set : obj -> unit
-            abstract get : string * ?defaultValue:string -> obj
-            abstract has : string -> bool
-            abstract delete : string -> unit
-            abstract clear : unit
-            abstract onDidChange : string * Browser.Types.Event -> unit
-            abstract onDidAnyChange : Browser.Types.Event -> unit
-            abstract size : int
-            abstract store : obj
-            abstract path : string
-            abstract openInEditor : unit
-
-        type StoreStatic =
-            [<EmitConstructor>]
-            abstract Create : unit -> Store
-
-        type StoreNum =
-            { Type : string
-              Maximum : int
-              Minimum : int
-              Default : int }
-
-        type StoreString =
-            { Type : string
-              Format : string }
-
-        type Schema =
-            { Test : StoreNum }
-
-        let getStore : StoreStatic = importDefault "electron-store"

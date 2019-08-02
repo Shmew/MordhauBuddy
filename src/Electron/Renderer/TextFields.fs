@@ -8,7 +8,7 @@ module TextFields =
     open Fable.React.Props
     open Fable.MaterialUI.Core
     open Fable.MaterialUI
-    open Utils
+    open RenderUtils
     open FSharp.Core  // To avoid shadowing Result<_,_>
 
     let required s =
