@@ -15,8 +15,10 @@ module App =
     open Fable.MaterialUI.Icons
     open Bindings
     open RenderUtils
+    open BridgeUtils
     open Elmish.Bridge
     open MordhauBuddy.Shared.ElectronBridge
+    open FSharp.Core // To avoid shadowing Result<_,_>
 
     type Page =
         | Home
@@ -44,8 +46,6 @@ module App =
         | Snackbars -> "Snackbars"
         | TextFields -> "Text fields"
         | INITest -> "INI Test"
-
-    
 
     type Msg =
         | Navigate of Page
@@ -116,20 +116,13 @@ module App =
         | TextFieldsMsg msg' ->
             { m with TextFields = TextFields.update msg' m.TextFields }, Cmd.none
         | INITestMsg msg' ->
-            match msg' with
-            | INITest.ServerMsg sMsg ->
-                m, Cmd.batch [ Toastr.info (Toastr.message "Message sent to server!"); Cmd.namedBridgeSend "INI" sMsg ]
-            | INITest.ClientMsg _ ->
-                { m with INITest = INITest.update msg' m.INITest }, Cmd.none
-            | INITest.StepperSubmit
-            | INITest.StepperRestart
-            | INITest.StepperNext
-            | INITest.StepperBack
-                -> { m with INITest = INITest.update msg' m.INITest }, Cmd.none
+            let m', cmd = INITest.update msg' m.INITest
+            { m with INITest = m' }, Cmd.map INITestMsg cmd
         | ServerMsg msg' ->
             match msg' with
-            | Resp cMsg ->
-                { m with INITest = INITest.update (INITest.ClientMsg cMsg) m.INITest }, Toastr.success (Toastr.message "wowie!")
+            | Resp bRes ->
+                let m', cmd = INITest.update (INITest.ClientMsg bRes) m.INITest
+                { m with INITest = m' }, Cmd.map INITestMsg cmd
 
     // Domain/Elmish above, view below
     let private styles (theme : ITheme) : IStyles list =
@@ -137,6 +130,8 @@ module App =
         [
             Styles.Root [
                 Display DisplayOptions.Flex
+                CSSProp.Height "inherit"
+                CSSProp.Custom("user-select","none")
             ]
             Styles.Custom ("titleButton", [
                 CSSProp.Padding "5px"
@@ -161,7 +156,11 @@ module App =
             ])
             Styles.Custom ("content", [
                 FlexGrow 1
-                CSSProp.Padding (theme.spacing.unit * 3)
+                CSSProp.Height "inherit"
+                CSSProp.PaddingTop "9em"
+                CSSProp.PaddingLeft "2em"
+                CSSProp.PaddingRight "2em"
+                CSSProp.PaddingBottom "2em"
             ])
             Styles.Custom' ("toolbar", theme.mixins.toolbar)
         ]
@@ -347,10 +346,9 @@ module App =
                 ]
                 main [ 
                     Class classes?content
-                    Style [ CSSProp.PaddingTop "108px" ]
+                    //Style [ CSSProp.PaddingTop "108px" ]
 
                 ] [
-                    //div [ Class classes?toolbar ] []
                     pageView model dispatch
                 ]
             ]

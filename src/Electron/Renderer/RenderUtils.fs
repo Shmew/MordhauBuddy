@@ -8,20 +8,20 @@ module BridgeUtils =
         [<RequireQualifiedAccess>]
         module Ops =
             let private wrapOps iCmd = INIOps(Operation(iCmd))
-            let replace oldI newI sels = Replace(oldI,newI,sels) |> wrapOps
-            let delete oldI sels = Delete(oldI,sels) |> wrapOps
+            let replace s sels = Replace(s,sels) |> wrapOps
+            let delete sels = Delete(sels) |> wrapOps
             let exists iFile = Exists(iFile) |> wrapOps
             let parse iFile = Parse(iFile) |> wrapOps
             let backup iFile = Backup(iFile) |> wrapOps
-            let getGameProfiles = DefaultDir |> wrapOps
+            let defDir = DefaultDir |> wrapOps
 
         [<RequireQualifiedAccess>]
         module Faces =
             let private wrapFace fCmd = INIOps(Faces(fCmd))
-            let setRandom profile iVal = Random(profile,iVal) |> wrapFace
-            let setFrankenstein profile iVal = Frankenstein(profile,iVal) |> wrapFace
-            let setCustom profile iVal fVal = Custom(profile,iVal,fVal) |> wrapFace
-            let getProfileList iVal = ProfileList(iVal) |> wrapFace
+            let setRandom profile = Random(profile) |> wrapFace
+            let setFrankenstein profile = Frankenstein(profile) |> wrapFace
+            let setCustom profile fVal = Custom(profile,fVal) |> wrapFace
+            let getProfileList = ProfileList |> wrapFace
 
 module RenderUtils =
     open Electron
@@ -29,6 +29,21 @@ module RenderUtils =
     open Fable.Core.JsInterop
     open Fable.Import
     
+    let isWindows = Node.Api.``process``.platform = Node.Base.Platform.Win32
+    
+    let getRemoteWin() = renderer.remote.getCurrentWindow()
+
+    [<Emit("__static + \"/\" + $0")>]
+    let private stat' (s : string) : string = jsNative
+
+    /// Prefixes the string with the static asset root path.
+    let stat (s : string) =
+#if DEBUG
+        s
+#else
+        stat' s
+#endif
+
     module String =
         open System.Text.RegularExpressions
 
@@ -83,15 +98,49 @@ module RenderUtils =
                 | Ok _ -> value
                 | Error err -> err
 
-    let getRemoteWin() = renderer.remote.getCurrentWindow()
+        let errorStrings (res: Result<string,string list>) =
+            match res with
+            | Ok (s: string) -> s
+            | Error (err: string list) -> 
+                err |> List.reduce (fun acc elem -> acc + " " + elem)
 
-    [<Emit("__static + \"/\" + $0")>]
-    let private stat' (s : string) : string = jsNative
+    module Validation =
+        open Fable.Core.Testing
+        open Fable.Validation.Core
+        open Node.Api
 
-    /// Prefixes the string with the static asset root path.
-    let stat (s : string) =
-#if DEBUG
-        s
-#else
-        stat' s
-#endif
+        let validateConfigDir (s: string) = Fable.Validation.Core.single <| fun t ->
+            t.TestOne s
+                |> t.IsValid (fun _ -> 
+                    try 
+                        s |> path.normalize |> path.parse |> ignore
+                        true
+                    with 
+                    | _ -> false) "Invalid path"
+                |> t.Trim
+                |> t.NotBlank "Directory cannot be blank"
+                |> t.End
+
+    module Directory =
+        [<RequireQualifiedAccess>]
+        type DirSelect =
+            | Selected of string
+            | Canceled
+
+        let selectDir () =
+            promise {
+                let opts = jsOptions<OpenDialogOptions>(fun o ->
+                    // See https://github.com/electron/electron/blob/master/docs/api/dialog.md
+                    o.title <- "Select Mordhau Configuration Directory"
+                    o.defaultPath <- renderer.remote.app.getPath AppPathName.Home
+                    o.properties <- [| DialogFeature.OpenDirectory |]
+                )
+                let! res = renderer.remote.dialog.showOpenDialog opts
+                if res.canceled then return DirSelect.Canceled
+                else
+                    return res.filePaths |> Array.head |> DirSelect.Selected
+            }
+            //return 
+            //if isWindows then res.filePaths |> Array.reduce (fun acc elem -> acc + @"\" + elem)
+            //else res.filePaths |> Array.reduce (fun acc elem -> acc + "/" + elem)
+            //|> DirSelect.Selected

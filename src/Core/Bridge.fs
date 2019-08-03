@@ -4,43 +4,57 @@ module Bridge =
     open Elmish
     open Elmish.Bridge
     open Saturn
+    open INIReader
     open INIConfiguration.BridgeOperations
     open MordhauBuddy.Shared.ElectronBridge
 
     module INIBridge =
-        type ServerState = Nothing
+        type Model =
+            { IValue : INIValue option }
 
         type ServerMsg = ClientMsg of RemoteServerMsg
 
-        let hub = ServerHub().RegisterServer(ClientMsg)
-        let init (clientDispatch : Dispatch<RemoteClientMsg>) () = Nothing, Cmd.none
+        let init (clientDispatch : Dispatch<RemoteClientMsg>) () = { IValue = None }, Cmd.none
 
-        let update (clientDispatch : Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) currentState =
+        let update (clientDispatch : Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) model =
             match clientMsg with
             | INIOps ops ->
                 match ops with
                 | Operation iCmd ->
                     match iCmd with
-                    | Replace(oVal, iVal, sels) -> replace oVal iVal sels.Selectors
-                    | Delete(oVal, sels) -> delete oVal sels.Selectors
-                    | Exists(iFile) -> exists iFile
-                    | Parse(iFile) -> parse iFile
-                    | Backup(iFile) -> backup (iFile)
-                    | DefaultDir -> defDir()
+                    | Replace(s, sels) ->
+                        { model with IValue =
+                                         (replace model.IValue.Value (s
+                                                                      |> Some
+                                                                      |> INIValue.String) sels.Selectors
+                                          |> Some) }, true |> BridgeResult.Replace
+                    | Delete(sels) ->
+                        { model with IValue = (delete model.IValue.Value sels.Selectors |> Some) },
+                        true |> BridgeResult.Delete
+                    | Exists(iFile) -> model, exists iFile
+                    | Parse(iFile) ->
+                        match parse iFile with
+                        | Some(_) as iOpt -> { model with IValue = iOpt }, BridgeResult.Parse true
+                        | _ -> model, BridgeResult.Parse false
+                    | Backup(iFile) -> model, backup (iFile)
+                    | DefaultDir -> model, defDir()
                 | Faces fCmd ->
                     match fCmd with
-                    | Random(profile, iVal) -> random profile iVal
-                    | Frankenstein(profile, iVal) -> frankenstein profile iVal
-                    | Custom(profile, iVal, fVal) -> custom profile iVal fVal
-                    | ProfileList(iVal) -> profileList iVal
-            |> Resp
-            |> clientDispatch
-            currentState, Cmd.none
+                    | Random(profile) ->
+                        { model with IValue = (random profile model.IValue.Value) }, true |> BridgeResult.Random
+                    | Frankenstein(profile) ->
+                        { model with IValue = (frankenstein profile model.IValue.Value) },
+                        true |> BridgeResult.Frankenstein
+                    | Custom(profile, fVal) ->
+                        { model with IValue = (custom profile model.IValue.Value fVal) }, true |> BridgeResult.Custom
+                    | ProfileList -> model, profileList (model.IValue.Value)
+            |> (fun (m, br) ->
+            Resp(br) |> clientDispatch
+            m, Cmd.none)
 
         let bridge =
             Bridge.mkServer INIOperations.Endpoint init update
             |> Bridge.withConsoleTrace
-            |> Bridge.withServerHub hub
             |> Bridge.run Giraffe.server
 
     let server = router { get INIOperations.Endpoint INIBridge.bridge }

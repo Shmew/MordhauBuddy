@@ -1,1 +1,13 @@
 @import "./../../../../node_modules/typeface-roboto/index.css";
+
+html {
+    height: 100%;
+}
+
+body {
+    height: inherit;
+}
+
+#app {
+    height: inherit;
+}

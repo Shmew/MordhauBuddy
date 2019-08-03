@@ -38,11 +38,10 @@ module INIConfiguration =
                 |> Option.bind bindDirectory
 
         let tryGetFile (iFile : INIFile) =
-            match iFile.WorkingDir, File.exists (iFile.File) with
+            let fiPath = IO.FileInfo(iFile.File).FullName
+            match iFile.WorkingDir, (fiPath = iFile.File && File.exists (iFile.File)) with
             | _, true -> Some(iFile.File)
             | Some(dir), _ when File.exists (dir @@ iFile.File) -> Some(dir @@ iFile.File)
-            | None, _ when defConfigDir.IsSome && File.exists (defConfigDir.Value @@ iFile.File) ->
-                Some(defConfigDir.Value @@ iFile.File)
             | _ -> None
 
         /// Create a backup of the given file into sub directory MordhauBuddy_backups
@@ -114,10 +113,16 @@ module INIConfiguration =
 
         let modifyCustomFace (profile : INIValue) (fVals : FaceValues) =
             faceKeys
-            |> List.zip (fVals.GetTuples)
+            |> List.zip ([ fVals.Translate; fVals.Rotate; fVals.Scale ]
+                         |> List.map (fun iList ->
+                                iList
+                                |> List.map (string
+                                             >> Some
+                                             >> INIValue.String)
+                                |> INIValue.Tuple))
             |> List.fold (fun (p : INIValue) (fValues, sels) -> p.Map(sels, fValues)) profile
 
-        let getPropValuesOf (gameFile : INIValue) (selectors : string list) =
+        let getPropValuesOf (gameFile : INIValue) (selectors : string list) = /// DEBUG THIS, returning empty list in snd tuple value
             let getProps s (iVal : INIValue) = iVal.TryGetProperty(s)
             selectors
             |> List.mapFold (fun (acc : INIValue list) s ->
@@ -131,9 +136,30 @@ module INIConfiguration =
                    | _ -> None))
 
         let getCharacterProfileNames (gameFile : INIValue) =
-            [ @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C"; "CharacterProfiles"; "Name";
-              "INVTEXT" ] |> getPropValuesOf gameFile
+            //let getProps s (iVal : INIValue) = iVal.TryGetProperty(s)
+            //[ @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C"; "Name";
+            //  "INVTEXT" ] //getPropValuesOf gameFile
+            gameFile?``/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C``
+            |> Option.map (fun res -> res |> List.map (fun r -> r?Name))
+            |> Option.get
+            |> List.choose id
+            |> List.concat
+            |> List.choose (fun res ->
+                   match res with
+                   | INIValue.FieldText("INVTEXT", INIValue.Tuple(s)) ->
+                       s
+                       |> List.choose (fun i ->
+                              match i with
+                              | INIValue.String(sOpt) -> sOpt
+                              | _ -> None)
+                       |> Some
+                   | _ -> None)
+            |> List.concat
+            |> List.map (fun s -> s.Trim('"'))
 
+        //|> Option.get |> List.choose id
+        //) [ gameFile ]
+        //getPropValuesOf gameFile [ @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C"]//; "Name"]//; "INVTEXT" ]
         let containsProfile (gameFile : INIValue) (profile : string) =
             match getCharacterProfileNames gameFile with
             | s when s |> List.contains profile -> true
@@ -173,30 +199,10 @@ module INIConfiguration =
     module BridgeOperations =
         open Frankenstein
 
-        let mapBool (b : bool) =
-            if b then BridgeResult.Success
-            else BridgeResult.Failure
-
-        let mapIOption (o : INIValue option) =
-            match o with
-            | Some(v) -> v |> BridgeResult.IValue
-            | None -> BridgeResult.Failure
-
-        let mapSOption (s : string option) =
-            match s with
-            | Some(v) -> v |> BridgeResult.Text
-            | None -> BridgeResult.Failure
-
-        let replace (oVal : INIValue) (iVal : INIValue) (selectors : string list) =
-            oVal.Map(selectors, iVal) |> BridgeResult.IValue
-        let delete (oVal : INIValue) (selectors : string list) =
-            oVal.Map(selectors, INIValue.String(None)) |> BridgeResult.IValue
-        let exists (iFile : INIFile) = FileOps.tryGetFile(iFile).IsSome |> mapBool
-
-        let parse (iFile : INIFile) =
-            FileOps.tryGetFile (iFile)
-            |> Option.bind FileOps.tryReadINI
-            |> mapIOption
+        let replace (oVal : INIValue) (iVal : INIValue) (selectors : string list) = oVal.Map(selectors, iVal)
+        let delete (oVal : INIValue) (selectors : string list) = oVal.Map(selectors, INIValue.String(None))
+        let exists (iFile : INIFile) = FileOps.tryGetFile(iFile).IsSome |> BridgeResult.Exists
+        let parse (iFile : INIFile) = FileOps.tryGetFile (iFile) |> Option.bind FileOps.tryReadINI
 
         let backup (iFile : INIFile) =
             FileOps.tryGetFile (iFile)
@@ -204,13 +210,12 @@ module INIConfiguration =
             |> function
             | Some(b) when b -> b
             | _ -> false
-            |> mapBool
+            |> BridgeResult.Backup
 
-        let defDir() = FileOps.defConfigDir |> mapSOption
-        let random (profile : string) (iVal : INIValue) =
-            modifyCharacterProfileFace iVal profile FaceActions.Random |> mapIOption
+        let defDir() = FileOps.defConfigDir |> BridgeResult.DefaultDir
+        let random (profile : string) (iVal : INIValue) = modifyCharacterProfileFace iVal profile FaceActions.Random
         let frankenstein (profile : string) (iVal : INIValue) =
-            modifyCharacterProfileFace iVal profile FaceActions.Frankenstein |> mapIOption
+            modifyCharacterProfileFace iVal profile FaceActions.Frankenstein
         let custom (profile : string) (iVal : INIValue) (fVals : FaceValues) =
-            modifyCharacterProfileFace iVal profile <| FaceActions.Custom(fVals) |> mapIOption
-        let profileList (iVal : INIValue) = getCharacterProfileNames iVal |> BridgeResult.TextList
+            modifyCharacterProfileFace iVal profile <| FaceActions.Custom(fVals)
+        let profileList (iVal : INIValue) = getCharacterProfileNames iVal |> BridgeResult.ProfileList
