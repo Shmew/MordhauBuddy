@@ -235,29 +235,27 @@ module INIReader =
             /// Get a sequence of key-value pairs representing the properties of an object
             [<Extension>]
             static member Properties(x : INIValue) =
-                let props x =
-                    match x with
-                    | INIValue.File(sList) -> ("", sList)
-                    | INIValue.Section(s, vList) -> (s, vList)
-                    | INIValue.KeyValue(s, v) ->
-                        match v with
-                        | INIValue.Tuple(tList) -> (s, tList)
-                        | _ -> (s, [ v ])
-                    | INIValue.FieldText(s, v) -> (s, [ v ])
-                    | _ -> ("", [])
-                props x
-                |> (fun (_, v) -> v)
-                |> List.map props
+                match x with
+                | INIValue.File(sList) -> ("File", sList)
+                | INIValue.Section(s, vList) -> (s, vList)
+                | INIValue.KeyValue(s, v) ->
+                    match v with
+                    | INIValue.Tuple(tList) -> (s, tList)
+                    | _ -> (s, [ v ])
+                | INIValue.FieldText(s, v) ->
+                    match v with
+                    | INIValue.Tuple(tList) -> (s, tList)
+                    | _ -> (s, [ v ])
+                | _ -> ("", [])
 
             /// Get property of an INI object. Fails if the value is not an object
             /// or if the property is not present
             [<Extension>]
             static member GetProperty(x, propertyName) =
                 match INIExtensions.Properties x with
-                | pList when pList.Length > 0 ->
-                    match List.tryFind (fst >> (=) propertyName) pList with
-                    | Some(_, value) -> value
-                    | None -> failwithf "Didn't find property '%s' in %s" propertyName <| x.ToString()
+                | (s, pList) when pList.Length > 0 && s = propertyName -> pList
+                | (_, pList) when pList.Length > 0 ->
+                    failwithf "Didn't find property '%s' in %s" propertyName <| x.ToString()
                 | _ -> failwithf "Not an object: %s" <| x.ToString()
 
             /// Try to get a property of a INI value.
@@ -265,7 +263,7 @@ module INIReader =
             [<Extension>]
             static member TryGetProperty(x, propertyName) =
                 match INIExtensions.Properties x with
-                | pList when pList.Length > 0 -> List.tryFind (fst >> (=) propertyName) pList |> Option.map snd
+                | (s, pList) when pList.Length > 0 && s = propertyName -> Some(pList)
                 | _ -> None
 
             /// Assuming the value is an object, get value with the specified name
@@ -433,6 +431,52 @@ module INIReader =
                         | false -> mapAst (s.Tail) kvStr
                 mapAst matchConditions ast
 
+            /// Map INIValue based on matching conditions and mapper function --EXPAND THIS
+            [<Extension>]
+            static member MapIf(matchConditions : string list, ast : INIValue, newValue : INIValue,
+                                mapper : INIValue -> bool) =
+                let rec mapAst (s : string list) (iVal : INIValue) : INIValue =
+                    let testVal (x : INIValue) : bool =
+                        match x with
+                        | INIValue.Section(n, _) -> n <> (s.Head)
+                        | INIValue.FieldText(n, _) -> n <> (s.Head)
+                        | INIValue.KeyValue(n, _) -> n <> (s.Head)
+                        | INIValue.String(n) -> defaultArg n "" <> s.Head
+                        | _ -> false
+
+                    let getResults (iList : INIValue list) (sendTail : bool) =
+                        let matchers =
+                            match sendTail with
+                            | true -> s.Tail
+                            | false -> s
+                        if iList.IsEmpty && s.Head = "()" then [ mapAst (s.Tail) (INIValue.String(None)) ]
+                        else
+                            iList
+                            |> List.map (fun iVal ->
+                                   match testVal iVal with
+                                   | false -> mapAst matchers iVal
+                                   | true -> iVal)
+
+                    match iVal with
+                    | lastIVal when s.IsEmpty ->
+                        if mapper lastIVal then newValue
+                        else lastIVal
+                    | INIValue.File e -> getResults e true |> INIValue.File
+                    | INIValue.Section(secName, secL) ->
+                        getResults secL false |> (fun res -> INIValue.Section(secName, res))
+                    | INIValue.KeyValue(kName, kL) -> mapAst (s.Tail) kL |> (fun res -> INIValue.KeyValue(kName, res))
+                    | INIValue.Tuple(tL) -> getResults tL false |> INIValue.Tuple
+                    | INIValue.FieldText(fName, fTup) ->
+                        match fName = s.Head with
+                        | true -> mapAst (s.Tail) fTup
+                        | false -> fTup
+                        |> (fun res -> INIValue.FieldText(fName, res))
+                    | INIValue.String(_) as kvStr ->
+                        match testVal kvStr with
+                        | true -> kvStr
+                        | false -> mapAst (s.Tail) kvStr
+                mapAst matchConditions ast
+
         /// Get a property of a INI object
         let (?) (iValue : INIValue) propertyName = iValue.GetProperty(propertyName)
 
@@ -477,17 +521,16 @@ module INIReader =
                 /// or if the property is not present
                 member this.GetProperty(propertyName) =
                     match INIExtensions.Properties this with
-                    | pList when pList.Length > 0 ->
-                        match List.tryFind (fst >> (=) propertyName) pList with
-                        | Some(_, value) -> value
-                        | None -> failwithf "Didn't find property '%s' in %s" propertyName <| this.ToString()
+                    | (s, pList) when pList.Length > 0 && s = propertyName -> pList
+                    | (_, pList) when pList.Length > 0 ->
+                        failwithf "Didn't find property '%s' in %s" propertyName <| this.ToString()
                     | _ -> failwithf "Not an object: %s" <| this.ToString()
 
                 /// Try to get a property of a INI value.
                 /// Returns None if the value is not an object or if the property is not present.
                 member this.TryGetProperty(propertyName) =
                     match INIExtensions.Properties this with
-                    | pList when pList.Length > 0 -> List.tryFind (fst >> (=) propertyName) pList |> Option.map snd
+                    | (s, pList) when pList.Length > 0 && s = propertyName -> Some(pList)
                     | _ -> None
 
                 /// Assuming the value is an object, get value with the specified name
@@ -601,6 +644,9 @@ module INIReader =
                 member this.Map(matchConditions : string list, newValue : INIValue) =
                     INIExtensions.Map(matchConditions, this, newValue)
 
+                member this.MapIf(matchConditions : string list, newValue : INIValue, mapper : INIValue -> bool) =
+                    INIExtensions.MapIf(matchConditions, this, newValue, mapper)
+
             [<Extension>]
             [<AbstractClass>]
             type INIValueOptionExtensions() =
@@ -627,7 +673,7 @@ module INIReader =
                 [<Extension>]
                 static member TryGetProperty(x, propertyName) =
                     match INIExtensions.Properties x with
-                    | pList when pList.Length > 0 -> List.tryFind (fst >> (=) propertyName) pList |> Option.map snd
+                    | (s, pList) when pList.Length > 0 && s = propertyName -> Some(pList)
                     | _ -> None
 
                 /// Try to get a property of a INI value.
@@ -735,6 +781,12 @@ module INIReader =
                 [<Extension>]
                 static member Map(matchConditions : string list, ast : INIValue option, newValue : INIValue) =
                     ast |> Option.bind (fun res -> INIExtensions.Map(matchConditions, res, newValue) |> Some)
+
+                /// Map INIValue based on matching conditions and mapper function --EXPAND THIS
+                [<Extension>]
+                static member MapIf(matchConditions : string list, ast : INIValue option, newValue : INIValue,
+                                    mapper : INIValue -> bool) =
+                    ast |> Option.bind (fun res -> INIExtensions.MapIf(matchConditions, res, newValue, mapper) |> Some)
 
             /// [omit]
             type INIValueOverloads = INIValueOverloads

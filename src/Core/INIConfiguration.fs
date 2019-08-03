@@ -122,63 +122,62 @@ module INIConfiguration =
                                 |> INIValue.Tuple))
             |> List.fold (fun (p : INIValue) (fValues, sels) -> p.Map(sels, fValues)) profile
 
-        let getPropValuesOf (gameFile : INIValue) (selectors : string list) = /// DEBUG THIS, returning empty list in snd tuple value
-            let getProps s (iVal : INIValue) = iVal.TryGetProperty(s)
+        let private getProps s (iVal : INIValue) = iVal.TryGetProperty(s)
+
+        let getPropValuesOf (gameFile : INIValue) (selectors : string list) =
             selectors
-            |> List.mapFold (fun (acc : INIValue list) s ->
-                   let props = acc |> List.choose (getProps s)
-                   props.IsEmpty, (props |> List.concat)) [ gameFile ]
-            |> (fun (_, iList) ->
-            iList
-            |> List.choose (fun i ->
-                   match i with
-                   | INIValue.String(s) -> s
-                   | _ -> None))
+            |> List.fold (fun (acc : INIValue list list) elem ->
+                   acc
+                   |> List.map (fun iList ->
+                          iList
+                          |> List.map (fun iVal ->
+                                 match getProps elem iVal with
+                                 | Some(res) -> res
+                                 | _ -> [])
+                          |> List.concat)) [ [ gameFile ] ]
+            |> List.concat
+
+        let private iValStrings (iVal : INIValue) =
+            match iVal with
+            | INIValue.String(Some(s)) -> s.Trim('"')
+            | _ -> ""
 
         let getCharacterProfileNames (gameFile : INIValue) =
-            //let getProps s (iVal : INIValue) = iVal.TryGetProperty(s)
-            //[ @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C"; "Name";
-            //  "INVTEXT" ] //getPropValuesOf gameFile
-            gameFile?``/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C``
-            |> Option.map (fun res -> res |> List.map (fun r -> r?Name))
-            |> Option.get
-            |> List.choose id
-            |> List.concat
-            |> List.choose (fun res ->
-                   match res with
-                   | INIValue.FieldText("INVTEXT", INIValue.Tuple(s)) ->
-                       s
-                       |> List.choose (fun i ->
-                              match i with
-                              | INIValue.String(sOpt) -> sOpt
-                              | _ -> None)
-                       |> Some
-                   | _ -> None)
-            |> List.concat
-            |> List.map (fun s -> s.Trim('"'))
+            [ "File"; @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C"; "CharacterProfiles"; "Name";
+              "INVTEXT" ]
+            |> getPropValuesOf gameFile
+            |> List.map iValStrings
 
-        //|> Option.get |> List.choose id
-        //) [ gameFile ]
-        //getPropValuesOf gameFile [ @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C"]//; "Name"]//; "INVTEXT" ]
         let containsProfile (gameFile : INIValue) (profile : string) =
             match getCharacterProfileNames gameFile with
             | s when s |> List.contains profile -> true
             | _ -> false
 
         let modifyCharacterProfileFace (gameFile : INIValue) (profile : string) (action : FaceActions) =
-            if containsProfile gameFile profile then
-                let profiles =
-                    [ @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C"; "CharacterProfiles" ]
-                    |> getPropValuesOf gameFile
-                profiles
-                |> List.find (fun s -> s.Contains(profile))
-                |> INIValue.Parse
-                |> (fun iVal ->
+            let charProfileSelectors =
+                [ "File"; @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C"; "CharacterProfiles" ]
+            let containsProf = getCharacterProfileNames (gameFile) |> List.contains (profile)
+
+            let newFace (iVal : INIValue) =
                 match action with
                 | FaceActions.Frankenstein -> modifyFace iVal frankensteinFaces
                 | FaceActions.Random -> modifyFace iVal randomFaces
-                | FaceActions.Custom(fValues) -> modifyCustomFace iVal fValues)
-                |> Some
+                | FaceActions.Custom(fValues) -> modifyCustomFace iVal fValues
+
+            let hasProfile (iVal : INIValue) =
+                [ "Name"; "INVTEXT" ]
+                |> getPropValuesOf iVal
+                |> List.map iValStrings
+                |> List.contains profile
+
+            if containsProf then
+                charProfileSelectors
+                |> getPropValuesOf gameFile
+                |> List.filter hasProfile
+                |> List.tryHead
+                |> Option.bind (newFace
+                                >> (fun iVal -> gameFile.MapIf(charProfileSelectors, iVal, hasProfile))
+                                >> Some)
             else None
 
     let modifySectionSettings (engineFile : INIValue) (section : string) (filters : string list) (iVal : INIValue) =

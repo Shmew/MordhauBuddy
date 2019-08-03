@@ -40,6 +40,7 @@ module rec INITest =
         | ToggleAll of ToggleDirection * bool
         | Toggle of ToggleDirection * Profile
         | Move of ToggleDirection
+        | TabSelected of int
 
     let trySavedConfigDir () =
         match ElectronStore.store.get("configDir", defaultValue = "") |> string with
@@ -56,9 +57,15 @@ module rec INITest =
 
         member this.StepCaption =
             match this with
-            | LocateConfig -> "Find where your configuration files are located."
-            | ChooseProfiles -> "Choose which profiles you'd like to modify."
-            | ChooseModification -> "Choose the type of operation you'd like to make."
+            | LocateConfig -> [ str "Find where your configuration files are located." ]
+            | ChooseProfiles -> [ str "Choose which profiles you'd like to modify." ]
+            | ChooseModification ->
+                [ div [] [str "Choose the type of operation you'd like to make."]
+                  div [ Style [ CSSProp.PaddingTop "1em" ] ] [
+                    str "A backup will be created of your Game.ini file in a \
+                        child folder of that directory." 
+                  ]
+                ]
 
         static member private Cases =
             FSharpType.GetUnionCases typeof<Steps>
@@ -125,7 +132,9 @@ module rec INITest =
                                 DOMAttr.OnClick <| fun _ -> dispatch (StepperBack)
                             ] [ str "Back" ]
                             button [
-                                HTMLAttr.Disabled (not model.ConfigDir.Validated)
+                                HTMLAttr.Disabled 
+                                    (not model.ConfigDir.Validated 
+                                        || model.TransferList.RightProfiles.Length = 0)
                                 ButtonProp.Variant ButtonVariant.Contained
                                 MaterialProp.Color ComponentColor.Primary
                                 DOMAttr.OnClick <| fun _ -> 
@@ -183,7 +192,8 @@ module rec INITest =
           Stepper : Steps
           StepperComplete : bool
           ConfigDir : ConfigDir 
-          TransferList : TransferList }
+          TransferList : TransferList
+          TabSelected : int }
 
     let init() =
         { Waiting = true
@@ -201,7 +211,8 @@ module rec INITest =
               RightProfiles = []
               RightChecked = 0
               Error = false
-              HelperText = "" } }
+              HelperText = "" }
+          TabSelected = 0 }
 
     let update (msg: Msg) (model: Model) =
         match msg with
@@ -408,6 +419,8 @@ module rec INITest =
                             LeftProfiles = lList
                             RightProfiles = rList } }
                 |> checkedCount, Cmd.none)
+        | TabSelected(tabPicked) ->
+            { model with TabSelected = tabPicked}, Cmd.none
 
     // Domain/Elmish above, view below
     let private styles (theme : ITheme) : IStyles list = [
@@ -586,7 +599,49 @@ module rec INITest =
                     ]
 
                 ]
-            | ChooseModification, _ -> str ""
+            | ChooseModification, _ ->
+                let tabDescription =
+                    match model.TabSelected with
+                    | 0 ->
+                        str "Frankenstein mode is done automatically \
+                            and will select at random the maximum or \
+                            minimum allowed values for each aspect of \
+                            the character's face."
+                    | 1 -> 
+                        str "Random mode is done automatically and \
+                            will select at random all aspects of the \
+                            character's face." 
+                    | _ -> 
+                        str "Custom mode enables you to manually \
+                            select each value of the character's face."
+
+                let tabContent =
+                    match model.TabSelected with
+                    | 2 -> []
+                    | _ -> []
+
+                paper [] [
+                    tabs [
+                        HTMLAttr.Value (model.TabSelected)
+                        TabsProp.Variant TabsVariant.FullWidth
+                        TabsProp.ScrollButtons ScrollButtonsType.On
+                        TabsProp.IndicatorColor TabsIndicatorColor.Secondary
+                        TabsProp.TextColor TabsTextColor.Secondary
+                        TabsProp.Centered true
+                        TabsProp.OnChange (fun _ tabPicked -> dispatch <| TabSelected(tabPicked) )
+                    ] [
+                        tab [ HTMLAttr.Label "Frankenstein" ]
+                        tab [ HTMLAttr.Label "Random" ]
+                        tab [ HTMLAttr.Label "Custom" ]
+                    ]
+                    divider []
+                    div [
+                        Style [ CSSProp.Padding "2em"; CSSProp.MinHeight "10em" ]
+                    ] [ 
+                        typography [] [ tabDescription ]
+                        div [] tabContent
+                    ]
+                ]
 
         div [
             Style [
@@ -615,7 +670,7 @@ module rec INITest =
                     ]
                 | _, _ -> yield content
             ]
-            div [ Style [CSSProp.PaddingLeft "3em"] ] [ str model.Stepper.StepCaption ]
+            div [ Style [CSSProp.PaddingLeft "3em"] ] model.Stepper.StepCaption
             model.Stepper.Buttons dispatch model
         ]
 
