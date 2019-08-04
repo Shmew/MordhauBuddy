@@ -1,6 +1,6 @@
 ﻿namespace MordhauBuddy.App
 
-module rec INITest =
+module rec FaceTools =
     open System
     open Fable.Core
     open Fable.Core.JsInterop
@@ -41,6 +41,9 @@ module rec INITest =
         | Toggle of ToggleDirection * Profile
         | Move of ToggleDirection
         | TabSelected of int
+        | SetImportString of string
+        | ValidateImport
+        | CopiedClipboard
 
     let trySavedConfigDir () =
         match ElectronStore.store.get("configDir", defaultValue = "") |> string with
@@ -50,7 +53,7 @@ module rec INITest =
     type Steps =
         | LocateConfig
         | ChooseProfiles
-        | ChooseModification
+        | ChooseAction
         member this.Text =
             this.ToString()
             |> String.duToTitle
@@ -59,11 +62,11 @@ module rec INITest =
             match this with
             | LocateConfig -> [ str "Find where your configuration files are located." ]
             | ChooseProfiles -> [ str "Choose which profiles you'd like to modify." ]
-            | ChooseModification ->
-                [ div [] [str "Choose the type of operation you'd like to make."]
+            | ChooseAction ->
+                [ div [] [str "Choose the type of action you'd like to make."]
                   div [ Style [ CSSProp.PaddingTop "1em" ] ] [
                     str "A backup will be created of your Game.ini file in a \
-                        child folder of that directory." 
+                        child folder of that directory if modifying settings." 
                   ]
                 ]
 
@@ -126,21 +129,27 @@ module rec INITest =
         member this.Buttons dispatch model =
                 match model.StepperComplete with
                 | false ->
-                        [
-                            button [
-                                HTMLAttr.Disabled (this.StepValue = 0)
-                                DOMAttr.OnClick <| fun _ -> dispatch (StepperBack)
-                            ] [ str "Back" ]
-                            button [
-                                HTMLAttr.Disabled 
-                                    (not model.ConfigDir.Validated 
-                                        || model.TransferList.RightProfiles.Length = 0)
-                                ButtonProp.Variant ButtonVariant.Contained
-                                MaterialProp.Color ComponentColor.Primary
-                                DOMAttr.OnClick <| fun _ -> 
-                                    dispatch (if this.Last then StepperSubmit else StepperNext)
-                            ] [ str <| if this.Last then "Submit" else "Next" ]
-                        ]
+                    let isDisabled =
+                        match this with
+                        | LocateConfig when not model.ConfigDir.Validated -> true
+                        | ChooseProfiles when model.TransferList.RightProfiles.Length = 0 -> true
+                        | ChooseAction when (not model.Import.Validated && model.TabSelected = 2) || model.TabSelected = 3 -> true
+                        | _ when model.Waiting -> true
+                        | _ -> false
+
+                    [
+                        button [
+                            HTMLAttr.Disabled (this.StepValue = 0)
+                            DOMAttr.OnClick <| fun _ -> dispatch (StepperBack)
+                        ] [ str "Back" ]
+                        button [
+                            HTMLAttr.Disabled isDisabled
+                            ButtonProp.Variant ButtonVariant.Contained
+                            MaterialProp.Color ComponentColor.Primary
+                            DOMAttr.OnClick <| fun _ -> 
+                                dispatch (if this.Last then StepperSubmit else StepperNext)
+                        ] [ str <| if this.Last then "Submit" else "Next" ]
+                    ]
                 | true ->
                     [
                         button [
@@ -164,13 +173,14 @@ module rec INITest =
 
             Steps.GetSteps
             |> Array.map (fun stepCase ->
-                step [StepProp.Completed <| isComplete stepCase.StepValue] [
+                step [ StepProp.Completed <| isComplete stepCase.StepValue ] [
                     stepLabel [] [str stepCase.Text]
                 ])
 
     type Profile = 
         { Name : string
-          Checked : bool }
+          Checked : bool
+          Export : string }
 
     type TransferList =
         { LeftProfiles : Profile list
@@ -186,6 +196,12 @@ module rec INITest =
           HelperText : string
           Validated : bool }
 
+    type ImportStr =
+        { ImportString : string
+          Error : bool
+          HelperText : string
+          Validated : bool }
+
     type Model = 
         { Waiting : bool
           DefaultDirTried : bool
@@ -193,7 +209,8 @@ module rec INITest =
           StepperComplete : bool
           ConfigDir : ConfigDir 
           TransferList : TransferList
-          TabSelected : int }
+          TabSelected : int
+          Import : ImportStr }
 
     let init() =
         { Waiting = true
@@ -212,7 +229,12 @@ module rec INITest =
               RightChecked = 0
               Error = false
               HelperText = "" }
-          TabSelected = 0 }
+          TabSelected = 0
+          Import = 
+            { ImportString = ""
+              Error = false
+              HelperText = "You must validate the string before submission" 
+              Validated = false } }
 
     let update (msg: Msg) (model: Model) =
         match msg with
@@ -257,12 +279,19 @@ module rec INITest =
                     TransferList =
                         if l.Length = 0 then
                             { model.TransferList with
+                                LeftProfiles = []
+                                LeftChecked = 0
+                                RightProfiles = []
+                                RightChecked = 0
                                 Error = true
                                 HelperText = "No profiles found!"}
                         else
                             { model.TransferList with
                                 LeftProfiles =
-                                    l |> List.map (fun p -> { Name = p; Checked = false })
+                                    l |> List.map (fun (p,export) -> { Name = p; Checked = false; Export = export })
+                                LeftChecked = 0
+                                RightProfiles = []
+                                RightChecked = 0
                                 Error = false
                                 HelperText = "Please select which profiles you'd like to modify"}
                     }, Cmd.none
@@ -421,10 +450,40 @@ module rec INITest =
                 |> checkedCount, Cmd.none)
         | TabSelected(tabPicked) ->
             { model with TabSelected = tabPicked}, Cmd.none
+        | SetImportString s ->
+            { model with 
+                Import = 
+                    { model.Import with
+                        ImportString = s
+                        Validated = false
+                        HelperText = 
+                            "You must validate the string before submission"} }, Cmd.none
+        | ValidateImport ->
+            let res = validateImport model.Import.ImportString
+            match res with 
+            | Ok _ ->
+                { model with
+                    Import =
+                        { model.Import with
+                            Error = false
+                            Validated = true
+                            HelperText = "Validation successful" } }
+            | Error _ ->
+                { model with
+                    Import = 
+                        { model.Import with
+                            Error = true
+                            Validated = false
+                            HelperText = errorStrings res } }
+            |> (fun m -> m, Cmd.none)
+        | CopiedClipboard ->
+            model, Toastr.success <| Toastr.message "Copied to clipboard!"
 
     // Domain/Elmish above, view below
     let private styles (theme : ITheme) : IStyles list = [
-        Styles.Custom' ("toolbar", theme.mixins.toolbar)
+        Styles.Custom ("darkList", [
+            CSSProp.BackgroundColor theme.palette.background.``default``
+        ])
     ]
 
     let private view' (classes: IClasses) model dispatch =
@@ -433,41 +492,46 @@ module rec INITest =
             | _, true ->
                 str ""
             | LocateConfig, _ ->
-                form [ 
-                    OnSubmit (fun e -> e.preventDefault())
-                    Class classes?form 
-                    Style [
-                        CSSProp.Display DisplayOptions.Flex
-                        CSSProp.MinHeight "76px"
-                    ]
-                ] [
-                    textField [
-                        Class classes?textField
-                        HTMLAttr.Label "Mordhau Config Directory"
-                        MaterialProp.FullWidth true
-                        HTMLAttr.Value model.ConfigDir.Directory
-                        MaterialProp.Error model.ConfigDir.Error
-                        TextFieldProp.Variant TextFieldVariant.Outlined
-                        TextFieldProp.HelperText (model.ConfigDir.HelperText |> str)
-                    ] []
-                    button [
-                        ButtonProp.Variant ButtonVariant.Contained
-                        MaterialProp.Color ComponentColor.Primary
-                        DOMAttr.OnClick <| fun _ -> dispatch RequestLoad
+                paper [] [
+                    div [
                         Style [
-                            CSSProp.MarginBottom "20px"
-                            CSSProp.MarginLeft "5px" 
+                            CSSProp.Padding "2em 5em"
+                            CSSProp.Display DisplayOptions.Flex
+                            CSSProp.MinHeight "76px"
                         ]
-                    ] [ str "Select" ]
+                    ] [
+                        textField [
+                            HTMLAttr.Label "Mordhau Config Directory"
+                            MaterialProp.FullWidth true
+                            HTMLAttr.Value model.ConfigDir.Directory
+                            MaterialProp.Error model.ConfigDir.Error
+                            TextFieldProp.Variant TextFieldVariant.Outlined
+                            TextFieldProp.HelperText (model.ConfigDir.HelperText |> str)
+                        ] []
+                        button [
+                            ButtonProp.Variant ButtonVariant.Contained
+                            MaterialProp.Color ComponentColor.Secondary
+                            DOMAttr.OnClick <| fun _ -> dispatch RequestLoad
+                            Style [
+                                CSSProp.MarginBottom "20px"
+                                CSSProp.MarginLeft "5px" 
+                            ]
+                        ] [ str "Select" ]
+                    ]
                 ]
             | ChooseProfiles, _ ->
-                grid [
-                    GridProp.Container true
-                    GridProp.Spacing GridSpacing.``40``
-                    GridProp.Justify GridJustify.Center
-                    GridProp.AlignItems GridAlignItems.Center
-                    Style [ CSSProp.Width "unset" ]
-                ] [
+                let createCard (direction: ToggleDirection) =
+                    let checkNum,profiles,headerTitle =
+                        match direction with
+                        | Left ->
+                            model.TransferList.LeftChecked,
+                            model.TransferList.LeftProfiles,
+                            "Profile List"
+                        | Right ->
+                            model.TransferList.RightChecked,
+                            model.TransferList.RightProfiles,
+                            "Modification List"
+                    let pLen = profiles.Length
                     grid [ 
                         GridProp.Item true
                         Style [ CSSProp.Padding "0 2em" ]
@@ -478,24 +542,14 @@ module rec INITest =
                             cardHeader [
                                 checkbox [
                                     DOMAttr.OnClick <| fun _ ->
-                                        dispatch 
-                                            (ToggleAll(Left,
-                                                (model.TransferList.LeftChecked = 0 
-                                                    && model.TransferList.LeftChecked 
-                                                        <> model.TransferList.LeftProfiles.Length) ))
-                                    HTMLAttr.Checked 
-                                        (model.TransferList.LeftChecked = model.TransferList.LeftProfiles.Length
-                                            && model.TransferList.LeftProfiles.Length <> 0)
-                                    CheckboxProp.Indeterminate 
-                                        ( model.TransferList.LeftChecked <> 
-                                          model.TransferList.LeftProfiles.Length && 
-                                          model.TransferList.LeftChecked > 0 )
-                                    HTMLAttr.Disabled (model.TransferList.LeftProfiles.Length = 0)
+                                        (direction, checkNum = 0 && checkNum <> pLen) |> ToggleAll |> dispatch
+                                    HTMLAttr.Checked (checkNum = pLen && pLen <> 0)
+                                    CheckboxProp.Indeterminate (checkNum <> pLen && checkNum > 0)
+                                    HTMLAttr.Disabled (pLen = 0)
                                 ]
                                 |> CardHeaderProp.Avatar
-                                CardHeaderProp.Title <| str "Profile List"
-                                CardHeaderProp.Subheader 
-                                    (sprintf "%i/%i" model.TransferList.LeftChecked model.TransferList.LeftProfiles.Length |> str)
+                                CardHeaderProp.Title <| str headerTitle
+                                CardHeaderProp.Subheader (sprintf "%i/%i" checkNum pLen |> str)
                             ] []
                             divider []
                             list [
@@ -505,15 +559,18 @@ module rec INITest =
                                     CSSProp.Height "20em"
                                 ]
                             ] [
-                                for pItem in model.TransferList.LeftProfiles do
+                                for pItem in profiles do
                                     yield
                                         listItem [
-                                            DOMAttr.OnClick <| fun _ -> dispatch (Toggle(Left,pItem))
+                                            ListItemProp.Button true
+                                            MaterialProp.DisableRipple true
+                                            DOMAttr.OnClick <| fun _ -> dispatch (Toggle(direction,pItem))
                                         ] [
                                             listItemIcon [] [
                                                 checkbox [
                                                     HTMLAttr.Checked pItem.Checked
                                                     MaterialProp.DisableRipple true
+                                                    Style [ CSSProp.BackgroundColor "transparent"]
                                                 ]
                                             ]
                                             listItemText [] [
@@ -523,6 +580,15 @@ module rec INITest =
                             ]
                         ]
                     ]
+
+                grid [
+                    GridProp.Container true
+                    GridProp.Spacing GridSpacing.``0``
+                    GridProp.Justify GridJustify.Center
+                    GridProp.AlignItems GridAlignItems.Center
+                    Style [ CSSProp.Width "unset" ]
+                ] [
+                    createCard Left
                     grid [ 
                         GridProp.Container true
                         GridProp.Direction GridDirection.Column
@@ -542,64 +608,9 @@ module rec INITest =
                             HTMLAttr.Disabled (model.TransferList.RightChecked = 0)
                         ] [ str "<" ]
                     ]
-                    grid [ 
-                        GridProp.Item true
-                        Style [ CSSProp.Padding "0 2em" ]
-                    ] [
-                        card [
-                            Style [ CSSProp.MinWidth "20em" ]
-                        ] [
-                            cardHeader [
-                                checkbox [
-                                    DOMAttr.OnClick <| fun _ ->
-                                        dispatch 
-                                            (ToggleAll(Right,
-                                                (model.TransferList.RightChecked = 0 
-                                                    && model.TransferList.RightChecked 
-                                                        <> model.TransferList.RightProfiles.Length) ))
-                                    HTMLAttr.Checked 
-                                        (model.TransferList.RightChecked = model.TransferList.RightProfiles.Length
-                                            && model.TransferList.RightProfiles.Length <> 0)
-                                    CheckboxProp.Indeterminate 
-                                        ( model.TransferList.RightChecked <>
-                                          model.TransferList.RightProfiles.Length &&
-                                          model.TransferList.RightChecked > 0 )
-                                    HTMLAttr.Disabled (model.TransferList.RightProfiles.Length = 0)
-                                ]
-                                |> CardHeaderProp.Avatar
-                                CardHeaderProp.Title <| str "Modification List"
-                                CardHeaderProp.Subheader (
-                                    sprintf "%i/%i" model.TransferList.RightChecked model.TransferList.RightProfiles.Length |> str)
-                            ] []
-                            divider []
-                            list [
-                                MaterialProp.Dense true
-                                Style [ 
-                                    CSSProp.OverflowY "scroll"
-                                    CSSProp.Height "20em"
-                                ]
-                            ] [
-                                for pItem in model.TransferList.RightProfiles do
-                                    yield
-                                        listItem [
-                                            DOMAttr.OnClick <| fun _ -> dispatch (Toggle(Right,pItem))
-                                        ] [
-                                            listItemIcon [] [
-                                                checkbox [
-                                                    HTMLAttr.Checked pItem.Checked
-                                                    MaterialProp.DisableRipple true
-                                                ]
-                                            ]
-                                            listItemText [] [
-                                                str pItem.Name
-                                            ]
-                                        ]
-                            ]
-                        ]
-                    ]
-
+                    createCard Right
                 ]
-            | ChooseModification, _ ->
+            | ChooseAction, _ ->
                 let tabDescription =
                     match model.TabSelected with
                     | 0 ->
@@ -611,14 +622,123 @@ module rec INITest =
                         str "Random mode is done automatically and \
                             will select at random all aspects of the \
                             character's face." 
-                    | _ -> 
-                        str "Custom mode enables you to manually \
-                            select each value of the character's face."
+                    | 2 -> 
+                        str "Import mode enables you to set faces from a face value string."
+                    | _ ->
+                        str "Export lets you generate string values of the profiles you've selected."
 
                 let tabContent =
                     match model.TabSelected with
-                    | 2 -> []
-                    | _ -> []
+                    | 2 ->
+                        div [] [
+                            div [ 
+                                Style [ 
+                                    CSSProp.Padding "2em 5em"
+                                    CSSProp.Display DisplayOptions.Flex
+                                ] 
+                            ] [
+                                textField [
+                                    TextFieldProp.Variant TextFieldVariant.Outlined
+                                    MaterialProp.FullWidth true
+                                    HTMLAttr.Label "Import string"
+                                    HTMLAttr.Placeholder "Paste import string here"
+                                    HTMLAttr.Value model.Import.ImportString
+                                    MaterialProp.Color ComponentColor.Secondary
+                                    DOMAttr.OnChange (fun ev -> dispatch <| SetImportString(ev.Value) )
+                                    MaterialProp.Error model.Import.Error
+                                    TextFieldProp.HelperText (model.Import.HelperText |> str)
+                                ] []
+                                button [
+                                    HTMLAttr.Disabled model.Import.Validated
+                                    ButtonProp.Variant ButtonVariant.Contained
+                                    MaterialProp.Color ComponentColor.Secondary
+                                    DOMAttr.OnClick <| fun _ -> dispatch ValidateImport
+                                    Style [ CSSProp.MarginLeft "1em"; CSSProp.MaxHeight "4em" ]
+                                ] [ str "Validate" ]
+                            ]
+                            div [ Style [ CSSProp.Padding "0em 5em" ] ] [
+                                expansionPanel [
+                                    MaterialProp.Elevation 2
+                                ] [
+                                    expansionPanelSummary [
+                                        ExpansionPanelSummaryProp.ExpandIcon <| expandMoreIcon []
+                                    ] [ str "An example of an import string" ]
+                                    divider []
+                                    expansionPanelDetails [
+                                        Style [ CSSProp.PaddingRight "0em" ]
+                                    ] [
+                                        code [
+                                            Style [ 
+                                                CSSProp.WordBreak "break-all"
+                                            ]
+                                        ] [
+                                            str Samples.faceImport
+                                        ]
+                                        button [
+                                            DOMAttr.OnClick <| fun _ ->
+                                                renderer.clipboard.writeText(Samples.faceImport)
+                                                dispatch CopiedClipboard
+                                            Style [ 
+                                                CSSProp.MaxHeight "4em"
+                                                CSSProp.MaxWidth "3em"
+                                                CSSProp.Float "right"
+                                                CSSProp.MarginRight "0em"
+                                            ]
+                                        ] [ clipboardTextIcon [] ]
+
+                                    ]
+                                ]
+                            ]
+                        ]
+                    | 3 ->
+                        let profileInd =
+                            model.TransferList.RightProfiles
+                            |> List.indexed
+                            |> Seq.ofList
+                        div [ ] [
+                            div [ 
+                                Style [ 
+                                    CSSProp.Padding "2em 5em"
+                                    CSSProp.Display DisplayOptions.Flex
+                                ] 
+                            ] [ 
+                                list [
+                                    Class classes?darkList
+                                    Style [ 
+                                        CSSProp.FlexGrow 1 
+                                        CSSProp.MaxHeight "20em"
+                                        CSSProp.OverflowY "scroll"
+                                    ]
+                                ] [
+                                    for (index,profile) in profileInd do
+                                        yield
+                                            div [] [
+                                                listItem [] [
+                                                    listItemText [] [
+                                                        str profile.Name
+                                                    ]
+                                                    listItemSecondaryAction [] [
+                                                        button [
+                                                            DOMAttr.OnClick <| fun _ ->
+                                                                renderer.clipboard.writeText(profile.Export)
+                                                                dispatch CopiedClipboard
+                                                            Style [ 
+                                                                CSSProp.MaxHeight "4em"
+                                                                CSSProp.MaxWidth "3em"
+                                                                CSSProp.Float "right"
+                                                                CSSProp.MarginRight "0em"
+                                                            ]
+                                                        ] [ clipboardTextIcon [] ]
+                                                    ]
+                                                ]
+                                                divider [
+                                                    HTMLAttr.Hidden (index + 1 = model.TransferList.RightProfiles.Length)
+                                                ]
+                                            ]
+                                ]
+                            ]
+                        ]
+                    | _ -> div [] []
 
                 paper [] [
                     tabs [
@@ -632,25 +752,28 @@ module rec INITest =
                     ] [
                         tab [ HTMLAttr.Label "Frankenstein" ]
                         tab [ HTMLAttr.Label "Random" ]
-                        tab [ HTMLAttr.Label "Custom" ]
+                        tab [ HTMLAttr.Label "Import" ]
+                        tab [ HTMLAttr.Label "Export" ]
                     ]
                     divider []
                     div [
                         Style [ CSSProp.Padding "2em"; CSSProp.MinHeight "10em" ]
                     ] [ 
                         typography [] [ tabDescription ]
-                        div [] tabContent
+                        tabContent
                     ]
                 ]
 
         div [
             Style [
-                FlexDirection "column"
+                CSSProp.FlexDirection "column"
                 CSSProp.Display DisplayOptions.Flex
                 CSSProp.Height "inherit"
             ]
         ] [
-            stepper [ActiveStep (model.Stepper.StepValue)]
+            stepper [
+                StepperProp.ActiveStep (model.Stepper.StepValue)
+            ]
                 <| model.Stepper.StepElems model.StepperComplete
             
             div [Style [ CSSProp.Padding (string "3em") ]] [ 

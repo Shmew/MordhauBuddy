@@ -30,9 +30,9 @@ module App =
         | Snackbars
         | StaticAssets
         | TextFields
-        | INITest
+        | FaceTools
         static member All =
-            [ Home; AutoComplete; Badges; Dialogs; SaveLoad; Selects; Snackbars; StaticAssets; TextFields; INITest ]
+            [ Home; AutoComplete; Badges; Dialogs; SaveLoad; Selects; Snackbars; StaticAssets; TextFields; FaceTools ]
 
     let pageTitle =
         function
@@ -45,7 +45,7 @@ module App =
         | StaticAssets -> "Static assets"
         | Snackbars -> "Snackbars"
         | TextFields -> "Text fields"
-        | INITest -> "INI Test"
+        | FaceTools -> "Face tools"
 
     type Msg =
         | Navigate of Page
@@ -58,7 +58,7 @@ module App =
         | SelectsMsg of Selects.Msg
         | SnackbarsMsg of Snackbars.Msg
         | TextFieldsMsg of TextFields.Msg
-        | INITestMsg of INITest.Msg
+        | FaceToolsMsg of FaceTools.Msg
         | ServerMsg of RemoteClientMsg
 
     type Model =
@@ -72,7 +72,7 @@ module App =
           Selects : Selects.Model
           Snackbars : Snackbars.Model
           TextFields : TextFields.Model
-          INITest : INITest.Model }
+          FaceTools : FaceTools.Model }
 
     let private window = getRemoteWin()
 
@@ -88,7 +88,7 @@ module App =
               Selects = Selects.init()
               Snackbars = Snackbars.init()
               TextFields = TextFields.init()
-              INITest = INITest.init() } 
+              FaceTools = FaceTools.init() } 
         m, Cmd.none
 
     let update msg m =
@@ -115,21 +115,21 @@ module App =
             { m with Snackbars = m' }, Cmd.map SnackbarsMsg cmd
         | TextFieldsMsg msg' ->
             { m with TextFields = TextFields.update msg' m.TextFields }, Cmd.none
-        | INITestMsg msg' ->
-            let m', cmd = INITest.update msg' m.INITest
-            { m with INITest = m' }, Cmd.map INITestMsg cmd
+        | FaceToolsMsg msg' ->
+            let m', cmd = FaceTools.update msg' m.FaceTools
+            { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
         | ServerMsg msg' ->
             match msg' with
             | Resp bRes ->
-                let m', cmd = INITest.update (INITest.ClientMsg bRes) m.INITest
-                { m with INITest = m' }, Cmd.map INITestMsg cmd
+                let m', cmd = FaceTools.update (FaceTools.ClientMsg bRes) m.FaceTools
+                { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
 
     // Domain/Elmish above, view below
     let private styles (theme : ITheme) : IStyles list =
         let drawerWidth = "240px"
         [
             Styles.Root [
-                Display DisplayOptions.Flex
+                CSSProp.Display DisplayOptions.Flex
                 CSSProp.Height "inherit"
                 CSSProp.Custom("user-select","none")
             ]
@@ -148,14 +148,14 @@ module App =
                 CSSProp.Display DisplayOptions.Grid
             ])
             Styles.Custom ("drawer", [
-                Width drawerWidth
-                FlexShrink 0
+                CSSProp.Width drawerWidth
+                CSSProp.FlexShrink 0
             ])
             Styles.Custom ("drawerPaper", [
-                Width drawerWidth
+                CSSProp.Width drawerWidth
             ])
             Styles.Custom ("content", [
-                FlexGrow 1
+                CSSProp.FlexGrow 1
                 CSSProp.Height "inherit"
                 CSSProp.PaddingTop "9em"
                 CSSProp.PaddingLeft "2em"
@@ -172,9 +172,7 @@ module App =
             HTMLAttr.Selected (model.Page = page)
             Key (pageTitle page)
             DOMAttr.OnClick (fun _ -> Navigate page |> dispatch)
-        ] [
-            listItemText [ ] [ page |> pageTitle |> str ]
-        ]
+        ] [ listItemText [ ] [ page |> pageTitle |> str ] ]
 
     let private pageView model dispatch =
         match model.Page with
@@ -194,7 +192,7 @@ module App =
                 avatar [ Src (stat "avatar.jpg") ] []
             ]
         | TextFields -> lazyView2 TextFields.view model.TextFields (TextFieldsMsg >> dispatch)
-        | INITest -> lazyView2 INITest.view model.INITest (INITestMsg >> dispatch)
+        | FaceTools -> lazyView2 FaceTools.view model.FaceTools (FaceToolsMsg >> dispatch)
 
     let private getTheme (m: Model) =
         if m.IsDarkTheme then 
@@ -204,7 +202,7 @@ module App =
                     PaletteProp.Primary [
                         PaletteIntentionProp.Main "#BB86FC"
                         PaletteIntentionProp.Dark "#3700B3"
-                        PaletteIntentionProp.ContrastText "#fff"
+                        PaletteIntentionProp.ContrastText "#000"
                     ]
                     PaletteProp.Secondary [
                         PaletteIntentionProp.Main "#03DAC6"
@@ -218,6 +216,43 @@ module App =
                 ]
                 ThemeProp.Typography [
                     ThemeTypographyProp.UseNextVariants true
+                ]
+                ThemeProp.Overrides [
+                    OverridesProp.MuiOutlinedInput [
+                        Styles.Root [
+                            CSSProp.Custom ("&$focused $notchedOutline", [
+                                CSSProp.BorderColor "#03DAC6"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                            CSSProp.Custom ("&:hover $notchedOutline", [
+                                CSSProp.BorderColor "#03DAC6"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                        Styles.NotchedOutline [
+                            CSSProp.BorderColor "#03DAC6"
+                        ]
+                    ]
+                    OverridesProp.MuiFormLabel [
+                        Styles.Root [
+                            CSSProp.Custom ("&$focused", [
+                                CSSProp.Color "#03DAC6"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                    ]
+                    OverridesProp.MuiPaper [
+                        Styles.Elevation2 [
+                            CSSProp.BackgroundColor "#303030"
+                        ]
+                    ]
+                    OverridesProp.MuiButton [
+                        Styles.Root [
+                            CSSProp.TransitionProperty "background-color, color, box-shadow, border"
+                        ]
+                        Styles.ContainedPrimary [
+                            CSSProp.Custom ("&:hover", [
+                                CSSProp.Color "#FFF"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                    ]
                 ]
             ]
             |> ProviderTheme.Theme
@@ -241,6 +276,33 @@ module App =
                 ]
                 ThemeProp.Typography [
                     ThemeTypographyProp.UseNextVariants true
+                ]
+                ThemeProp.Overrides [
+                    OverridesProp.MuiOutlinedInput [
+                        Styles.Root [
+                            CSSProp.Custom ("&$focused $notchedOutline", [
+                                CSSProp.BorderColor "#03DAC6"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                            CSSProp.Custom ("&:hover $notchedOutline", [
+                                CSSProp.BorderColor "#03DAC6"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                        Styles.NotchedOutline [
+                            CSSProp.BorderColor "#03DAC6"
+                        ]
+                    ]
+                    OverridesProp.MuiFormLabel [
+                        Styles.Root [
+                            CSSProp.Custom ("&$focused", [
+                                CSSProp.Color "#03DAC6"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                    ]
+                    OverridesProp.MuiPaper [
+                        Styles.Elevation2 [
+                            CSSProp.BackgroundColor "#FAFAFA"
+                        ]
+                    ]
                 ]
             ]
             |> ProviderTheme.Theme
@@ -282,40 +344,29 @@ module App =
                         iconButton [
                             DOMAttr.OnClick (fun _ -> window.minimize())
                             Class classes?titleButton
-                        ] [
-                            windowMinimizeIcon []
-                        ]
+                        ] [ windowMinimizeIcon [] ]
                         iconButton [
                             DOMAttr.OnClick (fun _ ->
                                 window.maximize()
                                 true |> MinMaxMsg |> dispatch)
                             Class classes?titleButton
                             Style [hideIfMax true]
-                        ] [
-                            windowMaximizeIcon []
-                        ]
+                        ] [ windowMaximizeIcon [] ]
                         iconButton [
                             DOMAttr.OnClick (fun _ -> 
                                 window.unmaximize()
                                 false |> MinMaxMsg |> dispatch)
                             Class classes?titleButton
                             Style [hideIfMax false]
-                        ] [
-                            windowRestoreIcon []
-                        ]
+                        ] [ windowRestoreIcon [] ]
                         iconButton [
                             DOMAttr.OnClick (fun _ -> window.close())
                             Class classes?titleButton
-                        ] [
-                            windowCloseIcon []
-                        ]
+                        ] [ windowCloseIcon [] ]
                     ]
-                    toolbar [ 
-                        Style [ CSSProp.PaddingRight "0" ]
-                    ] [
+                    toolbar [ Style [ CSSProp.PaddingRight "0" ] ] [
                         typography [
                             TypographyProp.Variant TypographyVariant.H6
-                        
                             Style [
                                 CSSProp.Width "100%"
                                 CSSProp.Color "#ffffff"
@@ -327,9 +378,7 @@ module App =
                                 |> DarkTheme |> dispatch)
                             Class classes?titleButton
                             Style [ CSSProp.Color "#ffffff"; CSSProp.BorderRadius "20%" ]
-                        ] [
-                            themeLightDarkIcon []
-                        ]
+                        ] [ themeLightDarkIcon [] ]
                     ]
                 ]
                 drawer [
@@ -340,17 +389,9 @@ module App =
                     list [ 
                         Component (ReactElementType.ofHtmlElement "nav")
                         Style [ CSSProp.PaddingTop "108px" ]
-                    ] [
-                        Page.All |> List.map (pageListItem model dispatch) |> ofList
-                    ]
+                    ] [ Page.All |> List.map (pageListItem model dispatch) |> ofList ]
                 ]
-                main [ 
-                    Class classes?content
-                    //Style [ CSSProp.PaddingTop "108px" ]
-
-                ] [
-                    pageView model dispatch
-                ]
+                main [ Class classes?content ] [ pageView model dispatch ]
             ]
         ]
     

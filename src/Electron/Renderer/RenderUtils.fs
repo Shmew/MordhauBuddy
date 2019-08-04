@@ -108,6 +108,7 @@ module RenderUtils =
         open Fable.Core.Testing
         open Fable.Validation.Core
         open Node.Api
+        open System.Text.RegularExpressions
 
         let validateConfigDir (s: string) = Fable.Validation.Core.single <| fun t ->
             t.TestOne s
@@ -119,6 +120,13 @@ module RenderUtils =
                     | _ -> false) "Invalid path"
                 |> t.Trim
                 |> t.NotBlank "Directory cannot be blank"
+                |> t.End
+
+        let validateImport (s: string) = Fable.Validation.Core.single <| fun t ->
+            t.TestOne s
+                |> t.Trim
+                |> t.NotBlank "Must provide import string"
+                |> t.Match (Regex @"^\(Translate=\((\d*,?){49}\),Rotate=\((\d*,?){49}\),Scale=\((\d*,?){49}\)\)") "Invalid import string"
                 |> t.End
 
     module Directory =
@@ -144,3 +152,13 @@ module RenderUtils =
             //if isWindows then res.filePaths |> Array.reduce (fun acc elem -> acc + @"\" + elem)
             //else res.filePaths |> Array.reduce (fun acc elem -> acc + "/" + elem)
             //|> DirSelect.Selected
+
+    module Samples =
+        let faceImport =
+            "(Translate=(65535,31072,875,704,0,734,65535,0,0,65535,31565,0,0,65535,0,29632,29662,30686,\
+            65535,65535,0,30720,65535,0,0,918,31560,0,65535,31709,31680,544,574,30749,30720,256,286,65535,\
+            0,0,0,65535,0,0,65535,0,65535,31678,31648),Rotate=(0,65535,26302,31680,0,30750,0,65535,0,0,0,\
+            65535,65535,65535,31584,30749,31648,8,65535,0,65535,608,65535,65535,0,31695,893,18301,65535,31677,\
+            30720,31704,30725,1,988,29,960,0,65535,0,65535,65535,16326,0,65535,65535,15383,30,960),Scale=(0,30,\
+            4139,30749,65535,30749,0,65535,65535,0,0,0,0,65535,31709,0,0,190,0,0,0,589,0,0,0,30749,31166,989,\
+            65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"

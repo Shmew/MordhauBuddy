@@ -130,11 +130,10 @@ module INIConfiguration =
                    acc
                    |> List.map (fun iList ->
                           iList
-                          |> List.map (fun iVal ->
+                          |> List.collect (fun iVal ->
                                  match getProps elem iVal with
                                  | Some(res) -> res
-                                 | _ -> [])
-                          |> List.concat)) [ [ gameFile ] ]
+                                 | _ -> []))) [ [ gameFile ] ]
             |> List.concat
 
         let private iValStrings (iVal : INIValue) =
@@ -147,6 +146,51 @@ module INIConfiguration =
               "INVTEXT" ]
             |> getPropValuesOf gameFile
             |> List.map iValStrings
+
+        let getCharacterProfileExports (gameFile : INIValue) (profiles : string list) =
+            let characterIVals =
+                [ "File"; @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C" ]
+                |> getPropValuesOf gameFile
+
+            let checkVList (vList : INIValue list) (profile : string) =
+                vList
+                |> List.tryFind (fun iVal ->
+                       match iVal with
+                       | INIValue.KeyValue("Name", fText) ->
+                           match fText with
+                           | INIValue.FieldText(_, INIValue.Tuple(tList)) when profile = (tList.Head.ToString()
+                                                                                               .Trim('"')) -> true
+                           | _ -> false
+                       | _ -> false)
+                |> Option.isSome
+            profiles
+            |> List.map (fun profile ->
+                   let exportList =
+                       characterIVals
+                       |> List.choose (fun iElem ->
+                              match iElem with
+                              | INIValue.KeyValue("CharacterProfiles", INIValue.Tuple(vList)) when checkVList vList
+                                                                                                       profile ->
+                                  Some(iElem)
+                              | _ -> None)
+                   match exportList with
+                   | [ charIVal ] -> profile, Some(charIVal)
+                   | _ -> profile, Some(INIValue.String(None)))
+            |> List.map (fun (pName, iValOpt) ->
+                   match iValOpt with
+                   | Some(iVal) ->
+                       match iVal with
+                       | INIValue.KeyValue("CharacterProfiles", INIValue.Tuple(tList)) ->
+                           tList
+                           |> List.choose (fun tElem ->
+                                  match tElem with
+                                  | INIValue.KeyValue("FaceCustomization", fVal) -> Some(pName, fVal.ToString())
+                                  | _ -> None)
+                           |> function
+                           | [ single ] -> single
+                           | _ -> (pName, "")
+                       | _ -> (pName, "")
+                   | None -> (pName, ""))
 
         let containsProfile (gameFile : INIValue) (profile : string) =
             match getCharacterProfileNames gameFile with
@@ -217,4 +261,8 @@ module INIConfiguration =
             modifyCharacterProfileFace iVal profile FaceActions.Frankenstein
         let custom (profile : string) (iVal : INIValue) (fVals : FaceValues) =
             modifyCharacterProfileFace iVal profile <| FaceActions.Custom(fVals)
-        let profileList (iVal : INIValue) = getCharacterProfileNames iVal |> BridgeResult.ProfileList
+
+        let profileList (iVal : INIValue) =
+            getCharacterProfileNames iVal
+            |> getCharacterProfileExports iVal
+            |> BridgeResult.ProfileList

@@ -47,7 +47,7 @@ module ElectronBridge =
         | Random of bool
         | Frankenstein of bool
         | Custom of bool
-        | ProfileList of string list
+        | ProfileList of (string * string) list
 
     type RemoteClientMsg = Resp of BridgeResult
 

@@ -58,13 +58,15 @@ module Main =
     let createMainWindow() =
         let mainWinState =
             WindowState.getState (jsOptions<WindowState.Options> (fun o ->
-                                      o.defaultHeight <- 900
-                                      o.defaultWidth <- 1200))
+                                      o.defaultHeight <- 800
+                                      o.defaultWidth <- 1150))
 
         let win =
             main.BrowserWindow.Create(jsOptions<BrowserWindowOptions> (fun o ->
                                           o.width <- mainWinState.width
                                           o.height <- mainWinState.height
+                                          o.minHeight <- 925
+                                          o.minWidth <- 1200
                                           o.autoHideMenuBar <- true
                                           o.webPreferences <- jsOptions<WebPreferences> (fun w ->
                                                                   w.contextIsolation <- false
