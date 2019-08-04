@@ -772,6 +772,7 @@ module rec FaceTools =
             ]
         ] [
             stepper [
+                MaterialProp.Elevation 1
                 StepperProp.ActiveStep (model.Stepper.StepValue)
             ]
                 <| model.Stepper.StepElems model.StepperComplete

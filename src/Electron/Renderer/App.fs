@@ -206,11 +206,12 @@ module App =
                     ]
                     PaletteProp.Secondary [
                         PaletteIntentionProp.Main "#03DAC6"
-                        PaletteIntentionProp.ContrastText "#fff"
+                        PaletteIntentionProp.Dark "#7CFDF1"
+                        PaletteIntentionProp.ContrastText "#FFF"
                     ]
                     PaletteProp.Error [
                         PaletteIntentionProp.Main "#CF6679"
-                        PaletteIntentionProp.ContrastText "#fff"
+                        PaletteIntentionProp.ContrastText "#FFF"
                     ]
                     PaletteProp.ContrastThreshold 3
                 ]
@@ -251,6 +252,14 @@ module App =
                             CSSProp.Custom ("&:hover", [
                                 CSSProp.Color "#FFF"
                             ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                        Styles.ContainedSecondary [
+                            CSSProp.Color "#000"
+                        ]
+                    ]
+                    OverridesProp.MuiStepper [
+                        Styles.Root [
+                            CSSProp.BorderRadius "4px"
                         ]
                     ]
                 ]
@@ -301,6 +310,11 @@ module App =
                     OverridesProp.MuiPaper [
                         Styles.Elevation2 [
                             CSSProp.BackgroundColor "#FAFAFA"
+                        ]
+                    ]
+                    OverridesProp.MuiStepper [
+                        Styles.Root [
+                            CSSProp.BorderRadius "4px"
                         ]
                     ]
                 ]

@@ -58,8 +58,8 @@ module Main =
     let createMainWindow() =
         let mainWinState =
             WindowState.getState (jsOptions<WindowState.Options> (fun o ->
-                                      o.defaultHeight <- 800
-                                      o.defaultWidth <- 1150))
+                                      o.defaultHeight <- 925
+                                      o.defaultWidth <- 1200))
 
         let win =
             main.BrowserWindow.Create(jsOptions<BrowserWindowOptions> (fun o ->
