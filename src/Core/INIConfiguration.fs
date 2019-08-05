@@ -50,10 +50,10 @@ module INIConfiguration =
             match File.exists file with
             | true ->
                 let backups = fi.DirectoryName @@ "MordhauBuddy_backups"
-                let ts = DateTime.Now.ToString("yyyyMMdd-hhmm")
+                let ts = DateTime.Now.ToString("yyyyMMdd-hhmm") + ".ini"
                 Directory.ensure backups
                 Shell.copyFile (backups @@ ts) file
-                File.exists (backups @@ ts @@ (fi.Name))
+                File.exists (backups @@ ts)
             | false -> false
 
         /// Write `INIValue` to file path
@@ -61,6 +61,8 @@ module INIConfiguration =
             let fi = FileInfo.ofPath (outFile)
             Directory.ensure fi.DirectoryName
             File.writeString false fi.FullName (iVal.ToString())
+            tryGetFile ({ File = outFile
+                          WorkingDir = None })
 
         /// Try to read an INI file
         let tryReadINI (file : string) =
@@ -76,7 +78,7 @@ module INIConfiguration =
         type FaceActions =
             | Frankenstein
             | Random
-            | Custom of FaceValues
+            | Custom of string
 
         let max = 65535
         let min = 0
@@ -110,18 +112,6 @@ module INIConfiguration =
 
         let modifyFace (profile : INIValue) (f : unit -> INIValue) =
             faceKeys |> List.fold (fun (p : INIValue) sels -> p.Map(sels, f())) profile
-
-        let modifyCustomFace (profile : INIValue) (fVals : FaceValues) =
-            faceKeys
-            |> List.zip ([ fVals.Translate; fVals.Rotate; fVals.Scale ]
-                         |> List.map (fun iList ->
-                                iList
-                                |> List.map (string
-                                             >> Some
-                                             >> INIValue.String)
-                                |> INIValue.Tuple))
-            |> List.fold (fun (p : INIValue) (fValues, sels) -> p.Map(sels, fValues)) profile
-
         let private getProps s (iVal : INIValue) = iVal.TryGetProperty(s)
 
         let getPropValuesOf (gameFile : INIValue) (selectors : string list) =
@@ -136,8 +126,12 @@ module INIConfiguration =
                                  | _ -> []))) [ [ gameFile ] ]
             |> List.concat
 
-        let private iValStrings (iVal : INIValue) =
+        let iValStrings (iVal : INIValue) =
             match iVal with
+            | INIValue.Tuple(tList) when tList.Length = 1 ->
+                match tList.Head with
+                | INIValue.String(Some(s)) -> s.Trim('"')
+                | _ -> ""
             | INIValue.String(Some(s)) -> s.Trim('"')
             | _ -> ""
 
@@ -206,7 +200,7 @@ module INIConfiguration =
                 match action with
                 | FaceActions.Frankenstein -> modifyFace iVal frankensteinFaces
                 | FaceActions.Random -> modifyFace iVal randomFaces
-                | FaceActions.Custom(fValues) -> modifyCustomFace iVal fValues
+                | FaceActions.Custom(fValues) -> modifyFace iVal (fun () -> INIValue.Parse(fValues))
 
             let hasProfile (iVal : INIValue) =
                 [ "Name"; "INVTEXT" ]
@@ -247,6 +241,12 @@ module INIConfiguration =
         let exists (iFile : INIFile) = FileOps.tryGetFile(iFile).IsSome |> BridgeResult.Exists
         let parse (iFile : INIFile) = FileOps.tryGetFile (iFile) |> Option.bind FileOps.tryReadINI
 
+        let write (iFile : INIFile) (iVal : INIValue) =
+            FileOps.tryGetFile (iFile)
+            |> Option.bind (FileOps.writeINI iVal)
+            |> Option.isSome
+            |> BridgeResult.CommitChanges
+
         let backup (iFile : INIFile) =
             FileOps.tryGetFile (iFile)
             |> Option.map FileOps.createBackup
@@ -256,11 +256,19 @@ module INIConfiguration =
             |> BridgeResult.Backup
 
         let defDir() = FileOps.defConfigDir |> BridgeResult.DefaultDir
-        let random (profile : string) (iVal : INIValue) = modifyCharacterProfileFace iVal profile FaceActions.Random
-        let frankenstein (profile : string) (iVal : INIValue) =
-            modifyCharacterProfileFace iVal profile FaceActions.Frankenstein
-        let custom (profile : string) (iVal : INIValue) (fVals : FaceValues) =
-            modifyCharacterProfileFace iVal profile <| FaceActions.Custom(fVals)
+
+        let private tryApplyChanges (profiles : string list) (iVal : INIValue) (fAction : FaceActions) =
+            try
+                profiles
+                |> List.fold (fun acc profile -> modifyCharacterProfileFace acc profile fAction |> Option.get) iVal
+                |> Some
+            with _ -> None
+
+        let random (profiles : string list) (iVal : INIValue) = tryApplyChanges profiles iVal FaceActions.Random
+        let frankenstein (profiles : string list) (iVal : INIValue) =
+            tryApplyChanges profiles iVal FaceActions.Frankenstein
+        let custom (profiles : string list) (iVal : INIValue) (fVals : string) =
+            tryApplyChanges profiles iVal <| FaceActions.Custom(fVals)
 
         let profileList (iVal : INIValue) =
             getCharacterProfileNames iVal

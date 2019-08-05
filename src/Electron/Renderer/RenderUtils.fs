@@ -14,6 +14,7 @@ module BridgeUtils =
             let parse iFile = Parse(iFile) |> wrapOps
             let backup iFile = Backup(iFile) |> wrapOps
             let defDir = DefaultDir |> wrapOps
+            let commit iFile = Commit(iFile) |> wrapOps
 
         [<RequireQualifiedAccess>]
         module Faces =

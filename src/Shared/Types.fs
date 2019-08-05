@@ -10,11 +10,6 @@ module ElectronBridge =
             { File : string
               WorkingDir : string option }
 
-        type FaceValues =
-            { Translate : int list
-              Rotate : int list
-              Scale : int list }
-
         type FileOperation =
             | Replace of string * Selectors
             | Delete of Selectors
@@ -22,11 +17,12 @@ module ElectronBridge =
             | Parse of INIFile
             | Backup of INIFile
             | DefaultDir
+            | Commit of INIFile
 
         type Faces =
-            | Random of string
-            | Frankenstein of string
-            | Custom of string * FaceValues
+            | Random of string list
+            | Frankenstein of string list
+            | Custom of string list * string
             | ProfileList
 
         type INIOperations =
@@ -48,6 +44,7 @@ module ElectronBridge =
         | Frankenstein of bool
         | Custom of bool
         | ProfileList of (string * string) list
+        | CommitChanges of bool
 
     type RemoteClientMsg = Resp of BridgeResult
 

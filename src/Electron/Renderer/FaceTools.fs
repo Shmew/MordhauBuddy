@@ -202,19 +202,26 @@ module rec FaceTools =
           HelperText : string
           Validated : bool }
 
+    type Submit =
+        { Waiting : bool
+          Error : bool
+          HelperText : string
+          Complete : bool }
+
     type Model = 
         { Waiting : bool
-          DefaultDirTried : bool
+          ParseWaiting : bool
           Stepper : Steps
           StepperComplete : bool
           ConfigDir : ConfigDir 
           TransferList : TransferList
           TabSelected : int
-          Import : ImportStr }
+          Import : ImportStr
+          Submit : Submit }
 
     let init() =
         { Waiting = true
-          DefaultDirTried = false
+          ParseWaiting = false
           Stepper = LocateConfig
           StepperComplete = false
           ConfigDir = 
@@ -234,9 +241,21 @@ module rec FaceTools =
             { ImportString = ""
               Error = false
               HelperText = "You must validate the string before submission" 
-              Validated = false } }
+              Validated = false } 
+          Submit =
+            { Waiting = false
+              Error = false
+              HelperText = ""
+              Complete = false } }
 
     let update (msg: Msg) (model: Model) =
+        let submissionFailed (s: string) =
+            { model with
+                Submit =
+                    { model.Submit with
+                        Waiting = false
+                        Error = true
+                        HelperText = s } }
         match msg with
         | ClientMsg bRes ->
             match bRes with
@@ -258,23 +277,23 @@ module rec FaceTools =
                                 ConfigDir.HelperText = "Unable to automatically detect Mordhau directory"
                                 ConfigDir.Validated = false } }, Cmd.none
             | BridgeResult.Exists b ->
-                    { model with
-                        Waiting = false
-                        ConfigDir =
-                            if b then
-                                { model.ConfigDir with
-                                    Error = false
-                                    HelperText = "Game.ini located"
-                                    Validated = true } 
-                            else
-                                { model.ConfigDir with
-                                    Error = true
-                                    HelperText = "Game.ini not found"
-                                    Validated = false } 
-                        }, Cmd.none
-            | BridgeResult.ProfileList l ->
                 { model with
                     Waiting = false
+                    ConfigDir =
+                        if b then
+                            { model.ConfigDir with
+                                Error = false
+                                HelperText = "Game.ini located"
+                                Validated = true } 
+                        else
+                            { model.ConfigDir with
+                                Error = true
+                                HelperText = "Game.ini not found"
+                                Validated = false } 
+                    }, Cmd.none
+            | BridgeResult.ProfileList l ->
+                { model with
+                    ParseWaiting = false
                     Stepper = model.Stepper.Next
                     TransferList =
                         if l.Length = 0 then
@@ -305,23 +324,57 @@ module rec FaceTools =
                             { model.ConfigDir with
                                 Error = true
                                 HelperText = "Error parsing Game.ini"}}, Cmd.none
-            | _ -> { model with Waiting = false },Cmd.none
+            | BridgeResult.Backup b ->
+                if b then
+                    let profiles =
+                        model.TransferList.RightProfiles |> List.map (fun p -> p.Name)
+                    match model.TabSelected with
+                    | 0 -> model, Cmd.namedBridgeSend "INI" (INI.Faces.setFrankenstein profiles)
+                    | 1 -> model, Cmd.namedBridgeSend "INI" (INI.Faces.setRandom profiles)
+                    | 2 -> model, Cmd.namedBridgeSend "INI" (INI.Faces.setCustom profiles model.Import.ImportString)
+                    | _ -> submissionFailed "Invalid submission", Cmd.none
+                else
+                    submissionFailed "Error creating backup", Cmd.none
+            | BridgeResult.Frankenstein b
+            | BridgeResult.Random b
+            | BridgeResult.Custom b
+                ->
+                    if b then
+                        model, Cmd.namedBridgeSend "INI"
+                            (INI.Ops.commit({File = "Game.ini"; WorkingDir = Some(model.ConfigDir.Directory) }))
+                    else submissionFailed "Modifying INI failed", Cmd.none
+            | BridgeResult.CommitChanges b ->
+                if b then
+                    { model with
+                        StepperComplete = true
+                        Submit =
+                            { model.Submit with
+                                Waiting = false
+                                Error = false
+                                HelperText = "" } }, Cmd.none
+                else submissionFailed "Error commiting changes to the file", Cmd.none
+            | _ -> { model with Waiting = false }, Cmd.none
         | StepperSubmit -> 
             ElectronStore.store.set("configDir",model.ConfigDir.Directory)
-            { model with StepperComplete = true }, Cmd.none
+            { model with
+                Submit =
+                    { model.Submit with
+                        Waiting = true } },
+                Cmd.namedBridgeSend "INI" 
+                    (INI.Ops.backup({File = "Game.ini"; WorkingDir = Some(model.ConfigDir.Directory) }) )
         | StepperRestart -> 
-            { init() with Waiting = false; DefaultDirTried = true },
+            { init() with Waiting = false },
                 Cmd.ofMsg <| SetConfigDir (model.ConfigDir.Directory, Ok model.ConfigDir.Directory)
         | StepperNext ->
             match model.Stepper.Next with
             | ChooseProfiles ->
-                { model with Waiting = true}, Cmd.namedBridgeSend "INI" 
+                { model with ParseWaiting = true }, Cmd.namedBridgeSend "INI" 
                     (INI.Ops.parse({ File = "Game.ini"; WorkingDir = Some(model.ConfigDir.Directory) } ))
             | _ ->
                 { model with Stepper = model.Stepper.Next }, Cmd.none
         | StepperBack -> { model with Stepper = model.Stepper.Back }, Cmd.none
         | GetDefaultDir ->
-            { model with DefaultDirTried = true }, Cmd.namedBridgeSend "INI" (INI.Ops.defDir)
+            model, Cmd.namedBridgeSend "INI" (INI.Ops.defDir)
         | SetConfigDir (s,res) -> 
             match res with
             | Ok s ->
@@ -487,11 +540,13 @@ module rec FaceTools =
     ]
 
     let private view' (classes: IClasses) model dispatch =
+        let isLocateConfig =
+            match model.Stepper with
+            | LocateConfig -> true
+            | _ -> false
         let content =
-            match model.Stepper, model.Waiting with
-            | _, true ->
-                str ""
-            | LocateConfig, _ ->
+            match model.Stepper with
+            | LocateConfig ->
                 paper [] [
                     div [
                         Style [
@@ -519,7 +574,7 @@ module rec FaceTools =
                         ] [ str "Select" ]
                     ]
                 ]
-            | ChooseProfiles, _ ->
+            | ChooseProfiles ->
                 let createCard (direction: ToggleDirection) =
                     let checkNum,profiles,headerTitle =
                         match direction with
@@ -610,7 +665,7 @@ module rec FaceTools =
                     ]
                     createCard Right
                 ]
-            | ChooseAction, _ ->
+            | ChooseAction ->
                 let tabDescription =
                     match model.TabSelected with
                     | 0 ->
@@ -778,8 +833,8 @@ module rec FaceTools =
                 <| model.Stepper.StepElems model.StepperComplete
             
             div [Style [ CSSProp.Padding (string "3em") ]] [ 
-                match model.Waiting, model.DefaultDirTried with
-                | true, false ->
+                match model.Waiting, model.ParseWaiting with
+                | true, false when model.ConfigDir.Directory = "" && isLocateConfig ->
                     yield circularProgress [
                         Style [CSSProp.MarginLeft "45%"]
                         DOMAttr.OnAnimationStart <| fun _ ->
@@ -788,11 +843,21 @@ module rec FaceTools =
                                 return dispatch GetDefaultDir
                             } |> Async.StartImmediate
                     ]
-                | true, true ->
+                | true, false when isLocateConfig ->
+                    yield circularProgress [
+                        Style [CSSProp.MarginLeft "45%"]
+                        DOMAttr.OnAnimationStart <| fun _ ->
+                            async {
+                                do! Async.Sleep 1000
+                                return dispatch <| SetConfigDir
+                                    (model.ConfigDir.Directory, validateConfigDir model.ConfigDir.Directory)
+                            } |> Async.StartImmediate
+                    ]
+                | _ when model.Waiting || model.ParseWaiting ->
                     yield circularProgress [
                         Style [CSSProp.MarginLeft "45%"]
                     ]
-                | _, _ -> yield content
+                | _ -> yield content
             ]
             div [ Style [CSSProp.PaddingLeft "3em"] ] model.Stepper.StepCaption
             model.Stepper.Buttons dispatch model

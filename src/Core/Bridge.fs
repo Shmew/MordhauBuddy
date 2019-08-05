@@ -36,17 +36,18 @@ module Bridge =
                         match parse iFile with
                         | Some(_) as iOpt -> { model with IValue = iOpt }, BridgeResult.Parse true
                         | _ -> model, BridgeResult.Parse false
-                    | Backup(iFile) -> model, backup (iFile)
+                    | Backup(iFile) -> model, backup iFile
                     | DefaultDir -> model, defDir()
+                    | Commit(iFile) -> model, write iFile (model.IValue.Value)
                 | Faces fCmd ->
                     match fCmd with
-                    | Random(profile) ->
-                        { model with IValue = (random profile model.IValue.Value) }, true |> BridgeResult.Random
-                    | Frankenstein(profile) ->
-                        { model with IValue = (frankenstein profile model.IValue.Value) },
+                    | Random(profiles) ->
+                        { model with IValue = (random profiles model.IValue.Value) }, true |> BridgeResult.Random
+                    | Frankenstein(profiles) ->
+                        { model with IValue = (frankenstein profiles model.IValue.Value) },
                         true |> BridgeResult.Frankenstein
-                    | Custom(profile, fVal) ->
-                        { model with IValue = (custom profile model.IValue.Value fVal) }, true |> BridgeResult.Custom
+                    | Custom(profiles, fVal) ->
+                        { model with IValue = (custom profiles model.IValue.Value fVal) }, true |> BridgeResult.Custom
                     | ProfileList -> model, profileList (model.IValue.Value)
             |> (fun (m, br) ->
             Resp(br) |> clientDispatch
