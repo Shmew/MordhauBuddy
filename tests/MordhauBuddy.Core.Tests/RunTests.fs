@@ -7,4 +7,4 @@ module RunTests =
     let main args =
         let writeResults = TestResults.writeNUnitSummary (@"bin\TestResults.xml", "Expecto.Tests")
         let config = defaultConfig.appendSummaryHandler writeResults
-        Tests.runTestsWithArgs config args HelperTests.runHelperTests
+        Tests.runTestsInAssembly config args

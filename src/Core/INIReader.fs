@@ -7,7 +7,7 @@ open System.ComponentModel
 open System.Globalization
 open System.IO
 
-module INIReader =
+module rec INIReader =
     [<RequireQualifiedAccess>]
     [<StructuredFormatDisplay("{_Print}")>]
     type INIValue =
@@ -145,13 +145,19 @@ module INIReader =
         /// Parses text and fails on error
         member this.Parse() =
             match run ini iniText with
-            | Success(result, _, _) -> result
+            | Success(result, _, _) ->
+                match result with
+                | INIValue.File([]) -> failwith "No sections found in file"
+                | _ -> result
             | Failure(msg, _, _) -> failwith msg
 
         /// Parses text and returns an option
         member this.TryParse() =
             match run ini iniText with
-            | Success(result, _, _) -> Some result
+            | Success(result, _, _) ->
+                match result with
+                | INIValue.File([]) -> None
+                | _ -> result |> Some
             | Failure(msg, _, _) -> None
 
     type INIValue with
@@ -202,26 +208,6 @@ module INIReader =
             | INIValue.String(s) when (defaultArg s "") = "1" -> Some(true)
             | INIValue.String(s) when (defaultArg s "") = "0" -> Some(false)
             | INIValue.String(s) -> TextConversions.AsBoolean <| defaultArg s ""
-            | _ -> None
-
-        static member AsDateTimeOffset(cultureInfo : IFormatProvider) =
-            function
-            | INIValue.String(s) -> TextConversions.AsDateTimeOffset cultureInfo <| defaultArg s ""
-            | _ -> None
-
-        static member AsDateTime(cultureInfo : IFormatProvider) =
-            function
-            | INIValue.String(s) -> TextConversions.AsDateTime cultureInfo <| defaultArg s ""
-            | _ -> None
-
-        static member AsTimeSpan(cultureInfo : CultureInfo) =
-            function
-            | INIValue.String(s) -> TextConversions.AsTimeSpan cultureInfo <| defaultArg s ""
-            | _ -> None
-
-        static member AsGuid =
-            function
-            | INIValue.String(s) -> TextConversions.AsGuid <| defaultArg s ""
             | _ -> None
 
     module INIExtensions =
@@ -344,40 +330,6 @@ module INIReader =
                 | Some b -> b
                 | _ -> failwithf "Not a boolean: %s" <| x.ToString()
 
-            /// Get the datetime value of an element (assuming that the value is a string
-            /// containing well-formed ISO date or MSFT INI date)
-            [<Extension>]
-            static member AsDateTime(x, [<Optional>] ?cultureInfo) =
-                let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
-                match INIConversions.AsDateTime cultureInfo x with
-                | Some d -> d
-                | _ -> failwithf "Not a datetime: %s" <| x.ToString()
-
-            /// Get the datetime offset value of an element (assuming that the value is a string
-            /// containing well-formed ISO date time with offset or MSFT INI datetime with offset)
-            [<Extension>]
-            static member AsDateTimeOffset(x, [<Optional>] ?cultureInfo) =
-                let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
-                match INIConversions.AsDateTimeOffset cultureInfo x with
-                | Some d -> d
-                | _ -> failwithf "Not a datetime offset: %s" <| x.ToString()
-
-            /// Get the timespan value of an element (assuming that the value is a string
-            /// containing well-formed time span)
-            [<Extension>]
-            static member AsTimeSpan(x, [<Optional>] ?cultureInfo) =
-                let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
-                match INIConversions.AsTimeSpan cultureInfo x with
-                | Some t -> t
-                | _ -> failwithf "Not a time span: %s" <| x.ToString()
-
-            /// Get the guid value of an element (assuming that the value is a guid)
-            [<Extension>]
-            static member AsGuid(x) =
-                match INIConversions.AsGuid x with
-                | Some g -> g
-                | _ -> failwithf "Not a guid: %s" <| x.ToString()
-
             /// Get inner text of an element
             [<Extension>]
             static member InnerText(x) =
@@ -388,7 +340,7 @@ module INIReader =
                     |> List.map (fun e -> INIExtensions.InnerText(e))
                     |> String.Concat
 
-            /// Map INIValue based on matching conditions --EXPAND THIS
+            /// Map INIValue based on matching conditions
             [<Extension>]
             static member Map(matchConditions : string list, ast : INIValue, newValue : INIValue) =
                 let rec mapAst (s : string list) (iVal : INIValue) : INIValue =
@@ -431,54 +383,8 @@ module INIReader =
                         | false -> mapAst (s.Tail) kvStr
                 mapAst matchConditions ast
 
-            /// Map INIValue based on matching conditions and mapper function --EXPAND THIS
-            [<Extension>]
-            static member MapIf(matchConditions : string list, ast : INIValue, newValue : INIValue,
-                                mapper : INIValue -> bool) =
-                let rec mapAst (s : string list) (iVal : INIValue) : INIValue =
-                    let testVal (x : INIValue) : bool =
-                        match x with
-                        | INIValue.Section(n, _) -> n <> (s.Head)
-                        | INIValue.FieldText(n, _) -> n <> (s.Head)
-                        | INIValue.KeyValue(n, _) -> n <> (s.Head)
-                        | INIValue.String(n) -> defaultArg n "" <> s.Head
-                        | _ -> false
-
-                    let getResults (iList : INIValue list) (sendTail : bool) =
-                        let matchers =
-                            match sendTail with
-                            | true -> s.Tail
-                            | false -> s
-                        if iList.IsEmpty && s.Head = "()" then [ mapAst (s.Tail) (INIValue.String(None)) ]
-                        else
-                            iList
-                            |> List.map (fun iVal ->
-                                   match testVal iVal with
-                                   | false -> mapAst matchers iVal
-                                   | true -> iVal)
-
-                    match iVal with
-                    | lastIVal when s.IsEmpty ->
-                        if mapper lastIVal then newValue
-                        else lastIVal
-                    | INIValue.File e -> getResults e true |> INIValue.File
-                    | INIValue.Section(secName, secL) ->
-                        getResults secL false |> (fun res -> INIValue.Section(secName, res))
-                    | INIValue.KeyValue(kName, kL) -> mapAst (s.Tail) kL |> (fun res -> INIValue.KeyValue(kName, res))
-                    | INIValue.Tuple(tL) -> getResults tL false |> INIValue.Tuple
-                    | INIValue.FieldText(fName, fTup) ->
-                        match fName = s.Head with
-                        | true -> mapAst (s.Tail) fTup
-                        | false -> fTup
-                        |> (fun res -> INIValue.FieldText(fName, res))
-                    | INIValue.String(_) as kvStr ->
-                        match testVal kvStr with
-                        | true -> kvStr
-                        | false -> mapAst (s.Tail) kvStr
-                mapAst matchConditions ast
-
         /// Get a property of a INI object
-        let (?) (iValue : INIValue) propertyName = iValue.GetProperty(propertyName)
+        let (?) (iValue : INIValue) propertyName = iValue.GetProperty(propertyName) |> List.head
 
         type INIValue with
             member this.Properties =
@@ -503,19 +409,18 @@ module INIReader =
 
                 /// Get a sequence of key-value pairs representing the properties of an object
                 member this.Properties =
-                    let props x =
-                        match x with
-                        | INIValue.File(sList) -> ("", sList)
-                        | INIValue.Section(s, vList) -> (s, vList)
-                        | INIValue.KeyValue(s, v) ->
-                            match v with
-                            | INIValue.Tuple(tList) -> (s, tList)
-                            | _ -> (s, [ v ])
-                        | INIValue.FieldText(s, v) -> (s, [ v ])
-                        | _ -> ("", [])
-                    props this
-                    |> (fun (_, v) -> v)
-                    |> List.map props
+                    match this with
+                    | INIValue.File(sList) -> ("File", sList)
+                    | INIValue.Section(s, vList) -> (s, vList)
+                    | INIValue.KeyValue(s, v) ->
+                        match v with
+                        | INIValue.Tuple(tList) -> (s, tList)
+                        | _ -> (s, [ v ])
+                    | INIValue.FieldText(s, v) ->
+                        match v with
+                        | INIValue.Tuple(tList) -> (s, tList)
+                        | _ -> (s, [ v ])
+                    | _ -> ("", [])
 
                 /// Get property of an INI object. Fails if the value is not an object
                 /// or if the property is not present
@@ -601,36 +506,6 @@ module INIReader =
                     | Some b -> b
                     | _ -> failwithf "Not a boolean: %s" <| this.ToString()
 
-                /// Get the datetime value of an element (assuming that the value is a string
-                /// containing well-formed ISO date or MSFT INI date)
-                member this.AsDateTime([<Optional>] ?cultureInfo) =
-                    let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
-                    match INIConversions.AsDateTime cultureInfo this with
-                    | Some d -> d
-                    | _ -> failwithf "Not a datetime: %s" <| this.ToString()
-
-                /// Get the datetime offset value of an element (assuming that the value is a string
-                /// containing well-formed ISO date time with offset or MSFT INI datetime with offset)
-                member this.AsDateTimeOffset([<Optional>] ?cultureInfo) =
-                    let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
-                    match INIConversions.AsDateTimeOffset cultureInfo this with
-                    | Some d -> d
-                    | _ -> failwithf "Not a datetime offset: %s" <| this.ToString()
-
-                /// Get the timespan value of an element (assuming that the value is a string
-                /// containing well-formed time span)
-                member this.AsTimeSpan([<Optional>] ?cultureInfo) =
-                    let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
-                    match INIConversions.AsTimeSpan cultureInfo this with
-                    | Some t -> t
-                    | _ -> failwithf "Not a time span: %s" <| this.ToString()
-
-                /// Get the guid value of an element (assuming that the value is a guid)
-                member this.AsGuid() =
-                    match INIConversions.AsGuid this with
-                    | Some g -> g
-                    | _ -> failwithf "Not a guid: %s" <| this.ToString()
-
                 /// Get inner text of an element
                 member this.InnerText() =
                     match INIConversions.AsString this with
@@ -640,12 +515,9 @@ module INIReader =
                         |> List.map (fun e -> INIExtensions.InnerText(e))
                         |> String.Concat
 
-                /// Map INIValue based on matching conditions --EXPAND THIS
+                /// Map INIValue based on matching conditions
                 member this.Map(matchConditions : string list, newValue : INIValue) =
                     INIExtensions.Map(matchConditions, this, newValue)
-
-                member this.MapIf(matchConditions : string list, newValue : INIValue, mapper : INIValue -> bool) =
-                    INIExtensions.MapIf(matchConditions, this, newValue, mapper)
 
             [<Extension>]
             [<AbstractClass>]
@@ -654,19 +526,18 @@ module INIReader =
                 /// Get a sequence of key-value pairs representing the properties of an object
                 [<Extension>]
                 static member Properties(x : INIValue) =
-                    let props x =
-                        match x with
-                        | INIValue.File(sList) -> ("", sList)
-                        | INIValue.Section(s, vList) -> (s, vList)
-                        | INIValue.KeyValue(s, v) ->
-                            match v with
-                            | INIValue.Tuple(tList) -> (s, tList)
-                            | _ -> (s, [ v ])
-                        | INIValue.FieldText(s, v) -> (s, [ v ])
-                        | _ -> ("", [])
-                    props x
-                    |> (fun (_, v) -> v)
-                    |> List.map props
+                    match x with
+                    | INIValue.File(sList) -> ("File", sList)
+                    | INIValue.Section(s, vList) -> (s, vList)
+                    | INIValue.KeyValue(s, v) ->
+                        match v with
+                        | INIValue.Tuple(tList) -> (s, tList)
+                        | _ -> (s, [ v ])
+                    | INIValue.FieldText(s, v) ->
+                        match v with
+                        | INIValue.Tuple(tList) -> (s, tList)
+                        | _ -> (s, [ v ])
+                    | _ -> ("", [])
 
                 /// Try to get a property of a INI value.
                 /// Returns None if the value is not an object or if the property is not present.
@@ -740,30 +611,6 @@ module INIReader =
                 [<Extension>]
                 static member AsBoolean(x) = x |> Option.bind INIConversions.AsBoolean
 
-                /// Get the datetime value of an element (assuming that the value is a string
-                /// containing well-formed ISO date or MSFT INI date)
-                [<Extension>]
-                static member AsDateTime(x, [<Optional>] ?cultureInfo) =
-                    let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
-                    x |> Option.bind (INIConversions.AsDateTime cultureInfo)
-
-                /// Get the datetime offset value of an element (assuming that the value is a string
-                /// containing well-formed ISO date time with offset)
-                [<Extension>]
-                static member AsDateTimeOffset(x, [<Optional>] ?cultureInfo) =
-                    let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
-                    x |> Option.bind (INIConversions.AsDateTimeOffset cultureInfo)
-
-                /// Get the timespan value of an element (assuming that the value is a timespan)
-                [<Extension>]
-                static member AsTimeSpan(x, [<Optional>] ?cultureInfo) =
-                    let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
-                    x |> Option.bind (INIConversions.AsTimeSpan cultureInfo)
-
-                /// Get the guid value of an element (assuming that the value is a guid)
-                [<Extension>]
-                static member AsGuid(x) = x |> Option.bind INIConversions.AsGuid
-
                 /// Get inner text of an element
                 [<Extension>]
                 static member InnerText(x) =
@@ -777,23 +624,18 @@ module INIReader =
                                |> String.Concat
                                |> Some)
 
-                /// Map INIValue based on matching conditions --EXPAND THIS
+                /// Map INIValue based on matching conditions
                 [<Extension>]
                 static member Map(matchConditions : string list, ast : INIValue option, newValue : INIValue) =
                     ast |> Option.bind (fun res -> INIExtensions.Map(matchConditions, res, newValue) |> Some)
 
-                /// Map INIValue based on matching conditions and mapper function --EXPAND THIS
-                [<Extension>]
-                static member MapIf(matchConditions : string list, ast : INIValue option, newValue : INIValue,
-                                    mapper : INIValue -> bool) =
-                    ast |> Option.bind (fun res -> INIExtensions.MapIf(matchConditions, res, newValue, mapper) |> Some)
-
             /// [omit]
             type INIValueOverloads = INIValueOverloads
                 with
-                    static member inline ($) (x : INIValue, INIValueOverloads) = x.TryGetProperty
+                    static member inline ($) (x : INIValue, INIValueOverloads) =
+                        fun propertyName -> x.TryGetProperty propertyName |> Option.map (List.head)
                     static member inline ($) (x : INIValue option, INIValueOverloads) =
-                        fun propertyName -> x |> Option.bind (fun x -> x.TryGetProperty propertyName)
+                        fun propertyName -> x |> Option.bind (fun x -> x.TryGetProperty propertyName |> Option.map (List.head))
 
             /// Get property of a INI value (assuming that the value is an object)
             let inline (?) x (propertyName : string) = (x $ INIValueOverloads) propertyName

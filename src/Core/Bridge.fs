@@ -42,12 +42,14 @@ module Bridge =
                 | Faces fCmd ->
                     match fCmd with
                     | Random(profiles) ->
-                        { model with IValue = (random profiles model.IValue.Value) }, true |> BridgeResult.Random
+                        let result = random profiles model.IValue.Value
+                        { model with IValue = result }, result.IsSome |> BridgeResult.Random
                     | Frankenstein(profiles) ->
-                        { model with IValue = (frankenstein profiles model.IValue.Value) },
-                        true |> BridgeResult.Frankenstein
+                        let result = frankenstein profiles model.IValue.Value
+                        { model with IValue = result}, result.IsSome |> BridgeResult.Frankenstein
                     | Custom(profiles, fVal) ->
-                        { model with IValue = (custom profiles model.IValue.Value fVal) }, true |> BridgeResult.Custom
+                        let result = custom profiles model.IValue.Value fVal
+                        { model with IValue = result }, result.IsSome |> BridgeResult.Custom
                     | ProfileList -> model, profileList (model.IValue.Value)
             |> (fun (m, br) ->
             Resp(br) |> clientDispatch
