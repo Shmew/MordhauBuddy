@@ -45,6 +45,7 @@ module ElectronBridge =
         | Custom of bool
         | ProfileList of (string * string) list
         | CommitChanges of bool
+        | Offline
 
     type RemoteClientMsg = Resp of BridgeResult
 

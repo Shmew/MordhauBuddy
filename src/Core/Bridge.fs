@@ -46,7 +46,7 @@ module Bridge =
                         { model with IValue = result }, result.IsSome |> BridgeResult.Random
                     | Frankenstein(profiles) ->
                         let result = frankenstein profiles model.IValue.Value
-                        { model with IValue = result}, result.IsSome |> BridgeResult.Frankenstein
+                        { model with IValue = result }, result.IsSome |> BridgeResult.Frankenstein
                     | Custom(profiles, fVal) ->
                         let result = custom profiles model.IValue.Value fVal
                         { model with IValue = result }, result.IsSome |> BridgeResult.Custom

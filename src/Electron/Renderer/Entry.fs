@@ -16,7 +16,9 @@ module Entry =
         |> Bridge.withName "INI"
         |> Bridge.withMapping (fun bridgeMsg ->
             bridgeMsg |> App.Msg.ServerMsg)
-        |> Bridge.withUrlMode UrlMode.Raw)
+        |> Bridge.withUrlMode UrlMode.Raw
+        |> Bridge.withRetryTime 15 
+        |> Bridge.withWhenDown (BridgeResult.Offline |> Resp |> App.ServerMsg))
     |> Program.withReactSynchronous "app"
 #if DEBUG
     |> Program.withDebugger

@@ -16,6 +16,7 @@ module rec FaceTools =
     open RenderUtils.Validation
     open Elmish
     open Elmish.Bridge
+    open Elmish.React
     open MordhauBuddy.Shared.ElectronBridge
     open BridgeUtils
     open RenderUtils.Directory
@@ -44,6 +45,8 @@ module rec FaceTools =
         | SetImportString of string
         | ValidateImport
         | CopiedClipboard
+        | SnackMsg of Snack.Msg<Msg>
+        | SnackDismissMsg
 
     let trySavedConfigDir () =
         match ElectronStore.store.get("configDir", defaultValue = "") |> string with
@@ -148,7 +151,11 @@ module rec FaceTools =
                             MaterialProp.Color ComponentColor.Primary
                             DOMAttr.OnClick <| fun _ -> 
                                 dispatch (if this.Last then StepperSubmit else StepperNext)
-                        ] [ str <| if this.Last then "Submit" else "Next" ]
+                            Style [ CSSProp.MaxHeight "2.6em" ]
+                        ] [ 
+                            if model.Submit.Waiting then yield circularProgress [ Style [ CSSProp.MaxHeight "2.6em" ] ]
+                            else yield str <| if this.Last then "Submit" else "Next"
+                        ]
                     ]
                 | true ->
                     [
@@ -217,7 +224,8 @@ module rec FaceTools =
           TransferList : TransferList
           TabSelected : int
           Import : ImportStr
-          Submit : Submit }
+          Submit : Submit
+          Snack : Snack.Model<Msg> }
 
     let init() =
         { Waiting = true
@@ -246,7 +254,8 @@ module rec FaceTools =
             { Waiting = false
               Error = false
               HelperText = ""
-              Complete = false } }
+              Complete = false }
+          Snack = Snack.init() }
 
     let update (msg: Msg) (model: Model) =
         let submissionFailed (s: string) =
@@ -332,9 +341,9 @@ module rec FaceTools =
                     | 0 -> model, Cmd.namedBridgeSend "INI" (INI.Faces.setFrankenstein profiles)
                     | 1 -> model, Cmd.namedBridgeSend "INI" (INI.Faces.setRandom profiles)
                     | 2 -> model, Cmd.namedBridgeSend "INI" (INI.Faces.setCustom profiles model.Import.ImportString)
-                    | _ -> submissionFailed "Invalid submission", Cmd.none
+                    | _ -> submissionFailed "Invalid submission", Cmd.ofMsg SnackDismissMsg
                 else
-                    submissionFailed "Error creating backup", Cmd.none
+                    submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg
             | BridgeResult.Frankenstein b
             | BridgeResult.Random b
             | BridgeResult.Custom b
@@ -342,7 +351,7 @@ module rec FaceTools =
                     if b then
                         model, Cmd.namedBridgeSend "INI"
                             (INI.Ops.commit({File = "Game.ini"; WorkingDir = Some(model.ConfigDir.Directory) }))
-                    else submissionFailed "Modifying INI failed", Cmd.none
+                    else submissionFailed "Modifying INI failed", Cmd.ofMsg SnackDismissMsg
             | BridgeResult.CommitChanges b ->
                 if b then
                     { model with
@@ -351,8 +360,9 @@ module rec FaceTools =
                             { model.Submit with
                                 Waiting = false
                                 Error = false
-                                HelperText = "" } }, Cmd.none
-                else submissionFailed "Error commiting changes to the file", Cmd.none
+                                HelperText = "Changes successfully completed!" } }
+                else submissionFailed "Error commiting changes to the file"
+                ,Cmd.ofMsg SnackDismissMsg
             | _ -> { model with Waiting = false }, Cmd.none
         | StepperSubmit -> 
             ElectronStore.store.set("configDir",model.ConfigDir.Directory)
@@ -531,6 +541,18 @@ module rec FaceTools =
             |> (fun m -> m, Cmd.none)
         | CopiedClipboard ->
             model, Toastr.success <| Toastr.message "Copied to clipboard!"
+        | SnackMsg msg' ->
+            let m, cmd, actionCmd = Snack.update msg' model.Snack
+            { model with Snack = m },
+            Cmd.batch [ Cmd.map SnackMsg cmd
+                        actionCmd ]
+        | SnackDismissMsg ->
+            let cmd =
+                Snack.create model.Submit.HelperText
+                |> Snack.withDismissAction "Okay"
+                |> Snack.withTimeout 80000
+                |> Snack.add
+            model, Cmd.map SnackMsg cmd
 
     // Domain/Elmish above, view below
     let private styles (theme : ITheme) : IStyles list = [
@@ -684,6 +706,22 @@ module rec FaceTools =
 
                 let tabContent =
                     match model.TabSelected with
+                    | 0 ->
+                        grid [
+                            GridProp.Container true
+                            GridProp.Spacing GridSpacing.``0``
+                            GridProp.Direction GridDirection.Column
+                            GridProp.AlignItems GridAlignItems.Center
+                            Style [ 
+                                CSSProp.Padding "1em 5em"
+                                CSSProp.Display DisplayOptions.Flex
+                            ] 
+                        ] [
+                            img [
+                                HTMLAttr.Src (stat "frankenstein.png")
+                                Style [ CSSProp.BorderRadius "4px" ]
+                            ]
+                        ]
                     | 2 ->
                         div [] [
                             div [ 
@@ -818,7 +856,6 @@ module rec FaceTools =
                         tabContent
                     ]
                 ]
-
         div [
             Style [
                 CSSProp.FlexDirection "column"
@@ -826,42 +863,52 @@ module rec FaceTools =
                 CSSProp.Height "inherit"
             ]
         ] [
-            stepper [
-                MaterialProp.Elevation 1
-                StepperProp.ActiveStep (model.Stepper.StepValue)
-            ]
-                <| model.Stepper.StepElems model.StepperComplete
+            yield lazyView2 Snack.view model.Snack (SnackMsg >> dispatch)
+            yield
+                div [
+                    Style [
+                        CSSProp.FlexDirection "column"
+                        CSSProp.Display DisplayOptions.Flex
+                        CSSProp.Height "inherit"
+                    ]
+                ] [
+                    stepper [
+                        MaterialProp.Elevation 1
+                        StepperProp.ActiveStep (model.Stepper.StepValue)
+                    ]
+                        <| model.Stepper.StepElems model.StepperComplete
             
-            div [Style [ CSSProp.Padding (string "3em") ]] [ 
-                match model.Waiting, model.ParseWaiting with
-                | true, false when model.ConfigDir.Directory = "" && isLocateConfig ->
-                    yield circularProgress [
-                        Style [CSSProp.MarginLeft "45%"]
-                        DOMAttr.OnAnimationStart <| fun _ ->
-                            async {
-                                do! Async.Sleep 1000
-                                return dispatch GetDefaultDir
-                            } |> Async.StartImmediate
+                    div [ Style [ CSSProp.Padding (string "3em") ] ] [ 
+                        match model.Waiting, model.ParseWaiting with
+                        | true, false when model.ConfigDir.Directory = "" && isLocateConfig ->
+                            yield circularProgress [
+                                Style [CSSProp.MarginLeft "45%"]
+                                DOMAttr.OnAnimationStart <| fun _ ->
+                                    async {
+                                        do! Async.Sleep 1000
+                                        return dispatch GetDefaultDir
+                                    } |> Async.StartImmediate
+                            ]
+                        | true, false when isLocateConfig ->
+                            yield circularProgress [
+                                Style [CSSProp.MarginLeft "45%"]
+                                DOMAttr.OnAnimationStart <| fun _ ->
+                                    async {
+                                        do! Async.Sleep 1000
+                                        return dispatch <| SetConfigDir
+                                            (model.ConfigDir.Directory, validateConfigDir model.ConfigDir.Directory)
+                                    } |> Async.StartImmediate
+                            ]
+                        | _ when model.Waiting || model.ParseWaiting ->
+                            yield circularProgress [
+                                Style [CSSProp.MarginLeft "45%"]
+                            ]
+                        | _ -> yield content
                     ]
-                | true, false when isLocateConfig ->
-                    yield circularProgress [
-                        Style [CSSProp.MarginLeft "45%"]
-                        DOMAttr.OnAnimationStart <| fun _ ->
-                            async {
-                                do! Async.Sleep 1000
-                                return dispatch <| SetConfigDir
-                                    (model.ConfigDir.Directory, validateConfigDir model.ConfigDir.Directory)
-                            } |> Async.StartImmediate
-                    ]
-                | _ when model.Waiting || model.ParseWaiting ->
-                    yield circularProgress [
-                        Style [CSSProp.MarginLeft "45%"]
-                    ]
-                | _ -> yield content
+                    div [ Style [CSSProp.PaddingLeft "3em"] ] model.Stepper.StepCaption
+                    model.Stepper.Buttons dispatch model
+                ]
             ]
-            div [ Style [CSSProp.PaddingLeft "3em"] ] model.Stepper.StepCaption
-            model.Stepper.Buttons dispatch model
-        ]
 
     // Workaround for using JSS with Elmish
     // https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471

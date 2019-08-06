@@ -48,7 +48,7 @@ let repo = @"https://github.com/Shmew/MordhauBuddy"
 
 // List project directories to avoid formatting
 // Typically projects that have very next lists for web building
-let excludeFormatting = [ (__SOURCE_DIRECTORY__ @@ "src/Electron/Renderer/**")]
+let excludeFormatting = [ (__SOURCE_DIRECTORY__ @@ "src/Electron/Renderer/**") ]
 
 // Web or JS related fs projects
 // Projects that have bindings to other languages where name linting needs to be more relaxed.

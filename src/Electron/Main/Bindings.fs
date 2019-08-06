@@ -4,6 +4,7 @@ module Bindings =
     open Fable.Core
     open Fable.Core.JsInterop
     open Electron
+    open System
 
     module Info =
         let private pkgJson : obj = importDefault "../../../package.json"

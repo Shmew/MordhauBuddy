@@ -88,6 +88,7 @@ module Main =
         win.webContents.openDevTools()
         // Load correct URL
         win.loadURL (sprintf "http://localhost:%s" ``process``.env?ELECTRON_WEBPACK_WDS_PORT) |> ignore
+        ``process``.on ("uncaughtException", (fun err -> JS.console.log (err.ToString()))) |> ignore
 #else
         path.join(__dirname, "index.html")
         |> sprintf "file:///%s"
@@ -95,6 +96,13 @@ module Main =
         |> ignore
 #endif
 
+        let copy : U2<MenuItemOptions, MenuItem> =
+            jsOptions<Electron.MenuItemOptions> (fun o ->
+                o.label <- "Test"
+                o.role <- MenuItemRole.Copy)
+            |> U2.Case1
+        //|> main.MenuItem.Create
+        main.Menu.buildFromTemplate [| copy |] |> win.setMenu /// DOESN"T SEEM TO WORK
         // Dereference the window object when closed. If your app supports
         // multiple windows, you can store them in an array and delete the
         // corresponding element here.

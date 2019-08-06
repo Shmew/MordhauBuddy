@@ -88,7 +88,20 @@ module App =
               Selects = Selects.init()
               Snackbars = Snackbars.init()
               TextFields = TextFields.init()
-              FaceTools = FaceTools.init() } 
+              FaceTools = FaceTools.init() }
+        window.addListener("contextmenu", (fun ev ->
+            ev.preventDefault()
+            
+            let menu = Electron.Electron.main.Menu.Create()
+            let menuItem = Electron.Electron.main.MenuItem
+            menu.append(
+                jsOptions<Electron.MenuItemOptions>(fun o ->
+                    o.label <- "Test"
+                    o.click <- (fun _ _ _ -> JS.console.log("WOOOOOW"))
+                )
+                |> menuItem.Create
+            )
+        )) |> ignore /// DOESN"T WORK YET
         m, Cmd.none
 
     let update msg m =

@@ -635,7 +635,8 @@ module rec INIReader =
                     static member inline ($) (x : INIValue, INIValueOverloads) =
                         fun propertyName -> x.TryGetProperty propertyName |> Option.map (List.head)
                     static member inline ($) (x : INIValue option, INIValueOverloads) =
-                        fun propertyName -> x |> Option.bind (fun x -> x.TryGetProperty propertyName |> Option.map (List.head))
+                        fun propertyName ->
+                            x |> Option.bind (fun x -> x.TryGetProperty propertyName |> Option.map (List.head))
 
             /// Get property of a INI value (assuming that the value is an object)
             let inline (?) x (propertyName : string) = (x $ INIValueOverloads) propertyName
