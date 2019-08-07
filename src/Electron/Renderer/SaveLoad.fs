@@ -146,13 +146,17 @@ module SaveLoad =
     let private styles (theme : ITheme) : IStyles list = []
 
     let private view' (classes: IClasses) model dispatch =
-        form [ OnSubmit (fun e -> e.preventDefault()); Class classes?form ] [
+        form [ 
+            OnSubmit (fun e -> e.preventDefault()); Class classes?form
+            Style [ CSSProp.Cursor "text" ]
+        ] [
             textField [
                 Multiline true
                 Rows 4
                 HTMLAttr.Label "Your story"
                 HTMLAttr.Value model.Text
                 DOMAttr.OnChange (fun ev -> ev.Value |> SetText |> dispatch)
+                Style [ CSSProp.Cursor "text" ]
             ] []
             button [
                 OnClick (fun _ -> dispatch RequestSave)

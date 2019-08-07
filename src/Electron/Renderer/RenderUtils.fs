@@ -37,6 +37,17 @@ module RenderUtils =
     [<Emit("__static + \"/\" + $0")>]
     let private stat' (s : string) : string = jsNative
 
+    [<Emit("document.execCommand(\"Copy\")")>]
+    let private copy () : unit = jsNative
+
+    [<Emit("document.execCommand(\"Paste\")")>]
+    let private paste () : unit = jsNative
+
+    [<Emit("$0.target.style.cursor")>]
+    let getEventCursor (e: Browser.Types.Event) : string = jsNative
+
+    let getMousePositions () = main.screen.getCursorScreenPoint()
+
     /// Prefixes the string with the static asset root path.
     let stat (s : string) =
 #if DEBUG
@@ -163,3 +174,110 @@ module RenderUtils =
             30720,31704,30725,1,988,29,960,0,65535,0,65535,65535,16326,0,65535,65535,15383,30,960),Scale=(0,30,\
             4139,30749,65535,30749,0,65535,65535,0,0,0,0,65535,31709,0,0,190,0,0,0,589,0,0,0,30749,31166,989,\
             65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
+
+    module AppContextMenu =
+        open Fable.React
+        open Fable.React.Props
+        open Fable.MaterialUI.Core
+        open Fable.MaterialUI.Themes
+        open Fable.MaterialUI.Props
+        open Browser.Types
+        open Elmish
+        open Elmish.Bridge
+
+        type ContextAction =
+            | Copy
+            | Paste
+            member this.GetAction =
+                match this with
+                | Copy -> fun () -> copy()
+                | Paste -> fun () -> paste()
+
+        let getActionFunction (act: ContextAction) =
+            match act with
+            | Copy -> copy()
+            | Paste -> paste()
+
+        type MenuItem =
+            { Label : string
+              Action : ContextAction }
+
+        type Model =
+            { AnchorEl : EventTarget option
+              Opened : bool
+              MenuItems : MenuItem list }
+
+        let init() =
+            { AnchorEl = None
+              Opened = false 
+              MenuItems = [] }
+
+        type Msg =
+            | Open of Browser.Types.MouseEvent
+            | Close
+            | Action of ContextAction
+
+        let update (msg: Msg) (model: Model) =
+            match msg with
+            | Open e -> 
+                let actionList =
+                    match getEventCursor e with
+                    | "text" ->
+                        [ { Label = "Copy"
+                            Action = Copy }
+                          { Label = "Paste"
+                            Action = Paste } ]
+                    | _ ->
+                        [ { Label = "Copy"
+                            Action = Copy }
+                          { Label = "Paste"
+                            Action = Paste } ]
+                {model with Opened = true; MenuItems = actionList},Cmd.none
+            | Close -> {model with Opened = false},Cmd.none
+            | Action(f) -> 
+                f.GetAction()
+                model,Cmd.ofMsg Close
+
+        let private styles (theme : ITheme) : IStyles list = []
+
+        let private view' (classes: IClasses) model dispatch =
+            let menuItems =
+                model.MenuItems
+                |> List.map (fun item ->
+                    menuItem [
+                        DOMAttr.OnClick <| fun _ -> dispatch <| Action(item.Action)
+                    ] [ str item.Label ])
+                |> Seq.ofList
+            let pos = getMousePositions()
+
+            menu [
+                MaterialProp.AnchorEl (model.AnchorEl.Value |> AnchorElProp.Case1)
+                MaterialProp.KeepMounted true
+                MaterialProp.Open model.Opened
+                MaterialProp.OnClose <| fun _ -> dispatch Close
+                PaperProps [
+                    Style [ CSSProp.Width "10em" ]
+                ]
+                
+                PopoverProp.AnchorPosition { left = (pos.x); top = (pos.y) }
+            ] menuItems
+                
+        // Workaround for using JSS with Elmish
+        // https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471
+        type private IProps =
+            abstract model : Model with get, set
+            abstract dispatch : (Msg -> unit) with get, set
+            inherit IClassesProps
+
+        type private Component(p) =
+            inherit PureStatelessComponent<IProps>(p)
+            let viewFun (p : IProps) = view' p.classes p.model p.dispatch
+            let viewWithStyles = withStyles (StyleType.Func styles) [] viewFun
+            override this.render() = ReactElementType.create viewWithStyles this.props []
+        
+        let view (model : Model) (dispatch : Msg -> unit) : ReactElement =
+            let props =
+                jsOptions<IProps> (fun p ->
+                    p.model <- model
+                    p.dispatch <- dispatch)
+            ofType<Component, _, _> props []

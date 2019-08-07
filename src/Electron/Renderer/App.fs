@@ -51,6 +51,7 @@ module App =
         | Navigate of Page
         | MinMaxMsg of bool
         | DarkTheme of bool
+        | ContextMenuMsg of AppContextMenu.Msg
         | AutoCompleteMsg of AutoComplete.Msg
         | BadgesMsg of Badges.Msg
         | DialogsMsg of Dialogs.Msg
@@ -65,6 +66,7 @@ module App =
         { Page : Page
           IsMax : bool
           IsDarkTheme : bool
+          ContextMenu : AppContextMenu.Model
           AutoCompleteDownshift : AutoComplete.Model
           Badges : Badges.Model
           Dialogs : Dialogs.Model
@@ -81,6 +83,7 @@ module App =
             { Page = Home
               IsMax = window.isMaximized() 
               IsDarkTheme = true //use store to get this later
+              ContextMenu = AppContextMenu.init()
               AutoCompleteDownshift = AutoComplete.init()
               Badges = Badges.init()
               Dialogs = Dialogs.init()
@@ -89,19 +92,6 @@ module App =
               Snackbars = Snackbars.init()
               TextFields = TextFields.init()
               FaceTools = FaceTools.init() }
-        window.addListener("contextmenu", (fun ev ->
-            ev.preventDefault()
-            
-            let menu = Electron.Electron.main.Menu.Create()
-            let menuItem = Electron.Electron.main.MenuItem
-            menu.append(
-                jsOptions<Electron.MenuItemOptions>(fun o ->
-                    o.label <- "Test"
-                    o.click <- (fun _ _ _ -> JS.console.log("WOOOOOW"))
-                )
-                |> menuItem.Create
-            )
-        )) |> ignore /// DOESN"T WORK YET
         m, Cmd.none
 
     let update msg m =
@@ -112,6 +102,9 @@ module App =
             { m with IsMax = msg' }, Cmd.none
         | DarkTheme msg' ->
             { m with IsDarkTheme = msg' }, Cmd.none
+        | ContextMenuMsg msg' ->
+            let m', cmd = AppContextMenu.update msg' m.ContextMenu
+            { m with ContextMenu = m' }, Cmd.map ContextMenuMsg cmd
         | AutoCompleteMsg msg' ->
             { m with AutoCompleteDownshift = AutoComplete.update msg' m.AutoCompleteDownshift }, Cmd.none
         | BadgesMsg msg' ->
@@ -206,6 +199,9 @@ module App =
             ]
         | TextFields -> lazyView2 TextFields.view model.TextFields (TextFieldsMsg >> dispatch)
         | FaceTools -> lazyView2 FaceTools.view model.FaceTools (FaceToolsMsg >> dispatch)
+
+    let private menuView model dispatch =
+        lazyView2 AppContextMenu.view model.ContextMenu (ContextMenuMsg >> dispatch)
 
     let private getTheme (m: Model) =
         if m.IsDarkTheme then 
@@ -343,6 +339,9 @@ module App =
         muiThemeProvider [Theme <| getTheme(model)] [
             div [
                 Class classes?root
+                DOMAttr.OnContextMenu (fun e ->
+                    e.preventDefault()
+                    e |> AppContextMenu.Msg.Open |> ContextMenuMsg |> dispatch)
             ] [ 
                 cssBaseline []
                 appBar [
@@ -418,7 +417,11 @@ module App =
                         Style [ CSSProp.PaddingTop "108px" ]
                     ] [ Page.All |> List.map (pageListItem model dispatch) |> ofList ]
                 ]
-                main [ Class classes?content ] [ pageView model dispatch ]
+                main [ Class classes?content ] [ 
+                    pageView model dispatch 
+                    menuView model dispatch
+                ]
+
             ]
         ]
     

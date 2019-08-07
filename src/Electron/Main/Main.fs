@@ -75,6 +75,9 @@ module Main =
                                           o.backgroundColor <- "#FFF"
                                           o.show <- false))
 
+        //let ctxMenu = main.Menu.Create()
+        //ctxMenu.append (jsOptions<MenuItemOptions> (fun o -> o.label <- "Hello") |> main.MenuItem.Create)
+        //win.webContents.on ("context-menu", (fun ev -> ctxMenu.popup())) |> ignore
         win.onceReadyToShow (fun _ ->
             win.setTitle <| sprintf "%s - %s" Info.name Info.version
             win.show()
