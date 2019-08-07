@@ -34,6 +34,9 @@ module RenderUtils =
     
     let getRemoteWin() = renderer.remote.getCurrentWindow()
 
+    [<Emit("$0.persist()")>]
+    let eventPersist (e: Browser.Types.Event) : unit = jsNative
+
     [<Emit("__static + \"/\" + $0")>]
     let private stat' (s : string) : string = jsNative
 
@@ -45,8 +48,11 @@ module RenderUtils =
 
     [<Emit("$0.target.style.cursor")>]
     let getEventCursor (e: Browser.Types.Event) : string = jsNative
-
-    let getMousePositions () = renderer.remote.screen.getCursorScreenPoint()
+    
+    let getMousePositions () = 
+        let absMouse = renderer.remote.screen.getCursorScreenPoint()
+        let absWindow = renderer.remote.getCurrentWindow().getBounds()
+        {| X = absMouse.x - absWindow.x; Y = absMouse.y - absWindow.y |}
 
     /// Prefixes the string with the static asset root path.
     let stat (s : string) =
@@ -202,14 +208,20 @@ module RenderUtils =
             { Label : string
               Action : ContextAction }
 
+        type MenuPosition =
+            { X : int
+              Y : int }
+
         type Model =
-            { AnchorEl : EventTarget option
-              Opened : bool
+            { Opened : bool
+              Position : MenuPosition
               MenuItems : MenuItem list }
 
         let init() =
-            { AnchorEl = None
-              Opened = false 
+            { Opened = false 
+              Position =
+                { X = 0
+                  Y = 0 }
               MenuItems = [] }
 
         type Msg =
@@ -219,8 +231,10 @@ module RenderUtils =
 
         let update (msg: Msg) (model: Model) =
             match msg with
-            | Open e -> 
+            | Open e ->
+                let pos = getMousePositions()
                 let actionList =
+                    eventPersist e
                     match getEventCursor e with
                     | "text" ->
                         [ { Label = "Copy"
@@ -228,12 +242,17 @@ module RenderUtils =
                           { Label = "Paste"
                             Action = Paste } ]
                     | _ ->
-                        [ { Label = "Copy"
-                            Action = Copy }
-                          { Label = "Paste"
-                            Action = Paste } ]
-                {model with Opened = true; MenuItems = actionList},Cmd.none
-            | Close -> {model with Opened = false},Cmd.none
+                        [ ]
+                //if actionList.Length = 0 then model,Cmd.none
+                //else
+                { model with 
+                    Opened = true
+                    Position =
+                        { model.Position with
+                            X = pos.X
+                            Y = pos.Y }
+                    MenuItems = actionList },Cmd.none
+            | Close -> { model with Opened = false },Cmd.none
             | Action(f) -> 
                 f.GetAction()
                 model,Cmd.ofMsg Close
@@ -248,18 +267,16 @@ module RenderUtils =
                         DOMAttr.OnClick <| fun _ -> dispatch <| Action(item.Action)
                     ] [ str item.Label ])
                 |> Seq.ofList
-            let pos = getMousePositions()
 
             menu [
-                //MaterialProp.AnchorEl (model.AnchorEl.Value |> AnchorElProp.Case1)
                 MaterialProp.KeepMounted true
                 MaterialProp.Open model.Opened
                 MaterialProp.OnClose <| fun _ -> dispatch Close
                 PaperProps [
                     Style [ CSSProp.Width "10em" ]
                 ]
-                
-                PopoverProp.AnchorPosition { left = (pos.x); top = (pos.y) }
+                PopoverProp.AnchorReference AnchorReference.AnchorPosition
+                PopoverProp.AnchorPosition { left = (model.Position.X); top = (model.Position.Y) }
             ] menuItems
                 
         // Workaround for using JSS with Elmish

@@ -103,8 +103,16 @@ module App =
         | DarkTheme msg' ->
             { m with IsDarkTheme = msg' }, Cmd.none
         | ContextMenuMsg msg' ->
-            let m', cmd = AppContextMenu.update msg' m.ContextMenu
-            { m with ContextMenu = m' }, Cmd.map ContextMenuMsg cmd
+            match m.ContextMenu.Opened, msg' with
+            | true, AppContextMenu.Msg.Open(e) ->
+                [ AppContextMenu.Close ; AppContextMenu.Open(e) ]
+                |> List.fold (fun acc elem ->
+                    let result = AppContextMenu.update elem (fst acc)
+                    (fst result),(snd result)::(snd acc)) (m.ContextMenu,[])
+                |> (fun (newM,cList) -> { m with ContextMenu = newM },cList |> List.map (Cmd.map ContextMenuMsg) |> Cmd.batch)
+            | _ -> 
+                let m',cmd = AppContextMenu.update msg' m.ContextMenu
+                { m with ContextMenu = m' }, Cmd.map ContextMenuMsg cmd
         | AutoCompleteMsg msg' ->
             { m with AutoCompleteDownshift = AutoComplete.update msg' m.AutoCompleteDownshift }, Cmd.none
         | BadgesMsg msg' ->
