@@ -46,7 +46,7 @@ module RenderUtils =
     [<Emit("$0.target.style.cursor")>]
     let getEventCursor (e: Browser.Types.Event) : string = jsNative
 
-    let getMousePositions () = main.screen.getCursorScreenPoint()
+    let getMousePositions () = renderer.remote.screen.getCursorScreenPoint()
 
     /// Prefixes the string with the static asset root path.
     let stat (s : string) =
@@ -251,7 +251,7 @@ module RenderUtils =
             let pos = getMousePositions()
 
             menu [
-                MaterialProp.AnchorEl (model.AnchorEl.Value |> AnchorElProp.Case1)
+                //MaterialProp.AnchorEl (model.AnchorEl.Value |> AnchorElProp.Case1)
                 MaterialProp.KeepMounted true
                 MaterialProp.Open model.Opened
                 MaterialProp.OnClose <| fun _ -> dispatch Close
