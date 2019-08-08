@@ -160,6 +160,19 @@ module rec INIReader =
                 | _ -> result |> Some
             | Failure(msg, _, _) -> None
 
+        /// Parses an ini snippet and fails on error
+        /// If this gets passed an ini with section headers it will fail
+        member this.ParseSnippet() =
+            match run iValue iniText with
+            | Success(result, _, _) -> result
+            | Failure(_, _, _) -> failwith "Error parsing snippet"
+
+        /// Parses an ini snippet and returns an option
+        member this.TryParseSnippet() =
+            match run iValue iniText with
+            | Success(result, _, _) -> result |> Some
+            | Failure(_, _, _) -> None
+
     type INIValue with
 
         /// Parses the specified INI string
@@ -167,6 +180,12 @@ module rec INIReader =
 
         /// Attempts to parse the specified INI string
         static member TryParse(text : string) = INIParser(text).TryParse()
+
+        /// Parses the specified INI snippet string
+        static member ParseSnippet(text : string) = INIParser(text).ParseSnippet()
+
+        /// Attempts to parse the specified INI snippet string
+        static member TryParseSnippet(text : string) = INIParser(text).TryParseSnippet()
 
         /// Loads INI from the specified stream
         static member Load(stream : Stream) =

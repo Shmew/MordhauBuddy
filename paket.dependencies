@@ -39,7 +39,7 @@ group Electron
 	nuget Fable.Promise ~> 2.0
 	nuget Fable.React ~> 5.2
 	nuget Fable.Validation ~> 0.2.1
-	nuget FSharp.Core redirects:force
+	nuget FSharp.Core ~> 4.6.2 redirects:force
 	nuget Fable.SimpleJson ~> 3.3.0
 	nuget Elmish.Bridge.Client ~> 3.1.1
 

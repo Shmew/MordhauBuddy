@@ -43,7 +43,7 @@ module Snackbars =
                     return CustomActionEnd
                 }
 
-            let cmd = Cmd.OfAsync.result asyncWork
+            let cmd = Cmd.OfAsyncImmediate.result asyncWork
             { m with CustomActionOngoing = true }, cmd
         | CustomActionEnd -> { m with CustomActionOngoing = false }, Cmd.none
         | SnackMsg msg' ->

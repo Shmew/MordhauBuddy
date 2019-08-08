@@ -8,7 +8,6 @@ module Entry =
     open Elmish.HMR
 #endif
     open Elmish.Bridge
-    open Thoth.Elmish.Toast
     open MordhauBuddy.Shared.ElectronBridge
 
     Program.mkProgram App.init App.update App.view
@@ -25,5 +24,4 @@ module Entry =
     |> Program.withDebugger
     |> Program.withConsoleTrace
 #endif
-    |> Program.withToast render
     |> Program.run

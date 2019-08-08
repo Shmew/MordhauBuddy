@@ -8,6 +8,7 @@ module Bridge =
     open INIConfiguration.BridgeOperations
     open MordhauBuddy.Shared.ElectronBridge
 
+    /// Websocket bridge
     module INIBridge =
         type Model =
             { IValue : INIValue option }
@@ -31,14 +32,14 @@ module Bridge =
                     | Delete(sels) ->
                         { model with IValue = (delete model.IValue.Value sels.Selectors |> Some) },
                         true |> BridgeResult.Delete
-                    | Exists(iFile) -> model, exists iFile
+                    | Exists(iFile) -> model, exists iFile |> BridgeResult.Exists
                     | Parse(iFile) ->
                         match parse iFile with
                         | Some(_) as iOpt -> { model with IValue = iOpt }, BridgeResult.Parse true
                         | _ -> model, BridgeResult.Parse false
-                    | Backup(iFile) -> model, backup iFile
-                    | DefaultDir -> model, defDir()
-                    | Commit(iFile) -> model, write iFile (model.IValue.Value)
+                    | Backup(iFile) -> model, backup iFile |> BridgeResult.Backup
+                    | DefaultDir -> model, defDir() |> BridgeResult.DefaultDir
+                    | Commit(iFile) -> model, write iFile (model.IValue.Value) |> BridgeResult.CommitChanges
                 | Faces fCmd ->
                     match fCmd with
                     | Random(profiles) ->
@@ -50,7 +51,7 @@ module Bridge =
                     | Custom(profiles, fVal) ->
                         let result = custom profiles model.IValue.Value fVal
                         { model with IValue = result }, result.IsSome |> BridgeResult.Custom
-                    | ProfileList -> model, profileList (model.IValue.Value)
+                    | ProfileList -> model, profileList (model.IValue.Value) |> BridgeResult.ProfileList
             |> (fun (m, br) ->
             Resp(br) |> clientDispatch
             m, Cmd.none)

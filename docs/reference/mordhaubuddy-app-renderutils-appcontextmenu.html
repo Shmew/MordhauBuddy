@@ -105,14 +105,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '49', 49)" onmouseover="showTip(event, '49', 49)">
-            getActionFunction(act)
+            init()
           </code>
           <div class="tip" id="49">
-            <strong>Signature:</strong> act:ContextAction -&gt; unit<br />
+            <strong>Signature:</strong> unit -&gt; Model<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L202-202" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L226-226" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -123,14 +123,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '50', 50)" onmouseover="showTip(event, '50', 50)">
-            init()
+            update msg model
           </code>
           <div class="tip" id="50">
-            <strong>Signature:</strong> unit -&gt; Model<br />
+            <strong>Signature:</strong> msg:Msg -&gt; model:Model -&gt; Model * Cmd&lt;Msg&gt;<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L220-220" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L238-238" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -141,32 +141,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '51', 51)" onmouseover="showTip(event, '51', 51)">
-            update msg model
-          </code>
-          <div class="tip" id="51">
-            <strong>Signature:</strong> msg:Msg -&gt; model:Model -&gt; Model * Cmd&lt;Msg&gt;<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L232-232" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '52', 52)" onmouseover="showTip(event, '52', 52)">
             view model dispatch
           </code>
-          <div class="tip" id="52">
+          <div class="tip" id="51">
             <strong>Signature:</strong> model:Model -&gt; dispatch:(Msg -&gt; unit) -&gt; ReactElement<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L295-295" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L321-321" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

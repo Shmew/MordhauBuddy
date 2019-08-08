@@ -75,7 +75,7 @@ module Snack =
                 do! Async.Sleep delayMs
                 return msg
             }
-        Cmd.OfAsync.result asyncMsg
+        Cmd.OfAsyncImmediate.result asyncMsg
 
     let update msg m =
         match m.State, msg with

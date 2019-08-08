@@ -119,6 +119,18 @@ module INIValue =
                   |> sectionOne "TestSection"
                   |> fileOne
 
+              Expect.equal result expected "" 
+          testCase "Can parse snippet" <| fun () ->
+              let result = 
+                  [ "TestStr=(Name=TextField(\"tfValue\"))" ]
+                  |> buildINIString
+                  |> INIValue.ParseSnippet
+
+              let expected =
+                  fieldText "TextField" "tfValue"
+                  |> kvPairNested "Name"
+                  |> kvPairNestedOne "TestStr"
+
               Expect.equal result expected "" ]
         |> testList "INI Parsing"
 
