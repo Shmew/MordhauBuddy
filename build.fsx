@@ -228,8 +228,10 @@ Target.create "PostPublishClean" <| fun _ ->
 // Restore tasks
 
 Target.create "Restore" <| fun _ ->
-    solutionFile
-    |> DotNet.restore id
+    let restore() =
+        solutionFile
+        |> DotNet.restore id
+    TaskRunner.runWithRetries restore 5
 
 /// Add task to make Node.js cli ready
 Target.create "YarnInstall" <| fun _ ->
@@ -265,19 +267,19 @@ Target.create "BuildElectron" <| fun _ ->
     Npm.exec "rebuild node-sass" id
     Yarn.exec "compile" id
 
-// Run Devtron
+// Run Dev mode
 Target.create "Dev" <| fun _ ->
-    let startBridge =
-        async {
-            Shell.Exec(
-                !! (__SOURCE_DIRECTORY__ @@ "bin/core/netcoreapp*/Core.exe") 
-                |> Seq.sort 
-                |> Seq.head)
-            |> ignore
-        }
+    //let startBridge =
+    //    async {
+    //        Shell.Exec(
+    //            !! (__SOURCE_DIRECTORY__ @@ "bin/core/netcoreapp*/Core.exe") 
+    //            |> Seq.sort 
+    //            |> Seq.head)
+    //        |> ignore
+    //    }
     let startDev = async {Yarn.exec "dev" id}
 
-    [startBridge; startDev]
+    [ startDev ]
     |> Async.Parallel
     |> Async.RunSynchronously
     |> ignore

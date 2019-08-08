@@ -40,21 +40,26 @@ module Main =
 #endif
 
 
-    //let startBridge() =
-    //    let projPath = path.join (__dirname, @"..\..\Core\Core.fsproj")
-    //    let bridgeProc =
-    //        let args = ResizeArray<string>()
-    //        args.Add("watch")
-    //        args.Add("run")
-    //        args.Add(projPath)
-    //        childProcess.spawn ("dotnet", args, options = ({| shell = true |} |> toPlainJsObj))
-    //    bridgeProc.stdout.on ("data",
-    //                          (fun data ->
-    //                          if mainWindow.IsSome then JS.console.log data))
-    //    |> ignore
-    //    bridgeProc
-    //let bridge = DevTools.startBridge()
-    //bridge.kill()
+    let bridgePath =
+#if DEBUG
+        path.resolve (__dirname, "..", "../../bin/Core/netcoreapp3.0/Core.exe")
+#else
+        path.resolve (__dirname, @"Core.exe")
+#endif
+
+    let startBridge() =
+        let bridgeProc = childProcess.execFile (bridgePath, callback = (fun _ _ _ -> ()))
+#if DEBUG
+        bridgeProc.stdout.on ("data",
+                              (fun data ->
+                              if mainWindow.IsSome then JS.console.log data))
+        |> ignore
+#endif
+
+        bridgeProc
+
+    let bridge = startBridge()
+
     let createMainWindow() =
         let mainWinState =
             WindowState.getState (jsOptions<WindowState.Options> (fun o ->
@@ -99,13 +104,13 @@ module Main =
         |> ignore
 #endif
 
-        let copy : U2<MenuItemOptions, MenuItem> =
-            jsOptions<Electron.MenuItemOptions> (fun o ->
-                o.label <- "Test"
-                o.role <- MenuItemRole.Copy)
-            |> U2.Case1
+        //let copy : U2<MenuItemOptions, MenuItem> =
+        //    jsOptions<Electron.MenuItemOptions> (fun o ->
+        //        o.label <- "Test"
+        //        o.role <- MenuItemRole.Copy)
+        //    |> U2.Case1
         //|> main.MenuItem.Create
-        main.Menu.buildFromTemplate [| copy |] |> win.setMenu /// DOESN"T SEEM TO WORK
+        //main.Menu.buildFromTemplate [| copy |] |> win.setMenu /// DOESN"T SEEM TO WORK
         // Dereference the window object when closed. If your app supports
         // multiple windows, you can store them in an array and delete the
         // corresponding element here.
@@ -114,7 +119,9 @@ module Main =
 
     // This method will be called when Electron has finished
     // initialization and is ready to create browser windows.
-    main.app.onReady (fun _ _ -> createMainWindow()) |> ignore
+    main.app.onReady (fun _ _ ->
+        createMainWindow())
+    |> ignore
     // Quit when all windows are closed.
     main.app.onWindowAllClosed (fun _ ->
         // On OS X it's common for applications and their menu bar

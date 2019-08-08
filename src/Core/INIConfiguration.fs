@@ -121,7 +121,7 @@ module INIConfiguration =
             let modifyFace (profile : INIValue) (f : unit -> INIValue) =
                 faceKeys |> List.fold (fun (p : INIValue) sels -> p.Map(sels, f())) profile
 
-            /// Modifies the FaceCustomization of the given profile by mapping the given 
+            /// Modifies the FaceCustomization of the given profile by mapping the given
             /// FaceCustomization `INIValue`
             let modifyWholeFace (profile : INIValue) (newFace : INIValue) =
                 profile.Map([ "CharacterProfiles"; "FaceCustomization" ], newFace)
@@ -203,7 +203,7 @@ module INIConfiguration =
                              | _ -> (pName, "")
                          | None -> (pName, "")))
 
-        /// Set the profile's face customization by applying the given `FaceActions`, 
+        /// Set the profile's face customization by applying the given `FaceActions`,
         /// then merge the result into the game file
         let setCharacterProfileFace (gameFile : INIValue) (profile : string) (action : FaceActions) =
             let newFace (iVal : INIValue) =
@@ -292,6 +292,4 @@ module INIConfiguration =
             tryApplyChanges profiles iVal <| FaceActions.Custom(fVals)
 
         /// Get the profiles within the given `INIValue`
-        let profileList (iVal : INIValue) =
-            getCharacterProfileNames iVal
-            |> getCharacterProfileExports iVal
+        let profileList (iVal : INIValue) = getCharacterProfileNames iVal |> getCharacterProfileExports iVal

@@ -119,9 +119,9 @@ module INIValue =
                   |> sectionOne "TestSection"
                   |> fileOne
 
-              Expect.equal result expected "" 
+              Expect.equal result expected ""
           testCase "Can parse snippet" <| fun () ->
-              let result = 
+              let result =
                   [ "TestStr=(Name=TextField(\"tfValue\"))" ]
                   |> buildINIString
                   |> INIValue.ParseSnippet

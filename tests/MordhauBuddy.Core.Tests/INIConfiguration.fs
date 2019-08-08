@@ -11,7 +11,6 @@ module INIConfiguration =
     [<AutoOpen>]
     module Utils =
         let gameFile = IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/Game.ini") |> INIValue.Parse
-
         let profileNames =
             [ "332 Bardiche"; "333 Greatsword"; "332 Eveningstar"; "333 Poleaxe t"; "231 Spear"; "231 Spear goofy";
               "333 Maul"; "333 messer shield"; "333 Exec"; "010 Exec bl rush"; "333 Bastard Buckler"; "221 Halberd";
@@ -32,19 +31,19 @@ module INIConfiguration =
           testCase "setCharacterProfileFace handles frankenstein action" <| fun () ->
               let result = setCharacterProfileFace gameFile "332 Bardiche" FaceActions.Frankenstein |> string
               let expected = gameFile |> string
-              Expect.notEqual result expected "" 
+              Expect.notEqual result expected ""
           testCase "setCharacterProfileFace handles random action" <| fun () ->
               let result = setCharacterProfileFace gameFile "332 Bardiche" FaceActions.Random |> string
               let expected = gameFile |> string
-              Expect.notEqual result expected "" 
+              Expect.notEqual result expected ""
           testCase "setCharacterProfileFace handles custom import string action" <| fun () ->
-            let result = 
-                FaceActions.Custom(faceImport)
-                |> setCharacterProfileFace gameFile "332 Bardiche"
-                |> string
-            let expected = gameFile |> string
-            Expect.notEqual result expected ""
-          ]
+              let result =
+                  FaceActions.Custom(faceImport)
+                  |> setCharacterProfileFace gameFile "332 Bardiche"
+                  |> string
+
+              let expected = gameFile |> string
+              Expect.notEqual result expected "" ]
         |> testList "Frankenstein"
 
     [<Tests>]
