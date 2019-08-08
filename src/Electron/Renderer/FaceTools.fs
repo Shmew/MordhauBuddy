@@ -137,7 +137,7 @@ module rec FaceTools =
                         | LocateConfig when not model.ConfigDir.Validated -> true
                         | ChooseProfiles when model.TransferList.RightProfiles.Length = 0 -> true
                         | ChooseAction when (not model.Import.Validated && model.TabSelected = 2) || model.TabSelected = 3 -> true
-                        | _ when model.Waiting -> true
+                        | _ when model.Waiting || model.Submit.Waiting -> true
                         | _ -> false
 
                     [
@@ -153,7 +153,7 @@ module rec FaceTools =
                                 dispatch (if this.Last then StepperSubmit else StepperNext)
                             Style [ CSSProp.MaxHeight "2.6em" ]
                         ] [ 
-                            if model.Submit.Waiting then yield circularProgress [ Style [ CSSProp.MaxHeight "2.6em" ] ]
+                            if model.Submit.Waiting then yield circularProgress [ CircularProgressProp.Size (CircularProgressSize.Case1(20));Style [ CSSProp.MaxHeight "2.6em" ] ]
                             else yield str <| if this.Last then "Submit" else "Next"
                         ]
                     ]
@@ -578,11 +578,11 @@ module rec FaceTools =
                         ]
                     ] [
                         textField [
-                            HTMLAttr.Label "Mordhau Config Directory"
+                            TextFieldProp.Variant TextFieldVariant.Outlined
                             MaterialProp.FullWidth true
+                            HTMLAttr.Label "Mordhau Config Directory"
                             HTMLAttr.Value model.ConfigDir.Directory
                             MaterialProp.Error model.ConfigDir.Error
-                            TextFieldProp.Variant TextFieldVariant.Outlined
                             TextFieldProp.HelperText (model.ConfigDir.HelperText |> str)
                         ] []
                         button [
@@ -590,10 +590,11 @@ module rec FaceTools =
                             MaterialProp.Color ComponentColor.Secondary
                             DOMAttr.OnClick <| fun _ -> dispatch RequestLoad
                             Style [
-                                CSSProp.MarginBottom "20px"
-                                CSSProp.MarginLeft "5px" 
+                                CSSProp.MarginLeft "1em" 
+                                CSSProp.MaxHeight "4em" 
                             ]
                         ] [ str "Select" ]
+
                     ]
                 ]
             | ChooseProfiles ->

@@ -120,18 +120,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '43', 43)" onmouseover="showTip(event, '43', 43)">
-            getEventCursor(e)
+            eventPersist(e)
           </code>
           <div class="tip" id="43">
-            <strong>Signature:</strong> e:Event -&gt; string<br />
+            <strong>Signature:</strong> e:Event -&gt; unit<br />
                                     <span>
             <strong>Attributes:</strong><br />
-[&lt;Emit(&quot;$0.target.style.cursor&quot;)&gt;]<br />
+[&lt;Emit(&quot;$0.persist()&quot;)&gt;]<br />
           </span>
           </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L47-47" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L38-38" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -142,14 +142,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '44', 44)" onmouseover="showTip(event, '44', 44)">
-            getMousePositions()
+            getEventCursor(e)
           </code>
           <div class="tip" id="44">
-            <strong>Signature:</strong> unit -&gt; Point<br />
-                                  </div>
+            <strong>Signature:</strong> e:Event -&gt; string<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;Emit(&quot;$0.target.style.cursor&quot;)&gt;]<br />
+          </span>
+          </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L49-49" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L50-50" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -160,9 +164,27 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '45', 45)" onmouseover="showTip(event, '45', 45)">
-            getRemoteWin()
+            getMousePositions()
           </code>
           <div class="tip" id="45">
+            <strong>Signature:</strong> unit -&gt; (type)<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L52-52" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '46', 46)" onmouseover="showTip(event, '46', 46)">
+            getRemoteWin()
+          </code>
+          <div class="tip" id="46">
             <strong>Signature:</strong> unit -&gt; BrowserWindow<br />
                                   </div>
         </td>
@@ -177,10 +199,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '46', 46)" onmouseover="showTip(event, '46', 46)">
+          <code onmouseout="hideTip(event, '47', 47)" onmouseover="showTip(event, '47', 47)">
             isWindows
           </code>
-          <div class="tip" id="46">
+          <div class="tip" id="47">
             <strong>Signature:</strong> bool<br />
                                   </div>
         </td>
@@ -195,15 +217,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '47', 47)" onmouseover="showTip(event, '47', 47)">
+          <code onmouseout="hideTip(event, '48', 48)" onmouseover="showTip(event, '48', 48)">
             stat(s)
           </code>
-          <div class="tip" id="47">
+          <div class="tip" id="48">
             <strong>Signature:</strong> s:string -&gt; string<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L52-52" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L58-58" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

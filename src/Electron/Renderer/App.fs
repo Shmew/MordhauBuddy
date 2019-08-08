@@ -103,16 +103,8 @@ module App =
         | DarkTheme msg' ->
             { m with IsDarkTheme = msg' }, Cmd.none
         | ContextMenuMsg msg' ->
-            match m.ContextMenu.Opened, msg' with
-            | true, AppContextMenu.Msg.Open(e) ->
-                [ AppContextMenu.Close ; AppContextMenu.Open(e) ]
-                |> List.fold (fun acc elem ->
-                    let result = AppContextMenu.update elem (fst acc)
-                    (fst result),(snd result)::(snd acc)) (m.ContextMenu,[])
-                |> (fun (newM,cList) -> { m with ContextMenu = newM },cList |> List.map (Cmd.map ContextMenuMsg) |> Cmd.batch)
-            | _ -> 
-                let m',cmd = AppContextMenu.update msg' m.ContextMenu
-                { m with ContextMenu = m' }, Cmd.map ContextMenuMsg cmd
+            let m',cmd = AppContextMenu.update msg' m.ContextMenu
+            { m with ContextMenu = m' }, Cmd.map ContextMenuMsg cmd
         | AutoCompleteMsg msg' ->
             { m with AutoCompleteDownshift = AutoComplete.update msg' m.AutoCompleteDownshift }, Cmd.none
         | BadgesMsg msg' ->
@@ -343,13 +335,15 @@ module App =
             match window.isMaximized() = b with
             | true -> Display DisplayOptions.None
             | false -> Display DisplayOptions.Flex
-
+        
         muiThemeProvider [Theme <| getTheme(model)] [
             div [
                 Class classes?root
                 DOMAttr.OnContextMenu (fun e ->
-                    e.preventDefault()
-                    e |> AppContextMenu.Msg.Open |> ContextMenuMsg |> dispatch)
+                    async {
+                        e.preventDefault()
+                        e |> AppContextMenu.Msg.Open |> ContextMenuMsg |> dispatch
+                    } |> Async.StartImmediate)
             ] [ 
                 cssBaseline []
                 appBar [

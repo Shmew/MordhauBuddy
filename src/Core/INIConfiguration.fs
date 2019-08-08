@@ -113,6 +113,8 @@ module INIConfiguration =
             iList |> List.collect (fun iVal -> iVal.TryGetProperty s |> Option.defaultValue [])
         let modifyFace (profile : INIValue) (f : unit -> INIValue) =
             faceKeys |> List.fold (fun (p : INIValue) sels -> p.Map(sels, f())) profile
+        let modifyWholeFace (profile : INIValue) (newFace : INIValue) =
+            profile.Map([ "CharacterProfiles"; "FaceCustomization" ], newFace)
         let private getProps s (iVal : INIValue) = iVal.TryGetProperty(s)
 
         let getPropValuesOf (gameFile : INIValue) (selectors : string list) =
@@ -193,7 +195,7 @@ module INIConfiguration =
                 match action with
                 | FaceActions.Frankenstein -> modifyFace iVal frankensteinFaces
                 | FaceActions.Random -> modifyFace iVal randomFaces
-                | FaceActions.Custom(fValues) -> modifyFace iVal (fun () -> INIValue.Parse(fValues))
+                | FaceActions.Custom(fValues) -> modifyWholeFace iVal (INIValue.Parse(fValues))
 
             let charProfiles, otherItems =
                 [ gameFile ]

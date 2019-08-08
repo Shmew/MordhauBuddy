@@ -29,16 +29,20 @@ module RenderUtils =
     open Fable.Core
     open Fable.Core.JsInterop
     open Fable.Import
+    open Browser.Types
     
     let isWindows = Node.Api.``process``.platform = Node.Base.Platform.Win32
     
     let getRemoteWin() = renderer.remote.getCurrentWindow()
 
     [<Emit("$0.persist()")>]
-    let eventPersist (e: Browser.Types.Event) : unit = jsNative
+    let eventPersist (e: Event) : unit = jsNative
 
     [<Emit("__static + \"/\" + $0")>]
     let private stat' (s : string) : string = jsNative
+
+    [<Emit("document.execCommand(\"Cut\")")>]
+    let private cut () : unit = jsNative
 
     [<Emit("document.execCommand(\"Copy\")")>]
     let private copy () : unit = jsNative
@@ -46,8 +50,11 @@ module RenderUtils =
     [<Emit("document.execCommand(\"Paste\")")>]
     let private paste () : unit = jsNative
 
-    [<Emit("$0.target.style.cursor")>]
-    let getEventCursor (e: Browser.Types.Event) : string = jsNative
+    [<Emit("document.execCommand(\"SelectAll\")")>]
+    let private selectAll () : unit = jsNative
+
+    [<Emit("try{document.elementFromPoint($0, $1)}catch(e){}")>]
+    let getElementAtPos (x: int) (y: int) : HTMLElement option = jsNative
     
     let getMousePositions () = 
         let absMouse = renderer.remote.screen.getCursorScreenPoint()
@@ -192,17 +199,16 @@ module RenderUtils =
         open Elmish.Bridge
 
         type ContextAction =
+            | Cut
             | Copy
             | Paste
+            | SelectAll
             member this.GetAction =
                 match this with
+                | Cut -> fun () -> cut()
                 | Copy -> fun () -> copy()
                 | Paste -> fun () -> paste()
-
-        let getActionFunction (act: ContextAction) =
-            match act with
-            | Copy -> copy()
-            | Paste -> paste()
+                | SelectAll -> fun () -> selectAll()
 
         type MenuItem =
             { Label : string
@@ -232,26 +238,39 @@ module RenderUtils =
         let update (msg: Msg) (model: Model) =
             match msg with
             | Open e ->
-                let pos = getMousePositions()
-                let actionList =
-                    eventPersist e
-                    match getEventCursor e with
-                    | "text" ->
-                        [ { Label = "Copy"
-                            Action = Copy }
-                          { Label = "Paste"
-                            Action = Paste } ]
-                    | _ ->
-                        [ ]
-                //if actionList.Length = 0 then model,Cmd.none
-                //else
-                { model with 
-                    Opened = true
-                    Position =
-                        { model.Position with
-                            X = pos.X
-                            Y = pos.Y }
-                    MenuItems = actionList },Cmd.none
+                if model.Opened then
+                    model,Cmd.ofMsg Close
+                else 
+                    let pos = getMousePositions()
+                    let element = getElementAtPos pos.X pos.Y
+                    
+                    let classes =
+                        element 
+                        |> Option.bind (fun e -> e.className |> Some) 
+                        |> defaultArg <| ""
+                    let actionList =
+                        eventPersist e
+                        match classes with
+                        | l when l.Contains "MuiInput" && not (l.Contains "inputSelect") ->
+                            [ { Label = "Cut"
+                                Action = Cut }
+                              { Label = "Copy"
+                                Action = Copy }
+                              { Label = "Paste"
+                                Action = Paste }
+                              { Label = "Select All"
+                                Action = SelectAll } ]
+                        | _ ->
+                            [ ]
+                    if actionList.IsEmpty then model,Cmd.none
+                    else
+                        { model with 
+                            Opened = true
+                            Position =
+                                { model.Position with
+                                    X = pos.X
+                                    Y = pos.Y }
+                            MenuItems = actionList },Cmd.none
             | Close -> { model with Opened = false },Cmd.none
             | Action(f) -> 
                 f.GetAction()
@@ -265,16 +284,23 @@ module RenderUtils =
                 |> List.map (fun item ->
                     menuItem [
                         DOMAttr.OnClick <| fun _ -> dispatch <| Action(item.Action)
-                    ] [ str item.Label ])
+                        Style [ CSSProp.MinHeight "0em" ]
+                        ChildrenProp.IconButtonProps [ Style [ CSSProp.MaxHeight "1px" ] ]
+                    ] [ 
+                        str item.Label
+                    ])
                 |> Seq.ofList
 
             menu [
+                MenuProp.DisableAutoFocusItem true
                 MaterialProp.KeepMounted true
                 MaterialProp.Open model.Opened
                 MaterialProp.OnClose <| fun _ -> dispatch Close
+                Style [ CSSProp.TransitionDuration "5ms" ]
                 PaperProps [
                     Style [ CSSProp.Width "10em" ]
                 ]
+                
                 PopoverProp.AnchorReference AnchorReference.AnchorPosition
                 PopoverProp.AnchorPosition { left = (model.Position.X); top = (model.Position.Y) }
             ] menuItems
