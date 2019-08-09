@@ -47,6 +47,7 @@ module Main =
         path.resolve (__dirname, @"Core.exe")
 #endif
 
+
     let startBridge() =
         let bridgeProc = childProcess.execFile (bridgePath, callback = (fun _ _ _ -> ()))
 #if DEBUG
@@ -119,9 +120,7 @@ module Main =
 
     // This method will be called when Electron has finished
     // initialization and is ready to create browser windows.
-    main.app.onReady (fun _ _ ->
-        createMainWindow())
-    |> ignore
+    main.app.onReady (fun _ _ -> createMainWindow()) |> ignore
     // Quit when all windows are closed.
     main.app.onWindowAllClosed (fun _ ->
         // On OS X it's common for applications and their menu bar
