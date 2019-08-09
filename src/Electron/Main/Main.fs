@@ -4,7 +4,6 @@ module Main =
     open Fable.Core
     open Fable.Core.JsInterop
     open Fable.Import
-    //open MordhauBuddy.Bindings.Electron
     open Electron
     open Node.Api
     open Bindings
@@ -40,27 +39,34 @@ module Main =
 #endif
 
 
-    let bridgePath =
-#if DEBUG
-        path.resolve (__dirname, "..", "../../bin/Core/netcoreapp3.0/Core.exe")
-#else
-        path.resolve (__dirname, @"Core.exe")
-#endif
 
 
     let startBridge() =
-        let bridgeProc = childProcess.execFile (bridgePath, callback = (fun _ _ _ -> ()))
+        let bridgeProc = 
+            let bridgePath =
 #if DEBUG
-        bridgeProc.stdout.on ("data",
-                              (fun data ->
-                              if mainWindow.IsSome then JS.console.log data))
-        |> ignore
+                path.resolve (__dirname, "..", "../../src/Core/Core.fsproj")
+#else
+                path.resolve (__dirname, @"Core.exe")
 #endif
 
+            let args = 
+                let init = ResizeArray<string>()
+                [ "watch"; "run"; "-f"; "netcoreapp3.0"; "--project"; bridgePath]
+                |> List.iter init.Add
+                init
+            let options =
+                let cwd =
+                    path.resolve (__dirname, "..", "../../src/Core")
+                {| shell = true
+                   stdio = "inherit"
+                   cwd = cwd |} 
+                |> toPlainJsObj
+            childProcess.spawn ("dotnet", args, options = options)
+
         bridgeProc
-
     let bridge = startBridge()
-
+   
     let createMainWindow() =
         let mainWinState =
             WindowState.getState (jsOptions<WindowState.Options> (fun o ->
@@ -81,9 +87,6 @@ module Main =
                                           o.backgroundColor <- "#FFF"
                                           o.show <- false))
 
-        //let ctxMenu = main.Menu.Create()
-        //ctxMenu.append (jsOptions<MenuItemOptions> (fun o -> o.label <- "Hello") |> main.MenuItem.Create)
-        //win.webContents.on ("context-menu", (fun ev -> ctxMenu.popup())) |> ignore
         win.onceReadyToShow (fun _ ->
             win.setTitle <| sprintf "%s - %s" Info.name Info.version
             win.show()
@@ -105,17 +108,12 @@ module Main =
         |> ignore
 #endif
 
-        //let copy : U2<MenuItemOptions, MenuItem> =
-        //    jsOptions<Electron.MenuItemOptions> (fun o ->
-        //        o.label <- "Test"
-        //        o.role <- MenuItemRole.Copy)
-        //    |> U2.Case1
-        //|> main.MenuItem.Create
-        //main.Menu.buildFromTemplate [| copy |] |> win.setMenu /// DOESN"T SEEM TO WORK
         // Dereference the window object when closed. If your app supports
         // multiple windows, you can store them in an array and delete the
         // corresponding element here.
-        win.onClosed (fun _ -> mainWindow <- None) |> ignore
+        win.onClosed (fun _ ->
+            bridge.kill()
+            mainWindow <- None) |> ignore
         mainWindow <- Some win
 
     // This method will be called when Electron has finished

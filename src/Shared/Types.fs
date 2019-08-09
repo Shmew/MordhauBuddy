@@ -45,9 +45,11 @@ module ElectronBridge =
         | Custom of bool
         | ProfileList of (string * string) list
         | CommitChanges of bool
-        | Offline
 
-    type RemoteClientMsg = Resp of BridgeResult
+    type RemoteClientMsg =
+        | Resp of BridgeResult
+        | Connected
+        | Disconnected
 
     let port = "8085" |> uint16
     let endpoint = sprintf "http://localhost:%i" port

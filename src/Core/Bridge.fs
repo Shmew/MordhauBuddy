@@ -15,7 +15,9 @@ module Bridge =
 
         type ServerMsg = ClientMsg of RemoteServerMsg
 
-        let init (clientDispatch : Dispatch<RemoteClientMsg>) () = { IValue = None }, Cmd.none
+        let init (clientDispatch : Dispatch<RemoteClientMsg>) () = 
+            Connected |> clientDispatch
+            { IValue = None }, Cmd.none
 
         let update (clientDispatch : Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) model =
             match clientMsg with

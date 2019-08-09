@@ -211,7 +211,7 @@ module INIConfiguration =
                 | FaceActions.Frankenstein -> modifyFace iVal frankensteinFaces
                 | FaceActions.Random -> modifyFace iVal randomFaces
                 | FaceActions.Custom(fValues) ->
-                    match INIValue.TryParseSnippet("FaceCustomization=" + fValues) with
+                    match INIValue.TryParseSnippet(fValues) with
                     | Some(faces) -> modifyWholeFace iVal faces
                     | _ -> iVal
 

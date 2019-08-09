@@ -285,7 +285,6 @@ module RenderUtils =
                     menuItem [
                         DOMAttr.OnClick <| fun _ -> dispatch <| Action(item.Action)
                         Style [ CSSProp.MinHeight "0em" ]
-                        ChildrenProp.IconButtonProps [ Style [ CSSProp.MaxHeight "1px" ] ]
                     ] [ 
                         str item.Label
                     ])

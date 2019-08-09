@@ -15,7 +15,6 @@ module App =
     open Fable.MaterialUI.Icons
     open Bindings
     open RenderUtils
-    open BridgeUtils
     open Elmish.Bridge
     open MordhauBuddy.Shared.ElectronBridge
     open FSharp.Core // To avoid shadowing Result<_,_>
@@ -50,7 +49,7 @@ module App =
     type Msg =
         | Navigate of Page
         | MinMaxMsg of bool
-        | DarkTheme of bool
+        | DarkThemeMsg of bool
         | ContextMenuMsg of AppContextMenu.Msg
         | AutoCompleteMsg of AutoComplete.Msg
         | BadgesMsg of Badges.Msg
@@ -66,6 +65,7 @@ module App =
         { Page : Page
           IsMax : bool
           IsDarkTheme : bool
+          IsBridgeConnected : bool
           ContextMenu : AppContextMenu.Model
           AutoCompleteDownshift : AutoComplete.Model
           Badges : Badges.Model
@@ -83,6 +83,7 @@ module App =
             { Page = Home
               IsMax = window.isMaximized() 
               IsDarkTheme = true //use store to get this later
+              IsBridgeConnected = false
               ContextMenu = AppContextMenu.init()
               AutoCompleteDownshift = AutoComplete.init()
               Badges = Badges.init()
@@ -100,7 +101,7 @@ module App =
             { m with Page = msg' }, Cmd.none
         | MinMaxMsg msg' ->
             { m with IsMax = msg' }, Cmd.none
-        | DarkTheme msg' ->
+        | DarkThemeMsg msg' ->
             { m with IsDarkTheme = msg' }, Cmd.none
         | ContextMenuMsg msg' ->
             let m',cmd = AppContextMenu.update msg' m.ContextMenu
@@ -129,6 +130,10 @@ module App =
             | Resp bRes ->
                 let m', cmd = FaceTools.update (FaceTools.ClientMsg bRes) m.FaceTools
                 { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
+            | Connected ->
+                { m with IsBridgeConnected = true}, Cmd.none
+            | Disconnected ->
+                { m with IsBridgeConnected = false}, Cmd.none
 
     // Domain/Elmish above, view below
     let private styles (theme : ITheme) : IStyles list =
@@ -176,6 +181,7 @@ module App =
             ListItemProp.Button true
             ListItemProp.Divider (page = Home)
             HTMLAttr.Selected (model.Page = page)
+            HTMLAttr.Disabled (not model.IsBridgeConnected)
             Key (pageTitle page)
             DOMAttr.OnClick (fun _ -> Navigate page |> dispatch)
         ] [ listItemText [ ] [ page |> pageTitle |> str ] ]
@@ -183,9 +189,20 @@ module App =
     let private pageView model dispatch =
         match model.Page with
         | Home ->
-            typography []
-                [ str
-                      "This app contains simple demos showing how certain Material-UI components can be used with Elmish." ]
+            if model.IsBridgeConnected then
+                typography [] 
+                    [ str "This app contains simple demos showing how certain Material-UI components can be used with Elmish." ]
+            else 
+                div [ Style [ CSSProp.Padding "10em" ] ] [
+                    typography [
+                        TypographyProp.Variant TypographyVariant.H6
+                        TypographyProp.Align TypographyAlign.Center
+                        Style [ CSSProp.PaddingBottom "10em" ]
+                    ] [
+                        str "Preparing for battle..."
+                    ]
+                    linearProgress [] 
+                ]
         | AutoComplete -> lazyView2 AutoComplete.view model.AutoCompleteDownshift (AutoCompleteMsg >> dispatch)
         | Badges -> lazyView2 Badges.view model.Badges (BadgesMsg >> dispatch)
         | Dialogs -> lazyView2 Dialogs.view model.Dialogs (DialogsMsg >> dispatch)
@@ -335,7 +352,7 @@ module App =
             match window.isMaximized() = b with
             | true -> Display DisplayOptions.None
             | false -> Display DisplayOptions.Flex
-        
+
         muiThemeProvider [Theme <| getTheme(model)] [
             div [
                 Class classes?root
@@ -344,7 +361,7 @@ module App =
                         e.preventDefault()
                         e |> AppContextMenu.Msg.Open |> ContextMenuMsg |> dispatch
                     } |> Async.StartImmediate)
-            ] [ 
+            ] [
                 cssBaseline []
                 appBar [
                     Class classes?appBar
@@ -403,7 +420,7 @@ module App =
                         iconButton [
                             DOMAttr.OnClick (fun _ -> 
                                 model.IsDarkTheme |> not 
-                                |> DarkTheme |> dispatch)
+                                |> DarkThemeMsg |> dispatch)
                             Class classes?titleButton
                             Style [ CSSProp.Color "#ffffff"; CSSProp.BorderRadius "20%" ]
                         ] [ themeLightDarkIcon [] ]
@@ -420,13 +437,12 @@ module App =
                     ] [ Page.All |> List.map (pageListItem model dispatch) |> ofList ]
                 ]
                 main [ Class classes?content ] [ 
-                    pageView model dispatch 
-                    menuView model dispatch
+                    pageView model dispatch
+                    menuView model dispatch 
                 ]
-
             ]
         ]
-    
+
     // Workaround for using JSS with Elmish
     // https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-423477900
     type private IProps =

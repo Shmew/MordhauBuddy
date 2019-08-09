@@ -165,13 +165,13 @@ module rec INIReader =
         member this.ParseSnippet() =
             match run iValue iniText with
             | Success(result, _, _) -> result
-            | Failure(_, _, _) -> failwith "Error parsing snippet"
+            | Failure(_) -> failwith "Error parsing snippet"
 
         /// Parses an ini snippet and returns an option
         member this.TryParseSnippet() =
             match run iValue iniText with
             | Success(result, _, _) -> result |> Some
-            | Failure(_, _, _) -> None
+            | Failure(_) -> None
 
     type INIValue with
 
