@@ -76,6 +76,10 @@ let testGlob   = __SOURCE_DIRECTORY__  @@ "tests/**/*.??proj"
 let fsSrcGlob  = __SOURCE_DIRECTORY__  @@ "src/**/*.fs"
 let fsTestGlob = __SOURCE_DIRECTORY__  @@ "tests/**/*.fs"
 let bin        = __SOURCE_DIRECTORY__ @@ "bin"
+let temp       = __SOURCE_DIRECTORY__  @@ "temp"
+let objFolder  =__SOURCE_DIRECTORY__  @@ "obj"
+let dist       = __SOURCE_DIRECTORY__  @@ "dist"
+let fable      = __SOURCE_DIRECTORY__  @@ ".fable"
 let fsProjGlob =
     !! (__SOURCE_DIRECTORY__  @@ "src/**/*.fsproj")
     ++ (__SOURCE_DIRECTORY__  @@ "tests/**/*.fsproj")
@@ -195,7 +199,7 @@ Target.create "Clean" <| fun _ ->
         ++ (__SOURCE_DIRECTORY__  @@ "src/**/bin")
         ++ (__SOURCE_DIRECTORY__  @@ "src/**/obj")
         |> Seq.toList
-        |> List.append ["bin"; "temp"; "obj"; "dist"; ".fable"]
+        |> List.append [bin; temp; objFolder; dist; fable]
         |> Shell.cleanDirs
     TaskRunner.runWithRetries clean 99
 
@@ -222,6 +226,15 @@ Target.create "PostPublishClean" <| fun _ ->
         |> Seq.map (Directory.EnumerateDirectories >> Seq.toList )
         |> Seq.concat
         |> Seq.iter Directory.delete
+    TaskRunner.runWithRetries clean 99
+
+Target.create "CleanElectronBin"  <| fun _ ->
+    let clean() =
+        !! (__SOURCE_DIRECTORY__  @@ "bin/Main")
+        ++ (__SOURCE_DIRECTORY__  @@ "bin/Renderer")
+        ++ (__SOURCE_DIRECTORY__  @@ "bin/Shared")
+        |> List.ofSeq
+        |> Shell.deleteDirs
     TaskRunner.runWithRetries clean 99
 
 // --------------------------------------------------------------------------------------
@@ -269,14 +282,6 @@ Target.create "BuildElectron" <| fun _ ->
 
 // Run Dev mode
 Target.create "Dev" <| fun _ ->
-    //let startBridge =
-    //    async {
-    //        Shell.Exec(
-    //            !! (__SOURCE_DIRECTORY__ @@ "bin/core/netcoreapp*/Core.exe") 
-    //            |> Seq.sort 
-    //            |> Seq.head)
-    //        |> ignore
-    //    }
     let startDev = async {Yarn.exec "dev" id}
 
     [ startDev ]
@@ -563,7 +568,6 @@ Target.create "All" ignore
   ==> "Restore"
   ==> "PackageJson"
   ==> "YarnInstall"
-  //==> "ValidateJSPackages"
   ==> "Build"
   ==> "BuildElectron"
   ==> "PostBuildClean" 
@@ -592,12 +596,13 @@ Target.create "All" ignore
   ==> "Docs"
   ==> "ReferenceDocs"
   ==> "GenerateDocs"
+  ?=> "CleanElectronBin"
 
 "Clean" 
   ==> "GitPush"
   ?=> "GitTag"
 
-"All" <== ["Format"; "Lint"; "RunTests"; "GenerateDocs"]
+"All" <== ["Format"; "Lint"; "RunTests"; "GenerateDocs"; "CleanElectronBin"]
 
 "LocalDocs" ?=> "All"
 "ReleaseDocs" ?=> "All"

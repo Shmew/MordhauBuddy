@@ -10,15 +10,15 @@ module Entry =
     open Elmish.Bridge
     open MordhauBuddy.Shared.ElectronBridge
 
-    Program.mkProgram App.init App.update App.view
+    Program.mkProgram State.init State.update View.view
     |> Program.withBridgeConfig(
         Bridge.endpoint (endpoint + INIOperations.Endpoint)
         |> Bridge.withName "INI"
         |> Bridge.withMapping (fun bridgeMsg ->
-            bridgeMsg |> App.Msg.ServerMsg)
+            bridgeMsg |> Types.Msg.ServerMsg)
         |> Bridge.withUrlMode UrlMode.Raw
         |> Bridge.withRetryTime 15 
-        |> Bridge.withWhenDown (Disconnected |> App.ServerMsg))
+        |> Bridge.withWhenDown (Disconnected |> Types.ServerMsg))
     |> Program.withReactSynchronous "app"
 #if DEBUG
     |> Program.withDebugger

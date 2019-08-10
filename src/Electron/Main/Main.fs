@@ -36,36 +36,30 @@ module Main =
             main.BrowserWindow.removeDevToolsExtension ("Redux DevTools")
 
         let connectRemoteDevViaExtension : unit -> unit = import "connectViaExtension" "remotedev"
+
+        let startBridge() =
+            let bridgeProc = 
+                let bridgePath =
+                    path.resolve (__dirname, "..", "../../src/Core/Core.fsproj")
+
+                let args = 
+                    let init = ResizeArray<string>()
+                    [ "watch"; "run"; "-f"; "netcoreapp3.0"; "--project"; bridgePath]
+                    |> List.iter init.Add
+                    init
+                let options =
+                    let cwd =
+                        path.resolve (__dirname, "..", "../../src/Core")
+                    {| shell = true
+                       stdio = "inherit"
+                       cwd = cwd |} 
+                    |> toPlainJsObj
+                childProcess.spawn ("dotnet", args, options = options)
+
+            bridgeProc
+        let bridge = startBridge()
+
 #endif
-
-
-
-
-    let startBridge() =
-        let bridgeProc = 
-            let bridgePath =
-#if DEBUG
-                path.resolve (__dirname, "..", "../../src/Core/Core.fsproj")
-#else
-                path.resolve (__dirname, @"Core.exe")
-#endif
-
-            let args = 
-                let init = ResizeArray<string>()
-                [ "watch"; "run"; "-f"; "netcoreapp3.0"; "--project"; bridgePath]
-                |> List.iter init.Add
-                init
-            let options =
-                let cwd =
-                    path.resolve (__dirname, "..", "../../src/Core")
-                {| shell = true
-                   stdio = "inherit"
-                   cwd = cwd |} 
-                |> toPlainJsObj
-            childProcess.spawn ("dotnet", args, options = options)
-
-        bridgeProc
-    let bridge = startBridge()
    
     let createMainWindow() =
         let mainWinState =
@@ -112,7 +106,9 @@ module Main =
         // multiple windows, you can store them in an array and delete the
         // corresponding element here.
         win.onClosed (fun _ ->
-            bridge.kill()
+#if DEBUG
+            DevTools.bridge.kill()
+#endif
             mainWindow <- None) |> ignore
         mainWindow <- Some win
 

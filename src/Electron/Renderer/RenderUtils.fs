@@ -40,22 +40,10 @@ module RenderUtils =
 
     [<Emit("__static + \"/\" + $0")>]
     let private stat' (s : string) : string = jsNative
-
-    [<Emit("document.execCommand(\"Cut\")")>]
-    let private cut () : unit = jsNative
-
-    [<Emit("document.execCommand(\"Copy\")")>]
-    let private copy () : unit = jsNative
-
-    [<Emit("document.execCommand(\"Paste\")")>]
-    let private paste () : unit = jsNative
-
-    [<Emit("document.execCommand(\"SelectAll\")")>]
-    let private selectAll () : unit = jsNative
-
+    
     [<Emit("try{document.elementFromPoint($0, $1)}catch(e){}")>]
     let getElementAtPos (x: int) (y: int) : HTMLElement option = jsNative
-    
+
     let getMousePositions () = 
         let absMouse = renderer.remote.screen.getCursorScreenPoint()
         let absWindow = renderer.remote.getCurrentWindow().getBounds()
@@ -188,138 +176,46 @@ module RenderUtils =
             4139,30749,65535,30749,0,65535,65535,0,0,0,0,65535,31709,0,0,190,0,0,0,589,0,0,0,30749,31166,989,\
             65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
 
-    module AppContextMenu =
-        open Fable.React
-        open Fable.React.Props
-        open Fable.MaterialUI.Core
-        open Fable.MaterialUI.Themes
-        open Fable.MaterialUI.Props
-        open Browser.Types
+    module Toastr =
         open Elmish
-        open Elmish.Bridge
 
-        type ContextAction =
-            | Cut
-            | Copy
-            | Paste
-            | SelectAll
-            member this.GetAction =
-                match this with
-                | Cut -> fun () -> cut()
-                | Copy -> fun () -> copy()
-                | Paste -> fun () -> paste()
-                | SelectAll -> fun () -> selectAll()
+        importAll "toastr/build/toastr.min.css"
 
-        type MenuItem =
-            { Label : string
-              Action : ContextAction }
+        type ToastrMsg =
+            { Message : string
+              Title : string }
 
-        type MenuPosition =
-            { X : int
-              Y : int }
+        let private successToast (msg : string) : unit = import "success" "toastr"
+        let private successToastWithTitle (msg : string) (title : string) : unit = import "success" "toastr"
+        let private errorToast (msg : string) : unit = import "error" "toastr"
+        let private errorToastWithTitle (msg : string) (title : string) : unit = import "error" "toastr"
+        let private infoToast (msg : string) : unit = import "info" "toastr"
+        let private infoToastWithTitle (msg : string) (title : string) : unit = import "info" "toastr"
+        let private warningToast (msg : string) : unit = import "warning" "toastr"
+        let private warningToastWithTitle (msg : string) (title : string) : unit = import "warning" "toastr"
 
-        type Model =
-            { Opened : bool
-              Position : MenuPosition
-              MenuItems : MenuItem list }
+        let message msg =
+            { Message = msg
+              Title = "" }
 
-        let init() =
-            { Opened = false 
-              Position =
-                { X = 0
-                  Y = 0 }
-              MenuItems = [] }
+        let withTitle title msg = { msg with Title = title }
 
-        type Msg =
-            | Open of Browser.Types.MouseEvent
-            | Close
-            | Action of ContextAction
+        let success (msg : ToastrMsg) : Cmd<_> =
+            [ fun _ -> 
+                if System.String.IsNullOrEmpty(msg.Title) then successToast msg.Message
+                else successToastWithTitle msg.Message msg.Title ]
 
-        let update (msg: Msg) (model: Model) =
-            match msg with
-            | Open e ->
-                if model.Opened then
-                    model,Cmd.ofMsg Close
-                else 
-                    let pos = getMousePositions()
-                    let element = getElementAtPos pos.X pos.Y
-                    
-                    let classes =
-                        element 
-                        |> Option.bind (fun e -> e.className |> Some) 
-                        |> defaultArg <| ""
-                    let actionList =
-                        eventPersist e
-                        match classes with
-                        | l when l.Contains "MuiInput" && not (l.Contains "inputSelect") ->
-                            [ { Label = "Cut"
-                                Action = Cut }
-                              { Label = "Copy"
-                                Action = Copy }
-                              { Label = "Paste"
-                                Action = Paste }
-                              { Label = "Select All"
-                                Action = SelectAll } ]
-                        | _ ->
-                            [ ]
-                    if actionList.IsEmpty then model,Cmd.none
-                    else
-                        { model with 
-                            Opened = true
-                            Position =
-                                { model.Position with
-                                    X = pos.X
-                                    Y = pos.Y }
-                            MenuItems = actionList },Cmd.none
-            | Close -> { model with Opened = false },Cmd.none
-            | Action(f) -> 
-                f.GetAction()
-                model,Cmd.ofMsg Close
+        let error (msg : ToastrMsg) : Cmd<_> =
+            [ fun _ -> 
+                if System.String.IsNullOrEmpty(msg.Title) then errorToast msg.Message
+                else errorToastWithTitle msg.Message msg.Title ]
 
-        let private styles (theme : ITheme) : IStyles list = []
+        let info (msg : ToastrMsg) : Cmd<_> =
+            [ fun _ -> 
+                if System.String.IsNullOrEmpty(msg.Title) then infoToast msg.Message
+                else infoToastWithTitle msg.Message msg.Title ]
 
-        let private view' (classes: IClasses) model dispatch =
-            let menuItems =
-                model.MenuItems
-                |> List.map (fun item ->
-                    menuItem [
-                        DOMAttr.OnClick <| fun _ -> dispatch <| Action(item.Action)
-                        Style [ CSSProp.MinHeight "0em" ]
-                    ] [ 
-                        str item.Label
-                    ])
-                |> Seq.ofList
-
-            menu [
-                MenuProp.DisableAutoFocusItem true
-                MaterialProp.KeepMounted true
-                MaterialProp.Open model.Opened
-                MaterialProp.OnClose <| fun _ -> dispatch Close
-                Style [ CSSProp.TransitionDuration "5ms" ]
-                PaperProps [
-                    Style [ CSSProp.Width "10em" ]
-                ]
-                
-                PopoverProp.AnchorReference AnchorReference.AnchorPosition
-                PopoverProp.AnchorPosition { left = (model.Position.X); top = (model.Position.Y) }
-            ] menuItems
-                
-        // Workaround for using JSS with Elmish
-        // https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471
-        type private IProps =
-            abstract model : Model with get, set
-            abstract dispatch : (Msg -> unit) with get, set
-            inherit IClassesProps
-
-        type private Component(p) =
-            inherit PureStatelessComponent<IProps>(p)
-            let viewFun (p : IProps) = view' p.classes p.model p.dispatch
-            let viewWithStyles = withStyles (StyleType.Func styles) [] viewFun
-            override this.render() = ReactElementType.create viewWithStyles this.props []
-        
-        let view (model : Model) (dispatch : Msg -> unit) : ReactElement =
-            let props =
-                jsOptions<IProps> (fun p ->
-                    p.model <- model
-                    p.dispatch <- dispatch)
-            ofType<Component, _, _> props []
+        let warning (msg : ToastrMsg) : Cmd<_> =
+            [ fun _ -> 
+                if System.String.IsNullOrEmpty(msg.Title) then warningToast msg.Message
+                else warningToastWithTitle msg.Message msg.Title ]
