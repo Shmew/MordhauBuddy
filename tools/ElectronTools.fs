@@ -48,6 +48,7 @@ module Json =
         Bugs: Bugs
         Homepage: string
         ElectronWebpack: ElectronWebpack
+        Build: obj
         Dependencies: obj
         DevDependencies: obj
     }

@@ -29,6 +29,20 @@
       "webpackConfig": "webpack.additions.renderer.js"
     }
   },
+  "build": {
+    "extraFiles": [
+      "static"
+    ],
+    "extraResources": {
+      "filter": [
+        "**/*",
+        "!**/*.pdb",
+        "!**/*.xml"
+      ],
+      "from": "./Bin/Core/netcoreapp3.0",
+      "to": "extraResources"
+    }
+  },
   "dependencies": {
     "@material-ui/core": "^4.3.0",
     "@material-ui/icons": "^4.2.1",

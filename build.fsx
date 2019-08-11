@@ -54,9 +54,11 @@ let excludeFormatting = [ (__SOURCE_DIRECTORY__ @@ "src/Electron/Renderer/**") ]
 // Projects that have bindings to other languages where name linting needs to be more relaxed.
 let relaxedNameLinting = [ (__SOURCE_DIRECTORY__ @@ "src/Electron/**/*.fs") ]
 
-// --------------------------------------------------------------------------------------
-// END TODO: The rest of the file includes standard build steps
-// --------------------------------------------------------------------------------------
+let netCoreVersions = [ "netcoreapp3.0" ]
+let netFrameworkVersions = [ "net462" ]
+
+// OS runtime targets
+let runTimes = ["win-x64";"win-x86";"linux-x64"]
 
 // Read additional information from the release notes document
 let release = ReleaseNotes.load (__SOURCE_DIRECTORY__ @@ "RELEASE_NOTES.md")
@@ -223,18 +225,40 @@ Target.create "PostBuildClean" <| fun _ ->
 Target.create "PostPublishClean" <| fun _ ->
     let clean() =
         !! (__SOURCE_DIRECTORY__ @@ "src/**/bin" @@ configuration @@ "/**/publish")
-        |> Seq.map (Directory.EnumerateDirectories >> Seq.toList )
-        |> Seq.concat
         |> Seq.iter Directory.delete
     TaskRunner.runWithRetries clean 99
 
 Target.create "CleanElectronBin"  <| fun _ ->
+    let netFrames =
+        netFrameworkVersions
+        |> List.map (fun s -> __SOURCE_DIRECTORY__ @@ "bin/Core" @@ s)
+
+    let netCores =
+        netCoreVersions
+        |> List.map (fun s -> __SOURCE_DIRECTORY__ @@ "bin/Core" @@ s)
+
     let clean() =
         !! (__SOURCE_DIRECTORY__  @@ "bin/Main")
         ++ (__SOURCE_DIRECTORY__  @@ "bin/Renderer")
         ++ (__SOURCE_DIRECTORY__  @@ "bin/Shared")
+        |> (fun src -> List.fold foldIncludeGlobs src netFrames)
         |> List.ofSeq
         |> Shell.deleteDirs
+
+        let runtimeDirs =
+            runTimes 
+            |> List.map (fun s ->
+                netCores 
+                |> List.map (fun coreVer -> coreVer @@ s @@ "**"))
+            |> List.concat
+
+        match netCores |> List.tryHead with
+        | Some(h) ->
+            !! (h @@ "**")
+            |> (fun src -> List.fold foldIncludeGlobs src netCores.Tail)
+            |> (fun src -> List.fold foldExcludeGlobs src runtimeDirs)
+            |> Seq.iter Shell.rm
+        | _ -> ()
     TaskRunner.runWithRetries clean 99
 
 // --------------------------------------------------------------------------------------
@@ -302,21 +326,25 @@ Target.create "DistDir" <| fun _ ->
 
 Target.create "PublishDotNet" <| fun _ ->
     let runPublish (project: string) (framework: string) =
-        let setParams (defaults:MSBuildParams) =
-            { defaults with
-                Verbosity = Some(Quiet)
-                Targets = ["Publish"]
-                Properties =
-                    [
-                        "Optimize", "True"
-                        "DebugSymbols", "True"
-                        "Configuration", configuration
-                        "Version", release.AssemblyVersion
-                        "GenerateDocumentationFile", "true"
-                        "TargetFramework", framework
-                    ]
-            }
-        MSBuild.build setParams project
+        let buildWithRunTime (rt: string) =
+            let setParams (defaults:MSBuildParams) =
+                { defaults with
+                    Verbosity = Some(Quiet)
+                    Targets = ["Publish"]
+                    Properties =
+                        [
+                            "Optimize", "True"
+                            "DebugSymbols", "True"
+                            "Configuration", configuration
+                            "Version", release.AssemblyVersion
+                            "GenerateDocumentationFile", "true"
+                            "TargetFramework", framework
+                            "SelfContained", "true"
+                            "RuntimeIdentifier", rt
+                        ]
+                }
+            MSBuild.build setParams project
+        runTimes |> List.iter buildWithRunTime
 
     !! srcGlob
     -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")

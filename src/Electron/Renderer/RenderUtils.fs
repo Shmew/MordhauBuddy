@@ -30,6 +30,7 @@ module RenderUtils =
     open Fable.Core.JsInterop
     open Fable.Import
     open Browser.Types
+    open Node.Api
     
     let isWindows = Node.Api.``process``.platform = Node.Base.Platform.Win32
     
@@ -37,9 +38,6 @@ module RenderUtils =
 
     [<Emit("$0.persist()")>]
     let eventPersist (e: Event) : unit = jsNative
-
-    [<Emit("__static + \"/\" + $0")>]
-    let private stat' (s : string) : string = jsNative
     
     [<Emit("try{document.elementFromPoint($0, $1)}catch(e){}")>]
     let getElementAtPos (x: int) (y: int) : HTMLElement option = jsNative
@@ -54,7 +52,7 @@ module RenderUtils =
 #if DEBUG
         s
 #else
-        stat' s
+        path.resolve (__dirname, "..", "..", "static", s)
 #endif
 
     module String =

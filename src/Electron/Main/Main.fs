@@ -37,30 +37,45 @@ module Main =
 
         let connectRemoteDevViaExtension : unit -> unit = import "connectViaExtension" "remotedev"
 
-        let startBridge() =
-            let bridgeProc = 
-                let bridgePath =
-                    path.resolve (__dirname, "..", "../../src/Core/Core.fsproj")
-
-                let args = 
-                    let init = ResizeArray<string>()
-                    [ "watch"; "run"; "-f"; "netcoreapp3.0"; "--project"; bridgePath]
-                    |> List.iter init.Add
-                    init
-                let options =
-                    let cwd =
-                        path.resolve (__dirname, "..", "../../src/Core")
-                    {| shell = true
-                       stdio = "inherit"
-                       cwd = cwd |} 
-                    |> toPlainJsObj
-                childProcess.spawn ("dotnet", args, options = options)
-
-            bridgeProc
-        let bridge = startBridge()
-
 #endif
    
+    let startBridge() =
+        let bridgeProc = 
+            
+#if DEBUG
+            let bridgePath =
+                path.resolve (__dirname, "..", "../../src/Core/Core.fsproj")
+            let args = 
+                let init = ResizeArray<string>()
+                [ "watch"; "run"; "-f"; "netcoreapp3.0"; "--project"; bridgePath]
+                |> List.iter init.Add
+                init
+            let options =
+                let cwd =
+                    path.resolve (__dirname, "..", "../../src/Core")
+                {| shell = true
+                   stdio = "inherit"
+                   cwd = cwd |} 
+                |> toPlainJsObj
+            childProcess.spawn ("dotnet", args, options = options)
+
+#else
+            let bridgePath =
+                path.resolve (__dirname, "..", "extraResources", "Core.exe")
+            let args = 
+                let init = ResizeArray<string>()
+                init
+            let options =
+                {| shell = false
+                   stdio = "inherit" |} 
+                |> toPlainJsObj
+            childProcess.spawn (bridgePath, args, options = options)
+#endif
+
+        bridgeProc
+    let bridge = startBridge()
+
+
     let createMainWindow() =
         let mainWinState =
             WindowState.getState (jsOptions<WindowState.Options> (fun o ->
@@ -107,7 +122,7 @@ module Main =
         // corresponding element here.
         win.onClosed (fun _ ->
 #if DEBUG
-            DevTools.bridge.kill()
+            bridge.kill()
 #endif
             mainWindow <- None) |> ignore
         mainWindow <- Some win
