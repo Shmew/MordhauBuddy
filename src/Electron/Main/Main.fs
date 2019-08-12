@@ -8,7 +8,7 @@ module Main =
     open Node.Api
     open Bindings
 
-    // A global reference to the window object is required in order to prevent garbage collection
+    /// A global reference to the window object is required in order to prevent garbage collection
     let mutable mainWindow : BrowserWindow option = Option.None
 #if DEBUG
 
@@ -102,12 +102,12 @@ module Main =
             mainWinState.manage win)
         |> ignore
 #if DEBUG
-        // Set up dev tools
+        /// Set up dev tools
         DevTools.installAllDevTools win |> ignore
         DevTools.connectRemoteDevViaExtension()
-        // Open dev tools on startup
+        /// Open dev tools on startup
         win.webContents.openDevTools()
-        // Load correct URL
+        /// Load correct URL
         win.loadURL (sprintf "http://localhost:%s" ``process``.env?ELECTRON_WEBPACK_WDS_PORT) |> ignore
         ``process``.on ("uncaughtException", (fun err -> JS.console.log (err.ToString()))) |> ignore
 #else
@@ -117,9 +117,9 @@ module Main =
         |> ignore
 #endif
 
-        // Dereference the window object when closed. If your app supports
-        // multiple windows, you can store them in an array and delete the
-        // corresponding element here.
+        /// Dereference the window object when closed. If your app supports
+        /// multiple windows, you can store them in an array and delete the
+        /// corresponding element here.
         win.onClosed (fun _ ->
 #if DEBUG
             bridge.kill()
@@ -127,18 +127,17 @@ module Main =
             mainWindow <- None) |> ignore
         mainWindow <- Some win
 
-    // This method will be called when Electron has finished
-    // initialization and is ready to create browser windows.
+    /// This method will be called when Electron has finished
+    /// initialization and is ready to create browser windows.
     main.app.onReady (fun _ _ -> createMainWindow()) |> ignore
-    // Quit when all windows are closed.
+    /// Quit when all windows are closed.
     main.app.onWindowAllClosed (fun _ ->
-        // On OS X it's common for applications and their menu bar
-        // to stay active until the user quits explicitly with Cmd + Q
+        /// On OS X it's common for applications and their menu bar
+        /// to stay active until the user quits explicitly with Cmd + Q
         if ``process``.platform <> Node.Base.Platform.Darwin then main.app.quit())
     |> ignore
     main.app.onActivate (fun _ _ ->
-        // On OS X it's common to re-create a window in the app when the
-        // dock icon is clicked and there are no other windows open.
+        /// On OS X it's common to re-create a window in the app when the
+        /// dock icon is clicked and there are no other windows open.
         if mainWindow.IsNone then createMainWindow())
     |> ignore
-//mainWindow.Value.setProgressBar

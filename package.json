@@ -10,7 +10,10 @@
     "dist:dirWin64": "yarn distWin64 --dir -c.compression=store -c.mac.identity=null",
     "distLinux": "yarn compile && electron-builder --linux --x64",
     "distWin": "yarn compile && electron-builder --win --ia32",
-    "distWin64": "set DEBUG=yarn compile && electron-builder --win --x64"
+    "distWin64": "yarn compile && electron-builder --win --x64",
+    "publishLinux": "yarn distLinux && electron-builder --publish always",
+    "publishWin": "yarn distWin && electron-builder --publish always",
+    "publishWin64": "yarn distWin64 && electron-builder --publish always"
   },
   "repository": {
     "type": "git",
@@ -49,6 +52,26 @@
       ],
       "from": "./Bin/Core/netcoreapp3.0/${os}-${arch}",
       "to": "extraResources"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "tar.gz"
+      ]
+    },
+    "productName": "MordhauBuddy",
+    "publish": [
+      {
+        "provider": "github",
+        "vPrefixedTagName": false
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
     }
   },
   "dependencies": {
@@ -58,6 +81,7 @@
     "downshift": "^3.2.10",
     "electron-dl": "^1.14.0",
     "electron-store": "^4.0.0",
+    "electron-updater": "^4.1.2",
     "match-sorter": "^4.0.1",
     "mdi-material-ui": "6.2.0",
     "react": "^16.8.6",

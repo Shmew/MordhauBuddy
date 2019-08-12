@@ -7,7 +7,7 @@ module rec Types =
     open Fable.React.Props
     open Fable.MaterialUI
     open Fable.MaterialUI.Core
-    open FSharp.Core  // To avoid shadowing Result<_,_>
+    open FSharp.Core  /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
     open MordhauBuddy.Shared.ElectronBridge

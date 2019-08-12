@@ -8,7 +8,7 @@ module View =
     open Fable.MaterialUI.Core
     open Fable.MaterialUI.MaterialDesignIcons
     open Fable.MaterialUI.Icons
-    open FSharp.Core  // To avoid shadowing Result<_,_>
+    open FSharp.Core  /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
     open RenderUtils.Validation
@@ -374,8 +374,8 @@ module View =
                 ]
             ]
 
-    // Workaround for using JSS with Elmish
-    // https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471
+    /// Workaround for using JSS with Elmish
+    /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471
     type private IProps =
         abstract model : Model with get, set
         abstract dispatch : (Msg -> unit) with get, set

@@ -149,7 +149,7 @@ module RenderUtils =
         let selectDir () =
             promise {
                 let opts = jsOptions<OpenDialogOptions>(fun o ->
-                    // See https://github.com/electron/electron/blob/master/docs/api/dialog.md
+                    /// See https://github.com/electron/electron/blob/master/docs/api/dialog.md
                     o.title <- "Select Mordhau Configuration Directory"
                     o.defaultPath <- renderer.remote.app.getPath AppPathName.Home
                     o.properties <- [| DialogFeature.OpenDirectory |]
@@ -159,10 +159,6 @@ module RenderUtils =
                 else
                     return res.filePaths |> Array.head |> DirSelect.Selected
             }
-            //return 
-            //if isWindows then res.filePaths |> Array.reduce (fun acc elem -> acc + @"\" + elem)
-            //else res.filePaths |> Array.reduce (fun acc elem -> acc + "/" + elem)
-            //|> DirSelect.Selected
 
     module Samples =
         let faceImport =

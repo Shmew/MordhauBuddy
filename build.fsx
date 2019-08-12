@@ -129,6 +129,22 @@ let setCmd f args =
     | true -> Command.RawCommand(f, Arguments.OfArgs args)
     | false -> Command.RawCommand("mono", Arguments.OfArgs (f::args))
 
+let getEnvFromAllOrNone (s: string) =
+    let envOpt (envVar: string) =
+        if String.isNullOrEmpty envVar then None
+        else Some(envVar)
+
+    let procVar = Environment.GetEnvironmentVariable(s) |> envOpt
+    let userVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.User) |> envOpt
+    let machVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.Machine) |> envOpt
+
+    match procVar,userVar,machVar with
+    | Some(v), _, _
+    | _, Some(v), _
+    | _, _, Some(v)
+        -> Some(v)
+    | _ -> None
+
 // --------------------------------------------------------------------------------------
 // Generate assembly info files with the right version & up-to-date information
 
@@ -324,7 +340,7 @@ Target.create "Dev" <| fun _ ->
     |> Async.RunSynchronously
     |> ignore
 
-// Build packed installer
+// Build artifacts
 Target.create "Dist" <| fun _ ->
     Yarn.exec "distWin" id
     Yarn.exec "distWin64" id
@@ -335,6 +351,20 @@ Target.create "DistDir" <| fun _ ->
     Yarn.exec "dist:dirWin" id
     Yarn.exec "dist:dirWin64" id
     Yarn.exec "dist:dirLinux" id
+
+// Build artifacts and publish
+Target.create "Publish" <| fun _ ->
+    let ghToken = 
+        let token = getEnvFromAllOrNone("GH_TOKEN").Value
+        TraceSecrets.register "<GH TOKEN>" token
+        sprintf "GH_TOKEN=%s" token
+
+    let withToken (s: string) =
+        sprintf "%s %s" ghToken s
+
+    Yarn.exec "publishWin" id
+    Yarn.exec "publishWin64" id
+    Yarn.exec "publishLinux" id
 
 // --------------------------------------------------------------------------------------
 // Publish net core applications
@@ -514,7 +544,8 @@ Target.create "ReferenceDocs" <| fun _ ->
 
                 dInfo.GetFiles()
                 |> Array.filter (fun x ->
-                    x.Name.ToLower() = (sprintf "%s.dll" name).ToLower())
+                    x.Name.ToLower() = (sprintf "%s.dll" name).ToLower() 
+                        || x.Name.ToLower() = (sprintf "%s.exe" name).ToLower())
                 |> Array.map (fun x -> x.FullName))
             |> List.ofArray
 
@@ -660,5 +691,7 @@ Target.create "All" ignore
 "Dist" <== ["All"; "ReleaseDocs"; "RewriteWin32"]
 
 "DistDir" <== ["All"; "ReleaseDocs"; "RewriteWin32"]
+
+"Publish" <== ["All"; "ReleaseDocs"; "RewriteWin32"]
 
 Target.runOrDefaultWithArguments "Dev"

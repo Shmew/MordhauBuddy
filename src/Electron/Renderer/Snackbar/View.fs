@@ -29,8 +29,8 @@ module View =
             | _ -> ()
         ] []
 
-    // Workaround for using JSS with Elmish
-    // https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471
+    /// Workaround for using JSS with Elmish
+    /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471
     type private IProps<'msg> =
         abstract model : Model<'msg> with get, set
         abstract dispatch : (Msg<'msg> -> unit) with get, set

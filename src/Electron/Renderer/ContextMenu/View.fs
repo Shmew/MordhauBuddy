@@ -37,8 +37,8 @@ module View =
             PopoverProp.AnchorPosition { left = (model.Position.X); top = (model.Position.Y) }
         ] menuItems
             
-    // Workaround for using JSS with Elmish
-    // https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471
+    /// Workaround for using JSS with Elmish
+    /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471
     type private IProps =
         abstract model : Model with get, set
         abstract dispatch : (Msg -> unit) with get, set

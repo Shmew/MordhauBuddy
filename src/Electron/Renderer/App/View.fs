@@ -10,7 +10,7 @@ module View =
     open Fable.MaterialUI.Core
     open Fable.MaterialUI.MaterialDesignIcons
     open Bindings
-    open FSharp.Core // To avoid shadowing Result<_,_>
+    open FSharp.Core /// To avoid shadowing Result<_,_>
     open Types
     open State
 
@@ -312,8 +312,8 @@ module View =
             ]
         ]
 
-    // Workaround for using JSS with Elmish
-    // https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-423477900
+    /// Workaround for using JSS with Elmish
+    /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-423477900
     type private IProps =
         abstract model : Model with get, set
         abstract dispatch : (Msg -> unit) with get, set
