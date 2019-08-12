@@ -411,7 +411,7 @@ Target.create "Format" <| fun _ ->
     |> (fun dirs -> List.fold foldExcludeGlobs fsSrcAndTest dirs)
     |> Seq.iter (fun file ->
         dotnet.fantomas id
-            (sprintf "%s --pageWidth 120" file))
+            (sprintf "%s --pageWidth 120 --noSpaceBeforeColon" file))
 
 Target.create "Lint" <| fun _ ->
     fsSrcAndTest
@@ -453,7 +453,7 @@ Target.create "RunTests" <| fun _ ->
 // Generate Paket load scripts
 Target.create "LoadScripts" <| fun _ ->
     let frameworks =
-        __SOURCE_DIRECTORY__ @@ @"bin"
+        __SOURCE_DIRECTORY__ @@ "src"
         |> Directory.EnumerateDirectories
         |> Seq.map (fun d ->
             Directory.EnumerateDirectories d
@@ -461,6 +461,7 @@ Target.create "LoadScripts" <| fun _ ->
             |> List.ofSeq)
         |> List.ofSeq
         |> List.reduce List.append
+        |> List.distinct
         |> List.reduce (fun acc elem -> sprintf "%s --framework %s" elem acc)
         |> function
         | e when e.Length > 0 ->
