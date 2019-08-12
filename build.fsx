@@ -34,12 +34,6 @@ let author = "Shmew"
 // File system information
 let solutionFile  = "MordhauBuddy.sln"
 
-// Default target configuration
-let configuration = "Debug"
-
-// Pattern specifying assemblies to be tested using Expecto
-let testAssemblies = "tests/**/bin" </> configuration </> "**" </> "*Tests.exe"
-
 // Build docs website root
 let website = "/MordhauBuddy"
 
@@ -145,6 +139,18 @@ let getEnvFromAllOrNone (s: string) =
         -> Some(v)
     | _ -> None
 
+let configuration() =
+    FakeVar.getOrFail("configuration")
+
+// --------------------------------------------------------------------------------------
+// Set configuration mode based on target
+
+Target.create "ConfigDebug" <| fun _ ->
+    FakeVar.set "configuration" "Debug"
+
+Target.create "ConfigRelease" <| fun _ ->
+    FakeVar.set "configuration" "Release"
+
 // --------------------------------------------------------------------------------------
 // Generate assembly info files with the right version & up-to-date information
 
@@ -155,7 +161,7 @@ Target.create "AssemblyInfo" <| fun _ ->
           AssemblyInfo.Description summary
           AssemblyInfo.Version release.AssemblyVersion
           AssemblyInfo.FileVersion release.AssemblyVersion
-          AssemblyInfo.Configuration configuration
+          AssemblyInfo.Configuration <| configuration()
           AssemblyInfo.InternalsVisibleTo (sprintf "%s.Tests" projectName) ]
 
     let getProjectDetails projectPath =
@@ -202,7 +208,7 @@ Target.create "CopyBinaries" <| fun _ ->
     !! srcGlob
     -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")
     -- (__SOURCE_DIRECTORY__ @@ "src/**/Fable.Electron.fsproj")
-    |> Seq.map (fun f -> ((Path.getDirectory f) @@ "bin" @@ configuration, "bin" @@ (Path.GetFileNameWithoutExtension f)))
+    |> Seq.map (fun f -> ((Path.getDirectory f) @@ "bin" @@ configuration(), "bin" @@ (Path.GetFileNameWithoutExtension f)))
     |> Seq.iter (fun (fromDir, toDir) -> Shell.copyDir toDir fromDir (fun _ -> true))
 
 // --------------------------------------------------------------------------------------
@@ -242,7 +248,7 @@ Target.create "PostBuildClean" <| fun _ ->
         !! srcGlob
         -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")
         |> Seq.map (
-            (fun f -> (Path.getDirectory f) @@ "bin" @@ configuration) 
+            (fun f -> (Path.getDirectory f) @@ "bin" @@ configuration()) 
             >> (fun f -> Directory.EnumerateDirectories(f) |> Seq.toList )
             >> (fun fL -> fL |> List.map (fun f -> Directory.EnumerateDirectories(f) |> Seq.toList)))
         |> (Seq.concat >> Seq.concat)
@@ -251,7 +257,7 @@ Target.create "PostBuildClean" <| fun _ ->
 
 Target.create "PostPublishClean" <| fun _ ->
     let clean() =
-        !! (__SOURCE_DIRECTORY__ @@ "src/**/bin" @@ configuration @@ "/**/publish")
+        !! (__SOURCE_DIRECTORY__ @@ "src/**/bin" @@ configuration() @@ "/**/publish")
         |> Seq.iter Directory.delete
     TaskRunner.runWithRetries clean 99
 
@@ -317,7 +323,7 @@ Target.create "Build" <| fun _ ->
                 [
                     "Optimize", "True"
                     "DebugSymbols", "True"
-                    "Configuration", configuration
+                    "Configuration", configuration()
                     "Version", release.AssemblyVersion
                     "GenerateDocumentationFile", "true"
                     "DependsOnNETStandard", "true"
@@ -380,7 +386,7 @@ Target.create "PublishDotNet" <| fun _ ->
                         [
                             "Optimize", "True"
                             "DebugSymbols", "True"
-                            "Configuration", configuration
+                            "Configuration", configuration()
                             "Version", release.AssemblyVersion
                             "GenerateDocumentationFile", "true"
                             "TargetFramework", framework
@@ -395,7 +401,7 @@ Target.create "PublishDotNet" <| fun _ ->
     -- (__SOURCE_DIRECTORY__ @@ "src/**/*.shproj")
     -- (__SOURCE_DIRECTORY__ @@ "src/**/*.vbproj")
     |> Seq.map
-        ((fun f -> (((Path.getDirectory f) @@ "bin" @@ configuration), f) )
+        ((fun f -> (((Path.getDirectory f) @@ "bin" @@ configuration()), f) )
         >>
         (fun f ->
             Directory.EnumerateDirectories(fst f) 
@@ -441,7 +447,7 @@ Target.create "ValidateJSPackages" <| fun _ ->
 // Run the unit test binaries
 
 Target.create "RunTests" <| fun _ ->
-    !! testAssemblies
+    !! ("tests/**/bin" @@ configuration() @@ "**" @@ "*Tests.exe")
     |> Seq.iter (fun f ->
         CreateProcess.fromCommand(setCmd f [])
         |> CreateProcess.withTimeout (TimeSpan.MaxValue)
@@ -687,12 +693,15 @@ Target.create "All" ignore
 "LocalDocs" ?=> "All"
 "ReleaseDocs" ?=> "All"
 
-"Dev" <== ["All"; "LocalDocs"]
+"ConfigDebug" ?=> "Clean"
+"ConfigRelease" ?=> "Clean"
 
-"Dist" <== ["All"; "ReleaseDocs"; "RewriteWin32"]
+"Dev" <== ["All"; "LocalDocs"; "ConfigDebug"]
 
-"DistDir" <== ["All"; "ReleaseDocs"; "RewriteWin32"]
+"Dist" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigRelease"]
 
-"Publish" <== ["All"; "ReleaseDocs"; "RewriteWin32"]
+"DistDir" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigRelease"]
+
+"Publish" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigRelease"]
 
 Target.runOrDefaultWithArguments "Dev"
