@@ -459,7 +459,7 @@ Target.create "RunTests" <| fun _ ->
 // Generate Paket load scripts
 Target.create "LoadScripts" <| fun _ ->
     let frameworks =
-        __SOURCE_DIRECTORY__ @@ "src"
+        __SOURCE_DIRECTORY__ @@ "bin"
         |> Directory.EnumerateDirectories
         |> Seq.map (fun d ->
             Directory.EnumerateDirectories d
