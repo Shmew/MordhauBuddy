@@ -11,15 +11,15 @@ module Bridge =
     /// Websocket bridge
     module INIBridge =
         type Model =
-            { IValue : INIValue option }
+            { IValue: INIValue option }
 
         type ServerMsg = ClientMsg of RemoteServerMsg
 
-        let init (clientDispatch : Dispatch<RemoteClientMsg>) () =
+        let init (clientDispatch: Dispatch<RemoteClientMsg>) () =
             Connected |> clientDispatch
             { IValue = None }, Cmd.none
 
-        let update (clientDispatch : Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) model =
+        let update (clientDispatch: Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) model =
             match clientMsg with
             | INIOps ops ->
                 match ops with

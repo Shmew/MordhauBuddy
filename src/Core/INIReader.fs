@@ -28,7 +28,7 @@ module rec INIReader =
             | str -> str
 
         /// Serializes INIValue to TextWriter
-        member this.WriteTo(w : TextWriter) =
+        member this.WriteTo(w: TextWriter) =
             let rec serialize =
                 function
                 | String(Some(s)) -> w.Write(s)
@@ -59,12 +59,12 @@ module rec INIReader =
                 | File(iList) -> iList |> List.iter serialize
             serialize this
 
-        override this.ToString() : string =
+        override this.ToString(): string =
             let w = new StringWriter(CultureInfo.InvariantCulture)
             this.WriteTo(w)
             w.GetStringBuilder().ToString()
 
-    type private INIParser(iniText : string) =
+    type private INIParser(iniText: string) =
 
         /// Parses text surrounded by zero or more white spaces but stopping at newline
         let ws p = spaces >>. p .>> (skipMany (pchar ' ' <|> pchar '\t'))
@@ -176,19 +176,19 @@ module rec INIReader =
     type INIValue with
 
         /// Parses the specified INI string
-        static member Parse(text : string) = INIParser(text).Parse()
+        static member Parse(text: string) = INIParser(text).Parse()
 
         /// Attempts to parse the specified INI string
-        static member TryParse(text : string) = INIParser(text).TryParse()
+        static member TryParse(text: string) = INIParser(text).TryParse()
 
         /// Parses the specified INI snippet string
-        static member ParseSnippet(text : string) = INIParser(text).ParseSnippet()
+        static member ParseSnippet(text: string) = INIParser(text).ParseSnippet()
 
         /// Attempts to parse the specified INI snippet string
-        static member TryParseSnippet(text : string) = INIParser(text).TryParseSnippet()
+        static member TryParseSnippet(text: string) = INIParser(text).TryParseSnippet()
 
         /// Loads INI from the specified stream
-        static member Load(stream : Stream) =
+        static member Load(stream: Stream) =
             use reader = new StreamReader(stream)
             let text = reader.ReadToEnd()
             INIParser(text).Parse()
@@ -200,23 +200,22 @@ module rec INIReader =
             | INIValue.String(s) -> s
             | _ -> None
 
-        static member AsInteger(cultureInfo : IFormatProvider) =
+        static member AsInteger(cultureInfo: IFormatProvider) =
             function
             | INIValue.String(s) -> TextConversions.AsInteger cultureInfo <| defaultArg s ""
             | _ -> None
 
-        static member AsInteger64(cultureInfo : IFormatProvider) =
+        static member AsInteger64(cultureInfo: IFormatProvider) =
             function
             | INIValue.String(s) -> TextConversions.AsInteger64 cultureInfo <| defaultArg s ""
             | _ -> None
 
-        static member AsDecimal(cultureInfo : IFormatProvider) =
+        static member AsDecimal(cultureInfo: IFormatProvider) =
             function
             | INIValue.String(s) -> TextConversions.AsDecimal cultureInfo <| defaultArg s ""
             | _ -> None
 
-        static member AsFloat (missingValues : string []) (useNoneForMissingValues : bool)
-                      (cultureInfo : IFormatProvider) =
+        static member AsFloat (missingValues: string []) (useNoneForMissingValues: bool) (cultureInfo: IFormatProvider) =
             function
             | INIValue.String(s) ->
                 TextConversions.AsFloat missingValues useNoneForMissingValues cultureInfo <| defaultArg s ""
@@ -239,7 +238,7 @@ module rec INIReader =
 
             /// Get a sequence of key-value pairs representing the properties of an object
             [<Extension>]
-            static member Properties(x : INIValue) =
+            static member Properties(x: INIValue) =
                 match x with
                 | INIValue.File(sList) -> ("File", sList)
                 | INIValue.Section(s, vList) -> (s, vList)
@@ -278,7 +277,7 @@ module rec INIReader =
             /// Get all the elements of an INI value.
             /// Returns an empty list if the value is not an INI.
             [<Extension>]
-            static member AsList(x : INIValue) =
+            static member AsList(x: INIValue) =
                 match x with
                 | INIValue.File(sList) -> sList
                 | INIValue.Section(_, vList) -> vList
@@ -361,9 +360,9 @@ module rec INIReader =
 
             /// Map INIValue based on matching conditions
             [<Extension>]
-            static member Map(matchConditions : string list, ast : INIValue, newValue : INIValue) =
-                let rec mapAst (s : string list) (iVal : INIValue) : INIValue =
-                    let testVal (x : INIValue) : bool =
+            static member Map(matchConditions: string list, ast: INIValue, newValue: INIValue) =
+                let rec mapAst (s: string list) (iVal: INIValue): INIValue =
+                    let testVal (x: INIValue): bool =
                         match x with
                         | INIValue.Section(n, _) -> n <> (s.Head)
                         | INIValue.FieldText(n, _) -> n <> (s.Head)
@@ -371,7 +370,7 @@ module rec INIReader =
                         | INIValue.String(n) -> defaultArg n "" <> s.Head
                         | _ -> false
 
-                    let getResults (iList : INIValue list) (sendTail : bool) =
+                    let getResults (iList: INIValue list) (sendTail: bool) =
                         let matchers =
                             match sendTail with
                             | true -> s.Tail
@@ -403,7 +402,7 @@ module rec INIReader =
                 mapAst matchConditions ast
 
         /// Get a property of a INI object
-        let (?) (iValue : INIValue) propertyName = iValue.GetProperty(propertyName) |> List.head
+        let (?) (iValue: INIValue) propertyName = iValue.GetProperty(propertyName) |> List.head
 
         type INIValue with
             member this.Properties =
@@ -535,7 +534,7 @@ module rec INIReader =
                         |> String.Concat
 
                 /// Map INIValue based on matching conditions
-                member this.Map(matchConditions : string list, newValue : INIValue) =
+                member this.Map(matchConditions: string list, newValue: INIValue) =
                     INIExtensions.Map(matchConditions, this, newValue)
 
             [<Extension>]
@@ -544,7 +543,7 @@ module rec INIReader =
 
                 /// Get a sequence of key-value pairs representing the properties of an object
                 [<Extension>]
-                static member Properties(x : INIValue) =
+                static member Properties(x: INIValue) =
                     match x with
                     | INIValue.File(sList) -> ("File", sList)
                     | INIValue.Section(s, vList) -> (s, vList)
@@ -574,7 +573,7 @@ module rec INIReader =
                 /// Get all the elements of a INI value.
                 /// Returns an empty array if the value is not a INI array.
                 [<Extension>]
-                static member AsList(x : INIValue) =
+                static member AsList(x: INIValue) =
                     match x with
                     | INIValue.File(sList) -> sList
                     | INIValue.Section(_, vList) -> vList
@@ -645,17 +644,17 @@ module rec INIReader =
 
                 /// Map INIValue based on matching conditions
                 [<Extension>]
-                static member Map(matchConditions : string list, ast : INIValue option, newValue : INIValue) =
+                static member Map(matchConditions: string list, ast: INIValue option, newValue: INIValue) =
                     ast |> Option.bind (fun res -> INIExtensions.Map(matchConditions, res, newValue) |> Some)
 
             /// [omit]
             type INIValueOverloads = INIValueOverloads
                 with
-                    static member inline ($) (x : INIValue, INIValueOverloads) =
+                    static member inline ($) (x: INIValue, INIValueOverloads) =
                         fun propertyName -> x.TryGetProperty propertyName |> Option.map (List.head)
-                    static member inline ($) (x : INIValue option, INIValueOverloads) =
+                    static member inline ($) (x: INIValue option, INIValueOverloads) =
                         fun propertyName ->
                             x |> Option.bind (fun x -> x.TryGetProperty propertyName |> Option.map (List.head))
 
             /// Get property of a INI value (assuming that the value is an object)
-            let inline (?) x (propertyName : string) = (x $ INIValueOverloads) propertyName
+            let inline (?) x (propertyName: string) = (x $ INIValueOverloads) propertyName
