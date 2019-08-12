@@ -297,11 +297,12 @@ Target.create "CleanElectronBin"  <| fun _ ->
 // --------------------------------------------------------------------------------------
 // Restore tasks
 
+let restoreSolution () =
+    solutionFile
+    |> DotNet.restore id
+
 Target.create "Restore" <| fun _ ->
-    let restore() =
-        solutionFile
-        |> DotNet.restore id
-    TaskRunner.runWithRetries restore 5
+    TaskRunner.runWithRetries restoreSolution 5
 
 /// Add task to make Node.js cli ready
 Target.create "YarnInstall" <| fun _ ->
@@ -329,9 +330,8 @@ Target.create "Build" <| fun _ ->
                     "DependsOnNETStandard", "true"
                 ]
          }
-    !! srcGlob
-    ++ testGlob
-    |> Seq.iter (MSBuild.build setParams)
+    restoreSolution()
+    MSBuild.build setParams solutionFile
 
 Target.create "BuildElectron" <| fun _ ->
     Npm.exec "rebuild node-sass" id
