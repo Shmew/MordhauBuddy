@@ -190,6 +190,17 @@ Target.create "CopyBinaries" <| fun _ ->
     |> Seq.iter (fun (fromDir, toDir) -> Shell.copyDir toDir fromDir (fun _ -> true))
 
 // --------------------------------------------------------------------------------------
+// Renames win32 target folder to match what electron expects
+
+Target.create "RewriteWin32" <| fun _ ->
+    netCoreVersions
+    |> List.iter(fun dir ->
+        !! (bin @@ "Core" @@ dir @@ "win-x86/*")
+        |> Seq.map (Path.getDirectory)
+        |> Seq.distinct
+        |> Seq.iter (fun d -> Shell.rename ("bin/Core" @@ dir @@ "win-ia32") d) )
+
+// --------------------------------------------------------------------------------------
 // Clean build results
 
 Target.create "Clean" <| fun _ ->
@@ -315,11 +326,15 @@ Target.create "Dev" <| fun _ ->
 
 // Build packed installer
 Target.create "Dist" <| fun _ ->
-    Yarn.exec "dist" id
+    Yarn.exec "distWin" id
+    Yarn.exec "distWin64" id
+    Yarn.exec "distLinux" id
 
 // Build to unpacked directory
 Target.create "DistDir" <| fun _ ->
-    Yarn.exec "dist:dir" id
+    Yarn.exec "dist:dirWin" id
+    Yarn.exec "dist:dirWin64" id
+    Yarn.exec "dist:dirLinux" id
 
 // --------------------------------------------------------------------------------------
 // Publish net core applications
@@ -632,13 +647,18 @@ Target.create "All" ignore
 
 "All" <== ["Format"; "Lint"; "RunTests"; "GenerateDocs"; "CleanElectronBin"]
 
+"All" 
+  ?=> "RewriteWin32" 
+  ?=> "Dist"
+  ?=> "DistDir"
+
 "LocalDocs" ?=> "All"
 "ReleaseDocs" ?=> "All"
 
 "Dev" <== ["All"; "LocalDocs"]
 
-"Dist" <== ["All"; "ReleaseDocs"]
+"Dist" <== ["All"; "ReleaseDocs"; "RewriteWin32"]
 
-"DistDir" <== ["All"; "ReleaseDocs"]
+"DistDir" <== ["All"; "ReleaseDocs"; "RewriteWin32"]
 
 Target.runOrDefaultWithArguments "Dev"

@@ -8,14 +8,6 @@ module Json =
     open Fake.IO
     open Fake.IO.FileSystemOperators
 
-    type Scripts = {
-        Dev: string
-        Compile: string
-        Dist: string
-        [<JsonField("dist:dir")>]
-        DistDir: string
-    }
-
     type ProjectsWebpack = {
         SourceDirectory: string
         WebpackConfig: string
@@ -41,7 +33,7 @@ module Json =
         Name: string
         Description: string
         Version: string
-        Scripts: Scripts
+        Scripts: obj
         Repository: Repo
         Author: string
         License: string

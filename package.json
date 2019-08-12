@@ -3,10 +3,14 @@
   "description": "Compilation of Mordhau Tools",
   "version": "0.0.1",
   "scripts": {
-    "dev": "electron-webpack dev",
     "compile": "electron-webpack",
-    "dist": "yarn compile && electron-builder",
-    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
+    "dev": "electron-webpack dev",
+    "dist:dirLinux": "yarn distLinux --dir -c.compression=store -c.mac.identity=null",
+    "dist:dirWin": "yarn distWin --dir -c.compression=store -c.mac.identity=null",
+    "dist:dirWin64": "yarn distWin64 --dir -c.compression=store -c.mac.identity=null",
+    "distLinux": "yarn compile && electron-builder --linux --x64",
+    "distWin": "yarn compile && electron-builder --win --ia32",
+    "distWin64": "set DEBUG=yarn compile && electron-builder --win --x64"
   },
   "repository": {
     "type": "git",
@@ -30,6 +34,10 @@
     }
   },
   "build": {
+    "appId": "com.electron.mordhau-buddy",
+    "directories": {
+      "output": "dist/${os}-${arch}"
+    },
     "extraFiles": [
       "static"
     ],
@@ -39,7 +47,7 @@
         "!**/*.pdb",
         "!**/*.xml"
       ],
-      "from": "./Bin/Core/netcoreapp3.0",
+      "from": "./Bin/Core/netcoreapp3.0/${os}-${arch}",
       "to": "extraResources"
     }
   },
