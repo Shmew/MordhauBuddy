@@ -72,16 +72,16 @@ let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
     | f when f.EndsWith("shproj") -> Shproj
     | _                           -> failwith (sprintf "Project file %s not supported. Unknown project type." projFileName)
 
-let toolGlob   = __SOURCE_DIRECTORY__  @@ "tools"
-let srcGlob    = __SOURCE_DIRECTORY__  @@ "src/**/*.??proj"
-let testGlob   = __SOURCE_DIRECTORY__  @@ "tests/**/*.??proj"
-let fsSrcGlob  = __SOURCE_DIRECTORY__  @@ "src/**/*.fs"
-let fsTestGlob = __SOURCE_DIRECTORY__  @@ "tests/**/*.fs"
+let tools      = __SOURCE_DIRECTORY__ @@ "tools"
+let srcGlob    = __SOURCE_DIRECTORY__ @@ "src/**/*.??proj"
+let testGlob   = __SOURCE_DIRECTORY__ @@ "tests/**/*.??proj"
+let fsSrcGlob  = __SOURCE_DIRECTORY__ @@ "src/**/*.fs"
+let fsTestGlob = __SOURCE_DIRECTORY__ @@ "tests/**/*.fs"
 let bin        = __SOURCE_DIRECTORY__ @@ "bin"
-let temp       = __SOURCE_DIRECTORY__  @@ "temp"
-let objFolder  =__SOURCE_DIRECTORY__  @@ "obj"
-let dist       = __SOURCE_DIRECTORY__  @@ "dist"
-let fable      = __SOURCE_DIRECTORY__  @@ ".fable"
+let temp       = __SOURCE_DIRECTORY__ @@ "temp"
+let objFolder  = __SOURCE_DIRECTORY__ @@ "obj"
+let dist       = __SOURCE_DIRECTORY__ @@ "dist"
+let fable      = __SOURCE_DIRECTORY__ @@ ".fable"
 let fsProjGlob =
     !! (__SOURCE_DIRECTORY__  @@ "src/**/*.fsproj")
     ++ (__SOURCE_DIRECTORY__  @@ "tests/**/*.fsproj")
@@ -115,7 +115,7 @@ let failOnBadExitAndPrint (p : ProcessResult) =
 
 module dotnet =
     let tool optionConfig command args =
-        DotNet.exec (fun p -> { p with WorkingDirectory = toolGlob} |> optionConfig ) (sprintf "%s" command) args
+        DotNet.exec (fun p -> { p with WorkingDirectory = tools} |> optionConfig ) (sprintf "%s" command) args
         |> failOnBadExitAndPrint
 
     let fantomas optionConfig args =
