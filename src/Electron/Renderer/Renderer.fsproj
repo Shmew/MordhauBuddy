@@ -19,6 +19,9 @@
     <Compile Include="FaceTools\Types.fs" />
     <Compile Include="FaceTools\State.fs" />
     <Compile Include="FaceTools\View.fs" />
+    <Compile Include="EngineTools\Types.fs" />
+    <Compile Include="EngineTools\State.fs" />
+    <Compile Include="EngineTools\View.fs" />
     <Compile Include="App\Types.fs" />
     <Compile Include="App\State.fs" />
     <Compile Include="App\View.fs" />
