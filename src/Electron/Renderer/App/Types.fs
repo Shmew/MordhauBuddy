@@ -7,8 +7,9 @@ module Types =
     type Page =
         | Home
         | FaceTools
+        | EngineTools
         static member All =
-            [ Home; FaceTools ]
+            [ Home; FaceTools; EngineTools ]
 
     type Msg =
         | Navigate of Page
@@ -16,6 +17,7 @@ module Types =
         | DarkThemeMsg of bool
         | ContextMenuMsg of ContextMenu.Types.Msg
         | FaceToolsMsg of FaceTools.Types.Msg
+        | EngineToolsMsg of EngineTools.Types.Msg
         | ServerMsg of RemoteClientMsg
 
     type Model =
@@ -24,5 +26,6 @@ module Types =
           IsDarkTheme : bool
           IsBridgeConnected : bool
           ContextMenu : ContextMenu.Types.Model
-          FaceTools : FaceTools.Types.Model }
+          FaceTools : FaceTools.Types.Model
+          EngineTools : EngineTools.Types.Model }
 

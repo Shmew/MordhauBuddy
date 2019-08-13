@@ -85,6 +85,7 @@ module View =
                     ] 
                 ]
         | FaceTools -> lazyView2 FaceTools.View.view model.FaceTools (FaceToolsMsg >> dispatch)
+        | EngineTools -> lazyView2 EngineTools.View.view model.EngineTools (EngineToolsMsg >> dispatch)
 
     let private menuView model dispatch =
         lazyView2 ContextMenu.View.view model.ContextMenu (ContextMenuMsg >> dispatch)

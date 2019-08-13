@@ -11,6 +11,7 @@ module State =
         function
         | Home -> "Home"
         | FaceTools -> "Face tools"
+        | EngineTools -> "Custom settings"
 
     let window = getRemoteWin()
 
@@ -21,7 +22,8 @@ module State =
               IsDarkTheme = true //use store to get this later
               IsBridgeConnected = false
               ContextMenu = ContextMenu.State.init()
-              FaceTools = FaceTools.State.init() }
+              FaceTools = FaceTools.State.init()
+              EngineTools = EngineTools.State.init() }
         m, Cmd.none
 
     let update msg m =
@@ -38,6 +40,9 @@ module State =
         | FaceToolsMsg msg' ->
             let m', cmd = FaceTools.State.update msg' m.FaceTools
             { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
+        | EngineToolsMsg msg' ->
+            let m', cmd = EngineTools.State.update msg' m.EngineTools
+            { m with EngineTools = m' }, Cmd.map EngineToolsMsg cmd
         | ServerMsg msg' ->
             match msg' with
             | Resp bRes ->

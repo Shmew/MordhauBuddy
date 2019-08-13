@@ -68,7 +68,6 @@ let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
 
 let tools      = __SOURCE_DIRECTORY__ @@ "tools"
 let srcGlob    = __SOURCE_DIRECTORY__ @@ "src/**/*.??proj"
-let testGlob   = __SOURCE_DIRECTORY__ @@ "tests/**/*.??proj"
 let fsSrcGlob  = __SOURCE_DIRECTORY__ @@ "src/**/*.fs"
 let fsTestGlob = __SOURCE_DIRECTORY__ @@ "tests/**/*.fs"
 let bin        = __SOURCE_DIRECTORY__ @@ "bin"
@@ -417,7 +416,7 @@ Target.create "Format" <| fun _ ->
     |> (fun dirs -> List.fold foldExcludeGlobs fsSrcAndTest dirs)
     |> Seq.iter (fun file ->
         dotnet.fantomas id
-            (sprintf "%s --pageWidth 120 --noSpaceBeforeColon" file))
+            (sprintf "%s --pageWidth 120" file))
 
 Target.create "Lint" <| fun _ ->
     fsSrcAndTest

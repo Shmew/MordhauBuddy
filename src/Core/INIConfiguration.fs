@@ -51,10 +51,10 @@ module INIConfiguration =
             match File.exists file with
             | true ->
                 let backups = fi.DirectoryName @@ "MordhauBuddy_backups"
-                let ts = DateTime.Now.ToString("yyyyMMdd-hhmm") + ".ini"
+                let newName = fi.Name + DateTime.Now.ToString("yyyyMMdd-hhmm") + ".ini"
                 Directory.ensure backups
-                Shell.copyFile (backups @@ ts) file
-                File.exists (backups @@ ts)
+                Shell.copyFile (backups @@ newName) file
+                File.exists (backups @@ newName)
             | false -> false
 
         /// Write `INIValue` to file path
