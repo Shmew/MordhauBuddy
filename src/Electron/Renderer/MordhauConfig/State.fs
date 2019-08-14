@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.EngineTools
+﻿namespace MordhauBuddy.App.MordhauConfig
 
 module State =
     open FSharp.Core  // To avoid shadowing Result<_,_>

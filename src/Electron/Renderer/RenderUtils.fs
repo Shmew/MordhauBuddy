@@ -327,3 +327,89 @@ module RenderUtils =
             [ fun _ -> 
                 if System.String.IsNullOrEmpty(msg.Title) then warningToast msg.Message
                 else warningToastWithTitle msg.Message msg.Title ]
+
+    module MaterialUI =
+        open Fable.Core
+        open Fable.Core.JsInterop
+        open Fable.React
+        open Fable.React.Props
+        open Fable.MaterialUI
+        open Fable.MaterialUI.Core
+        open Fable.MaterialUI.Props
+
+        module Core =
+            let inline slider (b : IHTMLProp seq) c : ReactElement = 
+                ofImport "default" "@material-ui/core/Slider" (toObj b) c
+
+        [<AutoOpen>]
+        module Themes =
+            module Styles =
+                let inline Marked props = Custom ("marked", props)
+                let inline Rail props = Custom ("rail", props)
+                let inline Track props = Custom ("track", props)
+                let inline Thumb props = Custom ("thumb", props)
+                let inline ValueLabel props = Custom ("valueLabel", props)
+                let inline Mark props = Custom ("mark", props)
+                let inline MarkActive props = Custom ("markActive", props)
+                let inline MarkLabel props = Custom ("markLabel", props)
+                let inline MarkLabelActive props = Custom ("markLabelActive", props)
+            
+            type ClassNames =
+                | Marked of string
+                | Rail of string
+                | Track of string
+                | Thumb of string
+                | ValueLabel of string
+                | Mark of string
+                | MarkActive of string
+                | MarkLabel of string
+                | MarkLabelActive of string
+                interface IClassNames
+
+        [<AutoOpen>]
+        module Props =
+            type SliderPropMarkValue =
+                { Value : float
+                  Label : string option }
+                static member Pojo (marks: SliderPropMarkValue) =
+                    marks |> toPlainJsObj
+
+            [<StringEnum; RequireQualifiedAccess>]
+            type SliderOrientation = 
+                | Vertical 
+                | Horizontal
+
+            [<StringEnum; RequireQualifiedAccess>]
+            type SliderLabelDisplay =
+                | On
+                | Auto
+                | Off
+
+            type SliderProp =
+                | GetAriaValueText of (obj -> obj -> unit)
+                | Marks of U2<bool, obj []>
+                | Name of string
+                | Min of float
+                | Max of float
+                | OnChange of (obj -> obj -> unit)
+                | OnChangeCommitted of (obj -> obj -> unit)
+                | Orientation of SliderOrientation
+                | Step of float
+                | ThumbComponent of ReactElementType
+                | ValueLabelDisplay of SliderLabelDisplay
+                | ValueLabelFormat of U2<string,(float -> float)>
+                interface IHTMLProp
+
+            [<AutoOpen>]
+            module OverridesProp =
+                let inline private pascalCaseProp (name : string) (props : Themes.IStyles seq) =
+                    OverridesProp.Custom (name, props |> keyValueList CaseRules.LowerFirst)
+
+                let inline MuiSlider styles = pascalCaseProp "MuiSlider" styles
+
+            [<AutoOpen>]
+            module ThemePropsProp =
+                let inline private pascalCaseProp (name : string) (props : IHTMLProp seq) =
+                    ThemePropsProp.Custom (name, props |> keyValueList CaseRules.LowerFirst)
+
+                let inline MuiSlider props = pascalCaseProp "MuiSlider" props

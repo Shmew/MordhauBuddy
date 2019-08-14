@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.EngineTools
+﻿namespace MordhauBuddy.App.MordhauConfig
 
 module View =
     open Fable.Core.JsInterop
@@ -10,8 +10,8 @@ module View =
     open Fable.MaterialUI.Icons
     open FSharp.Core  /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
-    open RenderUtils
-    open RenderUtils.Validation
+    open RenderUtils.MaterialUI
+    open RenderUtils.MaterialUI.Core
     open Elmish.React
     open Electron
     open Types
@@ -190,7 +190,16 @@ module View =
                         ]
                     ]
                 ]
-            ]
+            yield
+                slider [
+                    MaterialProp.DefaultValue "30"
+                    SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto
+                    SliderProp.Step 10.
+                    SliderProp.Marks <| Fable.Core.Case1(true)
+                    SliderProp.Min 0.
+                    SliderProp.Max 100.
+                ] []
+        ]
 
     /// Workaround for using JSS with Elmish
     /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471

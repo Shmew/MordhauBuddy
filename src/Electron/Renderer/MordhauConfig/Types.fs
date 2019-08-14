@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.EngineTools
+﻿namespace MordhauBuddy.App.MordhauConfig
 
 module rec Types =
     open System

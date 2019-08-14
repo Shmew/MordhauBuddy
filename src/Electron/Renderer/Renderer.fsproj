@@ -23,9 +23,9 @@
     <Compile Include="FaceTools\Types.fs" />
     <Compile Include="FaceTools\State.fs" />
     <Compile Include="FaceTools\View.fs" />
-    <Compile Include="EngineTools\Types.fs" />
-    <Compile Include="EngineTools\State.fs" />
-    <Compile Include="EngineTools\View.fs" />
+    <Compile Include="MordhauConfig\Types.fs" />
+    <Compile Include="MordhauConfig\State.fs" />
+    <Compile Include="MordhauConfig\View.fs" />
     <Compile Include="About\Types.fs" />
     <Compile Include="About\State.fs" />
     <Compile Include="About\View.fs" />
