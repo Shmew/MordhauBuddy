@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>ElectronStore - MordhauBuddy</title>
+    <title>Store - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,10 +34,9 @@
 
 
 
-<h1>ElectronStore</h1>
+<h1>Store</h1>
 <p>
   <span>Namespace: MordhauBuddy.App</span><br />
-  <span>Parent Module: <a href="mordhaubuddy-app-renderutils.html">RenderUtils</a></span>
   </p>
 <div class="xmldoc">
 </div>
@@ -52,7 +51,7 @@
     <tbody>
         <tr>
           <td class="type-name">
-            <a href="mordhaubuddy-app-renderutils-electronstore-store.html">Store</a>
+            <a href="mordhaubuddy-app-store-model.html">Model</a>
           </td>
           <td class="xmldoc">
           
@@ -60,7 +59,7 @@
         </tr>
         <tr>
           <td class="type-name">
-            <a href="mordhaubuddy-app-renderutils-electronstore-storestatic.html">StoreStatic</a>
+            <a href="mordhaubuddy-app-store-msg.html">Msg</a>
           </td>
           <td class="xmldoc">
           
@@ -80,15 +79,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '34', 34)" onmouseover="showTip(event, '34', 34)">
-            getStore
+          <code onmouseout="hideTip(event, '55', 55)" onmouseover="showTip(event, '55', 55)">
+            init()
           </code>
-          <div class="tip" id="34">
-            <strong>Signature:</strong> StoreStatic<br />
+          <div class="tip" id="55">
+            <strong>Signature:</strong> unit -&gt; Model<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L89-89" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Store.fs#L96-96" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -98,15 +97,51 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '35', 35)" onmouseover="showTip(event, '35', 35)">
-            store
+          <code onmouseout="hideTip(event, '56', 56)" onmouseover="showTip(event, '56', 56)">
+            setEngineLocation(s)
           </code>
-          <div class="tip" id="35">
-            <strong>Signature:</strong> Store<br />
+          <div class="tip" id="56">
+            <strong>Signature:</strong> s:string -&gt; Cmd&lt;Msg&gt;<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L91-91" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Store.fs#L104-104" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '57', 57)" onmouseover="showTip(event, '57', 57)">
+            setGameLocation(s)
+          </code>
+          <div class="tip" id="57">
+            <strong>Signature:</strong> s:string -&gt; Cmd&lt;Msg&gt;<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Store.fs#L103-103" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '58', 58)" onmouseover="showTip(event, '58', 58)">
+            update msg m
+          </code>
+          <div class="tip" id="58">
+            <strong>Signature:</strong> msg:Msg -&gt; m:Model -&gt; Model<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Store.fs#L106-106" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

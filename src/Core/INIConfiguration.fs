@@ -14,7 +14,7 @@ module INIConfiguration =
     module FileOps =
         /// Try to find the configuration directory
         let defConfigDir =
-            let bindDirectory (dir: string) =
+            let bindDirectory (dir : string) =
                 dir
                 |> IO.DirectoryInfo
                 |> DirectoryInfo.exists
@@ -38,7 +38,7 @@ module INIConfiguration =
                 |> Option.bind bindDirectory
 
         /// Try to find the file given an `INIFile`
-        let tryGetFile (iFile: INIFile) =
+        let tryGetFile (iFile : INIFile) =
             let fiPath = IO.FileInfo(iFile.File).FullName
             match iFile.WorkingDir, (fiPath = iFile.File && File.exists (iFile.File)) with
             | _, true -> Some(iFile.File)
@@ -46,7 +46,7 @@ module INIConfiguration =
             | _ -> None
 
         /// Create a backup of the given file into sub directory MordhauBuddy_backups
-        let createBackup (file: string) =
+        let createBackup (file : string) =
             let fi = FileInfo.ofPath (file)
             match File.exists file with
             | true ->
@@ -58,7 +58,7 @@ module INIConfiguration =
             | false -> false
 
         /// Write `INIValue` to file path
-        let writeINI (iVal: INIValue) (outFile: string) =
+        let writeINI (iVal : INIValue) (outFile : string) =
             let fi = FileInfo.ofPath (outFile)
             Directory.ensure fi.DirectoryName
             File.writeString false fi.FullName (iVal.ToString())
@@ -66,7 +66,7 @@ module INIConfiguration =
                           WorkingDir = None })
 
         /// Try to read an INI file
-        let tryReadINI (file: string) =
+        let tryReadINI (file : string) =
             if File.exists file then
                 try
                     File.readAsString file |> INIValue.TryParse
@@ -93,7 +93,7 @@ module INIConfiguration =
                   [ "CharacterProfiles"; "FaceCustomization"; "Scale" ] ]
 
             /// Generate random values via provided min, max, and mapper function over 49 space `int list`
-            let genFaces (mapper: int -> int) (min: int) (max: int) =
+            let genFaces (mapper : int -> int) (min : int) (max : int) =
                 [ 0..48 ]
                 |> List.map (fun _ ->
                        rng.Next(min, max)
@@ -113,23 +113,23 @@ module INIConfiguration =
                     else min) min 2
 
             /// Collects all properties matching the input string
-            let mapProps (s: string) (iList: INIValue list) =
+            let mapProps (s : string) (iList : INIValue list) =
                 iList |> List.collect (fun iVal -> iVal.TryGetProperty s |> Option.defaultValue [])
 
             /// Modifies the FaceCustomization of the given profile by folding over the `faceKeys`
             /// and applying the given `unit -> INIValue` function
-            let modifyFace (profile: INIValue) (f: unit -> INIValue) =
-                faceKeys |> List.fold (fun (p: INIValue) sels -> p.Map(sels, f())) profile
+            let modifyFace (profile : INIValue) (f : unit -> INIValue) =
+                faceKeys |> List.fold (fun (p : INIValue) sels -> p.Map(sels, f())) profile
 
             /// Modifies the FaceCustomization of the given profile by mapping the given
             /// FaceCustomization `INIValue`
-            let modifyWholeFace (profile: INIValue) (newFace: INIValue) =
+            let modifyWholeFace (profile : INIValue) (newFace : INIValue) =
                 profile.Map([ "CharacterProfiles"; "FaceCustomization" ], newFace)
 
             /// Get the properties that match the selectors within the input game file
-            let getPropValuesOf (gameFile: INIValue) (selectors: string list) =
+            let getPropValuesOf (gameFile : INIValue) (selectors : string list) =
                 selectors
-                |> List.fold (fun (acc: INIValue list list) elem ->
+                |> List.fold (fun (acc : INIValue list list) elem ->
                        acc
                        |> List.map (fun iList ->
                               iList
@@ -140,7 +140,7 @@ module INIConfiguration =
                 |> List.concat
 
             /// Strip " characters from input INIValue `INIValue.String` items
-            let iValStrings (iVal: INIValue) =
+            let iValStrings (iVal : INIValue) =
                 match iVal with
                 | INIValue.Tuple(tList) when tList.Length = 1 ->
                     match tList.Head with
@@ -150,19 +150,19 @@ module INIConfiguration =
                 | _ -> ""
 
         /// Get all character profile names within a game file
-        let getCharacterProfileNames (gameFile: INIValue) =
+        let getCharacterProfileNames (gameFile : INIValue) =
             [ "File"; @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C"; "CharacterProfiles"; "Name";
               "INVTEXT" ]
             |> getPropValuesOf gameFile
             |> List.map iValStrings
 
         /// Get all character profile names and export strings within a game file
-        let getCharacterProfileExports (gameFile: INIValue) (profiles: string list) =
+        let getCharacterProfileExports (gameFile : INIValue) (profiles : string list) =
             let characterIVals =
                 [ "File"; @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C" ]
                 |> getPropValuesOf gameFile
 
-            let checkVList (vList: INIValue list) (profile: string) =
+            let checkVList (vList : INIValue list) (profile : string) =
                 vList
                 |> List.tryFind (fun iVal ->
                        match iVal with
@@ -205,8 +205,8 @@ module INIConfiguration =
 
         /// Set the profile's face customization by applying the given `FaceActions`,
         /// then merge the result into the game file
-        let setCharacterProfileFace (gameFile: INIValue) (profile: string) (action: FaceActions) =
-            let newFace (iVal: INIValue) =
+        let setCharacterProfileFace (gameFile : INIValue) (profile : string) (action : FaceActions) =
+            let newFace (iVal : INIValue) =
                 match action with
                 | FaceActions.Frankenstein -> modifyFace iVal frankensteinFaces
                 | FaceActions.Random -> modifyFace iVal randomFaces
@@ -245,25 +245,25 @@ module INIConfiguration =
         open Frankenstein
 
         /// Replace the oVal with iVal based on selectors
-        let replace (oVal: INIValue) (iVal: INIValue) (selectors: string list) = oVal.Map(selectors, iVal)
+        let replace (oVal : INIValue) (iVal : INIValue) (selectors : string list) = oVal.Map(selectors, iVal)
 
         /// Delete contents of oVal that match selectors
-        let delete (oVal: INIValue) (selectors: string list) = oVal.Map(selectors, INIValue.String(None))
+        let delete (oVal : INIValue) (selectors : string list) = oVal.Map(selectors, INIValue.String(None))
 
         /// Determine if a file exists
-        let exists (iFile: INIFile) = FileOps.tryGetFile(iFile).IsSome
+        let exists (iFile : INIFile) = FileOps.tryGetFile(iFile).IsSome
 
         /// Try to open and parse a ini file
-        let parse (iFile: INIFile) = FileOps.tryGetFile (iFile) |> Option.bind FileOps.tryReadINI
+        let parse (iFile : INIFile) = FileOps.tryGetFile (iFile) |> Option.bind FileOps.tryReadINI
 
         /// Write an `INIValue` to a file, overwriting if it already exists
-        let write (iFile: INIFile) (iVal: INIValue) =
+        let write (iFile : INIFile) (iVal : INIValue) =
             FileOps.tryGetFile (iFile)
             |> Option.bind (FileOps.writeINI iVal)
             |> Option.isSome
 
         /// Create a backup of a file by putting it into a subdirectory
-        let backup (iFile: INIFile) =
+        let backup (iFile : INIFile) =
             FileOps.tryGetFile (iFile)
             |> Option.map FileOps.createBackup
             |> function
@@ -273,7 +273,7 @@ module INIConfiguration =
         /// Try to locate the default Mordhau configuration directory
         let defDir() = FileOps.defConfigDir
 
-        let private tryApplyChanges (profiles: string list) (iVal: INIValue) (fAction: FaceActions) =
+        let private tryApplyChanges (profiles : string list) (iVal : INIValue) (fAction : FaceActions) =
             try
                 profiles
                 |> List.fold (fun acc profile -> setCharacterProfileFace acc profile fAction) iVal
@@ -281,15 +281,15 @@ module INIConfiguration =
             with _ -> None
 
         /// Ranomize the profiles if they are within the given `INIValue`
-        let random (profiles: string list) (iVal: INIValue) = tryApplyChanges profiles iVal FaceActions.Random
+        let random (profiles : string list) (iVal : INIValue) = tryApplyChanges profiles iVal FaceActions.Random
 
         /// Frankenstein the profiles if they are within the given `INIValue`
-        let frankenstein (profiles: string list) (iVal: INIValue) =
+        let frankenstein (profiles : string list) (iVal : INIValue) =
             tryApplyChanges profiles iVal FaceActions.Frankenstein
 
         /// Set the profiles to a custom import string if they are within the given `INIValue`
-        let custom (profiles: string list) (iVal: INIValue) (fVals: string) =
+        let custom (profiles : string list) (iVal : INIValue) (fVals : string) =
             tryApplyChanges profiles iVal <| FaceActions.Custom(fVals)
 
         /// Get the profiles within the given `INIValue`
-        let profileList (iVal: INIValue) = getCharacterProfileNames iVal |> getCharacterProfileExports iVal
+        let profileList (iVal : INIValue) = getCharacterProfileNames iVal |> getCharacterProfileExports iVal

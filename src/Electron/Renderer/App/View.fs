@@ -86,12 +86,14 @@ module View =
                 ]
         | FaceTools -> lazyView2 FaceTools.View.view model.FaceTools (FaceToolsMsg >> dispatch)
         | EngineTools -> lazyView2 EngineTools.View.view model.EngineTools (EngineToolsMsg >> dispatch)
+        | Settings -> lazyView2 Settings.View.view model.Settings (SettingsMsg >> dispatch)
+        | About -> lazyView2 About.View.view model.About (AboutMsg >> dispatch)
 
     let private menuView model dispatch =
         lazyView2 ContextMenu.View.view model.ContextMenu (ContextMenuMsg >> dispatch)
 
     let private getTheme (m: Model) =
-        if m.IsDarkTheme then 
+        if m.Store.DarkTheme then 
             createMuiTheme [
                 ThemeProp.Palette [
                     PaletteProp.Type PaletteType.Dark
@@ -158,6 +160,43 @@ module View =
                             CSSProp.BorderRadius "4px"
                         ]
                     ]
+                    OverridesProp.MuiExpansionPanel [
+                        Styles.Root [
+                            CSSProp.BorderBottom "1px solid"
+                            CSSProp.BorderColor "#BB86FC !important"
+                            CSSProp.BoxShadow "none"
+                            CSSProp.Custom ("&:not(:last-child)", [
+                                CSSProp.BorderBottom "0em"  
+                            ] |> keyValueList CaseRules.LowerFirst)
+                            CSSProp.Custom ("&:before", [
+                                CSSProp.Display DisplayOptions.None
+                            ] |> keyValueList CaseRules.LowerFirst)
+                            CSSProp.Custom ("&$expanded", [
+                                CSSProp.Margin "auto"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                        Styles.Rounded [
+                            CSSProp.Custom ("&:last-child", [
+                                CSSProp.BorderBottom "0em"  
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                    ]
+                    OverridesProp.MuiExpansionPanelSummary [
+                        Styles.Root [
+                            CSSProp.BorderBottom "1px solid"
+                            CSSProp.BorderColor "#BB86FC !important"
+                        ]
+                        Styles.Content [
+                            CSSProp.Custom ("&$expanded", [
+                                CSSProp.Margin "1em 0em"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                    ]
+                    OverridesProp.MuiExpansionPanelDetails [
+                        Styles.Root [
+                            CSSProp.Padding ("2em")
+                        ]
+                    ]
                 ]
             ]
             |> ProviderTheme.Theme
@@ -213,6 +252,43 @@ module View =
                             CSSProp.BorderRadius "4px"
                         ]
                     ]
+                    OverridesProp.MuiExpansionPanel [
+                        Styles.Root [
+                            CSSProp.BorderBottom "1px solid"
+                            CSSProp.BorderColor "#BB86FC !important"
+                            CSSProp.BoxShadow "none"
+                            CSSProp.Custom ("&:not(:last-child)", [
+                                CSSProp.BorderBottom "0em"  
+                            ] |> keyValueList CaseRules.LowerFirst)
+                            CSSProp.Custom ("&:before", [
+                                CSSProp.Display DisplayOptions.None
+                            ] |> keyValueList CaseRules.LowerFirst)
+                            CSSProp.Custom ("&$expanded", [
+                                CSSProp.Margin "auto"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                        Styles.Rounded [
+                            CSSProp.Custom ("&:last-child", [
+                                CSSProp.BorderBottom "0em"  
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                    ]
+                    OverridesProp.MuiExpansionPanelSummary [
+                        Styles.Root [
+                            CSSProp.BorderBottom "1px solid"
+                            CSSProp.BorderColor "#6200EE !important"
+                        ]
+                        Styles.Content [
+                            CSSProp.Custom ("&$expanded", [
+                                CSSProp.Margin "1em 0em"
+                            ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                    ]
+                    OverridesProp.MuiExpansionPanelDetails [
+                        Styles.Root [
+                            CSSProp.Padding ("2em")
+                        ]
+                    ]
                 ]
             ]
             |> ProviderTheme.Theme
@@ -237,13 +313,13 @@ module View =
                     Class classes?appBar
                     AppBarProp.Position AppBarPosition.Fixed
                     Style [
-                        CSSProp.BackgroundColor (if model.IsDarkTheme then "#424242" else "#6200EE")
+                        CSSProp.BackgroundColor (if model.Store.DarkTheme then "#424242" else "#6200EE")
                     ]
                 ] [
                     toolbar [
                         Style [
                             CSSProp.Padding "0px"
-                            CSSProp.BackgroundColor (if model.IsDarkTheme then "#212121" else "#3700B3")
+                            CSSProp.BackgroundColor (if model.Store.DarkTheme then "#212121" else "#3700B3")
                             CSSProp.MinHeight "0px"
                             CSSProp.Custom("WebkitAppRegion", "drag")
                         ]
@@ -289,8 +365,7 @@ module View =
                         ] [ model.Page |> pageTitle |> str ]
                         iconButton [
                             DOMAttr.OnClick (fun _ -> 
-                                model.IsDarkTheme |> not 
-                                |> DarkThemeMsg |> dispatch)
+                                Store.Msg.ToggleDarkTheme |> StoreMsg |> dispatch)
                             Class classes?titleButton
                             Style [ CSSProp.Color "#ffffff"; CSSProp.BorderRadius "20%" ]
                         ] [ themeLightDarkIcon [] ]

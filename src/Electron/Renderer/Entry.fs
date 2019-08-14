@@ -17,7 +17,7 @@ module Entry =
         |> Bridge.withMapping (fun bridgeMsg ->
             bridgeMsg |> Types.Msg.ServerMsg)
         |> Bridge.withUrlMode UrlMode.Raw
-        |> Bridge.withRetryTime 15 
+        |> Bridge.withRetryTime 5 
         |> Bridge.withWhenDown (Disconnected |> Types.ServerMsg))
     |> Program.withReactSynchronous "app"
 #if DEBUG

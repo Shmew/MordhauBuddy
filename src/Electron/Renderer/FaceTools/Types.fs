@@ -73,7 +73,7 @@ module rec Types =
             |> Array.map (fun uc ->
                 uc.Name |> Steps.Instantiate)
 
-        member this.StepValue =
+        member this.GetTag =
             Steps.Cases
             |> Seq.tryFind (fun uc -> uc.Name = this.ToString())
             |> Option.map (fun uc -> uc.Tag)
@@ -93,7 +93,7 @@ module rec Types =
             |> (=) this
             
         member this.Next =
-            this.StepValue + 1
+            this.GetTag + 1
             |> Array.tryItem <| Steps.Cases
             |> function
             | Some(i) -> i.Name
@@ -104,7 +104,7 @@ module rec Types =
             |> Steps.Instantiate
 
         member this.Back =
-            this.StepValue - 1
+            this.GetTag - 1
             |> Array.tryItem <| Steps.Cases
             |> function
             | Some(i) -> i.Name
@@ -127,7 +127,7 @@ module rec Types =
 
                     [
                         button [
-                            HTMLAttr.Disabled (this.StepValue = 0)
+                            HTMLAttr.Disabled (this.GetTag = 0)
                             DOMAttr.OnClick <| fun _ -> dispatch (StepperBack)
                         ] [ str "Back" ]
                         button [
@@ -158,14 +158,14 @@ module rec Types =
 
         member this.StepElems complete =
             let isComplete i =
-                match complete,this.StepValue > i with
+                match complete,this.GetTag > i with
                 | true, _ -> true
                 | _, true -> true
                 | _ -> false
 
             Steps.GetSteps
             |> Array.map (fun stepCase ->
-                step [ StepProp.Completed <| isComplete stepCase.StepValue ] [
+                step [ StepProp.Completed <| isComplete stepCase.GetTag ] [
                     stepLabel [] [str stepCase.Text]
                 ])
 

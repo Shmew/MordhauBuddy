@@ -67,29 +67,6 @@ module RenderUtils =
             |> (fun m -> Regex.Replace(s.Substring(1), "[A-Z]", m))
             |> (+) (s.Substring(0, 1))
 
-    module ElectronStore =
-        type Store =
-            abstract set : string * string -> unit
-            abstract set : obj -> unit
-            abstract get : string * ?defaultValue:string -> obj
-            abstract has : string -> bool
-            abstract delete : string -> unit
-            abstract clear : unit
-            abstract onDidChange : string * Browser.Types.Event -> unit
-            abstract onDidAnyChange : Browser.Types.Event -> unit
-            abstract size : int
-            abstract store : obj
-            abstract path : string
-            abstract openInEditor : unit
-
-        type StoreStatic =
-            [<EmitConstructor>]
-            abstract Create : unit -> Store
-
-        let getStore : StoreStatic = importDefault "electron-store"
-
-        let store = getStore.Create()
-
     [<AutoOpen>]
     module Extensions =
         type Result<'T, 'TError> with

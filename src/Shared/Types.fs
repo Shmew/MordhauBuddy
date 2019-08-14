@@ -4,11 +4,11 @@ module ElectronBridge =
     [<AutoOpen>]
     module INITypes =
         type Selectors =
-            { Selectors: string list }
+            { Selectors : string list }
 
         type INIFile =
-            { File: string
-              WorkingDir: string option }
+            { File : string
+              WorkingDir : string option }
 
         type FileOperation =
             | Replace of string * Selectors

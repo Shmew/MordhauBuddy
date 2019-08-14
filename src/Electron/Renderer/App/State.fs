@@ -11,19 +11,24 @@ module State =
         function
         | Home -> "Home"
         | FaceTools -> "Face tools"
-        | EngineTools -> "Custom settings"
+        | EngineTools -> "Engine tools"
+        | Settings -> "Settings"
+        | About -> "About"
 
     let window = getRemoteWin()
 
     let init() =
+        let store = Store.init()
         let m =
             { Page = Home
               IsMax = window.isMaximized() 
-              IsDarkTheme = true //use store to get this later
+              Store = store
               IsBridgeConnected = false
               ContextMenu = ContextMenu.State.init()
-              FaceTools = FaceTools.State.init()
-              EngineTools = EngineTools.State.init() }
+              FaceTools = FaceTools.State.init(defaultArg store.GameLocation "")
+              EngineTools = EngineTools.State.init(defaultArg store.EngineLocation "")
+              Settings = Settings.State.init() 
+              About = About.State.init() }
         m, Cmd.none
 
     let update msg m =
@@ -32,17 +37,29 @@ module State =
             { m with Page = msg' }, Cmd.none
         | MinMaxMsg msg' ->
             { m with IsMax = msg' }, Cmd.none
-        | DarkThemeMsg msg' ->
-            { m with IsDarkTheme = msg' }, Cmd.none
+        | StoreMsg msg' ->
+            let m',cmd = Store.update msg' m.Store, Cmd.none
+            { m with Store = m' }, Cmd.map StoreMsg cmd
         | ContextMenuMsg msg' ->
             let m',cmd = ContextMenu.State.update msg' m.ContextMenu
             { m with ContextMenu = m' }, Cmd.map ContextMenuMsg cmd
         | FaceToolsMsg msg' ->
+            let cmd' = 
+                match msg' with
+                | FaceTools.Types.StepperSubmit ->
+                     Cmd.ofMsg <| StoreMsg(Store.Msg.SetGameLocation(m.FaceTools.ConfigDir.Directory))
+                | _ -> Cmd.none
             let m', cmd = FaceTools.State.update msg' m.FaceTools
-            { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
+            { m with FaceTools = m' }, Cmd.batch [ Cmd.map FaceToolsMsg cmd; cmd' ]
         | EngineToolsMsg msg' ->
             let m', cmd = EngineTools.State.update msg' m.EngineTools
             { m with EngineTools = m' }, Cmd.map EngineToolsMsg cmd
+        | SettingsMsg msg' ->
+            let m', cmd = Settings.State.update msg' m.Settings
+            { m with Settings = m' }, Cmd.map SettingsMsg cmd
+        | AboutMsg msg' ->
+            let m', cmd = About.State.update msg' m.About
+            { m with About = m' }, Cmd.map AboutMsg cmd
         | ServerMsg msg' ->
             match msg' with
             | Resp bRes ->

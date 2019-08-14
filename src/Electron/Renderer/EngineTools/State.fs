@@ -12,25 +12,20 @@ module State =
     open RenderUtils.Directory
     open Types
 
-    let trySavedConfigDir () =
-        match ElectronStore.store.get("configDir", defaultValue = "") |> string with
-        | "" -> None
-        | s -> Some(s)
-
-    let init() =
+    let init(dir: string) =
         { Waiting = true
-          ParseWaiting = false
-          StepperComplete = false
+          Complete = false
+          Panels = ExpansionPanels.Init()
           ConfigDir = 
-            { Directory = (string (defaultArg (trySavedConfigDir()) ""))
-              Error = false
-              HelperText = "" 
-              Validated = false }
+              { Directory = dir
+                Error = false
+                HelperText = "" 
+                Validated = false }
           Submit =
-            { Waiting = false
-              Error = false
-              HelperText = ""
-              Complete = false }
+              { Waiting = false
+                Error = false
+                HelperText = ""
+                Complete = false }
           Snack = Snackbar.State.init() }
 
     let update (msg: Msg) (model: Model) =
@@ -85,13 +80,12 @@ module State =
                         ConfigDir =
                             { model.ConfigDir with
                                 Error = true
-                                HelperText = "Error parsing Game.ini"}}, Cmd.none
-            | BridgeResult.Backup b ->
-                submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg
+                                HelperText = "Error parsing Engine.ini"}}, Cmd.none
+            | BridgeResult.Backup b -> model,Cmd.none
             | BridgeResult.CommitChanges b ->
                 if b then
                     { model with
-                        StepperComplete = true
+                        Complete = true
                         Submit =
                             { model.Submit with
                                 Waiting = false
@@ -111,7 +105,7 @@ module State =
                             Directory = s
                             Error = false
                             HelperText = "" } },
-                Cmd.namedBridgeSend "INI" (INI.Ops.exists { File = "Game.ini"; WorkingDir = Some(s) })
+                Cmd.namedBridgeSend "INI" (INI.Ops.exists { File = "Engine.ini"; WorkingDir = Some(s) })
             | Error _ ->
                 { model with
                     ConfigDir =
@@ -129,8 +123,14 @@ module State =
                 | DirSelect.Canceled -> LoadCanceled
             model, Cmd.OfPromise.perform selectDir () handleLoaded
         | LoadCanceled -> model, Cmd.none
-        | WaitingStart msg' ->
-            { model with Waiting = true }, Cmd.ofMsg msg'
+        | Expand(p) ->
+            model.Panels
+            |> List.map (fun oPanel -> 
+                if oPanel.Panel.GetTag = p.Panel.GetTag then
+                    { p with Expanded = not p.Expanded }
+                else { oPanel with Expanded = false })
+            |> fun newPanels ->    
+                { model with Panels = newPanels}, Cmd.none
         | SnackMsg msg' ->
             let m, cmd, actionCmd = Snackbar.State.update msg' model.Snack
             { model with Snack = m },
@@ -143,3 +143,4 @@ module State =
                 |> Snackbar.State.withTimeout 80000
                 |> Snackbar.State.add
             model, Cmd.map SnackMsg cmd
+        | Submit -> model, Cmd.none

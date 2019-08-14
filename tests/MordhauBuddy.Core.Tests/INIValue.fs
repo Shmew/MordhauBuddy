@@ -29,7 +29,7 @@ module INIValue =
 
         let iStrSelectors = [ "TestSection"; "TestStr" ]
 
-        let buildINIString (sList: string list) =
+        let buildINIString (sList : string list) =
             sList
             |> List.reduce (fun acc elem -> acc + "\n" + elem)
             |> fun s -> s + "\n\n"
@@ -38,7 +38,7 @@ module INIValue =
     module OptionTests =
         open INIReader.INIExtensions.Options
 
-        let map (oVal: INIValue) (selectors: string list) (nVal: INIValue) = oVal.Map(selectors, nVal)
+        let map (oVal : INIValue) (selectors : string list) (nVal : INIValue) = oVal.Map(selectors, nVal)
 
     let parsing =
         [ testCase "Fails to parse empty document" <| fun () ->

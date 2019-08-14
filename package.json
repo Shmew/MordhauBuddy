@@ -55,9 +55,7 @@
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb",
-        "tar.gz"
+        "AppImage"
       ]
     },
     "productName": "MordhauBuddy",

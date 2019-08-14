@@ -17,12 +17,42 @@ module View =
     open Types
 
     let private styles (theme : ITheme) : IStyles list = [
+        Styles.Custom("accordHead", [
+            CSSProp.FontSize (theme.typography.pxToRem(15.))
+            CSSProp.FlexBasis "33.33%"
+            CSSProp.FlexShrink 0
+        ])
+        Styles.Custom("accordSubHead", [
+            CSSProp.FontSize (theme.typography.pxToRem(15.))
+            CSSProp.Color (theme.palette.text.secondary)
+        ])
         Styles.Custom ("darkList", [
             CSSProp.BackgroundColor theme.palette.background.``default``
         ])
     ]
 
-    let private config  (classes: IClasses) model dispatch =
+    let private expansionPanels (classes: IClasses) model dispatch =
+        model.Panels
+        |> List.map (fun p ->
+                expansionPanel [
+                    ExpansionPanelProp.Expanded p.Expanded
+                    DOMAttr.OnChange (fun _ -> dispatch <| Expand(p))
+                ] [
+                    expansionPanelSummary [
+                        ExpansionPanelSummaryProp.ExpandIcon <| expandMoreIcon []
+                    ] [
+                        typography [
+                            Class classes?accordHead
+                        ] [ str p.Panel.Header ]
+                        typography [
+                            Class classes?accordSubHead
+                        ] [ str p.Panel.SubHeader ]
+                    ]
+                    expansionPanelDetails [] [
+                    ]
+                ]
+            )
+    let private config (classes: IClasses) model dispatch =
         paper [] [
             div [
                 Style [
@@ -34,7 +64,7 @@ module View =
                 textField [
                     TextFieldProp.Variant TextFieldVariant.Outlined
                     MaterialProp.FullWidth true
-                    HTMLAttr.Label "Mordhau Game.ini Directory"
+                    HTMLAttr.Label "Mordhau Engine.ini Directory"
                     HTMLAttr.Value model.ConfigDir.Directory
                     MaterialProp.Error model.ConfigDir.Error
                     TextFieldProp.HelperText (model.ConfigDir.HelperText |> str)
@@ -48,11 +78,9 @@ module View =
                         CSSProp.MaxHeight "4em" 
                     ]
                 ] [ str "Select" ]
+
             ]
         ]
-
-    let private content (classes: IClasses) model dispatch =
-        config classes model dispatch
 
     let private view' (classes: IClasses) model dispatch =
         div [
@@ -70,35 +98,9 @@ module View =
                         CSSProp.Display DisplayOptions.Flex
                         CSSProp.Height "inherit"
                     ]
-                ] [            
-                    div [ Style [ CSSProp.Padding (string "3em") ] ] [ 
-                        match model.Waiting, model.ParseWaiting with
-                        | true, false when model.ConfigDir.Directory = "" ->
-                            yield circularProgress [
-                                Style [CSSProp.MarginLeft "45%"]
-                                DOMAttr.OnAnimationStart <| fun _ ->
-                                    async {
-                                        do! Async.Sleep 1000
-                                        return dispatch GetDefaultDir
-                                    } |> Async.StartImmediate
-                            ]
-                        | true, false ->
-                            yield circularProgress [
-                                Style [CSSProp.MarginLeft "45%"]
-                                DOMAttr.OnAnimationStart <| fun _ ->
-                                    async {
-                                        do! Async.Sleep 1000
-                                        return dispatch <| SetConfigDir
-                                            (model.ConfigDir.Directory, validateConfigDir model.ConfigDir.Directory)
-                                    } |> Async.StartImmediate
-                            ]
-                        | _ when model.Waiting || model.ParseWaiting ->
-                            yield circularProgress [
-                                Style [CSSProp.MarginLeft "45%"]
-                            ]
-                        | _ -> yield content classes model dispatch
-                    ]
-                // Add submit or save button here
+                ] [    
+                    div [ Style [ CSSProp.Padding (string "3em") ] ] 
+                        <| expansionPanels classes model dispatch
                 ]
             ]
 
@@ -114,7 +116,7 @@ module View =
         let viewFun (p : IProps) = view' p.classes p.model p.dispatch
         let viewWithStyles = withStyles (StyleType.Func styles) [] viewFun
         override this.render() = ReactElementType.create viewWithStyles this.props []
-            
+        
     let view (model : Model) (dispatch : Msg -> unit) : ReactElement =
         let props =
             jsOptions<IProps> (fun p ->

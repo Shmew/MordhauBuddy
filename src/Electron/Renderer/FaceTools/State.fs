@@ -12,18 +12,13 @@ module State =
     open RenderUtils.Directory
     open Types
 
-    let trySavedConfigDir () =
-        match ElectronStore.store.get("configDir", defaultValue = "") |> string with
-        | "" -> None
-        | s -> Some(s)
-
-    let init() =
+    let init(dir: string) =
         { Waiting = true
           ParseWaiting = false
           Stepper = LocateConfig
           StepperComplete = false
           ConfigDir = 
-            { Directory = (string (defaultArg (trySavedConfigDir()) ""))
+            { Directory = dir
               Error = false
               HelperText = "" 
               Validated = false }
@@ -155,7 +150,6 @@ module State =
                 ,Cmd.ofMsg SnackDismissMsg
             | _ -> { model with Waiting = false }, Cmd.none
         | StepperSubmit -> 
-            ElectronStore.store.set("configDir",model.ConfigDir.Directory)
             { model with
                 Submit =
                     { model.Submit with
@@ -163,7 +157,7 @@ module State =
                 Cmd.namedBridgeSend "INI" 
                     (INI.Ops.backup({File = "Game.ini"; WorkingDir = Some(model.ConfigDir.Directory) }) )
         | StepperRestart -> 
-            { init() with Waiting = false },
+            { init(model.ConfigDir.Directory) with Waiting = false },
                 Cmd.ofMsg <| SetConfigDir (model.ConfigDir.Directory, Ok model.ConfigDir.Directory)
         | StepperNext ->
             match model.Stepper.Next with

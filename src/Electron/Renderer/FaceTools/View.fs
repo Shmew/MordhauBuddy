@@ -343,7 +343,7 @@ module View =
                 ] [
                     stepper [
                         MaterialProp.Elevation 1
-                        StepperProp.ActiveStep (model.Stepper.StepValue)
+                        StepperProp.ActiveStep (model.Stepper.GetTag)
                     ]
                         <| model.Stepper.StepElems model.StepperComplete
             
@@ -353,20 +353,14 @@ module View =
                             yield circularProgress [
                                 Style [CSSProp.MarginLeft "45%"]
                                 DOMAttr.OnAnimationStart <| fun _ ->
-                                    async {
-                                        do! Async.Sleep 1000
-                                        return dispatch GetDefaultDir
-                                    } |> Async.StartImmediate
+                                    dispatch GetDefaultDir
                             ]
                         | true, false when isLocateConfig ->
                             yield circularProgress [
                                 Style [CSSProp.MarginLeft "45%"]
                                 DOMAttr.OnAnimationStart <| fun _ ->
-                                    async {
-                                        do! Async.Sleep 1000
-                                        return dispatch <| SetConfigDir
-                                            (model.ConfigDir.Directory, validateConfigDir model.ConfigDir.Directory)
-                                    } |> Async.StartImmediate
+                                    dispatch <| SetConfigDir
+                                        (model.ConfigDir.Directory, validateConfigDir model.ConfigDir.Directory)
                             ]
                         | _ when model.Waiting || model.ParseWaiting ->
                             yield circularProgress [

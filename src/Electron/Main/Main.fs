@@ -58,10 +58,13 @@ module Main =
                    cwd = cwd |} 
                 |> toPlainJsObj
             childProcess.spawn ("dotnet", args, options = options)
-
 #else
             let bridgePath =
-                path.resolve (__dirname, "..", "extraResources", "Core.exe")
+                let core =
+                    match ``process``.platform with
+                    | Node.Base.Platform.Win32 -> "Core.exe"
+                    | _ -> "Core"
+                path.resolve (__dirname, "..", "extraResources", core)
             let args = 
                 let init = ResizeArray<string>()
                 init
@@ -121,9 +124,7 @@ module Main =
         /// multiple windows, you can store them in an array and delete the
         /// corresponding element here.
         win.onClosed (fun _ ->
-#if DEBUG
             bridge.kill()
-#endif
             mainWindow <- None) |> ignore
         mainWindow <- Some win
 

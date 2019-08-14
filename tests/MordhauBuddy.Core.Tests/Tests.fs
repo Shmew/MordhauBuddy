@@ -19,4 +19,4 @@ module Tests =
                   Expect.isTrue (result = 42) "Expected True"
 
               testPropertyWithConfig config10k "whitespace"
-              <| fun () -> Prop.forAll (Arb.fromGen <| whitespaceString()) (fun (x: string) -> x = x) ]
+              <| fun () -> Prop.forAll (Arb.fromGen <| whitespaceString()) (fun (x : string) -> x = x) ]
