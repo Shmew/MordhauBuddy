@@ -53,10 +53,10 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '66', 66)" onmouseover="showTip(event, '66', 66)">
-            init()
+            init(dir)
           </code>
           <div class="tip" id="66">
-            <strong>Signature:</strong> unit -&gt; Model<br />
+            <strong>Signature:</strong> dir:string -&gt; Model<br />
                                   </div>
         </td>
         <td class="xmldoc">
@@ -74,11 +74,11 @@
             update msg model
           </code>
           <div class="tip" id="67">
-            <strong>Signature:</strong> msg:Msg -&gt; model:Model -&gt; Model * Cmd&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a                      </div>
+            <strong>Signature:</strong> msg:Msg -&gt; model:Model -&gt; Model * Cmd&lt;Msg&gt;<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/EngineTools/State.fs#L18-18" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/EngineTools/State.fs#L31-31" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

@@ -11,7 +11,7 @@ module State =
         function
         | Home -> "Home"
         | FaceTools -> "Face tools"
-        | EngineTools -> "Engine tools"
+        | EngineTools -> "Mordhau Configuration"
         | Settings -> "Settings"
         | About -> "About"
 

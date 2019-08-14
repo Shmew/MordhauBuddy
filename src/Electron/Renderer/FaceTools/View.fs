@@ -88,7 +88,7 @@ module View =
                     list [
                         MaterialProp.Dense true
                         Style [ 
-                            CSSProp.OverflowY "scroll"
+                            CSSProp.OverflowY "auto"
                             CSSProp.Height "20em"
                         ]
                     ] [
@@ -257,7 +257,7 @@ module View =
                             Style [ 
                                 CSSProp.FlexGrow 1 
                                 CSSProp.MaxHeight "20em"
-                                CSSProp.OverflowY "scroll"
+                                CSSProp.OverflowY "auto"
                             ]
                         ] [
                             for (index,profile) in profileInd do

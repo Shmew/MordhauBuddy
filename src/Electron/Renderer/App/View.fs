@@ -165,7 +165,7 @@ module View =
                             CSSProp.BorderBottom "1px solid"
                             CSSProp.BorderColor "#BB86FC !important"
                             CSSProp.BoxShadow "none"
-                            CSSProp.Custom ("&:not(:last-child)", [
+                            CSSProp.Custom ("&:last-child", [
                                 CSSProp.BorderBottom "0em"  
                             ] |> keyValueList CaseRules.LowerFirst)
                             CSSProp.Custom ("&:before", [

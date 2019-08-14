@@ -31,6 +31,64 @@ module View =
         ])
     ]
 
+    let private panelDetails (classes : IClasses) model dispatch (panel : ExpansionPanels) =
+        let listItems =
+            panel.Modifications
+            |> List.mapi (fun ind oGroup ->
+                [
+                    yield
+                        listItem [
+                            ListItemProp.Button false
+                            MaterialProp.DisableRipple true
+                        ] [
+                            listItemText [] [
+                                str oGroup.Title
+                            ]
+                            formControl [
+                                Style [ CSSProp.PaddingRight "4em" ]
+                            ] [
+                                formGroup [] [
+                                    formControlLabel [
+                                        FormControlLabelProp.Control <|
+                                            switch [
+                                                HTMLAttr.Checked (true)
+                                            ]
+                                    ] []
+                                ]
+                                    
+                            ]
+                            div [
+                                Style [ CSSProp.Width "33%" ]
+                            ] [ 
+                                typography [
+                                    TypographyProp.Variant TypographyVariant.Caption
+                                ] [ str oGroup.Caption ] 
+                            ]
+                        ]
+                    if panel.Modifications.Length > ind + 1 then
+                        yield divider []
+                ])
+            |> List.concat
+            
+
+        grid [
+            GridProp.Container true
+            GridProp.Spacing GridSpacing.``0``
+            GridProp.Justify GridJustify.Center
+            GridProp.AlignItems GridAlignItems.Center
+            MaterialProp.FullWidth true
+            Style [ CSSProp.Width "100%" ]
+        ] [
+            list [
+                MaterialProp.Dense false
+                Style [ 
+                    CSSProp.OverflowY "auto"
+                    CSSProp.MaxHeight "30em"
+                    CSSProp.Width "100%"
+                ]
+            ] listItems
+        ]
+
     let private expansionPanels (classes: IClasses) model dispatch =
         model.Panels
         |> List.map (fun p ->
@@ -48,10 +106,9 @@ module View =
                             Class classes?accordSubHead
                         ] [ str p.Panel.SubHeader ]
                     ]
-                    expansionPanelDetails [] [
-                    ]
-                ]
-            )
+                    expansionPanelDetails [] [ panelDetails classes model dispatch p.Panel ]
+                ] )
+
     let private config (classes: IClasses) model dispatch =
         paper [] [
             div [
@@ -101,6 +158,37 @@ module View =
                 ] [    
                     div [ Style [ CSSProp.Padding (string "3em") ] ] 
                         <| expansionPanels classes model dispatch
+                    div [ 
+                        Style [ CSSProp.Padding (string "3em") ] 
+                    ] [ config classes model dispatch ]
+                    div [ 
+                        Style [
+                            CSSProp.PaddingTop (string "10em") 
+                            CSSProp.MarginTop "auto"
+                            CSSProp.MarginLeft "auto"
+                        ] 
+                    ] [
+                        button [
+                            HTMLAttr.Disabled false
+                            ButtonProp.Variant ButtonVariant.Contained
+                            MaterialProp.Color ComponentColor.Primary
+                            //DOMAttr.OnClick <| fun _ -> 
+                            //    dispatch (if this.Last then StepperSubmit else StepperNext)
+                            Style [ 
+                                CSSProp.MaxHeight "2.6em"
+                                CSSProp.MarginTop "auto"
+                                CSSProp.MarginLeft "auto"
+                            ]
+                        ] [ 
+                            if model.Submit.Waiting then 
+                                yield circularProgress [ 
+                                    CircularProgressProp.Size (
+                                        CircularProgressSize.Case1(20))
+                                    Style [ CSSProp.MaxHeight "2.6em" ] 
+                                ]
+                            else yield str "Submit"
+                        ]
+                    ]
                 ]
             ]
 

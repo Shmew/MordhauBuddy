@@ -147,6 +147,143 @@ module RenderUtils =
             4139,30749,65535,30749,0,65535,65535,0,0,0,0,65535,31709,0,0,190,0,0,0,589,0,0,0,30749,31166,989,\
             65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
 
+    module rec EngineMods =
+        
+        [<RequireQualifiedAccess>]
+        module KeyValues =
+            [<RequireQualifiedAccess>]
+            type Values =
+                | String of string
+                | Bool of bool
+                | Int of int
+                | Float of float
+                | GameSettings of int
+
+        type KeyValues =
+            { Key : string
+              Default : KeyValues.Values
+              Value : KeyValues.Values option }
+
+        type OptionGroup =
+            { Title : string
+              Caption : string
+              Settings : KeyValues list }
+
+        let private toneMapperValidation (kvs: KeyValues) =
+            match kvs.Value with
+            | Some(KeyValues.Values.Float(f)) when f >= 0. && f <= 10. -> true
+            | _ -> false
+
+        let cosmetics = [
+            { Title = "Sharpen picture"
+              Caption = 
+                "Increase rendering sharpness, particularly useful \
+                 when using high amounts of anti-aliasing."
+              Settings = [
+                  { Key = @"r.Tonemapper.Sharpen"
+                    Default = KeyValues.Values.Int(2)
+                    Value = None } 
+            ] }
+            { Title = "Disable sun glare"
+              Caption = 
+                "Disables or lightens sun glare effects in game. \ 
+                 For best results set shadows to low in game UI."
+              Settings = [
+                  { Key = @"r.LightShaftBlurPasses"
+                    Default = KeyValues.Values.Int(0)
+                    Value = None }
+                  { Key = @"r.BloomQuality"
+                    Default = KeyValues.Values.Int(0)
+                    Value = None }
+                  { Key = @"r.MotionBlurQuality"
+                    Default = KeyValues.Values.Int(0)
+                    Value = None }
+            ] }
+            { Title = "Disable Fisheye Effect"
+              Caption = 
+                "Enables artificial panini projection, helps if fisheye \
+                 from high fov is bothersome."
+              Settings = [
+                  { Key = @"r.upscale.panini.d"
+                    Default = KeyValues.Values.Float(0.1)
+                    Value = None }
+                  { Key = @"r.upscale.panini.s"
+                    Default = KeyValues.Values.Float(0.025)
+                    Value = None }
+            ] } 
+            { Title = "Disable fog"
+              Caption = "Removes additional fog effects from maps."
+              Settings = [
+                  { Key = @"r.Fog"
+                    Default = KeyValues.Values.Int(0)
+                    Value = None }
+            ] } ]
+
+        let utilities = [
+            { Title = "Enable network parry debug"
+              Caption = 
+                "Enables a utility that will print a small line of red \
+                 text when your parry was correct but missed due to latency."
+              Settings = [
+                  { Key = @"m.DebugNetworkParry"
+                    Default = KeyValues.Values.Int(1)
+                    Value = None } 
+            ] }
+            { Title = "Skip intro cut scenes"
+              Caption = 
+                "This will disable the intro videos from playing."
+              Settings = [
+                  { Key = @"SkipStartupMovies"
+                    Default = KeyValues.Values.GameSettings(1)
+                    Value = None }             
+            ] } ]
+
+        let performance = [
+            { Title = "Enable Runescape mode"
+              Caption = 
+                "Significantly improves game performance at the cost of playing \
+                 a game that looks like it was not made in the past decade."
+              Settings = [
+                  { Key = @"r.mipmaplodbias"
+                    Default = KeyValues.Values.Int(500)
+                    Value = None } 
+                  { Key = @"r.skeletalmeshlodbias"
+                    Default = KeyValues.Values.Int(500)
+                    Value = None } 
+            ] } ]
+
+        let quality = [
+            { Title = "Enable texture pre-loading"
+              Caption = 
+                "Increases system load by roughly 30% and in return \
+                 reduces rendering hitches. \nOnly recommended if for \
+                 top end gaming desktops. This will not provide a benefit \
+                 if your graphics card does not have a significant amount \
+                 of dedicated memory."
+              Settings = [
+                  { Key = @"r.Streaming.Boost"
+                    Default = KeyValues.Values.Int(0)
+                    Value = None } 
+                  { Key = @"r.Streaming.PoolSize"
+                    Default = KeyValues.Values.Int(0)
+                    Value = None } 
+                  { Key = @"r.Streaming.HLODStrategy"
+                    Default = KeyValues.Values.Int(2)
+                    Value = None } 
+                  { Key = @"r.Streaming.FullyLoadUsedTextures"
+                    Default = KeyValues.Values.Int(1)
+                    Value = None } 
+                  { Key = @"r.bForceCPUAccessToGPUSkinVerts"
+                    Default = KeyValues.Values.Bool(true)
+                    Value = None } 
+                  { Key = @"r.CreateShadersOnLoad"
+                    Default = KeyValues.Values.Int(1)
+                    Value = None } 
+                  { Key = @"r.Shaders.Optimize"
+                    Default = KeyValues.Values.Int(1)
+                    Value = None } 
+            ] } ]
+
     module Toastr =
         open Elmish
 

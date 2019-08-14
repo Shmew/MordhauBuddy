@@ -10,6 +10,7 @@ module rec Types =
     open FSharp.Core  /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
+    open EngineMods
     open MordhauBuddy.Shared.ElectronBridge
     open Microsoft.FSharp.Reflection
 
@@ -40,6 +41,13 @@ module rec Types =
             | Performance -> "Improve game performance" 
             | Quality -> "Improve game quality"
 
+        member this.Modifications =
+            match this with
+            | Cosmetic -> cosmetics
+            | Utilities -> utilities
+            | Performance -> performance 
+            | Quality -> quality
+
         static member private Cases =
             FSharpType.GetUnionCases typeof<ExpansionPanels>
 
@@ -60,7 +68,8 @@ module rec Types =
             |> Array.map (fun p ->
                 { Panel = p
                   Expanded = false
-                  Items = "" })
+                  Items =
+                    (ExpansionPanels.Instantiate p.Header).Modifications })
             |> List.ofArray
 
         member this.GetTag =
@@ -72,7 +81,7 @@ module rec Types =
     type Panel =
         { Panel : ExpansionPanels
           Expanded : bool
-          Items : string }
+          Items : EngineMods.OptionGroup list }
 
     type ConfigDir =
         { Directory : string
