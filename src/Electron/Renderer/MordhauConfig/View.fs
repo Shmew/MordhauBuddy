@@ -37,10 +37,7 @@ module View =
             |> List.mapi (fun ind oGroup ->
                 [
                     yield
-                        listItem [
-                            ListItemProp.Button false
-                            MaterialProp.DisableRipple true
-                        ] [
+                        listItem [ ] [
                             listItemText [] [
                                 str oGroup.Title
                             ]
@@ -76,7 +73,6 @@ module View =
             GridProp.Spacing GridSpacing.``0``
             GridProp.Justify GridJustify.Center
             GridProp.AlignItems GridAlignItems.Center
-            MaterialProp.FullWidth true
             Style [ CSSProp.Width "100%" ]
         ] [
             list [
@@ -122,9 +118,9 @@ module View =
                     TextFieldProp.Variant TextFieldVariant.Outlined
                     MaterialProp.FullWidth true
                     HTMLAttr.Label "Mordhau Engine.ini Directory"
-                    HTMLAttr.Value model.ConfigDir.Directory
-                    MaterialProp.Error model.ConfigDir.Error
-                    TextFieldProp.HelperText (model.ConfigDir.HelperText |> str)
+                    HTMLAttr.Value model.GameDir.Directory
+                    MaterialProp.Error model.GameDir.Error
+                    TextFieldProp.HelperText (model.GameDir.HelperText |> str)
                 ] []
                 button [
                     ButtonProp.Variant ButtonVariant.Contained
@@ -156,14 +152,13 @@ module View =
                         CSSProp.Height "inherit"
                     ]
                 ] [    
-                    div [ Style [ CSSProp.Padding (string "3em") ] ] 
+                    div [ ] 
                         <| expansionPanels classes model dispatch
                     div [ 
-                        Style [ CSSProp.Padding (string "3em") ] 
+                        Style [ CSSProp.MarginTop "2em" ] 
                     ] [ config classes model dispatch ]
                     div [ 
                         Style [
-                            CSSProp.PaddingTop (string "10em") 
                             CSSProp.MarginTop "auto"
                             CSSProp.MarginLeft "auto"
                         ] 
@@ -192,7 +187,6 @@ module View =
                 ]
             yield
                 slider [
-                    MaterialProp.DefaultValue "30"
                     SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto
                     SliderProp.Step 10.
                     SliderProp.Marks <| Fable.Core.Case1(true)

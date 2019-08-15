@@ -42,6 +42,11 @@ module State =
               Complete = false }
           Snack = Snackbar.State.init() }
 
+    let private sender = new INISender(Caller.FaceTools)
+    let private fileWrap dir =
+        { File = File.Game
+          WorkingDir = Some(dir) }
+
     let update (msg: Msg) (model: Model) =
         let submissionFailed (s: string) =
             { model with
@@ -110,7 +115,7 @@ module State =
                     }, Cmd.none
             | BridgeResult.Parse b ->
                 if b then
-                    model, Cmd.namedBridgeSend "INI" (INI.Faces.getProfileList)
+                    model, Cmd.namedBridgeSend "INI" (sender.getProfileList)
                 else
                     { model with
                         Waiting = false
@@ -123,9 +128,9 @@ module State =
                     let profiles =
                         model.TransferList.RightProfiles |> List.map (fun p -> p.Name)
                     match model.TabSelected with
-                    | 0 -> model, Cmd.namedBridgeSend "INI" (INI.Faces.setFrankenstein profiles)
-                    | 1 -> model, Cmd.namedBridgeSend "INI" (INI.Faces.setRandom profiles)
-                    | 2 -> model, Cmd.namedBridgeSend "INI" (INI.Faces.setCustom profiles model.Import.ImportString)
+                    | 0 -> model, Cmd.namedBridgeSend "INI" (sender.setFrankenstein profiles)
+                    | 1 -> model, Cmd.namedBridgeSend "INI" (sender.setRandom profiles)
+                    | 2 -> model, Cmd.namedBridgeSend "INI" (sender.setCustom profiles model.Import.ImportString)
                     | _ -> submissionFailed "Invalid submission", Cmd.ofMsg SnackDismissMsg
                 else
                     submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg
@@ -134,8 +139,7 @@ module State =
             | BridgeResult.Custom b
                 ->
                     if b then
-                        model, Cmd.namedBridgeSend "INI"
-                            (INI.Ops.commit({File = "Game.ini"; WorkingDir = Some(model.ConfigDir.Directory) }))
+                        model, Cmd.namedBridgeSend "INI" (sender.commit(fileWrap(model.ConfigDir.Directory)))
                     else submissionFailed "Modifying INI failed", Cmd.ofMsg SnackDismissMsg
             | BridgeResult.CommitChanges b ->
                 if b then
@@ -155,7 +159,7 @@ module State =
                     { model.Submit with
                         Waiting = true } },
                 Cmd.namedBridgeSend "INI" 
-                    (INI.Ops.backup({File = "Game.ini"; WorkingDir = Some(model.ConfigDir.Directory) }) )
+                    (sender.backup(fileWrap(model.ConfigDir.Directory)) )
         | StepperRestart -> 
             { init(model.ConfigDir.Directory) with Waiting = false },
                 Cmd.ofMsg <| SetConfigDir (model.ConfigDir.Directory, Ok model.ConfigDir.Directory)
@@ -163,12 +167,12 @@ module State =
             match model.Stepper.Next with
             | ChooseProfiles ->
                 { model with ParseWaiting = true }, Cmd.namedBridgeSend "INI" 
-                    (INI.Ops.parse({ File = "Game.ini"; WorkingDir = Some(model.ConfigDir.Directory) } ))
+                    (sender.parse(fileWrap(model.ConfigDir.Directory)))
             | _ ->
                 { model with Stepper = model.Stepper.Next }, Cmd.none
         | StepperBack -> { model with Stepper = model.Stepper.Back }, Cmd.none
         | GetDefaultDir ->
-            model, Cmd.namedBridgeSend "INI" (INI.Ops.defDir)
+            model, Cmd.namedBridgeSend "INI" (sender.defDir)
         | SetConfigDir (s,res) -> 
             match res with
             | Ok s ->
@@ -178,7 +182,7 @@ module State =
                             Directory = s
                             Error = false
                             HelperText = "" } },
-                Cmd.namedBridgeSend "INI" (INI.Ops.exists { File = "Game.ini"; WorkingDir = Some(s) })
+                Cmd.namedBridgeSend "INI" (sender.exists <| fileWrap(s))
             | Error _ ->
                 { model with
                     ConfigDir =

@@ -38,11 +38,11 @@ module INIConfiguration =
                 |> Option.bind bindDirectory
 
         /// Try to find the file given an `INIFile`
-        let tryGetFile (iFile : INIFile) =
-            let fiPath = IO.FileInfo(iFile.File).FullName
-            match iFile.WorkingDir, (fiPath = iFile.File && File.exists (iFile.File)) with
-            | _, true -> Some(iFile.File)
-            | Some(dir), _ when File.exists (dir @@ iFile.File) -> Some(dir @@ iFile.File)
+        let tryGetFile (file : string) (workingDir : string option) =
+            let fiPath = IO.FileInfo(file).FullName
+            match workingDir, (fiPath = file && File.exists file) with
+            | _, true -> Some(file)
+            | Some(dir), _ when File.exists (dir @@ file) -> Some(dir @@ file)
             | _ -> None
 
         /// Create a backup of the given file into sub directory MordhauBuddy_backups
@@ -51,7 +51,7 @@ module INIConfiguration =
             match File.exists file with
             | true ->
                 let backups = fi.DirectoryName @@ "MordhauBuddy_backups"
-                let newName = fi.Name + DateTime.Now.ToString("yyyyMMdd-hhmm") + ".ini"
+                let newName = (fi.Name.Split('.').[0]) + DateTime.Now.ToString("yyyyMMdd-hhmm") + ".ini"
                 Directory.ensure backups
                 Shell.copyFile (backups @@ newName) file
                 File.exists (backups @@ newName)
@@ -62,8 +62,7 @@ module INIConfiguration =
             let fi = FileInfo.ofPath (outFile)
             Directory.ensure fi.DirectoryName
             File.writeString false fi.FullName (iVal.ToString())
-            tryGetFile ({ File = outFile
-                          WorkingDir = None })
+            tryGetFile outFile None
 
         /// Try to read an INI file
         let tryReadINI (file : string) =
@@ -251,20 +250,21 @@ module INIConfiguration =
         let delete (oVal : INIValue) (selectors : string list) = oVal.Map(selectors, INIValue.String(None))
 
         /// Determine if a file exists
-        let exists (iFile : INIFile) = FileOps.tryGetFile(iFile).IsSome
+        let exists (iFile : INIFile) = FileOps.tryGetFile iFile.File.Name iFile.WorkingDir |> Option.isSome
 
         /// Try to open and parse a ini file
-        let parse (iFile : INIFile) = FileOps.tryGetFile (iFile) |> Option.bind FileOps.tryReadINI
+        let parse (iFile : INIFile) =
+            FileOps.tryGetFile iFile.File.Name iFile.WorkingDir |> Option.bind FileOps.tryReadINI
 
         /// Write an `INIValue` to a file, overwriting if it already exists
         let write (iFile : INIFile) (iVal : INIValue) =
-            FileOps.tryGetFile (iFile)
+            FileOps.tryGetFile iFile.File.Name iFile.WorkingDir
             |> Option.bind (FileOps.writeINI iVal)
             |> Option.isSome
 
         /// Create a backup of a file by putting it into a subdirectory
         let backup (iFile : INIFile) =
-            FileOps.tryGetFile (iFile)
+            FileOps.tryGetFile iFile.File.Name iFile.WorkingDir
             |> Option.map FileOps.createBackup
             |> function
             | Some(b) when b -> b

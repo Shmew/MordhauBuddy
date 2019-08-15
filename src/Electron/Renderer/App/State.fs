@@ -11,7 +11,7 @@ module State =
         function
         | Home -> "Home"
         | FaceTools -> "Face tools"
-        | EngineTools -> "Mordhau Configuration"
+        | MordhauConfig -> "Mordhau Configuration"
         | Settings -> "Settings"
         | About -> "About"
 
@@ -26,7 +26,7 @@ module State =
               IsBridgeConnected = false
               ContextMenu = ContextMenu.State.init()
               FaceTools = FaceTools.State.init(defaultArg store.GameLocation "")
-              EngineTools = EngineTools.State.init(defaultArg store.EngineLocation "")
+              MordhauConfig = MordhauConfig.State.init(defaultArg store.EngineLocation "", defaultArg store.GameUserLocation "")
               Settings = Settings.State.init() 
               About = About.State.init() }
         m, Cmd.none
@@ -51,9 +51,9 @@ module State =
                 | _ -> Cmd.none
             let m', cmd = FaceTools.State.update msg' m.FaceTools
             { m with FaceTools = m' }, Cmd.batch [ Cmd.map FaceToolsMsg cmd; cmd' ]
-        | EngineToolsMsg msg' ->
-            let m', cmd = EngineTools.State.update msg' m.EngineTools
-            { m with EngineTools = m' }, Cmd.map EngineToolsMsg cmd
+        | MordhauConfigMsg msg' ->
+            let m', cmd = MordhauConfig.State.update msg' m.MordhauConfig
+            { m with MordhauConfig = m' }, Cmd.map MordhauConfigMsg cmd
         | SettingsMsg msg' ->
             let m', cmd = Settings.State.update msg' m.Settings
             { m with Settings = m' }, Cmd.map SettingsMsg cmd
@@ -62,9 +62,14 @@ module State =
             { m with About = m' }, Cmd.map AboutMsg cmd
         | ServerMsg msg' ->
             match msg' with
-            | Resp bRes ->
-                let m', cmd = FaceTools.State.update (FaceTools.Types.ClientMsg bRes) m.FaceTools
-                { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
+            | Resp (bMsg) ->
+                match bMsg.Caller with
+                | Caller.FaceTools ->
+                    let m', cmd = FaceTools.State.update (FaceTools.Types.ClientMsg bMsg.BridgeResult) m.FaceTools
+                    { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
+                | Caller.MordhauConfig ->
+                    let m', cmd = MordhauConfig.State.update (MordhauConfig.Types.ClientMsg bMsg) m.MordhauConfig
+                    { m with MordhauConfig = m' }, Cmd.map MordhauConfigMsg cmd
             | Connected ->
                 { m with IsBridgeConnected = true}, Cmd.none
             | Disconnected ->

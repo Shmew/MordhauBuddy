@@ -129,16 +129,19 @@ module View =
                 Style [ CSSProp.Width "unset" ]
             ] [
                 button [
-                    ButtonProp.Variant ButtonVariant.Outlined
+                    ButtonProp.Variant ButtonVariant.Contained
+                    MaterialProp.Color ComponentColor.Secondary
                     ButtonProp.Size ButtonSize.Small
                     DOMAttr.OnClick <| fun _ -> dispatch (Move(Right))
                     HTMLAttr.Disabled (model.TransferList.LeftChecked = 0)
                 ] [ str ">" ]
                 button [
-                    ButtonProp.Variant ButtonVariant.Outlined
+                    ButtonProp.Variant ButtonVariant.Contained
+                    MaterialProp.Color ComponentColor.Secondary
                     ButtonProp.Size ButtonSize.Small
                     DOMAttr.OnClick <| fun _ -> dispatch (Move(Left))
                     HTMLAttr.Disabled (model.TransferList.RightChecked = 0)
+                    Style [ CSSProp.MarginTop "1em" ]
                 ] [ str "<" ]
             ]
             createCard Right

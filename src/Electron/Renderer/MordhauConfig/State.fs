@@ -12,12 +12,17 @@ module State =
     open RenderUtils.Directory
     open Types
 
-    let init(dir: string) =
+    let init(gameDir: string, gameUserDir: string) =
         { Waiting = true
           Complete = false
           Panels = ExpansionPanels.Init()
-          ConfigDir = 
-              { Directory = dir
+          GameDir = 
+              { Directory = gameDir
+                Error = false
+                HelperText = "" 
+                Validated = false }
+          GameUserDir =
+              { Directory = gameUserDir
                 Error = false
                 HelperText = "" 
                 Validated = false }
@@ -28,6 +33,8 @@ module State =
                 Complete = false }
           Snack = Snackbar.State.init() }
 
+    let sender = new INISender(Caller.MordhauConfig)
+
     let update (msg: Msg) (model: Model) =
         let submissionFailed (s: string) =
             { model with
@@ -37,48 +44,54 @@ module State =
                         Error = true
                         HelperText = s } }
         match msg with
-        | ClientMsg bRes ->
-            match bRes with
+        | ClientMsg bMsg ->
+            match bMsg.BridgeResult with
             | BridgeResult.DefaultDir dOpt ->
                 match dOpt with 
                 | Some(d) ->
                     { model with
                         Waiting = false
-                        ConfigDir =
-                            { model.ConfigDir with
+                        GameDir =
+                            { model.GameDir with
+                                ConfigDir.Directory = d 
+                                ConfigDir.HelperText = "Mordhau directory located"
+                                ConfigDir.Validated = false }
+                        GameUserDir =
+                            { model.GameUserDir with
                                 ConfigDir.Directory = d 
                                 ConfigDir.HelperText = "Mordhau directory located"
                                 ConfigDir.Validated = false } }, Cmd.ofMsg <| SetConfigDir (d,Ok d)
                 | None ->
                     { model with
                         Waiting = false
-                        ConfigDir =
-                            { model.ConfigDir with
+                        GameDir =
+                            { model.GameDir with
+                                ConfigDir.HelperText = "Unable to automatically detect Mordhau directory"
+                                ConfigDir.Validated = false }
+                        GameUserDir =
+                            { model.GameUserDir with
                                 ConfigDir.HelperText = "Unable to automatically detect Mordhau directory"
                                 ConfigDir.Validated = false } }, Cmd.none
             | BridgeResult.Exists b ->
                 { model with
                     Waiting = false
-                    ConfigDir =
+                    GameDir =
                         if b then
-                            { model.ConfigDir with
+                            { model.GameDir with
                                 Error = false
                                 HelperText = "Game.ini located"
                                 Validated = true } 
                         else
-                            { model.ConfigDir with
+                            { model.GameDir with
                                 Error = true
                                 HelperText = "Game.ini not found"
                                 Validated = false } 
                     }, Cmd.none
             | BridgeResult.Parse b ->
-                if b then
-                    model, Cmd.namedBridgeSend "INI" (INI.Faces.getProfileList)
-                else
                     { model with
                         Waiting = false
-                        ConfigDir =
-                            { model.ConfigDir with
+                        GameDir =
+                            { model.GameDir with
                                 Error = true
                                 HelperText = "Error parsing Engine.ini"}}, Cmd.none
             | BridgeResult.Backup b -> model,Cmd.none
@@ -95,21 +108,21 @@ module State =
                 ,Cmd.ofMsg SnackDismissMsg
             | _ -> { model with Waiting = false }, Cmd.none
         | GetDefaultDir ->
-            model, Cmd.namedBridgeSend "INI" (INI.Ops.defDir)
+            model, Cmd.namedBridgeSend "INI" (sender.defDir)
         | SetConfigDir (s,res) -> 
             match res with
             | Ok s ->
                 { model with
-                    ConfigDir =
-                        { model.ConfigDir with
+                    GameDir =
+                        { model.GameDir with
                             Directory = s
                             Error = false
                             HelperText = "" } },
-                Cmd.namedBridgeSend "INI" (INI.Ops.exists { File = "Engine.ini"; WorkingDir = Some(s) })
+                Cmd.namedBridgeSend "INI" (sender.exists { File = File.Engine; WorkingDir = Some(s) })
             | Error _ ->
                 { model with
-                    ConfigDir =
-                        { model.ConfigDir with
+                    GameDir =
+                        { model.GameDir with
                             Directory = s
                             Error = true
                             HelperText = errorStrings res } },

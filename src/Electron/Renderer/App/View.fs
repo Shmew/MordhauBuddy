@@ -85,7 +85,7 @@ module View =
                     ] 
                 ]
         | FaceTools -> lazyView2 FaceTools.View.view model.FaceTools (FaceToolsMsg >> dispatch)
-        | EngineTools -> lazyView2 EngineTools.View.view model.EngineTools (EngineToolsMsg >> dispatch)
+        | MordhauConfig -> lazyView2 MordhauConfig.View.view model.MordhauConfig (MordhauConfigMsg >> dispatch)
         | Settings -> lazyView2 Settings.View.view model.Settings (SettingsMsg >> dispatch)
         | About -> lazyView2 About.View.view model.About (AboutMsg >> dispatch)
 
@@ -194,7 +194,7 @@ module View =
                     ]
                     OverridesProp.MuiExpansionPanelDetails [
                         Styles.Root [
-                            CSSProp.Padding ("2em")
+                            CSSProp.Padding ("0em")
                         ]
                     ]
                 ]
@@ -286,7 +286,7 @@ module View =
                     ]
                     OverridesProp.MuiExpansionPanelDetails [
                         Styles.Root [
-                            CSSProp.Padding ("2em")
+                            CSSProp.Padding ("0em")
                         ]
                     ]
                 ]

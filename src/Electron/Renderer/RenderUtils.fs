@@ -2,27 +2,21 @@
 
 module BridgeUtils =
     open MordhauBuddy.Shared.ElectronBridge
-    
-    [<RequireQualifiedAccess>]
-    module INI =
-        [<RequireQualifiedAccess>]
-        module Ops =
-            let private wrapOps iCmd = INIOps(Operation(iCmd))
-            let replace s sels = Replace(s,sels) |> wrapOps
-            let delete sels = Delete(sels) |> wrapOps
-            let exists iFile = Exists(iFile) |> wrapOps
-            let parse iFile = Parse(iFile) |> wrapOps
-            let backup iFile = Backup(iFile) |> wrapOps
-            let defDir = DefaultDir |> wrapOps
-            let commit iFile = Commit(iFile) |> wrapOps
 
-        [<RequireQualifiedAccess>]
-        module Faces =
-            let private wrapFace fCmd = INIOps(Faces(fCmd))
-            let setRandom profile = Random(profile) |> wrapFace
-            let setFrankenstein profile = Frankenstein(profile) |> wrapFace
-            let setCustom profile fVal = Custom(profile,fVal) |> wrapFace
-            let getProfileList = ProfileList |> wrapFace
+    type INISender(caller: Caller) =
+        let wrapOps iCmd = INIOps(Operation(iCmd), caller)
+        let wrapFace fCmd = INIOps(Faces(fCmd), caller)
+        member this.replace s sels iFile = Replace(s,sels,iFile) |> wrapOps
+        member this.delete sels = Delete(sels) |> wrapOps
+        member this.exists iFile = Exists(iFile) |> wrapOps
+        member this.parse iFile = Parse(iFile) |> wrapOps
+        member this.backup iFile = Backup(iFile) |> wrapOps
+        member this.defDir = DefaultDir |> wrapOps
+        member this.commit iFile = Commit(iFile) |> wrapOps
+        member this.setRandom profile = Random(profile) |> wrapFace
+        member this.setFrankenstein profile = Frankenstein(profile) |> wrapFace
+        member this.setCustom profile fVal = Custom(profile,fVal) |> wrapFace
+        member this.getProfileList = ProfileList |> wrapFace
 
 module RenderUtils =
     open Electron
@@ -186,8 +180,8 @@ module RenderUtils =
             ] }
             { Title = "Disable sun glare"
               Caption = 
-                "Disables or lightens sun glare effects in game. \ 
-                 For best results set shadows to low in game UI."
+                "Disables or reduces sun glare effects in game. \
+                 For best results set shadows to low in the game UI."
               Settings = [
                   { Key = @"r.LightShaftBlurPasses"
                     Default = KeyValues.Values.Int(0)
@@ -256,7 +250,7 @@ module RenderUtils =
             { Title = "Enable texture pre-loading"
               Caption = 
                 "Increases system load by roughly 30% and in return \
-                 reduces rendering hitches. \nOnly recommended if for \
+                 reduces rendering hitches. Only recommended for \
                  top end gaming desktops. This will not provide a benefit \
                  if your graphics card does not have a significant amount \
                  of dedicated memory."

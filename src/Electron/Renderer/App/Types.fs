@@ -7,11 +7,11 @@ module Types =
     type Page =
         | Home
         | FaceTools
-        | EngineTools
+        | MordhauConfig
         | Settings
         | About
         static member All =
-            [ Home; FaceTools; EngineTools; Settings; About ]
+            [ Home; FaceTools; MordhauConfig; Settings; About ]
 
     type Msg =
         | Navigate of Page
@@ -19,7 +19,7 @@ module Types =
         | StoreMsg of Store.Msg
         | ContextMenuMsg of ContextMenu.Types.Msg
         | FaceToolsMsg of FaceTools.Types.Msg
-        | EngineToolsMsg of EngineTools.Types.Msg
+        | MordhauConfigMsg of MordhauConfig.Types.Msg
         | SettingsMsg of Settings.Types.Msg
         | AboutMsg of About.Types.Msg
         | ServerMsg of RemoteClientMsg
@@ -31,7 +31,7 @@ module Types =
           IsBridgeConnected : bool
           ContextMenu : ContextMenu.Types.Model
           FaceTools : FaceTools.Types.Model
-          EngineTools : EngineTools.Types.Model
+          MordhauConfig : MordhauConfig.Types.Model
           Settings : Settings.Types.Model
           About : About.Types.Model }
 

@@ -150,7 +150,6 @@ module rec Types =
                     ]
                 |> div [ 
                     Style [
-                        CSSProp.PaddingTop (string "20px") 
                         CSSProp.MarginTop "auto"
                         CSSProp.MarginLeft "auto"
                     ] 

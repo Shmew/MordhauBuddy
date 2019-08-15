@@ -15,7 +15,7 @@ module rec Types =
     open Microsoft.FSharp.Reflection
 
     type Msg =
-        | ClientMsg of BridgeResult
+        | ClientMsg of BridgeMsg
         | GetDefaultDir
         | SetConfigDir of string * Result<string,string list>
         | RequestLoad
@@ -99,6 +99,7 @@ module rec Types =
         { Waiting : bool
           Complete : bool
           Panels : Panel list
-          ConfigDir : ConfigDir
+          GameDir : ConfigDir
+          GameUserDir : ConfigDir
           Submit : Submit
           Snack : Snackbar.Types.Model<Msg> }
