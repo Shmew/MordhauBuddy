@@ -1,7 +1,17 @@
 {
   "name": "mordhau-buddy",
-  "description": "Compilation of Mordhau Tools",
   "version": "0.0.1",
+  "description": "Compilation of Mordhau Tools",
+  "homepage": "https://github.com/Shmew/MordhauBuddy",
+  "bugs": {
+    "url": "https://github.com/Shmew/MordhauBuddy/issues"
+  },
+  "license": "MIT",
+  "author": "Shmew",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shmew/MordhauBuddy.git"
+  },
   "scripts": {
     "compile": "electron-webpack",
     "dev": "electron-webpack dev",
@@ -15,18 +25,7 @@
     "publishWin": "yarn distWin && electron-builder --publish always",
     "publishWin64": "yarn distWin64 && electron-builder --publish always"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Shmew/MordhauBuddy.git"
-  },
-  "author": "Shmew",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Shmew/MordhauBuddy/issues"
-  },
-  "homepage": "https://github.com/Shmew/MordhauBuddy",
   "electronWebpack": {
-    "title": true,
     "main": {
       "sourceDirectory": "src/Electron/Main",
       "webpackConfig": "webpack.additions.main.js"
@@ -34,7 +33,8 @@
     "renderer": {
       "sourceDirectory": "src/Electron/Renderer",
       "webpackConfig": "webpack.additions.renderer.js"
-    }
+    },
+    "title": true
   },
   "build": {
     "appId": "com.electron.mordhau-buddy",

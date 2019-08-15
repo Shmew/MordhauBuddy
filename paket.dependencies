@@ -91,7 +91,8 @@ group FakeBuild
 	nuget Fake.DotNet.AssemblyInfoFile ~> 5.15.4
 	nuget Fake.DotNet.Paket ~> 5.15.4
 	nuget Fake.DotNet.FSFormatting  ~> 5.15.4
-	nuget FSharp.Json ~> 0.3.7
-	nuget FSharpLint.Core ~> 0.12.2
 	nuget Fake.JavaScript.Yarn ~> 5.15.4
 	nuget Fake.JavaScript.Npm ~> 5.15.4
+	nuget FSharp.Json ~> 0.3.7
+	nuget FSharpLint.Core ~> 0.12.2
+	

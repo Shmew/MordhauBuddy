@@ -141,6 +141,10 @@ let getEnvFromAllOrNone (s: string) =
 let configuration() =
     FakeVar.getOrFail("configuration")
 
+let appendSourceDir (sList: string list) =
+    sList
+    |> List.map (fun d -> (__SOURCE_DIRECTORY__ @@ d))
+
 // --------------------------------------------------------------------------------------
 // Set configuration mode based on target
 
@@ -185,16 +189,24 @@ Target.create "AssemblyInfo" <| fun _ ->
 Target.create "PackageJson" <| fun _ ->
     let setValues (current: Json.JsonPackage) =
         { current with
-            Name = Str.toKebabCase project
-            Description = summary
-            Version = release.NugetVersion
+            Name = Str.toKebabCase project |> Some
+            Description = summary |> Some
+            Version = release.NugetVersion |> Some
             Repository = 
-                { Type = "git"
-                  Url = repo + ".git" }
-            Author = author
-            License = (File.readLine(__SOURCE_DIRECTORY__ @@ "LICENSE.md").Split(' ')) |> Array.head
-            Bugs = {Url = repo + "/issues"}
-            Homepage = repo }
+                match current.Repository with
+                | Some(r) ->
+                    { r with
+                        Json.RepositoryValue.Type = "git" |> Some
+                        Json.RepositoryValue.Url = repo + ".git" |> Some }
+                | _ ->
+                    { Json.RepositoryValue.Type = "git" |> Some
+                      Json.RepositoryValue.Url = repo + ".git" |> Some
+                      Json.RepositoryValue.Directory = None }
+                |> Some
+            Author = author |> Some
+            License = (File.readLine(__SOURCE_DIRECTORY__ @@ "LICENSE.md").Split(' ')) |> Array.head |> Some
+            Bugs = { Json.BugsValue.Url = (repo + "/issues" |> Some) } |> Some
+            Homepage = repo |> Some }
     
     Json.setJsonPkg setValues
 
@@ -303,7 +315,7 @@ let restoreSolution () =
 Target.create "Restore" <| fun _ ->
     TaskRunner.runWithRetries restoreSolution 5
 
-/// Add task to make Node.js cli ready
+// Add task to make Node.js cli ready
 Target.create "YarnInstall" <| fun _ ->
     let setParams (defaults:Yarn.YarnParams) =
         { defaults with
@@ -338,12 +350,7 @@ Target.create "BuildElectron" <| fun _ ->
 
 // Run Dev mode
 Target.create "Dev" <| fun _ ->
-    let startDev = async {Yarn.exec "dev" id}
-
-    [ startDev ]
-    |> Async.Parallel
-    |> Async.RunSynchronously
-    |> ignore
+    Yarn.exec "dev" id
 
 // Build artifacts
 Target.create "Dist" <| fun _ ->
