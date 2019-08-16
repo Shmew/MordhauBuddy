@@ -8,24 +8,24 @@ type internal XmlResult =
     | Failure
 
 type internal FileLintResult =
-    { FileName: string
-      FileResult: XmlResult
-      FileSuccess: bool
-      FileTime: float
-      LintResponse: string option }
+    { FileName : string
+      FileResult : XmlResult
+      FileSuccess : bool
+      FileTime : float
+      LintResponse : string option }
 
 type internal LintResult =
-    { Date: DateTime
-      FileTotal: int
-      ErrorCount: int
-      FailureCount: int
-      Time: TimeSpan
-      LintVersion: Version
-      Name: string
-      Result: XmlResult
-      Success: bool
-      Duration: float
-      Files: FileLintResult list }
+    { Date : DateTime
+      FileTotal : int
+      ErrorCount : int
+      FailureCount : int
+      Time : TimeSpan
+      LintVersion : Version
+      Name : string
+      Result : XmlResult
+      Success : bool
+      Duration : float
+      Files : FileLintResult list }
 
 module internal LintResults =
     open System.IO
@@ -34,7 +34,7 @@ module internal LintResults =
 
     /// Generate test results using NUnit v2 schema.
     /// http://nunit.org/docs/files/TestResult.xml
-    let writeNUnitSummary (file: string) (lResult: LintResult) =
+    let writeNUnitSummary (file : string) (lResult : LintResult) =
         let testCaseElements =
             lResult.Files
             |> Seq.map (fun fileRes ->
@@ -127,20 +127,20 @@ module FSharpLinter =
     open FSharpLint.Framework
 
     type private FileLint =
-        { Path: string
-          Warnings: string List option
-          Error: string option
-          Duration: float }
+        { Path : string
+          Warnings : string List option
+          Error : string option
+          Duration : float }
 
-    let private writeLine (str: string) (color: ConsoleColor) (writer: IO.TextWriter) =
+    let private writeLine (str : string) (color : ConsoleColor) (writer : IO.TextWriter) =
         let originalColour = Console.ForegroundColor
         Console.ForegroundColor <- color
         writer.WriteLine str
         Console.ForegroundColor <- originalColour
 
-    let private writeInfoLine (str: string) = writeLine str ConsoleColor.White Console.Out
-    let private writeWarningLine (str: string) = writeLine str ConsoleColor.Yellow Console.Out
-    let private writeErrorLine (str: string) = writeLine str ConsoleColor.Red Console.Error
+    let private writeInfoLine (str : string) = writeLine str ConsoleColor.White Console.Out
+    let private writeWarningLine (str : string) = writeLine str ConsoleColor.Yellow Console.Out
+    let private writeErrorLine (str : string) = writeLine str ConsoleColor.Red Console.Error
 
     let private parserProgress =
         function
@@ -163,7 +163,7 @@ module FSharpLinter =
             collectWarning <- List.empty<string>
             Some(warns)
 
-    let private writeLintWarning (warn: LintWarning.Warning) =
+    let private writeLintWarning (warn : LintWarning.Warning) =
         let warnMsg = warn.Info + Environment.NewLine + LintWarning.getWarningWithLocation warn.Range warn.Input
         collectWarning <- ((if collectWarning.Length > 0 then Environment.NewLine + warnMsg
                             else warnMsg)
@@ -171,14 +171,14 @@ module FSharpLinter =
         warnMsg |> writeWarningLine
         String.replicate 80 "*" |> writeInfoLine
 
-    let private handleError (str: string) = writeErrorLine str
+    let private handleError (str : string) = writeErrorLine str
 
     let private handleLintResult =
         function
         | LintResult.Failure(failure) -> handleError failure.Description
         | _ -> ()
 
-    let private parseInfo (webFile: bool) =
+    let private parseInfo (webFile : bool) =
         let config =
             if webFile then
                 Some { Configuration.formatting = None
@@ -190,21 +190,26 @@ module FSharpLinter =
                                   canBeReplacedWithComposition = None
                                   raiseWithTooManyArgs = None
                                   sourceLength = None
-                                  naming = Some { interfaceNames = Some { RuleConfig.enabled = false; config = None }
-                                                  exceptionNames = None
-                                                  typeNames = None
-                                                  recordFieldNames = None
-                                                  enumCasesNames= None
-                                                  unionCasesNames= None
-                                                  moduleNames= None
-                                                  literalNames= None
-                                                  namespaceNames= None
-                                                  memberNames= Some { RuleConfig.enabled = false; config = None }
-                                                  parameterNames= None
-                                                  measureTypeNames= None
-                                                  activePatternNames= None
-                                                  publicValuesNames= None
-                                                  nonPublicValuesNames= None }
+                                  naming =
+                                      Some { interfaceNames =
+                                                 Some { RuleConfig.enabled = false
+                                                        config = None }
+                                             exceptionNames = None
+                                             typeNames = None
+                                             recordFieldNames = None
+                                             enumCasesNames = None
+                                             unionCasesNames = None
+                                             moduleNames = None
+                                             literalNames = None
+                                             namespaceNames = None
+                                             memberNames =
+                                                 Some { RuleConfig.enabled = false
+                                                        config = None }
+                                             parameterNames = None
+                                             measureTypeNames = None
+                                             activePatternNames = None
+                                             publicValuesNames = None
+                                             nonPublicValuesNames = None }
                                   numberOfItems = None
                                   binding = None }
                        Configuration.typography = None
@@ -216,7 +221,7 @@ module FSharpLinter =
           Configuration = config
           ReportLinterProgress = Some parserProgress }
 
-    let private buildLintResults (fileList: FileLint list) =
+    let private buildLintResults (fileList : FileLint list) =
         let errors =
             fileList
             |> List.choose (fun fl -> fl.Error)
@@ -238,14 +243,14 @@ module FSharpLinter =
             | _ -> false
 
         let fileElements =
-            let fileSuccess (f: FileLint) = f.Error.IsNone && f.Warnings.IsNone
+            let fileSuccess (f : FileLint) = f.Error.IsNone && f.Warnings.IsNone
 
-            let fileResult (f: FileLint) =
+            let fileResult (f : FileLint) =
                 match fileSuccess f with
                 | true -> Success
                 | false -> Failure
 
-            let failMsg (f: FileLint) =
+            let failMsg (f : FileLint) =
                 match f.Warnings, f.Error with
                 | Some(w), Some(e) -> (w |> List.reduce (+)) + Environment.NewLine + e
                 | Some(w), None -> w |> List.reduce (+)
@@ -282,8 +287,8 @@ module FSharpLinter =
           Duration = fileList |> List.sumBy (fun fl -> fl.Duration)
           Files = fileElements }
 
-    let lintFiles (resultFile: string) (fileList: (bool * string list) list) =
-        let lintFile (webFile: bool) (file: string) =
+    let lintFiles (resultFile : string) (fileList : (bool * string list) list) =
+        let lintFile (webFile : bool) (file : string) =
             let sw = Diagnostics.Stopwatch.StartNew()
             try
                 Lint.lintFile (parseInfo webFile) file |> handleLintResult
