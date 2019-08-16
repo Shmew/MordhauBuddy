@@ -96,6 +96,7 @@ module State =
                 else
                     { model with
                         Waiting = false
+                        ParseWaiting = false
                         ConfigDir =
                             { model.ConfigDir with
                                 Error = true
