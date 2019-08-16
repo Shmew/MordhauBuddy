@@ -6,6 +6,7 @@ module BridgeUtils =
     type INISender(caller: Caller) =
         let wrapOps iCmd = INIOps(Operation(iCmd), caller)
         let wrapFace fCmd = INIOps(Faces(fCmd), caller)
+        let wrapConf cCmd = INIOps(Configs(cCmd), caller)
         member this.replace s sels iFile = Replace(s,sels,iFile) |> wrapOps
         member this.delete sels = Delete(sels) |> wrapOps
         member this.exists iFile = Exists(iFile) |> wrapOps
@@ -17,6 +18,8 @@ module BridgeUtils =
         member this.setFrankenstein profile = Frankenstein(profile) |> wrapFace
         member this.setCustom profile fVal = Custom(profile,fVal) |> wrapFace
         member this.getProfileList = ProfileList |> wrapFace
+        member this.getConfigs oList = GetConfigs(oList) |> wrapConf
+        member this.mapConfigs oList = MapConfigs(oList) |> wrapConf
 
 module RenderUtils =
     open Electron
@@ -150,7 +153,8 @@ module RenderUtils =
                   { Key = @"r.Tonemapper.Sharpen"
                     Default = KeyValues.Values.Int(2)
                     Value = None } ]
-              File = File.Engine }
+              File = File.Engine 
+              Enabled = false }
             { Title = "Disable sun glare"
               Caption = 
                 "Disables or reduces sun glare effects in game. \
@@ -165,7 +169,8 @@ module RenderUtils =
                   { Key = @"r.MotionBlurQuality"
                     Default = KeyValues.Values.Int(0)
                     Value = None} ]
-              File = File.Engine }
+              File = File.Engine 
+              Enabled = false }
             { Title = "Disable Fisheye Effect"
               Caption = 
                 "Enables artificial panini projection, helps if fisheye \
@@ -177,14 +182,16 @@ module RenderUtils =
                   { Key = @"r.upscale.panini.s"
                     Default = KeyValues.Values.Float(0.025)
                     Value = None} ]
-              File = File.Engine }
+              File = File.Engine 
+              Enabled = false }
             { Title = "Disable fog"
               Caption = "Removes additional fog effects from maps."
               Settings = [
                   { Key = @"r.Fog"
                     Default = KeyValues.Values.Int(0)
                     Value = None} ]
-              File = File.Engine } ]
+              File = File.Engine 
+              Enabled = false } ]
 
         let utilities = [
             { Title = "Enable network parry debug"
@@ -195,7 +202,8 @@ module RenderUtils =
                   { Key = @"m.DebugNetworkParry"
                     Default = KeyValues.Values.Int(1)
                     Value = None} ]
-              File = File.Engine }
+              File = File.Engine 
+              Enabled = false }
             { Title = "Skip intro cut scenes"
               Caption = 
                 "This will disable the intro videos from playing."
@@ -203,7 +211,8 @@ module RenderUtils =
                   { Key = @"SkipStartupMovies"
                     Default = KeyValues.Values.Int(1)
                     Value = None} ]
-              File = File.GameUserSettings } ]
+              File = File.GameUserSettings 
+              Enabled = false } ]
 
         let performance = [
             { Title = "Enable Runescape mode"
@@ -217,7 +226,8 @@ module RenderUtils =
                   { Key = @"r.skeletalmeshlodbias"
                     Default = KeyValues.Values.Int(500)
                     Value = None} ]
-              File = File.Engine } ]
+              File = File.Engine 
+              Enabled = false } ]
 
         let quality = [
             { Title = "Enable texture pre-loading"
@@ -249,7 +259,8 @@ module RenderUtils =
                   { Key = @"r.Shaders.Optimize"
                     Default = KeyValues.Values.Int(1)
                     Value = None} ]
-              File = File.Engine } ]
+              File = File.Engine 
+              Enabled = false } ]
 
     module Toastr =
         open Elmish

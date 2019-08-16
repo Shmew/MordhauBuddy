@@ -10,6 +10,7 @@ module View =
     open Fable.MaterialUI.Icons
     open FSharp.Core  /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
+    open MordhauBuddy.Shared.ElectronBridge
     open RenderUtils.MaterialUI
     open RenderUtils.MaterialUI.Core
     open Elmish.React
@@ -48,11 +49,11 @@ module View =
                                     formControlLabel [
                                         FormControlLabelProp.Control <|
                                             switch [
-                                                HTMLAttr.Checked (true)
+                                                HTMLAttr.Checked oGroup.Enabled
+                                                DOMAttr.OnClick <| fun _ -> dispatch (ToggleOption(oGroup))
                                             ]
                                     ] []
                                 ]
-                                    
                             ]
                             div [
                                 Style [ CSSProp.Width "33%" ]
@@ -118,20 +119,56 @@ module View =
                     TextFieldProp.Variant TextFieldVariant.Outlined
                     MaterialProp.FullWidth true
                     HTMLAttr.Label "Mordhau Engine.ini Directory"
-                    HTMLAttr.Value model.GameDir.Directory
-                    MaterialProp.Error model.GameDir.Error
-                    TextFieldProp.HelperText (model.GameDir.HelperText |> str)
+                    HTMLAttr.Value model.GameUserDir.Directory
+                    MaterialProp.Error model.GameUserDir.Error
+                    TextFieldProp.HelperText (model.GameUserDir.HelperText |> str)
                 ] []
                 button [
                     ButtonProp.Variant ButtonVariant.Contained
                     MaterialProp.Color ComponentColor.Secondary
-                    DOMAttr.OnClick <| fun _ -> dispatch RequestLoad
+                    DOMAttr.OnClick <| fun _ -> dispatch (RequestLoad(File.Engine))
                     Style [
                         CSSProp.MarginLeft "1em" 
                         CSSProp.MaxHeight "4em" 
                     ]
                 ] [ str "Select" ]
 
+            ]
+        ]
+
+    let private content (classes: IClasses) model dispatch =
+        [    
+            div [ ] 
+                <| expansionPanels classes model dispatch
+            div [ 
+                Style [ CSSProp.MarginTop "2em" ] 
+            ] [ config classes model dispatch ]
+            div [ 
+                Style [
+                    CSSProp.MarginTop "auto"
+                    CSSProp.MarginLeft "auto"
+                ] 
+            ] [
+                button [
+                    HTMLAttr.Disabled false
+                    ButtonProp.Variant ButtonVariant.Contained
+                    MaterialProp.Color ComponentColor.Primary
+                    //DOMAttr.OnClick <| fun _ -> 
+                    //    dispatch (if this.Last then StepperSubmit else StepperNext)
+                    Style [ 
+                        CSSProp.MaxHeight "2.6em"
+                        CSSProp.MarginTop "auto"
+                        CSSProp.MarginLeft "auto"
+                    ]
+                ] [ 
+                    if model.Submit.Waiting then 
+                        yield circularProgress [ 
+                            CircularProgressProp.Size (
+                                CircularProgressSize.Case1(20))
+                            Style [ CSSProp.MaxHeight "2.6em" ] 
+                        ]
+                    else yield str "Submit"
+                ]
             ]
         ]
 
@@ -151,48 +188,25 @@ module View =
                         CSSProp.Display DisplayOptions.Flex
                         CSSProp.Height "inherit"
                     ]
-                ] [    
-                    div [ ] 
-                        <| expansionPanels classes model dispatch
-                    div [ 
-                        Style [ CSSProp.MarginTop "2em" ] 
-                    ] [ config classes model dispatch ]
-                    div [ 
-                        Style [
-                            CSSProp.MarginTop "auto"
-                            CSSProp.MarginLeft "auto"
-                        ] 
-                    ] [
-                        button [
-                            HTMLAttr.Disabled false
-                            ButtonProp.Variant ButtonVariant.Contained
-                            MaterialProp.Color ComponentColor.Primary
-                            //DOMAttr.OnClick <| fun _ -> 
-                            //    dispatch (if this.Last then StepperSubmit else StepperNext)
-                            Style [ 
-                                CSSProp.MaxHeight "2.6em"
-                                CSSProp.MarginTop "auto"
-                                CSSProp.MarginLeft "auto"
-                            ]
-                        ] [ 
-                            if model.Submit.Waiting then 
-                                yield circularProgress [ 
-                                    CircularProgressProp.Size (
-                                        CircularProgressSize.Case1(20))
-                                    Style [ CSSProp.MaxHeight "2.6em" ] 
-                                ]
-                            else yield str "Submit"
-                        ]
-                    ]
-                ]
-            yield
-                slider [
-                    SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto
-                    SliderProp.Step 10.
-                    SliderProp.Marks <| Fable.Core.Case1(true)
-                    SliderProp.Min 0.
-                    SliderProp.Max 100.
-                ] []
+                ] 
+                    <|
+                        match model.Waiting with
+                        | true when model.GameUserDir.Directory = "" || model.EngineDir.Directory = "" ->
+                            [ circularProgress [
+                              Style [CSSProp.MarginLeft "45%"]
+                              DOMAttr.OnAnimationStart <| fun _ ->
+                                dispatch GetDefaultDir ] ]
+                        | _ -> content classes model dispatch
+
+
+            //yield
+            //    slider [
+            //        SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto
+            //        SliderProp.Step 10.
+            //        SliderProp.Marks <| Fable.Core.Case1(true)
+            //        SliderProp.Min 0.
+            //        SliderProp.Max 100.
+            //    ] []
         ]
 
     /// Workaround for using JSS with Elmish

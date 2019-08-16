@@ -100,7 +100,8 @@ module State =
                         ConfigDir =
                             { model.ConfigDir with
                                 Error = true
-                                HelperText = "Error parsing Game.ini"}}, Cmd.none
+                                HelperText = "Error parsing Game.ini" }}
+                    , Cmd.none
             | BridgeResult.Backup b ->
                 if b then
                     let profiles =
@@ -122,7 +123,7 @@ module State =
                                 Error = false
                                 HelperText = "Changes successfully completed!" } }
                 else submissionFailed "Error commiting changes to the file"
-                ,Cmd.ofMsg SnackDismissMsg
+                , Cmd.ofMsg SnackDismissMsg
             | BridgeResult.Faces fr ->
                 match fr with
                 | FaceResult.ProfileList l ->
@@ -160,16 +161,17 @@ module State =
             { model with
                 Submit =
                     { model.Submit with
-                        Waiting = true } },
-                Cmd.namedBridgeSend "INI" 
-                    (sender.backup(fileWrap(model.ConfigDir.Directory)) )
+                        Waiting = true } }
+            , Cmd.namedBridgeSend "INI" 
+                (sender.backup(fileWrap(model.ConfigDir.Directory)) )
         | StepperRestart -> 
             { init(model.ConfigDir.Directory) with Waiting = false },
                 Cmd.ofMsg <| SetConfigDir (model.ConfigDir.Directory, Ok model.ConfigDir.Directory)
         | StepperNext ->
             match model.Stepper.Next with
             | ChooseProfiles ->
-                { model with ParseWaiting = true }, Cmd.namedBridgeSend "INI" 
+                { model with ParseWaiting = true }
+                , Cmd.namedBridgeSend "INI" 
                     (sender.parse(fileWrap(model.ConfigDir.Directory)))
             | _ ->
                 { model with Stepper = model.Stepper.Next }, Cmd.none
@@ -184,16 +186,16 @@ module State =
                         { model.ConfigDir with
                             Directory = s
                             Error = false
-                            HelperText = "" } },
-                Cmd.namedBridgeSend "INI" (sender.exists <| fileWrap(s))
+                            HelperText = "" } }
+                , Cmd.namedBridgeSend "INI" (sender.exists <| fileWrap(s))
             | Error _ ->
                 { model with
                     ConfigDir =
                         { model.ConfigDir with
                             Directory = s
                             Error = true
-                            HelperText = errorStrings res } },
-                Cmd.none
+                            HelperText = errorStrings res } }
+                , Cmd.none
         | RequestLoad ->
             let handleLoaded =
                 function
@@ -218,14 +220,16 @@ module State =
                     TransferList = 
                         { model.TransferList with 
                             LeftProfiles = toggles
-                            LeftChecked = if b then toggles.Length else 0} }, Cmd.none
+                            LeftChecked = if b then toggles.Length else 0} }
+                , Cmd.none
             | Right ->
                 let toggles = model.TransferList.RightProfiles |> toggleAll
                 { model with
                     TransferList = 
                         { model.TransferList with 
                             RightProfiles = toggles
-                            RightChecked = if b then toggles.Length else 0} }, Cmd.none
+                            RightChecked = if b then toggles.Length else 0} }
+                , Cmd.none
         | Toggle(dir,pItem) ->
             let toggle (iList: Profile list) =
                 iList
@@ -311,7 +315,8 @@ module State =
                         ImportString = s
                         Validated = false
                         HelperText = 
-                            "You must validate the string before submission"} }, Cmd.none
+                            "You must validate the string before submission"} }
+            , Cmd.none
         | ValidateImport ->
             let res = validateImport model.Import.ImportString
             match res with 

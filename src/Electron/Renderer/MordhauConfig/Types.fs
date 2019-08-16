@@ -13,10 +13,11 @@ module rec Types =
     type Msg =
         | ClientMsg of BridgeMsg
         | GetDefaultDir
-        | SetConfigDir of string * Result<string,string list>
-        | RequestLoad
+        | SetConfigDir of string * Result<string,string list> * File
+        | RequestLoad of File
         | LoadCanceled
         | Expand of Panel
+        | ToggleOption of OptionGroup
         | Submit
         | SnackMsg of Snackbar.Types.Msg<Msg>
         | SnackDismissMsg
@@ -80,7 +81,8 @@ module rec Types =
           Items : OptionGroup list }
 
     type ConfigDir =
-        { Directory : string
+        { Waiting : bool  
+          Directory : string
           Error : bool
           HelperText : string
           Validated : bool }
@@ -95,7 +97,7 @@ module rec Types =
         { Waiting : bool
           Complete : bool
           Panels : Panel list
-          GameDir : ConfigDir
+          EngineDir : ConfigDir
           GameUserDir : ConfigDir
           Submit : Submit
           Snack : Snackbar.Types.Model<Msg> }
