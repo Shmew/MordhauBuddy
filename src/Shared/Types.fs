@@ -32,7 +32,8 @@ module ElectronBridge =
         { Title : string
           Caption : string
           Settings : KeyValues list
-          File : File }
+          File : File
+          Enabled : bool }
 
     [<RequireQualifiedAccess>]
     type FaceResult =
