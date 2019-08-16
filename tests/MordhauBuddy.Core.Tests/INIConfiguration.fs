@@ -3,14 +3,19 @@ namespace MordhauBuddy.Core.Tests
 module INIConfiguration =
     open Expecto
     open MordhauBuddy.Core
+    open MordhauBuddy.Shared.ElectronBridge
     open INIReader
     open INIConfiguration
     open Frankenstein
+    open MordhauConfig
     open System
 
     [<AutoOpen>]
     module Utils =
         let gameFile = IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/Game.ini") |> INIValue.Parse
+        let engineFile = IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/Engine.ini") |> INIValue.Parse
+        let gameUserFile =
+            IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/GameUserSettings.ini") |> INIValue.Parse
         let profileNames =
             [ "332 Bardiche"; "333 Greatsword"; "332 Eveningstar"; "333 Poleaxe t"; "231 Spear"; "231 Spear goofy";
               "333 Maul"; "333 messer shield"; "333 Exec"; "010 Exec bl rush"; "333 Bastard Buckler"; "221 Halberd";
@@ -20,8 +25,42 @@ module INIConfiguration =
         let faceImport =
             "(Translate=(65535,31072,875,704,0,734,65535,0,0,65535,31565,0,0,65535,0,29632,29662,30686,65535,65535,0,30720,65535,0,0,918,31560,0,65535,31709,31680,544,574,30749,30720,256,286,65535,0,0,0,65535,0,0,65535,0,65535,31678,31648),Rotate=(0,65535,26302,31680,0,30750,0,65535,0,0,0,65535,65535,65535,31584,30749,31648,8,65535,0,65535,608,65535,65535,0,31695,893,18301,65535,31677,30720,31704,30725,1,988,29,960,0,65535,0,65535,65535,16326,0,65535,65535,15383,30,960),Scale=(0,30,4139,30749,65535,30749,0,65535,65535,0,0,0,0,65535,31709,0,0,190,0,0,0,589,0,0,0,30749,31166,989,65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
 
-        let notOrigAndParses (strRes : string) =
-            let original = gameFile |> string
+        let optGroupList =
+            [ { Title = "Enable network parry debug"
+                Caption = "Enables a utility that will print a small line of red \
+                   text when your parry was correct but missed due to latency."
+                Settings =
+                    [ { Key = @"m.DebugNetworkParry"
+                        Default = KeyValues.Values.Int(1)
+                        Value = None } ]
+                File = File.Engine }
+              { Title = "Skip intro cut scenes"
+                Caption = "This will disable the intro videos from playing."
+                Settings =
+                    [ { Key = @"SkipStartupMovies"
+                        Default = KeyValues.Values.Int(1)
+                        Value = None } ]
+                File = File.GameUserSettings } ]
+
+        let newOptGroupList =
+            [ { Title = "Enable network parry debug"
+                Caption = "Enables a utility that will print a small line of red \
+                   text when your parry was correct but missed due to latency."
+                Settings =
+                    [ { Key = @"m.DebugNetworkParry"
+                        Default = KeyValues.Values.Int(1)
+                        Value = KeyValues.Values.Int(0) |> Some } ]
+                File = File.Engine }
+              { Title = "Skip intro cut scenes"
+                Caption = "This will disable the intro videos from playing."
+                Settings =
+                    [ { Key = @"SkipStartupMovies"
+                        Default = KeyValues.Values.Int(1)
+                        Value = KeyValues.Values.Int(0) |> Some } ]
+                File = File.GameUserSettings } ]
+
+        let notOrigAndParses (iFile : INIValue) (strRes : string) =
+            let original = iFile |> string
             let parseRes = strRes |> INIValue.TryParse
             strRes <> original && parseRes.IsSome
 
@@ -36,23 +75,56 @@ module INIConfiguration =
           testCase "setCharacterProfileFace handles frankenstein action" <| fun () ->
               setCharacterProfileFace gameFile "332 Bardiche" FaceActions.Frankenstein
               |> string
-              |> notOrigAndParses
+              |> notOrigAndParses gameFile
               |> Expect.isTrue
               <| ""
           testCase "setCharacterProfileFace handles random action" <| fun () ->
               setCharacterProfileFace gameFile "332 Bardiche" FaceActions.Random
               |> string
-              |> notOrigAndParses
+              |> notOrigAndParses gameFile
               |> Expect.isTrue
               <| ""
           testCase "setCharacterProfileFace handles custom import string action" <| fun () ->
               FaceActions.Custom(faceImport)
               |> setCharacterProfileFace gameFile "332 Bardiche"
               |> string
-              |> notOrigAndParses
+              |> notOrigAndParses gameFile
               |> Expect.isTrue
               <| "" ]
         |> testList "Frankenstein"
 
+    let mordhauConfig =
+        [ testCase "getSettings returns an OptionGroup list with values set" <| fun () ->
+              let result = getSettings engineFile gameUserFile optGroupList
+
+              let expected =
+                  [ { Title = "Enable network parry debug"
+                      Caption = "Enables a utility that will print a small line of red \
+                        text when your parry was correct but missed due to latency."
+                      Settings =
+                          [ { Key = @"m.DebugNetworkParry"
+                              Default = KeyValues.Values.Int(1)
+                              Value = KeyValues.Values.Int(1) |> Some } ]
+                      File = File.Engine }
+                    { Title = "Skip intro cut scenes"
+                      Caption = "This will disable the intro videos from playing."
+                      Settings =
+                          [ { Key = @"SkipStartupMovies"
+                              Default = KeyValues.Values.Int(1)
+                              Value = KeyValues.Values.Int(1) |> Some } ]
+                      File = File.GameUserSettings } ]
+              Expect.equal result expected ""
+          testCase "tryMapSettings returns a INIValue tuple option with new results" <| fun () ->
+              let eFile, gFile = tryMapSettings engineFile gameUserFile newOptGroupList
+              (notOrigAndParses engineFile (eFile
+                                            |> Option.get
+                                            |> string)
+               && notOrigAndParses gameUserFile (gFile
+                                                 |> Option.get
+                                                 |> string))
+              |> Expect.isTrue
+              <| "" ]
+        |> testList "Mordhau Config"
+
     [<Tests>]
-    let tests = testList "INIValue" [ frankenstein ]
+    let tests = testList "INIValue" [ frankenstein; mordhauConfig ]

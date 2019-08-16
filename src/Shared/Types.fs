@@ -2,18 +2,24 @@ namespace MordhauBuddy.Shared
 
 module ElectronBridge =
     [<RequireQualifiedAccess>]
-    type BridgeResult =
-        | Replace of bool
-        | Delete of bool
-        | Exists of bool
-        | Parse of bool
-        | Backup of bool
-        | DefaultDir of string option
-        | Random of bool
-        | Frankenstein of bool
-        | Custom of bool
-        | ProfileList of (string * string) list
-        | CommitChanges of bool
+    module KeyValues =
+        [<RequireQualifiedAccess>]
+        type Values =
+            | String of string
+            | Bool of bool
+            | Int of int
+            | Float of float
+            override this.ToString() =
+                match this with
+                | String(s) -> s |> string
+                | Bool(b) -> b |> string
+                | Int(i) -> i |> string
+                | Float(f) -> f |> string
+
+    type KeyValues =
+        { Key : string
+          Default : KeyValues.Values
+          Value : KeyValues.Values option }
 
     [<RequireQualifiedAccess>]
     type File =
@@ -21,6 +27,36 @@ module ElectronBridge =
         | Engine
         | GameUserSettings
         member this.Name = this.ToString() + ".ini"
+
+    type OptionGroup =
+        { Title : string
+          Caption : string
+          Settings : KeyValues list
+          File : File }
+
+    [<RequireQualifiedAccess>]
+    type FaceResult =
+        | Random of bool
+        | Frankenstein of bool
+        | Custom of bool
+        | ProfileList of (string * string) list
+
+    [<RequireQualifiedAccess>]
+    type ConfigResult =
+        | GetConfigs of OptionGroup list
+        | MapConfigs of bool
+
+    [<RequireQualifiedAccess>]
+    type BridgeResult =
+        | Replace of bool
+        | Delete of bool
+        | Exists of bool
+        | Parse of bool
+        | Backup of bool
+        | DefaultDir of string option
+        | CommitChanges of bool
+        | Faces of FaceResult
+        | Config of ConfigResult
 
     [<RequireQualifiedAccess>]
     type Caller =
@@ -61,9 +97,14 @@ module ElectronBridge =
             | Custom of string list * string
             | ProfileList
 
+        type Configs =
+            | GetConfigs of OptionGroup list
+            | MapConfigs of OptionGroup list
+
         type INIOperations =
             | Operation of FileOperation
             | Faces of Faces
+            | Configs of Configs
             static member Endpoint = "/ws/iniops"
 
     type RemoteServerMsg = INIOps of INIOperations * Caller

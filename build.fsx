@@ -139,7 +139,7 @@ let getEnvFromAllOrNone (s: string) =
     | _ -> None
 
 let configuration() =
-    FakeVar.getOrFail("configuration")
+    FakeVar.getOrDefault "configuration" "Release"
 
 // --------------------------------------------------------------------------------------
 // Set configuration mode based on target

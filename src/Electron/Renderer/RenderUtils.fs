@@ -87,9 +87,6 @@ module RenderUtils =
                 err |> List.reduce (fun acc elem -> acc + " " + elem)
 
     module Validation =
-        open Fable.Core.Testing
-        open Fable.Validation.Core
-        open Node.Api
         open System.Text.RegularExpressions
 
         let validateConfigDir (s: string) = Fable.Validation.Core.single <| fun t ->
@@ -142,31 +139,7 @@ module RenderUtils =
             65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
 
     module rec EngineMods =
-        
-        [<RequireQualifiedAccess>]
-        module KeyValues =
-            [<RequireQualifiedAccess>]
-            type Values =
-                | String of string
-                | Bool of bool
-                | Int of int
-                | Float of float
-                | GameSettings of int
-
-        type KeyValues =
-            { Key : string
-              Default : KeyValues.Values
-              Value : KeyValues.Values option }
-
-        type OptionGroup =
-            { Title : string
-              Caption : string
-              Settings : KeyValues list }
-
-        let private toneMapperValidation (kvs: KeyValues) =
-            match kvs.Value with
-            | Some(KeyValues.Values.Float(f)) when f >= 0. && f <= 10. -> true
-            | _ -> false
+        open MordhauBuddy.Shared.ElectronBridge
 
         let cosmetics = [
             { Title = "Sharpen picture"
@@ -176,8 +149,8 @@ module RenderUtils =
               Settings = [
                   { Key = @"r.Tonemapper.Sharpen"
                     Default = KeyValues.Values.Int(2)
-                    Value = None } 
-            ] }
+                    Value = None } ]
+              File = File.Engine }
             { Title = "Disable sun glare"
               Caption = 
                 "Disables or reduces sun glare effects in game. \
@@ -191,8 +164,8 @@ module RenderUtils =
                     Value = None }
                   { Key = @"r.MotionBlurQuality"
                     Default = KeyValues.Values.Int(0)
-                    Value = None }
-            ] }
+                    Value = None} ]
+              File = File.Engine }
             { Title = "Disable Fisheye Effect"
               Caption = 
                 "Enables artificial panini projection, helps if fisheye \
@@ -203,15 +176,15 @@ module RenderUtils =
                     Value = None }
                   { Key = @"r.upscale.panini.s"
                     Default = KeyValues.Values.Float(0.025)
-                    Value = None }
-            ] } 
+                    Value = None} ]
+              File = File.Engine }
             { Title = "Disable fog"
               Caption = "Removes additional fog effects from maps."
               Settings = [
                   { Key = @"r.Fog"
                     Default = KeyValues.Values.Int(0)
-                    Value = None }
-            ] } ]
+                    Value = None} ]
+              File = File.Engine } ]
 
         let utilities = [
             { Title = "Enable network parry debug"
@@ -221,16 +194,16 @@ module RenderUtils =
               Settings = [
                   { Key = @"m.DebugNetworkParry"
                     Default = KeyValues.Values.Int(1)
-                    Value = None } 
-            ] }
+                    Value = None} ]
+              File = File.Engine }
             { Title = "Skip intro cut scenes"
               Caption = 
                 "This will disable the intro videos from playing."
               Settings = [
                   { Key = @"SkipStartupMovies"
-                    Default = KeyValues.Values.GameSettings(1)
-                    Value = None }             
-            ] } ]
+                    Default = KeyValues.Values.Int(1)
+                    Value = None} ]
+              File = File.GameUserSettings } ]
 
         let performance = [
             { Title = "Enable Runescape mode"
@@ -243,8 +216,8 @@ module RenderUtils =
                     Value = None } 
                   { Key = @"r.skeletalmeshlodbias"
                     Default = KeyValues.Values.Int(500)
-                    Value = None } 
-            ] } ]
+                    Value = None} ]
+              File = File.Engine } ]
 
         let quality = [
             { Title = "Enable texture pre-loading"
@@ -275,8 +248,8 @@ module RenderUtils =
                     Value = None } 
                   { Key = @"r.Shaders.Optimize"
                     Default = KeyValues.Values.Int(1)
-                    Value = None } 
-            ] } ]
+                    Value = None} ]
+              File = File.Engine } ]
 
     module Toastr =
         open Elmish
@@ -323,13 +296,10 @@ module RenderUtils =
                 else warningToastWithTitle msg.Message msg.Title ]
 
     module MaterialUI =
-        open Fable.Core
-        open Fable.Core.JsInterop
         open Fable.React
         open Fable.React.Props
         open Fable.MaterialUI
         open Fable.MaterialUI.Core
-        open Fable.MaterialUI.Props
 
         module Core =
             let inline slider (b : IHTMLProp seq) c : ReactElement = 

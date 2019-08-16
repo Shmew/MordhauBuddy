@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>BridgeResult - MordhauBuddy</title>
+    <title>MordhauConfig - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,185 +34,182 @@
 
 
 
-<h1>BridgeResult</h1>
+<h1>MordhauConfig</h1>
 <p>
-
-    <span>Namespace: MordhauBuddy.Shared</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-shared-electronbridge.html">ElectronBridge</a></span><br />
-            <span>
-            Attributes: <br />
-[&lt;RequireQualifiedAccess&gt;]<br />
-            
-        </span>
-</p>
+  <span>Namespace: MordhauBuddy.Core</span><br />
+  <span>Parent Module: <a href="mordhaubuddy-core-iniconfiguration.html">INIConfiguration</a></span>
+  </p>
 <div class="xmldoc">
+<p>Module for modifying Game and GameUserSettings ini files</p>
+
 </div>
-  <h3>Union Cases</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '440', 440)" onmouseover="showTip(event, '440', 440)">
-            Backup(bool)
+          <code onmouseout="hideTip(event, '118', 118)" onmouseover="showTip(event, '118', 118)">
+            castKV def iVal
           </code>
-          <div class="tip" id="440">
-            <strong>Signature:</strong> bool<br />
+          <div class="tip" id="118">
+            <strong>Signature:</strong> def:Values -&gt; iVal:INIValue option -&gt; Values option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L55-55" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L253-253" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Try to cast an INIValue to KeyValue primative</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '441', 441)" onmouseover="showTip(event, '441', 441)">
-            CommitChanges(bool)
+          <code onmouseout="hideTip(event, '119', 119)" onmouseover="showTip(event, '119', 119)">
+            filterFile options file
           </code>
-          <div class="tip" id="441">
-            <strong>Signature:</strong> bool<br />
+          <div class="tip" id="119">
+            <strong>Signature:</strong> options:OptionGroup list -&gt; file:File -&gt; OptionGroup list<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L57-57" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L300-300" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Filter the <code>OptionGroup list</code> based on <a href="mordhaubuddy-shared-electronbridge-file.html" title="File"><code>File</code></a> given</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '442', 442)" onmouseover="showTip(event, '442', 442)">
-            Config(ConfigResult)
+          <code onmouseout="hideTip(event, '120', 120)" onmouseover="showTip(event, '120', 120)">
+            getSettings(...)
           </code>
-          <div class="tip" id="442">
-            <strong>Signature:</strong> ConfigResult<br />
+          <div class="tip" id="120">
+            <strong>Signature:</strong> engineFile:INIValue -&gt; gameUserFile:INIValue -&gt; options:OptionGroup list -&gt; OptionGroup list<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L59-59" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L277-277" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Get current settings of the <code>OptionGroup list</code> if present in the configuration files</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '443', 443)" onmouseover="showTip(event, '443', 443)">
-            DefaultDir(string option)
+          <code onmouseout="hideTip(event, '121', 121)" onmouseover="showTip(event, '121', 121)">
+            mapGroupSettings props kvList
           </code>
-          <div class="tip" id="443">
-            <strong>Signature:</strong> string option<br />
+          <div class="tip" id="121">
+            <strong>Signature:</strong> props:INIValue list -&gt; kvList:KeyValues list -&gt; KeyValues list<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L56-56" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L262-262" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Map the group settings if they're present in the given <code>INIValue list</code></p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '444', 444)" onmouseover="showTip(event, '444', 444)">
-            Delete(bool)
+          <code onmouseout="hideTip(event, '122', 122)" onmouseover="showTip(event, '122', 122)">
+            mapOptGroup oGroup props
           </code>
-          <div class="tip" id="444">
-            <strong>Signature:</strong> bool<br />
+          <div class="tip" id="122">
+            <strong>Signature:</strong> oGroup:OptionGroup -&gt; props:INIValue list -&gt; OptionGroup<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L52-52" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L273-273" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Map the option groups via <code>mapGroupSettings</code></p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '445', 445)" onmouseover="showTip(event, '445', 445)">
-            Exists(bool)
+          <code onmouseout="hideTip(event, '123', 123)" onmouseover="showTip(event, '123', 123)">
+            mapOptions iFile selectors options
           </code>
-          <div class="tip" id="445">
-            <strong>Signature:</strong> bool<br />
+          <div class="tip" id="123">
+            <strong>Signature:</strong> iFile:INIValue -&gt; selectors:string list -&gt; options:OptionGroup list -&gt; INIValue<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L53-53" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L312-312" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Applies the <code>OptionGroup list</code> <code>Settings</code> to the given <a href="mordhaubuddy-core-inireader-inivalue.html" title="INIValue"><code>INIValue</code></a> based on the selectors</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '446', 446)" onmouseover="showTip(event, '446', 446)">
-            Faces(FaceResult)
+          <code onmouseout="hideTip(event, '124', 124)" onmouseover="showTip(event, '124', 124)">
+            mapOptionToINIValue(...)
           </code>
-          <div class="tip" id="446">
-            <strong>Signature:</strong> FaceResult<br />
+          <div class="tip" id="124">
+            <strong>Signature:</strong> iVal:INIValue -&gt; setting:KeyValues -&gt; selectors:string list -&gt; INIValue<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L58-58" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L304-304" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Maps the option value if present to the <a href="mordhaubuddy-core-inireader-inivalue.html" title="INIValue"><code>INIValue</code></a> or adds it</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '447', 447)" onmouseover="showTip(event, '447', 447)">
-            Parse(bool)
+          <code onmouseout="hideTip(event, '125', 125)" onmouseover="showTip(event, '125', 125)">
+            tryMapSettings(...)
           </code>
-          <div class="tip" id="447">
-            <strong>Signature:</strong> bool<br />
+          <div class="tip" id="125">
+            <strong>Signature:</strong> engineFile:INIValue -&gt; gameUserFile:INIValue -&gt; options:OptionGroup list -&gt; INIValue option * INIValue option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L54-54" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L322-322" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
+          <p>Map the <code>OptionGroup list</code> values to the Engine.ini and GameUserSettings.ini if present</p>
 
-          <code onmouseout="hideTip(event, '448', 448)" onmouseover="showTip(event, '448', 448)">
-            Replace(bool)
-          </code>
-          <div class="tip" id="448">
-            <strong>Signature:</strong> bool<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L51-51" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
+
         </td>
       </tr>
     </tbody>

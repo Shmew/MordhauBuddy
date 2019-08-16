@@ -239,9 +239,105 @@ module INIConfiguration =
             |> fun section ->
                 gameFile.Map([ @"/Game/Mordhau/Blueprints/BP_MordhauSingleton.BP_MordhauSingleton_C" ], section)
 
+        // Attempts to set character profile face values and returns `Option`
+        let tryApplyChanges (profiles : string list) (iVal : INIValue) (fAction : FaceActions) =
+            try
+                profiles
+                |> List.fold (fun acc profile -> setCharacterProfileFace acc profile fAction) iVal
+                |> Some
+            with _ -> None
+
+    /// Module for modifying Game and GameUserSettings ini files
+    module MordhauConfig =
+        /// Try to cast an INIValue to KeyValue primative
+        let castKV (def : KeyValues.Values) (iVal : INIValue option) =
+            match def with
+            | KeyValues.Values.Float(_) -> INIValueOptionExtensions.AsFloat(iVal) |> Option.map KeyValues.Values.Float
+            | KeyValues.Values.Bool(_) -> INIValueOptionExtensions.AsBoolean(iVal) |> Option.map KeyValues.Values.Bool
+            | KeyValues.Values.Int(_) -> INIValueOptionExtensions.AsInteger(iVal) |> Option.map KeyValues.Values.Int
+            | KeyValues.Values.String(_) ->
+                INIValueOptionExtensions.AsString(iVal) |> Option.map KeyValues.Values.String
+
+        /// Map the group settings if they're present in the given `INIValue list`
+        let mapGroupSettings (props : INIValue list) (kvList : KeyValues list) =
+            kvList
+            |> List.map (fun kv ->
+                   { kv with Value =
+                                 props
+                                 |> List.choose (fun p -> p.TryGetProperty(kv.Key))
+                                 |> List.concat
+                                 |> List.tryHead
+                                 |> castKV (kv.Default) })
+
+        /// Map the option groups via `mapGroupSettings`
+        let mapOptGroup (oGroup : OptionGroup) (props : INIValue list) =
+            { oGroup with Settings = oGroup.Settings |> mapGroupSettings props }
+
+        /// Get current settings of the `OptionGroup list` if present in the configuration files
+        let getSettings (engineFile : INIValue) (gameUserFile : INIValue) (options : OptionGroup list) =
+            let engineSettings =
+                engineFile.TryGetProperty("File")
+                |> Option.map (List.choose (fun iVal -> iVal.TryGetProperty("SystemSettings")))
+                |> Option.map (List.concat)
+
+            let gameUserSettings =
+                gameUserFile.TryGetProperty("File")
+                |> Option.map
+                       (List.choose (fun iVal -> iVal.TryGetProperty(@"/Script/Mordhau.MordhauGameUserSettings")))
+                |> Option.map (List.concat)
+
+            options
+            |> List.map (fun oGroup ->
+                   match oGroup.File with
+                   | File.Engine -> engineSettings |> Option.map (mapOptGroup oGroup)
+                   | File.GameUserSettings -> gameUserSettings |> Option.map (mapOptGroup oGroup)
+                   | _ -> None
+                   |> function
+                   | Some(newOGroup) -> newOGroup
+                   | None -> oGroup)
+
+        /// Filter the `OptionGroup list` based on `File` given
+        let filterFile (options : OptionGroup list) (file : File) =
+            options |> List.filter (fun option -> option.File = file)
+
+        /// Maps the option value if present to the `INIValue` or adds it
+        let mapOptionToINIValue (iVal : INIValue) (setting : KeyValues) (selectors : string list) =
+            let iStr =
+                setting.Value
+                |> Option.map string
+                |> INIValue.String
+            iVal.Map(selectors, iStr)
+
+        /// Applies the `OptionGroup list` `Settings` to the given `INIValue` based on the selectors
+        let mapOptions (iFile : INIValue) (selectors : string list) (options : OptionGroup list) =
+            options
+            |> List.fold
+                   (fun acc elem ->
+                   elem.Settings
+                   |> List.fold
+                          (fun subElem setting ->
+                          List.append selectors [ setting.Key ] |> mapOptionToINIValue subElem setting) acc) iFile
+
+        /// Map the `OptionGroup list` values to the Engine.ini and GameUserSettings.ini if present
+        let tryMapSettings (engineFile : INIValue) (gameUserFile : INIValue) (options : OptionGroup list) =
+            try
+                let engine =
+                    File.Engine
+                    |> filterFile options
+                    |> mapOptions engineFile [ "SystemSettings" ]
+
+                let gameUser =
+                    File.GameUserSettings
+                    |> filterFile options
+                    |> mapOptions gameUserFile [ @"/Script/Mordhau.MordhauGameUserSettings" ]
+
+                Some(engine), Some(gameUser)
+            with _ -> None, None
+
     /// Mapping of internal functions to client requests
     module BridgeOperations =
         open Frankenstein
+        open MordhauConfig
 
         /// Replace the oVal with iVal based on selectors
         let replace (oVal : INIValue) (iVal : INIValue) (selectors : string list) = oVal.Map(selectors, iVal)
@@ -273,13 +369,6 @@ module INIConfiguration =
         /// Try to locate the default Mordhau configuration directory
         let defDir() = FileOps.defConfigDir
 
-        let private tryApplyChanges (profiles : string list) (iVal : INIValue) (fAction : FaceActions) =
-            try
-                profiles
-                |> List.fold (fun acc profile -> setCharacterProfileFace acc profile fAction) iVal
-                |> Some
-            with _ -> None
-
         /// Ranomize the profiles if they are within the given `INIValue`
         let random (profiles : string list) (iVal : INIValue) = tryApplyChanges profiles iVal FaceActions.Random
 
@@ -293,3 +382,11 @@ module INIConfiguration =
 
         /// Get the profiles within the given `INIValue`
         let profileList (iVal : INIValue) = getCharacterProfileNames iVal |> getCharacterProfileExports iVal
+
+        /// Get the configurations set in the two INIValues if present
+        let getConfigs (engine : INIValue) (gameUser : INIValue) (options : OptionGroup list) =
+            getSettings engine gameUser options
+
+        /// Apply the new values into the two INIValues or add them
+        let mapConfigs (engine : INIValue) (gameUser : INIValue) (options : OptionGroup list) =
+            tryMapSettings engine gameUser options

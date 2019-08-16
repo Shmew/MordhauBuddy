@@ -90,29 +90,6 @@ module State =
                                 HelperText = "Game.ini not found"
                                 Validated = false } 
                     }, Cmd.none
-            | BridgeResult.ProfileList l ->
-                { model with
-                    ParseWaiting = false
-                    Stepper = model.Stepper.Next
-                    TransferList =
-                        if l.Length = 0 then
-                            { model.TransferList with
-                                LeftProfiles = []
-                                LeftChecked = 0
-                                RightProfiles = []
-                                RightChecked = 0
-                                Error = true
-                                HelperText = "No profiles found!"}
-                        else
-                            { model.TransferList with
-                                LeftProfiles =
-                                    l |> List.map (fun (p,export) -> { Name = p; Checked = false; Export = export })
-                                LeftChecked = 0
-                                RightProfiles = []
-                                RightChecked = 0
-                                Error = false
-                                HelperText = "Please select which profiles you'd like to modify"}
-                    }, Cmd.none
             | BridgeResult.Parse b ->
                 if b then
                     model, Cmd.namedBridgeSend "INI" (sender.getProfileList)
@@ -134,13 +111,6 @@ module State =
                     | _ -> submissionFailed "Invalid submission", Cmd.ofMsg SnackDismissMsg
                 else
                     submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg
-            | BridgeResult.Frankenstein b
-            | BridgeResult.Random b
-            | BridgeResult.Custom b
-                ->
-                    if b then
-                        model, Cmd.namedBridgeSend "INI" (sender.commit(fileWrap(model.ConfigDir.Directory)))
-                    else submissionFailed "Modifying INI failed", Cmd.ofMsg SnackDismissMsg
             | BridgeResult.CommitChanges b ->
                 if b then
                     { model with
@@ -152,6 +122,38 @@ module State =
                                 HelperText = "Changes successfully completed!" } }
                 else submissionFailed "Error commiting changes to the file"
                 ,Cmd.ofMsg SnackDismissMsg
+            | BridgeResult.Faces fr ->
+                match fr with
+                | FaceResult.ProfileList l ->
+                    { model with
+                        ParseWaiting = false
+                        Stepper = model.Stepper.Next
+                        TransferList =
+                            if l.Length = 0 then
+                                { model.TransferList with
+                                    LeftProfiles = []
+                                    LeftChecked = 0
+                                    RightProfiles = []
+                                    RightChecked = 0
+                                    Error = true
+                                    HelperText = "No profiles found!"}
+                            else
+                                { model.TransferList with
+                                    LeftProfiles =
+                                        l |> List.map (fun (p,export) -> { Name = p; Checked = false; Export = export })
+                                    LeftChecked = 0
+                                    RightProfiles = []
+                                    RightChecked = 0
+                                    Error = false
+                                    HelperText = "Please select which profiles you'd like to modify"}
+                        }, Cmd.none
+                | FaceResult.Frankenstein b
+                | FaceResult.Random b
+                | FaceResult.Custom b
+                    ->
+                        if b then
+                            model, Cmd.namedBridgeSend "INI" (sender.commit(fileWrap(model.ConfigDir.Directory)))
+                        else submissionFailed "Modifying INI failed", Cmd.ofMsg SnackDismissMsg
             | _ -> { model with Waiting = false }, Cmd.none
         | StepperSubmit -> 
             { model with
