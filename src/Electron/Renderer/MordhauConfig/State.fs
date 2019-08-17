@@ -66,17 +66,18 @@ module State =
                                     HelperText = "Mordhau directory located"
                                     Validated = false } }
 
-                    { model with Waiting = false}
-                    |> fun modelWait ->
-                        match model.EngineDir.Directory = "", model.GameUserDir.Directory = "" with
-                        | true, true -> mapEngine >> mapGameUser
-                        | true, false -> mapEngine
-                        | false, true -> mapGameUser
-                        | _ -> id
-                        <| modelWait
-                    , Cmd.batch 
-                        [ Cmd.ofMsg <| SetConfigDir (d,Ok d, File.GameUserSettings)
-                          Cmd.ofMsg <| SetConfigDir (d,Ok d, File.Engine) ]
+                    let m =
+                        { model with Waiting = false}
+                        |> fun modelWait ->
+                            match model.EngineDir.Directory = "", model.GameUserDir.Directory = "" with
+                            | true, true -> mapEngine >> mapGameUser
+                            | true, false -> mapEngine
+                            | false, true -> mapGameUser
+                            | _ -> id
+                            <| modelWait
+                    m,Cmd.batch
+                        [ Cmd.namedBridgeSend "INI" (sender.exists { File = File.Engine; WorkingDir = Some(m.EngineDir.Directory) }) 
+                          Cmd.namedBridgeSend "INI" (sender.exists { File = File.GameUserSettings; WorkingDir = Some(m.GameUserDir.Directory) }) ]
                 | None ->
                     { model with
                         Waiting = false
@@ -152,10 +153,30 @@ module State =
                                     HelperText = "Error parsing GameUserSettings.ini" }}
                         , Cmd.none
                     | _ -> { model with Waiting = false }, Cmd.none
-                | Some(_), true when model.GameUserDir.Waiting && model.EngineDir.Waiting ->
-                        model,
+                | Some(f), true ->
+                    let getConfigCmd =
                         Cmd.namedBridgeSend "INI" 
                             (sender.getConfigs (model.Panels |> List.collect (fun p -> p.Items)))
+                    let setGameUserValid m =
+                        { m with
+                            GameUserDir =
+                                { m.GameUserDir with
+                                    Validated = true } }
+                    let setEngineValid m =
+                        { m with
+                            EngineDir =
+                                { m.EngineDir with
+                                    Validated = true } }
+                    match f with
+                    | File.Engine when model.GameUserDir.Validated |> not ->
+                        model |> setEngineValid, Cmd.none
+                    | File.GameUserSettings when model.EngineDir.Validated |> not ->
+                        model |> setGameUserValid, Cmd.none
+                    | File.Engine ->
+                        model |> setEngineValid, getConfigCmd
+                    | File.GameUserSettings ->
+                        model |> setGameUserValid, getConfigCmd
+                    | _ -> { model with Waiting = false }, Cmd.none
                 | _ -> { model with Waiting = false }, Cmd.none
             | BridgeResult.Backup b ->
                 if b then
@@ -167,12 +188,12 @@ module State =
             | BridgeResult.CommitChanges b ->
                 if b then
                     { model with
-                        Complete = true
                         Submit =
                             { model.Submit with
                                 Waiting = false
                                 Error = false
-                                HelperText = "Changes successfully completed!" } }
+                                HelperText = "Changes successfully completed!"
+                                Complete = true } }
                 else submissionFailed "Error commiting changes to the file"
                 , Cmd.ofMsg SnackDismissMsg
             | BridgeResult.Config cr ->
@@ -189,66 +210,29 @@ module State =
                         Panels =
                             model.Panels 
                             |> List.map (fun (p: Panel) ->
-                                p.Panel.Modifications
+                                p.Items
                                 |> List.map (fun optGroup ->
-                                    oList |> List.tryFind (fun nOptGroup -> optGroup.Title = nOptGroup.Title && optGroup.File = nOptGroup.File)
+                                    oList |> List.tryFind (fun nOptGroup -> optGroup.Title = nOptGroup.Title)
                                     |> function
                                     | Some(nOptGroup) -> nOptGroup
-                                    | _ -> optGroup )
+                                    | _ -> optGroup 
+                                    |> (fun mods -> 
+                                        match mods.Settings |> List.forall (fun setting -> setting.Value.IsSome) with
+                                        | true -> { mods with Enabled = true }
+                                        | false -> mods ) )
                                 |> fun mods -> {p with Items = mods} ) }
                     , Cmd.none
                 | ConfigResult.MapConfigs b ->
                     if b then
-                        model, Cmd.batch 
-                            [ Cmd.namedBridgeSend "INI" (sender.commit { File = File.Engine; WorkingDir = model.EngineDir.Directory |> Some }) 
-                              Cmd.namedBridgeSend "INI" (sender.commit { File = File.GameUserSettings; WorkingDir = model.GameUserDir.Directory |> Some }) ]
+                        model, 
+                        Cmd.namedBridgeSend "INI" 
+                            (sender.commit 
+                                [ { File = File.Engine; WorkingDir = model.EngineDir.Directory |> Some }
+                                  { File = File.GameUserSettings; WorkingDir = model.GameUserDir.Directory |> Some } ])
                     else submissionFailed "Modifying INI failed", Cmd.ofMsg SnackDismissMsg
             | _ -> { model with Waiting = false }, Cmd.none
         | GetDefaultDir ->
             model, Cmd.namedBridgeSend "INI" (sender.defDir)
-        | SetConfigDir (s,res,file) -> 
-            match res,file with
-            | Ok s, File.Engine ->
-                { model with
-                    EngineDir =
-                        { model.EngineDir with
-                            Directory = s
-                            Error = false
-                            HelperText = "" } }
-                , Cmd.namedBridgeSend "INI" (sender.exists { File = File.Engine; WorkingDir = Some(s) })
-            | Ok s, File.GameUserSettings ->
-                { model with
-                    GameUserDir =
-                        { model.GameUserDir with
-                            Directory = s
-                            Error = false
-                            HelperText = "" } }
-                , Cmd.namedBridgeSend "INI" (sender.exists { File = File.GameUserSettings; WorkingDir = Some(s) })
-            | Error _, File.Engine ->
-                { model with
-                    EngineDir =
-                        { model.EngineDir with
-                            Directory = s
-                            Error = true
-                            HelperText = errorStrings res } }
-                , Cmd.none
-            | Error _, File.GameUserSettings ->
-                { model with
-                    GameUserDir =
-                        { model.GameUserDir with
-                            Directory = s
-                            Error = true
-                            HelperText = errorStrings res } }
-                , Cmd.none
-            | _ -> model, Cmd.none
-        | RequestLoad (file) ->
-            let handleLoaded =
-                function
-                | DirSelect.Selected s ->
-                    SetConfigDir (s, validateConfigDir s, file)
-                | DirSelect.Canceled -> LoadCanceled
-            model, Cmd.OfPromise.perform selectDir () handleLoaded
-        | LoadCanceled -> model, Cmd.none
         | Expand(p) ->
             model.Panels
             |> List.map (fun oPanel -> 
@@ -258,15 +242,25 @@ module State =
             |> fun newPanels ->    
                 { model with Panels = newPanels}, Cmd.none
         | ToggleOption(oGroup) ->
+            let toggle = oGroup.Enabled |> not
             let newValues =
                 { oGroup with
                     Settings =
-                        oGroup.Settings
-                        |> List.map (fun s ->
-                            if s.Value.IsNone then { s with Value = s.Default |> Some }
-                            else { s with Value = None })
-                    Enabled = oGroup.Enabled |> not }
+                        if toggle then
+                            oGroup.Settings
+                            |> List.map (fun s ->
+                                if s.Value.IsNone then { s with Value = s.Default |> Some }
+                                else s)
+                        else
+                            oGroup.Settings
+                            |> List.map (fun s ->
+                                if s.Value.IsNone then s
+                                else { s with Value = None })
+                    Enabled = toggle }
             { model with
+                Submit =
+                    { model.Submit with
+                        Complete = false }
                 Panels =
                     model.Panels 
                     |> List.map (fun p ->
@@ -281,9 +275,10 @@ module State =
                 Submit =
                     { model.Submit with
                         Waiting = true } }
-            , Cmd.batch 
-                [ Cmd.namedBridgeSend "INI" (sender.backup { File = File.Engine; WorkingDir = model.EngineDir.Directory |> Some }) 
-                  Cmd.namedBridgeSend "INI" (sender.backup { File = File.GameUserSettings; WorkingDir = model.GameUserDir.Directory |> Some }) ]
+            , Cmd.namedBridgeSend "INI" 
+                (sender.backup 
+                    [ { File = File.Engine; WorkingDir = model.EngineDir.Directory |> Some }
+                      { File = File.GameUserSettings; WorkingDir = model.GameUserDir.Directory |> Some } ]) 
         | SnackMsg msg' ->
             let m, cmd, actionCmd = Snackbar.State.update msg' model.Snack
             { model with Snack = m },

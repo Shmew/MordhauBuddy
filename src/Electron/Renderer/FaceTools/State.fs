@@ -154,7 +154,7 @@ module State =
                 | FaceResult.Custom b
                     ->
                         if b then
-                            model, Cmd.namedBridgeSend "INI" (sender.commit(fileWrap(model.ConfigDir.Directory)))
+                            model, Cmd.namedBridgeSend "INI" (sender.commit([fileWrap(model.ConfigDir.Directory)]))
                         else submissionFailed "Modifying INI failed", Cmd.ofMsg SnackDismissMsg
             | _ -> { model with Waiting = false }, Cmd.none
         | StepperSubmit -> 
@@ -163,7 +163,7 @@ module State =
                     { model.Submit with
                         Waiting = true } }
             , Cmd.namedBridgeSend "INI" 
-                (sender.backup(fileWrap(model.ConfigDir.Directory)) )
+                (sender.backup([fileWrap(model.ConfigDir.Directory)]) )
         | StepperRestart -> 
             { init(model.ConfigDir.Directory) with Waiting = false },
                 Cmd.ofMsg <| SetConfigDir (model.ConfigDir.Directory, Ok model.ConfigDir.Directory)

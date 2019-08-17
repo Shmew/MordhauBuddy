@@ -32,117 +32,115 @@ module View =
         ])
     ]
 
-    let private panelDetails (classes : IClasses) model dispatch (panel : ExpansionPanels) =
-        let listItems =
-            panel.Modifications
-            |> List.mapi (fun ind oGroup ->
-                [
-                    yield
-                        listItem [ ] [
-                            listItemText [] [
-                                str oGroup.Title
-                            ]
-                            formControl [
-                                Style [ CSSProp.PaddingRight "4em" ]
-                            ] [
-                                formGroup [] [
-                                    formControlLabel [
-                                        FormControlLabelProp.Control <|
-                                            switch [
-                                                HTMLAttr.Checked oGroup.Enabled
-                                                DOMAttr.OnClick <| fun _ -> dispatch (ToggleOption(oGroup))
-                                            ]
-                                    ] []
-                                ]
-                            ]
-                            div [
-                                Style [ CSSProp.Width "33%" ]
-                            ] [ 
-                                typography [
-                                    TypographyProp.Variant TypographyVariant.Caption
-                                ] [ str oGroup.Caption ] 
+    let panelDetails (classes: IClasses) model dispatch (oGroups : OptionGroup list) =
+        oGroups
+        |> List.mapi (fun ind oGroup ->
+            [
+                yield
+                    listItem [ ] [
+                        listItemText [] [
+                            str oGroup.Title
+                        ]
+                        formControl [
+                            Style [ CSSProp.PaddingRight "4em" ]
+                        ] [
+                            formGroup [] [
+                                formControlLabel [
+                                    FormControlLabelProp.Control <|
+                                        switch [
+                                            HTMLAttr.Checked oGroup.Enabled
+                                            DOMAttr.OnChange <| fun _ -> dispatch (ToggleOption(oGroup))
+                                        ]
+                                ] []
                             ]
                         ]
-                    if panel.Modifications.Length > ind + 1 then
-                        yield divider []
-                ])
-            |> List.concat
-            
-
-        grid [
-            GridProp.Container true
-            GridProp.Spacing GridSpacing.``0``
-            GridProp.Justify GridJustify.Center
-            GridProp.AlignItems GridAlignItems.Center
-            Style [ CSSProp.Width "100%" ]
-        ] [
-            list [
-                MaterialProp.Dense false
-                Style [ 
-                    CSSProp.OverflowY "auto"
-                    CSSProp.MaxHeight "30em"
-                    CSSProp.Width "100%"
-                ]
-            ] listItems
-        ]
+                        div [
+                            Style [ CSSProp.Width "33%" ]
+                        ] [ 
+                            typography [
+                                TypographyProp.Variant TypographyVariant.Caption
+                            ] [ str oGroup.Caption ] 
+                        ]
+                    ]
+                if oGroups.Length > ind + 1 then
+                    yield divider []
+            ])
+        |> List.concat
 
     let private expansionPanels (classes: IClasses) model dispatch =
         model.Panels
         |> List.map (fun p ->
-                expansionPanel [
-                    ExpansionPanelProp.Expanded p.Expanded
-                    DOMAttr.OnChange (fun _ -> dispatch <| Expand(p))
-                ] [
-                    expansionPanelSummary [
-                        ExpansionPanelSummaryProp.ExpandIcon <| expandMoreIcon []
-                    ] [
-                        typography [
-                            Class classes?accordHead
-                        ] [ str p.Panel.Header ]
-                        typography [
-                            Class classes?accordSubHead
-                        ] [ str p.Panel.SubHeader ]
-                    ]
-                    expansionPanelDetails [] [ panelDetails classes model dispatch p.Panel ]
-                ] )
-
-    let private config (classes: IClasses) model dispatch =
-        paper [] [
-            div [
-                Style [
-                    CSSProp.Padding "2em 5em"
-                    CSSProp.Display DisplayOptions.Flex
-                    CSSProp.MinHeight "76px"
-                ]
+            expansionPanel [
+                ExpansionPanelProp.Expanded p.Expanded
+                DOMAttr.OnChange (fun _ -> dispatch <| Expand(p))
             ] [
-                textField [
-                    TextFieldProp.Variant TextFieldVariant.Outlined
-                    MaterialProp.FullWidth true
-                    HTMLAttr.Label "Mordhau Engine.ini Directory"
-                    HTMLAttr.Value model.GameUserDir.Directory
-                    MaterialProp.Error model.GameUserDir.Error
-                    TextFieldProp.HelperText (model.GameUserDir.HelperText |> str)
-                ] []
-                button [
-                    ButtonProp.Variant ButtonVariant.Contained
-                    MaterialProp.Color ComponentColor.Secondary
-                    DOMAttr.OnClick <| fun _ -> dispatch (RequestLoad(File.Engine))
-                    Style [
-                        CSSProp.MarginLeft "1em" 
-                        CSSProp.MaxHeight "4em" 
+                expansionPanelSummary [
+                    ExpansionPanelSummaryProp.ExpandIcon <| expandMoreIcon []
+                ] [
+                    typography [
+                        Class classes?accordHead
+                    ] [ str p.Panel.Header ]
+                    typography [
+                        Class classes?accordSubHead
+                    ] [ str p.Panel.SubHeader ]
+                ]
+                expansionPanelDetails [] [ 
+                    grid [
+                        GridProp.Container true
+                        GridProp.Spacing GridSpacing.``0``
+                        GridProp.Justify GridJustify.Center
+                        GridProp.AlignItems GridAlignItems.Center
+                        Style [ CSSProp.Width "100%" ]
+                    ] [
+                        list [
+                            MaterialProp.Dense false
+                            Style [ 
+                                CSSProp.OverflowY "auto"
+                                CSSProp.MaxHeight "30em"
+                                CSSProp.Width "100%"
+                            ]
+                        ] <| panelDetails classes model dispatch p.Items 
                     ]
-                ] [ str "Select" ]
+                ]
+            ] )
 
-            ]
-        ]
+    //let private config (classes: IClasses) model dispatch =
+    //    paper [] [
+    //        div [
+    //            Style [
+    //                CSSProp.Padding "2em 5em"
+    //                CSSProp.Display DisplayOptions.Flex
+    //                CSSProp.MinHeight "76px"
+    //            ]
+    //        ] [
+    //            textField [
+    //                TextFieldProp.Variant TextFieldVariant.Outlined
+    //                MaterialProp.FullWidth true
+    //                HTMLAttr.Label "Mordhau Engine.ini Directory"
+    //                HTMLAttr.Value model.GameUserDir.Directory
+    //                MaterialProp.Error model.GameUserDir.Error
+    //                TextFieldProp.HelperText (model.GameUserDir.HelperText |> str)
+    //            ] []
+    //            button [
+    //                ButtonProp.Variant ButtonVariant.Contained
+    //                MaterialProp.Color ComponentColor.Secondary
+    //                DOMAttr.OnClick <| fun _ -> dispatch (RequestLoad(File.Engine))
+    //                Style [
+    //                    CSSProp.MarginLeft "1em" 
+    //                    CSSProp.MaxHeight "4em" 
+    //                ]
+    //            ] [ str "Select" ]
 
+    //        ]
+    //    ]
+    //config classes model dispatch ]
     let private content (classes: IClasses) model dispatch =
         [    
             div [ ] 
                 <| expansionPanels classes model dispatch
             div [ 
                 Style [ CSSProp.MarginTop "2em" ] 
-            ] [ config classes model dispatch ]
+            ] [ ]
             div [ 
                 Style [
                     CSSProp.MarginTop "auto"
@@ -150,11 +148,11 @@ module View =
                 ] 
             ] [
                 button [
-                    HTMLAttr.Disabled false
+                    HTMLAttr.Disabled <| model.Submit.Complete
                     ButtonProp.Variant ButtonVariant.Contained
                     MaterialProp.Color ComponentColor.Primary
-                    //DOMAttr.OnClick <| fun _ -> 
-                    //    dispatch (if this.Last then StepperSubmit else StepperNext)
+                    DOMAttr.OnClick <| fun _ -> 
+                        dispatch Submit
                     Style [ 
                         CSSProp.MaxHeight "2.6em"
                         CSSProp.MarginTop "auto"
@@ -197,8 +195,6 @@ module View =
                               DOMAttr.OnAnimationStart <| fun _ ->
                                 dispatch GetDefaultDir ] ]
                         | _ -> content classes model dispatch
-
-
             //yield
             //    slider [
             //        SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto

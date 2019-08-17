@@ -13,9 +13,6 @@ module rec Types =
     type Msg =
         | ClientMsg of BridgeMsg
         | GetDefaultDir
-        | SetConfigDir of string * Result<string,string list> * File
-        | RequestLoad of File
-        | LoadCanceled
         | Expand of Panel
         | ToggleOption of OptionGroup
         | Submit
@@ -38,7 +35,7 @@ module rec Types =
             | Performance -> "Improve game performance" 
             | Quality -> "Improve game quality"
 
-        member this.Modifications =
+        member private this.Modifications =
             match this with
             | Cosmetic -> cosmetics
             | Utilities -> utilities

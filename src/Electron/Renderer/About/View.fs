@@ -28,8 +28,30 @@ module View =
                 CSSProp.FlexDirection "column"
                 CSSProp.Display DisplayOptions.Flex
                 CSSProp.Height "inherit"
+                CSSProp.Padding "5em"
             ]
-        ] []
+        ] [
+            card [
+                Style [ CSSProp.FlexGrow "1" ]
+            ] [
+                str "Insert logo here"
+                typography [] [str (sprintf "MordhauBuddy %s" (Bindings.Info.version))]
+                typography [] [str (sprintf "Electron: %s" (Bindings.Info.electronVersion))]
+                typography [] [str (sprintf "Chrome: %s" (Bindings.Info.chromeVersion))]
+                typography [] [str (sprintf "Node: %s" (Bindings.Info.nodeVersion))]
+                typography [] [str (sprintf "V8: %s" (Bindings.Info.v8Version))]
+                typography [] [str (sprintf "License: %s" (Bindings.Info.license))]
+                typography [] [str (sprintf "Author: %s" (Bindings.Info.author))]
+
+                link [
+                    DOMAttr.OnClick <| fun _ -> dispatch (OpenLink(Bindings.Info.homepage))
+                ] [ str "Repository" ]
+                link [
+                    DOMAttr.OnClick <| fun _ -> dispatch (OpenLink(Bindings.Info.issues))
+                ] [ str "Issues" ]
+                
+            ]
+        ]
 
     /// Workaround for using JSS with Elmish
     /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471

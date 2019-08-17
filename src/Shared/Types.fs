@@ -88,9 +88,9 @@ module ElectronBridge =
             | Delete of Selectors * INIFile
             | Exists of INIFile
             | Parse of INIFile
-            | Backup of INIFile
+            | Backup of INIFile list
             | DefaultDir
-            | Commit of INIFile
+            | Commit of INIFile list
 
         type Faces =
             | Random of string list

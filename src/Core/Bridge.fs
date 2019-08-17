@@ -73,22 +73,25 @@ module Bridge =
                             result.IsSome
                             |> BridgeResult.Parse
                             |> createClientResp caller (Some(iFile.File))
-                        | Backup(iFile) ->
+                        | Backup(fList) ->
                             model,
-                            backup iFile
+                            fList
+                            |> List.map backup
+                            |> List.forall id
                             |> BridgeResult.Backup
-                            |> createClientResp caller (Some(iFile.File))
+                            |> createClientResp caller None
                         | DefaultDir ->
                             model,
                             defDir()
                             |> BridgeResult.DefaultDir
                             |> createClientResp caller None
-                        | Commit(iFile) ->
-                            let res = write iFile (model.GetIVal(iFile.File).Value)
+                        | Commit(fList) ->
                             model,
-                            res
+                            fList
+                            |> List.map (fun iFile -> write iFile (model.GetIVal(iFile.File).Value))
+                            |> List.forall id
                             |> BridgeResult.CommitChanges
-                            |> createClientResp caller (Some(iFile.File))
+                            |> createClientResp caller None
                     | Faces fCmd ->
                         let cResp br = createClientResp caller (Some(File.Game)) br
                         match fCmd with

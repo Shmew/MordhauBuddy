@@ -4,7 +4,6 @@ module Bindings =
     open Fable.Core
     open Fable.Core.JsInterop
     open Electron
-    open System
 
     module Info =
         let private pkgJson : obj = importDefault "../../../package.json"
@@ -24,6 +23,20 @@ module Bindings =
         let issues : string = pkgJson?bugs?url
         let author : string = pkgJson?author
         let license : string = pkgJson?license
+
+        type private ElectronVersions =
+            abstract chrome : string
+            abstract electron : string
+            abstract node : string
+            abstract v8 : string
+
+        [<Emit("process.versions")>]
+        let private versions : ElectronVersions = jsNative
+
+        let electronVersion = versions.electron
+        let chromeVersion = versions.chrome
+        let nodeVersion = versions.node
+        let v8Version = versions.v8
 
     module WindowState =
         type State =

@@ -14,7 +14,7 @@ module Types =
     open Microsoft.FSharp.Reflection
 
     type Msg =
-        | Holder
+        | OpenLink of string
 
     type Model = 
         { Waiting : bool }

@@ -11,10 +11,13 @@ module State =
     open BridgeUtils
     open RenderUtils.Directory
     open Types
+    open Electron
 
     let init() =
         { Waiting = true }
 
     let update (msg: Msg) (model: Model) =
         match msg with
-        | _ -> model,Cmd.none
+        | OpenLink(url) ->
+            renderer.shell.openExternal(url) |> Promise.start
+            model, Cmd.none
