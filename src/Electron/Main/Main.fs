@@ -9,14 +9,14 @@ module Main =
     open Bindings
 
     /// A global reference to the window object is required in order to prevent garbage collection
-    let mutable mainWindow : BrowserWindow option = Option.None
+    let mutable mainWindow: BrowserWindow option = Option.None
 #if DEBUG
 
     module DevTools =
-        let private installDevTools (extensionRef : obj) (forceDownload : bool) : JS.Promise<string> =
+        let private installDevTools (extensionRef: obj) (forceDownload: bool): JS.Promise<string> =
             importDefault "electron-devtools-installer"
-        let private REACT_DEVELOPER_TOOLS : obj = import "REACT_DEVELOPER_TOOLS" "electron-devtools-installer"
-        let private REDUX_DEVTOOLS : obj = import "REDUX_DEVTOOLS" "electron-devtools-installer"
+        let private REACT_DEVELOPER_TOOLS: obj = import "REACT_DEVELOPER_TOOLS" "electron-devtools-installer"
+        let private REDUX_DEVTOOLS: obj = import "REDUX_DEVTOOLS" "electron-devtools-installer"
 
         let private installDevTool extensionRef =
             promise {
@@ -27,36 +27,35 @@ module Main =
             }
             |> ignore
 
-        let installAllDevTools (win : BrowserWindow) =
+        let installAllDevTools (win: BrowserWindow) =
             installDevTool REACT_DEVELOPER_TOOLS
             installDevTool REDUX_DEVTOOLS
 
-        let uninstallAllDevTools (win : BrowserWindow) =
+        let uninstallAllDevTools (win: BrowserWindow) =
             main.BrowserWindow.removeDevToolsExtension ("React Developer Tools")
             main.BrowserWindow.removeDevToolsExtension ("Redux DevTools")
 
-        let connectRemoteDevViaExtension : unit -> unit = import "connectViaExtension" "remotedev"
+        let connectRemoteDevViaExtension: unit -> unit = import "connectViaExtension" "remotedev"
 
 #endif
-   
+
     let startBridge() =
-        let bridgeProc = 
-            
+        let bridgeProc =
+
 #if DEBUG
-            let bridgePath =
-                path.resolve (__dirname, "..", "../../src/Core/Core.fsproj")
-            let args = 
+            let bridgePath = path.resolve (__dirname, "..", "../../src/Core/Core.fsproj")
+
+            let args =
                 let init = ResizeArray<string>()
-                [ "watch"; "run"; "-f"; "netcoreapp3.0"; "--project"; bridgePath]
-                |> List.iter init.Add
+                [ "watch"; "run"; "-f"; "netcoreapp3.0"; "--project"; bridgePath ] |> List.iter init.Add
                 init
+
             let options =
-                let cwd =
-                    path.resolve (__dirname, "..", "../../src/Core")
+                let cwd = path.resolve (__dirname, "..", "../../src/Core")
                 {| shell = true
                    stdio = "inherit"
-                   cwd = cwd |} 
-                |> toPlainJsObj
+                   cwd = cwd |} |> toPlainJsObj
+
             childProcess.spawn ("dotnet", args, options = options)
 #else
             let bridgePath =
@@ -65,39 +64,45 @@ module Main =
                     | Node.Base.Platform.Win32 -> "Core.exe"
                     | _ -> "Core"
                 path.resolve (__dirname, "..", "extraResources", core)
-            let args = 
+            let args =
                 let init = ResizeArray<string>()
                 init
+
             let options =
                 {| shell = false
-                   stdio = "inherit" |} 
-                |> toPlainJsObj
+                   stdio = "inherit" |} |> toPlainJsObj
             childProcess.spawn (bridgePath, args, options = options)
 #endif
 
         bridgeProc
+
     let bridge = startBridge()
 
 
     let createMainWindow() =
         let mainWinState =
-            WindowState.getState (jsOptions<WindowState.Options> (fun o ->
-                                      o.defaultHeight <- 925
-                                      o.defaultWidth <- 1200))
+            WindowState.getState
+                (jsOptions<WindowState.Options> (fun o ->
+                    o.defaultHeight <- 925
+                    o.defaultWidth <- 1200))
 
         let win =
-            main.BrowserWindow.Create(jsOptions<BrowserWindowOptions> (fun o ->
-                                          o.width <- mainWinState.width
-                                          o.height <- mainWinState.height
-                                          o.minHeight <- 925
-                                          o.minWidth <- 1200
-                                          o.autoHideMenuBar <- true
-                                          o.webPreferences <- jsOptions<WebPreferences> (fun w ->
-                                                                  w.contextIsolation <- false
-                                                                  w.nodeIntegration <- true)
-                                          o.frame <- false
-                                          o.backgroundColor <- "#FFF"
-                                          o.show <- false))
+            main.BrowserWindow.Create
+                (jsOptions<BrowserWindowOptions> (fun o ->
+                    o.width <- mainWinState.width
+                    o.height <- mainWinState.height
+                    o.minHeight <- 925
+                    o.minWidth <- 1200
+                    o.autoHideMenuBar <- true
+                    o.webPreferences <-
+                        jsOptions<WebPreferences> (fun w ->
+                            w.contextIsolation <- false
+                            w.nodeIntegration <- true)
+                    o.frame <- false
+                    o.backgroundColor <- "#FFF"
+                    o.show <- false))
+
+
 
         win.onceReadyToShow (fun _ ->
             win.setTitle <| sprintf "%s - %s" Info.name Info.version
@@ -114,7 +119,7 @@ module Main =
         win.loadURL (sprintf "http://localhost:%s" ``process``.env?ELECTRON_WEBPACK_WDS_PORT) |> ignore
         ``process``.on ("uncaughtException", (fun err -> JS.console.log (err.ToString()))) |> ignore
 #else
-        path.join(__dirname, "index.html")
+        path.join (__dirname, "index.html")
         |> sprintf "file:///%s"
         |> win.loadURL
         |> ignore
@@ -125,7 +130,8 @@ module Main =
         /// corresponding element here.
         win.onClosed (fun _ ->
             bridge.kill()
-            mainWindow <- None) |> ignore
+            mainWindow <- None)
+        |> ignore
         mainWindow <- Some win
 
     /// This method will be called when Electron has finished

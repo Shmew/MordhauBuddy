@@ -16,10 +16,25 @@ module ElectronBridge =
                 | Int(i) -> i |> string
                 | Float(f) -> f |> string
 
+        [<RequireQualifiedAccess>]
+        type MutableValues =
+            | MutInt of int
+            | MutFloat of float
+            member this.ToFloat() =
+                match this with
+                | MutInt(i) -> i |> float
+                | MutFloat(f) -> f
+
+        [<RequireQualifiedAccess>]
+        type Mutable =
+            { Min: MutableValues
+              Max: MutableValues }
+
     type KeyValues =
-        { Key : string
-          Default : KeyValues.Values
-          Value : KeyValues.Values option }
+        { Key: string
+          Default: KeyValues.Values
+          Value: KeyValues.Values option
+          Mutable: KeyValues.Mutable option }
 
     [<RequireQualifiedAccess>]
     type File =
@@ -29,11 +44,12 @@ module ElectronBridge =
         member this.Name = this.ToString() + ".ini"
 
     type OptionGroup =
-        { Title : string
-          Caption : string
-          Settings : KeyValues list
-          File : File
-          Enabled : bool }
+        { Title: string
+          Caption: string
+          Settings: KeyValues list
+          File: File
+          Enabled: bool
+          Expanded: bool }
 
     [<RequireQualifiedAccess>]
     type FaceResult =
@@ -65,9 +81,9 @@ module ElectronBridge =
         | MordhauConfig
 
     type BridgeMsg =
-        { Caller : Caller
-          File : File option
-          BridgeResult : BridgeResult }
+        { Caller: Caller
+          File: File option
+          BridgeResult: BridgeResult }
 
     type RemoteClientMsg =
         | Resp of BridgeMsg
@@ -77,11 +93,11 @@ module ElectronBridge =
     [<AutoOpen>]
     module INITypes =
         type Selectors =
-            { Selectors : string list }
+            { Selectors: string list }
 
         type INIFile =
-            { File : File
-              WorkingDir : string option }
+            { File: File
+              WorkingDir: string option }
 
         type FileOperation =
             | Replace of string * Selectors * INIFile

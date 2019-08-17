@@ -23,7 +23,7 @@ module View =
     ]
 
     let private config  (classes: IClasses) model dispatch =
-        paper [] [
+        card [ CardProp.Raised true ] [
             div [
                 Style [
                     CSSProp.Padding "2em 5em"
@@ -70,6 +70,7 @@ module View =
                 Style [ CSSProp.Padding "0 2em" ]
             ] [
                 card [
+                    CardProp.Raised true
                     Style [ CSSProp.MinWidth "20em" ]
                 ] [
                     cardHeader [
@@ -218,7 +219,7 @@ module View =
                             ] [ str "An example of an import string" ]
                             divider []
                             expansionPanelDetails [
-                                Style [ CSSProp.PaddingRight "0em" ]
+                                Style [ CSSProp.Padding "1em" ]
                             ] [
                                 code [
                                     Style [ 
@@ -232,10 +233,9 @@ module View =
                                         renderer.clipboard.writeText(Samples.faceImport)
                                         dispatch CopiedClipboard
                                     Style [ 
-                                        CSSProp.MaxHeight "4em"
-                                        CSSProp.MaxWidth "3em"
+                                        CSSProp.MaxHeight "3em"
                                         CSSProp.Float "right"
-                                        CSSProp.MarginRight "0em"
+                                        CSSProp.MarginRight "-0.5em"
                                     ]
                                 ] [ clipboardTextIcon [] ]
 
@@ -248,7 +248,7 @@ module View =
                     model.TransferList.RightProfiles
                     |> List.indexed
                     |> Seq.ofList
-                div [ ] [
+                div [] [
                     div [ 
                         Style [ 
                             CSSProp.Padding "2em 5em"
@@ -261,6 +261,7 @@ module View =
                                 CSSProp.FlexGrow 1 
                                 CSSProp.MaxHeight "20em"
                                 CSSProp.OverflowY "auto"
+                                CSSProp.BorderRadius "4px"
                             ]
                         ] [
                             for (index,profile) in profileInd do
@@ -277,7 +278,7 @@ module View =
                                                         dispatch CopiedClipboard
                                                     Style [ 
                                                         CSSProp.MaxHeight "4em"
-                                                        CSSProp.MaxWidth "3em"
+                                                        CSSProp.MaxWidth "2em"
                                                         CSSProp.Float "right"
                                                         CSSProp.MarginRight "0em"
                                                     ]
@@ -293,7 +294,7 @@ module View =
                 ]
             | _ -> div [] []
 
-        paper [] [
+        card [ CardProp.Raised true ] [
             tabs [
                 HTMLAttr.Value (model.TabSelected)
                 TabsProp.Variant TabsVariant.FullWidth
@@ -310,7 +311,7 @@ module View =
             ]
             divider []
             div [
-                Style [ CSSProp.Padding "2em"; CSSProp.MinHeight "10em" ]
+                Style [ CSSProp.Padding "2em"; CSSProp.MinHeight "5em" ]
             ] [ 
                 typography [] [ tabDescription ]
                 tabContent
@@ -344,12 +345,13 @@ module View =
                         CSSProp.Height "inherit"
                     ]
                 ] [
-                    stepper [
-                        MaterialProp.Elevation 1
-                        StepperProp.ActiveStep (model.Stepper.GetTag)
+                    card [ CardProp.Raised true ] [
+                        stepper [
+                            //MaterialProp.Elevation 1
+                            StepperProp.ActiveStep (model.Stepper.GetTag)
+                        ]
+                            <| model.Stepper.StepElems model.StepperComplete
                     ]
-                        <| model.Stepper.StepElems model.StepperComplete
-            
                     div [ Style [ CSSProp.Padding (string "3em") ] ] [ 
                         match model.Waiting, model.ParseWaiting with
                         | true, false when model.ConfigDir.Directory = "" && isLocateConfig ->

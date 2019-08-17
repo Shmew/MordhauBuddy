@@ -67,7 +67,7 @@ group Tooling
 
 	clitool dotnet-fable ~> 2.0.11
 	clitool dotnet-fake ~> 5.15.4
-	clitool dotnet-fantomas ~> 2.9.2
+	clitool dotnet-fantomas ~> 3.0.0-beta-002
 	clitool Femto ~> 0.5.2
 
 group Formatting

@@ -155,6 +155,11 @@ module View =
                             CSSProp.Color "#000"
                         ]
                     ]
+                    OverridesProp.MuiCard [
+                        Styles.Root [
+                            CSSProp.Overflow "visible"
+                        ]
+                    ]
                     OverridesProp.MuiStepper [
                         Styles.Root [
                             CSSProp.BorderRadius "4px"
@@ -190,6 +195,9 @@ module View =
                             CSSProp.Custom ("&$expanded", [
                                 CSSProp.Margin "1em 0em"
                             ] |> keyValueList CaseRules.LowerFirst)
+                        ]
+                        Styles.ExpandIcon [
+                            CSSProp.ZIndex "2"
                         ]
                     ]
                     OverridesProp.MuiExpansionPanelDetails [

@@ -235,12 +235,36 @@ module State =
             model, Cmd.namedBridgeSend "INI" (sender.defDir)
         | Expand(p) ->
             model.Panels
-            |> List.map (fun oPanel -> 
+            |> List.map ((fun oPanel -> 
                 if oPanel.Panel.GetTag = p.Panel.GetTag then
                     { p with Expanded = not p.Expanded }
                 else { oPanel with Expanded = false })
+                >> (fun oPanel ->
+                    { oPanel with
+                        Items =
+                            oPanel.Items |> List.map (fun i ->
+                                if i.Expanded then
+                                    { i with
+                                        Expanded = false }
+                                else i ) }))
             |> fun newPanels ->    
                 { model with Panels = newPanels}, Cmd.none
+        | ExpandSubPanel(oGroup) ->
+            let mapItems (oList: OptionGroup list) =
+                oList
+                |> List.map (fun i -> 
+                    if oGroup.Title = i.Title || i.Expanded then
+                        { i with
+                            Expanded = i.Expanded |> not }
+                    else i )
+            let mapPanels (pList: Panel list) =
+                pList
+                |> List.map (fun p ->
+                    { p with
+                        Items = mapItems p.Items} )
+
+            { model with
+                Panels = mapPanels model.Panels }, Cmd.none
         | ToggleOption(oGroup) ->
             let toggle = oGroup.Enabled |> not
             let newValues =
@@ -270,6 +294,41 @@ module State =
                                 |> List.map(fun s -> 
                                     if s.Title = oGroup.Title then newValues else s) } ) }
             , Cmd.none
+        | MoveSlider(key,value) ->
+            let tryGetValue (f: float) (kValue: KeyValues.Values) =
+                match kValue with
+                | KeyValues.Values.Float(_) -> 
+                    f |> KeyValues.Values.Float |> Some
+                | KeyValues.Values.Int(_) -> 
+                    f |> int |> KeyValues.Values.Int |> Some
+                | _ -> None
+            let mapSettings (sList: KeyValues list) =
+                sList
+                |> List.map (fun s ->
+                    let res = tryGetValue value s.Default
+                    if res.IsSome && s.Mutable.IsSome && s.Key = key then
+                        { s with
+                            Value = res }
+                    else s )
+            let mapOGroups (oList: OptionGroup list) =
+                oList
+                |> List.map (fun o ->
+                    { o with
+                        Settings =
+                            mapSettings o.Settings } )
+            let newPanels =
+                model.Panels 
+                |> List.map (fun p ->
+                    if p.Expanded && (p.Items |> List.exists (fun o -> o.Expanded) ) then
+                        { p with
+                            Items =
+                                mapOGroups p.Items } 
+                    else p )
+            { model with
+                Submit =
+                    { model.Submit with
+                        Complete = false }
+                Panels = newPanels}, Cmd.none
         | Submit ->
             { model with
                 Submit =

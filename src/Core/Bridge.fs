@@ -11,10 +11,10 @@ module Bridge =
     /// Websocket bridge
     module INIBridge =
         type Model =
-            { Game : INIValue option
-              GameUserSettings : INIValue option
-              Engine : INIValue option }
-            member this.GetIVal(file : File) =
+            { Game: INIValue option
+              GameUserSettings: INIValue option
+              Engine: INIValue option }
+            member this.GetIVal(file: File) =
                 match file with
                 | File.Game -> this.Game
                 | File.GameUserSettings -> this.GameUserSettings
@@ -22,19 +22,19 @@ module Bridge =
 
         type ServerMsg = ClientMsg of RemoteServerMsg
 
-        let init (clientDispatch : Dispatch<RemoteClientMsg>) () =
+        let init (clientDispatch: Dispatch<RemoteClientMsg>) () =
             Connected |> clientDispatch
             { Game = None
               GameUserSettings = None
               Engine = None }, Cmd.none
 
-        let createClientResp (caller : Caller) (file : File option) (br : BridgeResult) =
+        let createClientResp (caller: Caller) (file: File option) (br: BridgeResult) =
             { Caller = caller
               File = file
               BridgeResult = br }
 
-        let update (clientDispatch : Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model : Model) =
-            let updateModel (file : File) (iOpt : INIValue option) model =
+        let update (clientDispatch: Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model: Model) =
+            let updateModel (file: File) (iOpt: INIValue option) model =
                 match file with
                 | File.Game -> { model with Game = iOpt }
                 | File.GameUserSettings -> { model with GameUserSettings = iOpt }
@@ -48,9 +48,10 @@ module Bridge =
                         match iCmd with
                         | Replace(s, sels, iFile) ->
                             let result =
-                                (replace (model.GetIVal(iFile.File).Value) (s
-                                                                            |> Some
-                                                                            |> INIValue.String) sels.Selectors
+                                (replace (model.GetIVal(iFile.File).Value)
+                                     (s
+                                      |> Some
+                                      |> INIValue.String) sels.Selectors
                                  |> Some)
                             updateModel iFile.File result model,
                             result.IsSome
@@ -129,6 +130,9 @@ module Bridge =
                             cr
                             |> BridgeResult.Config
                             |> cResp
+
+
+
 
             Resp(remoteCMsg) |> clientDispatch
             model, Cmd.none

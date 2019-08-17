@@ -30,14 +30,113 @@ module View =
         Styles.Custom ("darkList", [
             CSSProp.BackgroundColor theme.palette.background.``default``
         ])
+        Styles.Custom ("subExpansionPanelSummary", [
+            CSSProp.Border "none"
+            CSSProp.MarginTop "-5em"
+        ])
     ]
+
+    let mutableKeyValue (classes: IClasses) model dispatch (oGroup : OptionGroup) =
+        let subPanelDetails (kvList : KeyValues list) =
+            kvList
+            |> List.mapi (fun ind s ->
+                [
+                    yield
+                        listItem [ 
+                        ] [
+                            listItemText [] [
+                                str s.Key
+                            ]
+                            formControl [
+                            ] [
+                                formGroup [ Style [CSSProp.FlexGrow "1"] ] [
+                                    formControlLabel [
+                                        FormControlLabelProp.Control <|
+                                            slider [
+                                                HTMLAttr.DefaultValue <| 
+                                                    (if s.Value.IsSome then
+                                                        s.Value.Value.ToString()
+                                                    else s.Default.ToString()
+                                                    |> box)
+                                                HTMLAttr.Disabled (oGroup.Enabled |> not)
+                                                SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto
+                                                SliderProp.Step <| 0.25
+                                                SliderProp.Marks <| Fable.Core.Case1(true)
+                                                SliderProp.Min <| s.Mutable.Value.Min.ToFloat()
+                                                SliderProp.Max <| s.Mutable.Value.Max.ToFloat()
+                                                SliderProp.OnChangeCommitted <| fun _ newValue -> dispatch (MoveSlider(s.Key,newValue |> string |> float))
+                                                Style [ CSSProp.MinWidth "20em" ]
+                                            ] []
+                                    ] []
+                                ]
+                            ]
+                        ]
+                    if kvList.Length > ind + 1 then
+                        yield divider []
+                ])
+            |> List.concat
+
+        match oGroup.Settings |> List.filter (fun s -> s.Mutable.IsSome) with
+        | [] -> None
+        | kvList -> 
+            div [
+                Style [ CSSProp.PaddingBottom "2em" ]
+            ] [
+                expansionPanel [
+                    ExpansionPanelProp.Expanded oGroup.Expanded
+                    DOMAttr.OnChange (fun _ -> dispatch <| ExpandSubPanel(oGroup))
+
+                    Style [ CSSProp.Border "none" ]
+                ] [
+                    expansionPanelSummary [
+                        Class classes?subExpansionPanelSummary
+                        DOMAttr.OnClick (fun ev -> ev.preventDefault())
+                        ExpansionPanelSummaryProp.ExpandIcon <| expandMoreIcon []
+                    ] []
+                    expansionPanelDetails [
+                        Style [ CSSProp.PaddingTop "1em" ]
+                    ] [ 
+                        grid [
+                            GridProp.Container true
+                            GridProp.Spacing GridSpacing.``0``
+                            GridProp.Justify GridJustify.Center
+                            GridProp.AlignItems GridAlignItems.Center
+                            Style [ CSSProp.Width "100%" ]
+                        ] [
+                            card [
+                                MaterialProp.Elevation 2
+                                Style [
+                                    CSSProp.FlexGrow "1"
+                                    CSSProp.MarginLeft "1em"
+                                    CSSProp.MarginRight "1em"
+                                ]
+                            ] [
+                                list [
+                                    MaterialProp.Dense true
+                                    Style [ 
+                                        CSSProp.MaxHeight "30em"
+                                        CSSProp.Width "100%"
+                                    ]
+                                ] <| subPanelDetails kvList
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+            |> Some
 
     let panelDetails (classes: IClasses) model dispatch (oGroups : OptionGroup list) =
         oGroups
         |> List.mapi (fun ind oGroup ->
+            let subPanel = mutableKeyValue (classes: IClasses) model dispatch oGroup
             [
                 yield
-                    listItem [ ] [
+                    listItem [
+                        Style [ 
+                            CSSProp.ZIndex "1" 
+                            CSSProp.PaddingRight "4em"
+                        ]
+                    ] [
                         listItemText [] [
                             str oGroup.Title
                         ]
@@ -62,6 +161,8 @@ module View =
                             ] [ str oGroup.Caption ] 
                         ]
                     ]
+                if subPanel.IsSome then
+                    yield subPanel.Value
                 if oGroups.Length > ind + 1 then
                     yield divider []
             ])
@@ -136,7 +237,7 @@ module View =
     //config classes model dispatch ]
     let private content (classes: IClasses) model dispatch =
         [    
-            div [ ] 
+            card [ CardProp.Raised true ] 
                 <| expansionPanels classes model dispatch
             div [ 
                 Style [ CSSProp.MarginTop "2em" ] 
@@ -195,14 +296,6 @@ module View =
                               DOMAttr.OnAnimationStart <| fun _ ->
                                 dispatch GetDefaultDir ] ]
                         | _ -> content classes model dispatch
-            //yield
-            //    slider [
-            //        SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto
-            //        SliderProp.Step 10.
-            //        SliderProp.Marks <| Fable.Core.Case1(true)
-            //        SliderProp.Min 0.
-            //        SliderProp.Max 100.
-            //    ] []
         ]
 
     /// Workaround for using JSS with Elmish

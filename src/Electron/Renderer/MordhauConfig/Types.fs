@@ -14,7 +14,9 @@ module rec Types =
         | ClientMsg of BridgeMsg
         | GetDefaultDir
         | Expand of Panel
+        | ExpandSubPanel of OptionGroup
         | ToggleOption of OptionGroup
+        | MoveSlider of string * float
         | Submit
         | SnackMsg of Snackbar.Types.Msg<Msg>
         | SnackDismissMsg
