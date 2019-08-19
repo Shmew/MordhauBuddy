@@ -133,9 +133,7 @@ module State =
                     Resources =
                         setPath m'
                     Settings = m' }
-                , Cmd.batch
-                    [ Cmd.map SettingsMsg cmd
-                      Cmd.ofMsg <| LoadConfig(cFile) ]
+                , Cmd.map SettingsMsg cmd
             | s when error |> not ->
                 let m',cmd = Settings.State.update (Settings.Types.SetConfigDir(s,Ok s, cFile)) m.Settings
                 { m with 
@@ -156,9 +154,7 @@ module State =
                                     Path = m'.MapsDir.Directory
                                     AttemptedLoad = true } }
                     Settings = m' }
-                , Cmd.batch
-                    [ Cmd.map SettingsMsg cmd
-                      Cmd.ofMsg LoadMap ]
+                , Cmd.map SettingsMsg cmd
             | s when m.Resources.Maps.Exists |> not && m.Settings.MapsDir.Error |> not ->
                 let m',cmd = Settings.State.update (Settings.Types.SetMapDir(s,Ok s)) m.Settings
                 { m with 
