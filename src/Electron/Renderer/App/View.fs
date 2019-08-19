@@ -13,6 +13,7 @@ module View =
     open FSharp.Core /// To avoid shadowing Result<_,_>
     open Types
     open State
+    open MordhauBuddy.Shared.ElectronBridge
 
     let private styles (theme : ITheme) : IStyles list =
         let drawerWidth = "240px"
@@ -59,31 +60,62 @@ module View =
             ListItemProp.Button true
             ListItemProp.Divider (page = Home)
             HTMLAttr.Selected (model.Page = page)
-            HTMLAttr.Disabled (not model.IsBridgeConnected)
+            HTMLAttr.Disabled <| //Display tool tip here when disabled to explain why
+                (match page with
+                | FaceTools ->
+                    model.FaceTools.GameDir.Directory = ""
+                | MordhauConfig ->
+                    model.MordhauConfig.EngineDir.Directory = ""
+                        || model.MordhauConfig.GameUserDir.Directory = ""
+                | _ -> false
+                |> fun b -> b || (not model.IsBridgeConnected))
             Key (pageTitle page)
             DOMAttr.OnClick (fun _ -> Navigate page |> dispatch)
         ] [ listItemText [ ] [ page |> pageTitle |> str ] ]
 
     let private pageView model dispatch =
+        let allResourcesAttempted =
+            model.Resources.GameConfig.AttemptedLoad
+                && model.Resources.EngineConfig.AttemptedLoad
+                && model.Resources.GameUserConfig.AttemptedLoad
+                && model.Resources.Maps.AttemptedLoad
+
+        let loading =
+            div [ Style [ CSSProp.Padding "10em" ] ] [
+                typography [
+                    TypographyProp.Variant TypographyVariant.H6
+                    TypographyProp.Align TypographyAlign.Center
+                    Style [ CSSProp.PaddingBottom "10em" ]
+                ] [
+                    str "Preparing for battle..."
+                ]
+                circularProgress [
+                    CircularProgressProp.Size <| CircularProgressSize.Case2 "5em"
+                    Style [ CSSProp.MarginLeft "45%" ]
+                ] 
+            ]
+
         match model.Page with
         | Home ->
-            if model.IsBridgeConnected then
+            let isAnyLoading =
+                model.Resources.GameConfig.Loading 
+                    || model.Resources.EngineConfig.Loading 
+                    || model.Resources.GameUserConfig.Loading 
+                    || model.Resources.Maps.Loading
+            match model.IsBridgeConnected, allResourcesAttempted, isAnyLoading with
+            | true, true, false ->
                 typography [] 
                     [ str "This app contains simple demos showing how certain Material-UI components can be used with Elmish." ]
-            else 
-                div [ Style [ CSSProp.Padding "10em" ] ] [
-                    typography [
-                        TypographyProp.Variant TypographyVariant.H6
-                        TypographyProp.Align TypographyAlign.Center
-                        Style [ CSSProp.PaddingBottom "10em" ]
-                    ] [
-                        str "Preparing for battle..."
-                    ]
-                    circularProgress [
-                        CircularProgressProp.Size <| CircularProgressSize.Case2 "5em"
-                        Style [ CSSProp.MarginLeft "45%" ]
-                    ] 
-                ]
+            | true, false, false ->
+                match model.Resources with
+                | r when r.GameConfig.AttemptedLoad |> not -> dispatch <| LoadResources(LoadConfig(ConfigFile.Game))
+                | r when r.EngineConfig.AttemptedLoad |> not -> dispatch <| LoadResources(LoadConfig(ConfigFile.Engine))
+                | r when r.GameUserConfig.AttemptedLoad |> not -> dispatch <| LoadResources(LoadConfig(ConfigFile.GameUserSettings))
+                | r when r.Maps.AttemptedLoad |> not -> dispatch <| LoadResources(LoadMap)
+                | _ -> ()
+                loading
+            | _ -> loading
+                
         | FaceTools -> lazyView2 FaceTools.View.view model.FaceTools (FaceToolsMsg >> dispatch)
         | MordhauConfig -> lazyView2 MordhauConfig.View.view model.MordhauConfig (MordhauConfigMsg >> dispatch)
         | Settings -> lazyView2 Settings.View.view model.Settings (SettingsMsg >> dispatch)

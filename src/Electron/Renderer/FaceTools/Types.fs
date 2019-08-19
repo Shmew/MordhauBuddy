@@ -10,6 +10,7 @@ module rec Types =
     open FSharp.Core  /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
+    open RenderUtils.Directory
     open MordhauBuddy.Shared.ElectronBridge
     open Microsoft.FSharp.Reflection
 
@@ -23,11 +24,6 @@ module rec Types =
         | StepperRestart
         | StepperNext
         | StepperBack
-        | GetDefaultDir
-        | SetConfigDir of string * Result<string,string list>
-        | RequestLoad
-        | LoadCanceled
-        | WaitingStart of Msg
         | ToggleAll of ToggleDirection * bool
         | Toggle of ToggleDirection * Profile
         | Move of ToggleDirection
@@ -39,7 +35,6 @@ module rec Types =
         | SnackDismissMsg
 
     type Steps =
-        | LocateConfig
         | ChooseProfiles
         | ChooseAction
         member this.Text =
@@ -48,7 +43,6 @@ module rec Types =
 
         member this.StepCaption =
             match this with
-            | LocateConfig -> [ str "Find where your configuration files are located." ]
             | ChooseProfiles -> [ str "Choose which profiles you'd like to modify." ]
             | ChooseAction ->
                 [ div [] [str "Choose the type of action you'd like to make."]
@@ -119,10 +113,9 @@ module rec Types =
                 | false ->
                     let isDisabled =
                         match this with
-                        | LocateConfig when not model.ConfigDir.Validated -> true
                         | ChooseProfiles when model.TransferList.RightProfiles.Length = 0 -> true
                         | ChooseAction when (not model.Import.Validated && model.TabSelected = 2) || model.TabSelected = 3 -> true
-                        | _ when model.Waiting || model.Submit.Waiting -> true
+                        | _ when model.Submit.Waiting -> true
                         | _ -> false
 
                     [
@@ -138,7 +131,12 @@ module rec Types =
                                 dispatch (if this.Last then StepperSubmit else StepperNext)
                             Style [ CSSProp.MaxHeight "2.6em" ]
                         ] [ 
-                            if model.Submit.Waiting then yield circularProgress [ CircularProgressProp.Size (CircularProgressSize.Case1(20));Style [ CSSProp.MaxHeight "2.6em" ] ]
+                            if model.Submit.Waiting then 
+                                yield 
+                                    circularProgress [ 
+                                        CircularProgressProp.Size (CircularProgressSize.Case1(20))
+                                        Style [ CSSProp.MaxHeight "2.6em" ] 
+                                    ]
                             else yield str <| if this.Last then "Submit" else "Next"
                         ]
                     ]
@@ -181,12 +179,6 @@ module rec Types =
           Error : bool
           HelperText : string }
 
-    type ConfigDir =
-        { Directory : string
-          Error : bool
-          HelperText : string
-          Validated : bool }
-
     type ImportStr =
         { ImportString : string
           Error : bool
@@ -200,11 +192,9 @@ module rec Types =
           Complete : bool }
 
     type Model = 
-        { Waiting : bool
-          ParseWaiting : bool
-          Stepper : Steps
+        { Stepper : Steps
           StepperComplete : bool
-          ConfigDir : ConfigDir 
+          GameDir : ConfigDir 
           TransferList : TransferList
           TabSelected : int
           Import : ImportStr

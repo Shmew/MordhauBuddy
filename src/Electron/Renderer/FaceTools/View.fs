@@ -22,36 +22,6 @@ module View =
         ])
     ]
 
-    let private config  (classes: IClasses) model dispatch =
-        card [ CardProp.Raised true ] [
-            div [
-                Style [
-                    CSSProp.Padding "2em 5em"
-                    CSSProp.Display DisplayOptions.Flex
-                    CSSProp.MinHeight "76px"
-                ]
-            ] [
-                textField [
-                    TextFieldProp.Variant TextFieldVariant.Outlined
-                    MaterialProp.FullWidth true
-                    HTMLAttr.Label "Mordhau Game.ini Directory"
-                    HTMLAttr.Value model.ConfigDir.Directory
-                    MaterialProp.Error model.ConfigDir.Error
-                    TextFieldProp.HelperText (model.ConfigDir.HelperText |> str)
-                ] []
-                button [
-                    ButtonProp.Variant ButtonVariant.Contained
-                    MaterialProp.Color ComponentColor.Secondary
-                    DOMAttr.OnClick <| fun _ -> dispatch RequestLoad
-                    Style [
-                        CSSProp.MarginLeft "1em" 
-                        CSSProp.MaxHeight "4em" 
-                    ]
-                ] [ str "Select" ]
-
-            ]
-        ]
-
     let private profiles (classes: IClasses) model dispatch =
         let createCard (direction: ToggleDirection) =
             let checkNum,profiles,headerTitle =
@@ -320,15 +290,10 @@ module View =
 
     let private content (classes: IClasses) model dispatch =
         match model.Stepper with
-        | LocateConfig -> config classes model dispatch
         | ChooseProfiles -> profiles classes model dispatch
         | ChooseAction -> actionTabs classes model dispatch
 
     let private view' (classes: IClasses) model dispatch =
-        let isLocateConfig =
-            match model.Stepper with
-            | LocateConfig -> true
-            | _ -> false
         div [
             Style [
                 CSSProp.FlexDirection "column"
@@ -353,25 +318,7 @@ module View =
                             <| model.Stepper.StepElems model.StepperComplete
                     ]
                     div [ Style [ CSSProp.Padding (string "3em") ] ] [ 
-                        match model.Waiting, model.ParseWaiting with
-                        | true, false when model.ConfigDir.Directory = "" && isLocateConfig ->
-                            yield circularProgress [
-                                Style [CSSProp.MarginLeft "45%"]
-                                DOMAttr.OnAnimationStart <| fun _ ->
-                                    dispatch GetDefaultDir
-                            ]
-                        | true, false when isLocateConfig ->
-                            yield circularProgress [
-                                Style [CSSProp.MarginLeft "45%"]
-                                DOMAttr.OnAnimationStart <| fun _ ->
-                                    dispatch <| SetConfigDir
-                                        (model.ConfigDir.Directory, validateConfigDir model.ConfigDir.Directory)
-                            ]
-                        | _ when model.Waiting || model.ParseWaiting ->
-                            yield circularProgress [
-                                Style [CSSProp.MarginLeft "45%"]
-                            ]
-                        | _ -> yield content classes model dispatch
+                        content classes model dispatch
                     ]
                     div [ Style [CSSProp.PaddingLeft "3em"] ] model.Stepper.StepCaption
                     model.Stepper.Buttons dispatch model

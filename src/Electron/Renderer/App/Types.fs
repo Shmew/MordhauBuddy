@@ -16,6 +16,9 @@ module Types =
     type Msg =
         | Navigate of Page
         | MinMaxMsg of bool
+        | LoadResources of Msg
+        | LoadConfig of ConfigFile
+        | LoadMap
         | StoreMsg of Store.Msg
         | ContextMenuMsg of ContextMenu.Types.Msg
         | FaceToolsMsg of FaceTools.Types.Msg
@@ -24,11 +27,31 @@ module Types =
         | AboutMsg of About.Types.Msg
         | ServerMsg of RemoteClientMsg
 
+    type ConfigDir =
+        { Path : string
+          Exists : bool
+          Parsed : bool
+          AttemptedLoad : bool
+          Loading : bool }
+
+    type MapDir =
+        { Path : string 
+          Exists : bool
+          AttemptedLoad : bool 
+          Loading : bool }
+
+    type Loaded =
+        { GameConfig : ConfigDir
+          EngineConfig : ConfigDir
+          GameUserConfig : ConfigDir
+          Maps : MapDir }
+
     type Model =
         { Page : Page
           IsMax : bool
           Store : Store.Model
           IsBridgeConnected : bool
+          Resources : Loaded
           ContextMenu : ContextMenu.Types.Model
           FaceTools : FaceTools.Types.Model
           MordhauConfig : MordhauConfig.Types.Model

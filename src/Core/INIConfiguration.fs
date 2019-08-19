@@ -15,8 +15,7 @@ module INIConfiguration =
         /// Try to find the configuration directory
         let defConfigDir =
             let bindDirectory (dir: string) =
-                dir
-                |> IO.DirectoryInfo
+                IO.DirectoryInfo dir
                 |> DirectoryInfo.exists
                 |> function
                 | true -> Some(dir)
@@ -37,6 +36,26 @@ module INIConfiguration =
                        @@ "Mordhau/Saved/Config/WindowsClient" |> Some)
                 |> Option.bind bindDirectory
 
+        /// Try to find the Map directory
+        let defMapDir =
+            let mapPath =
+                match Environment.isWindows with
+                | true ->
+                    [ @"C:\Program Files (x86)"; @"C:\Program Files" ]
+                    |> List.map (fun fol -> fol @@ @"Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps")
+                | false ->
+                    [ "~/.steam/steam"; "~/.local/share/Steam" ]
+                    |> List.map (fun fol -> fol @@ @"Steam/steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps")
+
+            let bindDirectory (dir: string) =
+                IO.DirectoryInfo dir
+                |> DirectoryInfo.exists
+                |> function
+                | true -> Some(dir)
+                | false -> None
+
+            mapPath |> List.tryFind (bindDirectory >> Option.isSome)
+
         /// Try to find the file given an `INIFile`
         let tryGetFile (file: string) (workingDir: string option) =
             let fiPath = IO.FileInfo(file).FullName
@@ -44,6 +63,11 @@ module INIConfiguration =
             | _, true -> Some(file)
             | Some(dir), _ when File.exists (dir @@ file) -> Some(dir @@ file)
             | _ -> None
+
+        /// Determine if maps directory is valid
+        let tryFindMaps (dir: string) =
+            let di = IO.DirectoryInfo(dir)
+            di.Parent.Name = "Mordhau" && di.Exists && di.FullName.ToLower().Contains("steam")
 
         /// Create a backup of the given file into sub directory MordhauBuddy_backups
         let createBackup (file: string) =
@@ -293,15 +317,15 @@ module INIConfiguration =
             options
             |> List.map (fun oGroup ->
                 match oGroup.File with
-                | File.Engine -> engineSettings |> Option.map (mapOptGroup oGroup)
-                | File.GameUserSettings -> gameUserSettings |> Option.map (mapOptGroup oGroup)
+                | ConfigFile.Engine -> engineSettings |> Option.map (mapOptGroup oGroup)
+                | ConfigFile.GameUserSettings -> gameUserSettings |> Option.map (mapOptGroup oGroup)
                 | _ -> None
                 |> function
                 | Some(newOGroup) -> newOGroup
                 | None -> oGroup)
 
         /// Filter the `OptionGroup list` based on `File` given
-        let filterFile (options: OptionGroup list) (file: File) =
+        let filterFile (options: OptionGroup list) (file: ConfigFile) =
             options |> List.filter (fun option -> option.File = file)
 
         /// Maps the option value if present to the `INIValue` or adds it
@@ -371,12 +395,12 @@ module INIConfiguration =
         let tryMapSettings (engineFile: INIValue) (gameUserFile: INIValue) (options: OptionGroup list) =
             try
                 let engine =
-                    File.Engine
+                    ConfigFile.Engine
                     |> filterFile options
                     |> mapOptions engineFile [ "SystemSettings" ]
 
                 let gameUser =
-                    File.GameUserSettings
+                    ConfigFile.GameUserSettings
                     |> filterFile options
                     |> mapOptions gameUserFile [ @"/Script/Mordhau.MordhauGameUserSettings" ]
 
@@ -396,6 +420,9 @@ module INIConfiguration =
 
         /// Determine if a file exists
         let exists (iFile: INIFile) = FileOps.tryGetFile iFile.File.Name iFile.WorkingDir |> Option.isSome
+
+        /// Determine if input is valid maps directory
+        let mapDirExists (dir: string) = FileOps.tryFindMaps dir
 
         /// Try to open and parse a ini file
         let parse (iFile: INIFile) =
@@ -417,6 +444,9 @@ module INIConfiguration =
 
         /// Try to locate the default Mordhau configuration directory
         let defDir() = FileOps.defConfigDir
+
+        /// Try to locate the default Mordhau maps directory
+        let defMapDir() = FileOps.defMapDir
 
         /// Ranomize the profiles if they are within the given `INIValue`
         let random (profiles: string list) (iVal: INIValue) = tryApplyChanges profiles iVal FaceActions.Random

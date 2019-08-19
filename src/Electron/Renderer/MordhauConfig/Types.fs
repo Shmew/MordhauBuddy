@@ -6,13 +6,13 @@ module rec Types =
     open FSharp.Core  /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
+    open RenderUtils.Directory
     open EngineMods
     open MordhauBuddy.Shared.ElectronBridge
     open Microsoft.FSharp.Reflection
 
     type Msg =
         | ClientMsg of BridgeMsg
-        | GetDefaultDir
         | Expand of Panel
         | ExpandSubPanel of OptionGroup
         | ToggleOption of OptionGroup
@@ -79,13 +79,6 @@ module rec Types =
           Expanded : bool
           Items : OptionGroup list }
 
-    type ConfigDir =
-        { Waiting : bool  
-          Directory : string
-          Error : bool
-          HelperText : string
-          Validated : bool }
-
     type Submit =
         { Waiting : bool
           Error : bool
@@ -93,8 +86,7 @@ module rec Types =
           Complete : bool }
 
     type Model = 
-        { Waiting : bool
-          Complete : bool
+        { Complete : bool
           Panels : Panel list
           EngineDir : ConfigDir
           GameUserDir : ConfigDir

@@ -10,9 +10,11 @@ module BridgeUtils =
         member this.replace s sels iFile = Replace(s,sels,iFile) |> wrapOps
         member this.delete sels = Delete(sels) |> wrapOps
         member this.exists iFile = Exists(iFile) |> wrapOps
+        member this.mapDirExists s = MapDirExists(s) |> wrapOps
         member this.parse iFile = Parse(iFile) |> wrapOps
         member this.backup iList = Backup(iList) |> wrapOps
         member this.defDir = DefaultDir |> wrapOps
+        member this.defMapDir = DefaultMapDir |> wrapOps
         member this.commit iList = Commit(iList) |> wrapOps
         member this.setRandom profile = Random(profile) |> wrapFace
         member this.setFrankenstein profile = Frankenstein(profile) |> wrapFace
@@ -92,7 +94,7 @@ module RenderUtils =
     module Validation =
         open System.Text.RegularExpressions
 
-        let validateConfigDir (s: string) = Fable.Validation.Core.single <| fun t ->
+        let validateDir (s: string) = Fable.Validation.Core.single <| fun t ->
             t.TestOne s
                 |> t.IsValid (fun _ -> 
                     try 
@@ -112,6 +114,27 @@ module RenderUtils =
                 |> t.End
 
     module Directory =
+        open MordhauBuddy.Shared.ElectronBridge
+
+        type Dirs =
+            { Game : string
+              Engine : string
+              GameUser : string
+              Maps : string }
+
+        type DirLoad =
+            | ConfigFiles of ConfigFile
+            | MapDir
+
+        type ConfigDir =
+            { Dir : DirLoad
+              Waiting : bool  
+              Directory : string
+              Error : bool
+              Label : string
+              HelperText : string
+              Validated : bool }
+
         [<RequireQualifiedAccess>]
         type DirSelect =
             | Selected of string
@@ -157,7 +180,7 @@ module RenderUtils =
                         { KeyValues.Mutable.Min = KeyValues.MutableValues.MutFloat(0.)
                           KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(3.) }
                         |> Some } ]
-              File = File.Engine 
+              File = ConfigFile.Engine 
               Enabled = false
               Expanded = false }
             { Title = "Disable sun glare"
@@ -177,7 +200,7 @@ module RenderUtils =
                     Default = KeyValues.Values.Int(0)
                     Value = None
                     Mutable = None } ]
-              File = File.Engine 
+              File = ConfigFile.Engine 
               Enabled = false 
               Expanded = false }
             { Title = "Disable Fisheye Effect"
@@ -193,7 +216,7 @@ module RenderUtils =
                     Default = KeyValues.Values.Float(0.025)
                     Value = None
                     Mutable = None } ]
-              File = File.Engine 
+              File = ConfigFile.Engine 
               Enabled = false
               Expanded = false }
             { Title = "Disable fog"
@@ -203,7 +226,7 @@ module RenderUtils =
                     Default = KeyValues.Values.Int(0)
                     Value = None
                     Mutable = None } ]
-              File = File.Engine 
+              File = ConfigFile.Engine 
               Enabled = false
               Expanded = false } ]
 
@@ -217,7 +240,7 @@ module RenderUtils =
                     Default = KeyValues.Values.Int(1)
                     Value = None
                     Mutable = None } ]
-              File = File.Engine 
+              File = ConfigFile.Engine 
               Enabled = false
               Expanded = false  }
             { Title = "Skip intro cut scenes"
@@ -228,7 +251,7 @@ module RenderUtils =
                     Default = KeyValues.Values.Int(1)
                     Value = None
                     Mutable = None } ]
-              File = File.GameUserSettings 
+              File = ConfigFile.GameUserSettings 
               Enabled = false
               Expanded = false  } ]
 
@@ -246,7 +269,7 @@ module RenderUtils =
                     Default = KeyValues.Values.Int(500)
                     Value = None
                     Mutable = None } ]
-              File = File.Engine 
+              File = ConfigFile.Engine 
               Enabled = false
               Expanded = false  } ]
 
@@ -287,7 +310,7 @@ module RenderUtils =
                     Default = KeyValues.Values.Int(1)
                     Value = None
                     Mutable = None } ]
-              File = File.Engine 
+              File = ConfigFile.Engine 
               Enabled = false
               Expanded = false  } ]
 

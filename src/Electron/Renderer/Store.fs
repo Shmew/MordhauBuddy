@@ -9,13 +9,15 @@ module Store =
         { DarkTheme : bool 
           GameLocation : string option
           EngineLocation : string option
-          GameUserLocation : string option }
+          GameUserLocation : string option
+          MapsLocation : string option }
 
     type Msg =
         | ToggleDarkTheme
         | SetGameLocation of string
         | SetEngineLocation of string
         | SetGameUserLocation of string
+        | SetMapsLocation of string
 
     /// Bindings for electron-store
     ///
@@ -89,7 +91,8 @@ module Store =
             { DarkTheme = true
               GameLocation = None
               EngineLocation = None
-              GameUserLocation = None }
+              GameUserLocation = None
+              MapsLocation = None }
             |> toPlainJsObj
 
         let store = 
@@ -105,6 +108,8 @@ module Store =
 
     let setGameLocation s = Cmd.ofMsg (SetGameLocation s)
     let setEngineLocation s = Cmd.ofMsg (SetEngineLocation s)
+    let setGameUserLocation s = Cmd.ofMsg (SetGameUserLocation s)
+    let setMapsLocation s = Cmd.ofMsg (SetMapsLocation s)
 
     let update msg m =
         match msg with
@@ -116,3 +121,5 @@ module Store =
             set { m with EngineLocation = Some(s) }
         | SetGameUserLocation(s) ->
             set { m with GameUserLocation = Some(s) }
+        | SetMapsLocation(s) ->
+            set { m with MapsLocation = Some(s) }

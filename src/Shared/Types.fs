@@ -37,7 +37,7 @@ module ElectronBridge =
           Mutable: KeyValues.Mutable option }
 
     [<RequireQualifiedAccess>]
-    type File =
+    type ConfigFile =
         | Game
         | Engine
         | GameUserSettings
@@ -47,7 +47,7 @@ module ElectronBridge =
         { Title: string
           Caption: string
           Settings: KeyValues list
-          File: File
+          File: ConfigFile
           Enabled: bool
           Expanded: bool }
 
@@ -68,9 +68,11 @@ module ElectronBridge =
         | Replace of bool
         | Delete of bool
         | Exists of bool
+        | MapDirExists of bool
         | Parse of bool
         | Backup of bool
         | DefaultDir of string option
+        | DefaultMapDir of string option
         | CommitChanges of bool
         | Faces of FaceResult
         | Config of ConfigResult
@@ -79,16 +81,8 @@ module ElectronBridge =
     type Caller =
         | FaceTools
         | MordhauConfig
-
-    type BridgeMsg =
-        { Caller: Caller
-          File: File option
-          BridgeResult: BridgeResult }
-
-    type RemoteClientMsg =
-        | Resp of BridgeMsg
-        | Connected
-        | Disconnected
+        | Settings
+        | App
 
     [<AutoOpen>]
     module INITypes =
@@ -96,16 +90,18 @@ module ElectronBridge =
             { Selectors: string list }
 
         type INIFile =
-            { File: File
+            { File: ConfigFile
               WorkingDir: string option }
 
         type FileOperation =
             | Replace of string * Selectors * INIFile
             | Delete of Selectors * INIFile
             | Exists of INIFile
+            | MapDirExists of string
             | Parse of INIFile
             | Backup of INIFile list
             | DefaultDir
+            | DefaultMapDir
             | Commit of INIFile list
 
         type Faces =
@@ -123,6 +119,16 @@ module ElectronBridge =
             | Faces of Faces
             | Configs of Configs
             static member Endpoint = "/ws/iniops"
+
+    type BridgeMsg =
+        { Caller: Caller
+          File: INIFile option
+          BridgeResult: BridgeResult }
+
+    type RemoteClientMsg =
+        | Resp of BridgeMsg
+        | Connected
+        | Disconnected
 
     type RemoteServerMsg = INIOps of INIOperations * Caller
 

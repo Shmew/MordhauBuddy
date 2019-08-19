@@ -12,13 +12,13 @@ module Bridge =
     module INIBridge =
         type Model =
             { Game: INIValue option
-              GameUserSettings: INIValue option
-              Engine: INIValue option }
-            member this.GetIVal(file: File) =
+              Engine: INIValue option
+              GameUserSettings: INIValue option }
+            member this.GetIVal(file: ConfigFile) =
                 match file with
-                | File.Game -> this.Game
-                | File.GameUserSettings -> this.GameUserSettings
-                | File.Engine -> this.Engine
+                | ConfigFile.Game -> this.Game
+                | ConfigFile.Engine -> this.Engine
+                | ConfigFile.GameUserSettings -> this.GameUserSettings
 
         type ServerMsg = ClientMsg of RemoteServerMsg
 
@@ -28,17 +28,17 @@ module Bridge =
               GameUserSettings = None
               Engine = None }, Cmd.none
 
-        let createClientResp (caller: Caller) (file: File option) (br: BridgeResult) =
+        let createClientResp (caller: Caller) (file: INIFile option) (br: BridgeResult) =
             { Caller = caller
               File = file
               BridgeResult = br }
 
         let update (clientDispatch: Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model: Model) =
-            let updateModel (file: File) (iOpt: INIValue option) model =
+            let updateModel (file: ConfigFile) (iOpt: INIValue option) model =
                 match file with
-                | File.Game -> { model with Game = iOpt }
-                | File.GameUserSettings -> { model with GameUserSettings = iOpt }
-                | File.Engine -> { model with Engine = iOpt }
+                | ConfigFile.Game -> { model with Game = iOpt }
+                | ConfigFile.GameUserSettings -> { model with GameUserSettings = iOpt }
+                | ConfigFile.Engine -> { model with Engine = iOpt }
 
             let model, remoteCMsg =
                 match clientMsg with
@@ -56,24 +56,29 @@ module Bridge =
                             updateModel iFile.File result model,
                             result.IsSome
                             |> BridgeResult.Replace
-                            |> createClientResp caller (Some(iFile.File))
+                            |> createClientResp caller (Some(iFile))
                         | Delete(sels, iFile) ->
                             let result = (delete (model.GetIVal(iFile.File).Value) sels.Selectors |> Some)
                             updateModel iFile.File result model,
                             result.IsSome
                             |> BridgeResult.Delete
-                            |> createClientResp caller (Some(iFile.File))
+                            |> createClientResp caller (Some(iFile))
                         | Exists(iFile) ->
                             model,
                             exists iFile
                             |> BridgeResult.Exists
-                            |> createClientResp caller (Some(iFile.File))
+                            |> createClientResp caller (Some(iFile))
+                        | MapDirExists(dir) ->
+                            model,
+                            mapDirExists dir
+                            |> BridgeResult.MapDirExists
+                            |> createClientResp caller None
                         | Parse(iFile) ->
                             let result = parse iFile
                             updateModel iFile.File result model,
                             result.IsSome
                             |> BridgeResult.Parse
-                            |> createClientResp caller (Some(iFile.File))
+                            |> createClientResp caller (Some(iFile))
                         | Backup(fList) ->
                             model,
                             fList
@@ -86,6 +91,11 @@ module Bridge =
                             defDir()
                             |> BridgeResult.DefaultDir
                             |> createClientResp caller None
+                        | DefaultMapDir ->
+                            model,
+                            defMapDir()
+                            |> BridgeResult.DefaultMapDir
+                            |> createClientResp caller None
                         | Commit(fList) ->
                             model,
                             fList
@@ -94,18 +104,19 @@ module Bridge =
                             |> BridgeResult.CommitChanges
                             |> createClientResp caller None
                     | Faces fCmd ->
-                        let cResp br = createClientResp caller (Some(File.Game)) br
+                        let cResp br = createClientResp caller None br
                         match fCmd with
                         | Random(profiles) ->
-                            let result = random profiles (model.GetIVal(File.Game).Value)
-                            updateModel File.Game result model, result.IsSome |> FaceResult.Random
+                            let result = random profiles (model.GetIVal(ConfigFile.Game).Value)
+                            updateModel ConfigFile.Game result model, result.IsSome |> FaceResult.Random
                         | Frankenstein(profiles) ->
-                            let result = frankenstein profiles (model.GetIVal(File.Game).Value)
-                            updateModel File.Game result model, result.IsSome |> FaceResult.Frankenstein
+                            let result = frankenstein profiles (model.GetIVal(ConfigFile.Game).Value)
+                            updateModel ConfigFile.Game result model, result.IsSome |> FaceResult.Frankenstein
                         | Custom(profiles, fVal) ->
-                            let result = custom profiles (model.GetIVal(File.Game).Value) fVal
-                            updateModel File.Game result model, result.IsSome |> FaceResult.Custom
-                        | ProfileList -> model, profileList (model.GetIVal(File.Game).Value) |> FaceResult.ProfileList
+                            let result = custom profiles (model.GetIVal(ConfigFile.Game).Value) fVal
+                            updateModel ConfigFile.Game result model, result.IsSome |> FaceResult.Custom
+                        | ProfileList ->
+                            model, profileList (model.GetIVal(ConfigFile.Game).Value) |> FaceResult.ProfileList
                         |> fun (m, fr) ->
                             m,
                             fr
@@ -113,8 +124,8 @@ module Bridge =
                             |> cResp
                     | Configs cCmd ->
                         let cResp br = createClientResp caller None br
-                        let engine = model.GetIVal(File.Engine).Value
-                        let gameUser = model.GetIVal(File.GameUserSettings).Value
+                        let engine = model.GetIVal(ConfigFile.Engine).Value
+                        let gameUser = model.GetIVal(ConfigFile.GameUserSettings).Value
                         match cCmd with
                         | GetConfigs(oList) ->
                             model,
@@ -123,13 +134,22 @@ module Bridge =
                             |> ConfigResult.GetConfigs
                         | MapConfigs(oList) ->
                             let newEngine, newGameUser = oList |> mapConfigs engine gameUser
-                            model |> (updateModel File.Engine newEngine >> updateModel File.Game newGameUser),
+                            model
+                            |> (updateModel ConfigFile.Engine newEngine >> updateModel ConfigFile.Game newGameUser),
                             (newEngine.IsSome && newGameUser.IsSome) |> ConfigResult.MapConfigs
                         |> fun (m, cr) ->
                             m,
                             cr
                             |> BridgeResult.Config
                             |> cResp
+
+
+
+
+
+
+
+
 
 
 

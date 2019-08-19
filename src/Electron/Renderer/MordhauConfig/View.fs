@@ -205,36 +205,6 @@ module View =
                 ]
             ] )
 
-    //let private config (classes: IClasses) model dispatch =
-    //    paper [] [
-    //        div [
-    //            Style [
-    //                CSSProp.Padding "2em 5em"
-    //                CSSProp.Display DisplayOptions.Flex
-    //                CSSProp.MinHeight "76px"
-    //            ]
-    //        ] [
-    //            textField [
-    //                TextFieldProp.Variant TextFieldVariant.Outlined
-    //                MaterialProp.FullWidth true
-    //                HTMLAttr.Label "Mordhau Engine.ini Directory"
-    //                HTMLAttr.Value model.GameUserDir.Directory
-    //                MaterialProp.Error model.GameUserDir.Error
-    //                TextFieldProp.HelperText (model.GameUserDir.HelperText |> str)
-    //            ] []
-    //            button [
-    //                ButtonProp.Variant ButtonVariant.Contained
-    //                MaterialProp.Color ComponentColor.Secondary
-    //                DOMAttr.OnClick <| fun _ -> dispatch (RequestLoad(File.Engine))
-    //                Style [
-    //                    CSSProp.MarginLeft "1em" 
-    //                    CSSProp.MaxHeight "4em" 
-    //                ]
-    //            ] [ str "Select" ]
-
-    //        ]
-    //    ]
-    //config classes model dispatch ]
     let private content (classes: IClasses) model dispatch =
         [    
             card [ CardProp.Raised true ] 
@@ -287,15 +257,7 @@ module View =
                         CSSProp.Display DisplayOptions.Flex
                         CSSProp.Height "inherit"
                     ]
-                ] 
-                    <|
-                        match model.Waiting with
-                        | true when model.GameUserDir.Directory = "" || model.EngineDir.Directory = "" ->
-                            [ circularProgress [
-                              Style [CSSProp.MarginLeft "45%"]
-                              DOMAttr.OnAnimationStart <| fun _ ->
-                                dispatch GetDefaultDir ] ]
-                        | _ -> content classes model dispatch
+                ] <| content classes model dispatch
         ]
 
     /// Workaround for using JSS with Elmish
