@@ -199,6 +199,7 @@ module State =
                     { model.Submit with
                         Complete = false }
                 Panels = newPanels}, Cmd.none
+        | GetSettings -> model, Cmd.namedBridgeSend "INI" (sender.getConfigs (model.Panels |> List.collect (fun p -> p.Items)))
         | Submit ->
             { model with
                 Submit =

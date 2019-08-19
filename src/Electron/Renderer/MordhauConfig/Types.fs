@@ -17,6 +17,7 @@ module rec Types =
         | ExpandSubPanel of OptionGroup
         | ToggleOption of OptionGroup
         | MoveSlider of string * float
+        | GetSettings
         | Submit
         | SnackMsg of Snackbar.Types.Msg<Msg>
         | SnackDismissMsg

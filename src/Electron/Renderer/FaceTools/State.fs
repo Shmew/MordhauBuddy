@@ -86,7 +86,6 @@ module State =
                 match fr with
                 | FaceResult.ProfileList l ->
                     { model with
-                        Stepper = model.Stepper.Next
                         TransferList =
                             if l.Length = 0 then
                                 { model.TransferList with
@@ -126,6 +125,7 @@ module State =
         | StepperNext ->
             { model with Stepper = model.Stepper.Next }, Cmd.none
         | StepperBack -> { model with Stepper = model.Stepper.Back }, Cmd.none
+        | GetProfiles -> model, Cmd.namedBridgeSend "INI" sender.getProfileList
         | ToggleAll(dir,b) ->
             let toggleAll (iList) =
                 iList

@@ -19,6 +19,8 @@ module Types =
         | LoadResources of Msg
         | LoadConfig of ConfigFile
         | LoadMap
+        | InitFaceTools
+        | InitMordhauConfig
         | StoreMsg of Store.Msg
         | ContextMenuMsg of ContextMenu.Types.Msg
         | FaceToolsMsg of FaceTools.Types.Msg

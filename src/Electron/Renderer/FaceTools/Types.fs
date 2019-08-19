@@ -24,6 +24,7 @@ module rec Types =
         | StepperRestart
         | StepperNext
         | StepperBack
+        | GetProfiles
         | ToggleAll of ToggleDirection * bool
         | Toggle of ToggleDirection * Profile
         | Move of ToggleDirection

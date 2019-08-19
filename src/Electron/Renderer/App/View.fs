@@ -115,7 +115,6 @@ module View =
                 | _ -> ()
                 loading
             | _ -> loading
-                
         | FaceTools -> lazyView2 FaceTools.View.view model.FaceTools (FaceToolsMsg >> dispatch)
         | MordhauConfig -> lazyView2 MordhauConfig.View.view model.MordhauConfig (MordhauConfigMsg >> dispatch)
         | Settings -> lazyView2 Settings.View.view model.Settings (SettingsMsg >> dispatch)
