@@ -151,17 +151,19 @@ module View =
                         CSSProp.Display DisplayOptions.Flex
                     ] 
                 ] [
+                    img [
+                        HTMLAttr.Hidden (model.ImgLoaded |> not)
+                        DOMAttr.OnLoad(fun _ -> dispatch ImgSkeleton)
+                        HTMLAttr.Src (stat "frankenstein.png")
+                        Style [ 
+                            CSSProp.BorderRadius "4px"
+                        ]
+                    ]
                     skeleton [ 
+                        HTMLAttr.Hidden <| model.ImgLoaded
                         HTMLAttr.Width "229px"
                         HTMLAttr.Height "308px"
                         SkeletonProp.DisableAnimate true 
-                    ]
-                    img [
-                        HTMLAttr.Src (stat "frankenstein.png")
-                        Style [ 
-                            CSSProp.MarginTop "-319px"
-                            CSSProp.BorderRadius "4px"
-                        ]
                     ]
                 ]
             | 2 ->

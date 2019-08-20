@@ -10,7 +10,8 @@ module State =
     let pageTitle =
         function
         | Home -> "Home"
-        | FaceTools -> "Face tools"
+        | MapInstaller -> "Map Installer"
+        | FaceTools -> "Face Tools"
         | MordhauConfig -> "Mordhau Configuration"
         | Settings -> "Settings"
         | About -> "About"
@@ -49,6 +50,7 @@ module State =
                       AttemptedLoad = false 
                       Loading = false } }
               ContextMenu = ContextMenu.State.init()
+              MapsInstaller = Maps.State.init()
               FaceTools = FaceTools.State.init()
               MordhauConfig = MordhauConfig.State.init()
               Settings = Settings.State.init() 
@@ -173,6 +175,9 @@ module State =
         | ContextMenuMsg msg' ->
             let m',cmd = ContextMenu.State.update msg' m.ContextMenu
             { m with ContextMenu = m' }, Cmd.map ContextMenuMsg cmd
+        | MapInstallerMsg msg' ->
+            let m', cmd = Maps.State.update msg' m.MapsInstaller
+            { m with MapsInstaller = m' }, Cmd.map MapInstallerMsg cmd
         | FaceToolsMsg msg' ->
             let m', cmd = FaceTools.State.update msg' m.FaceTools
             { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
@@ -196,17 +201,20 @@ module State =
                                 { model.Resources with 
                                     GameConfig =
                                         match br with
-                                        | BridgeResult.DefaultDir(dOpt) ->
-                                            { model.Resources.GameConfig with
-                                                Path = defaultArg dOpt "" }
-                                        | BridgeResult.Exists b ->
-                                            { model.Resources.GameConfig with 
-                                                Exists = b 
-                                                Loading =  if b |> not then false else true } 
-                                        | BridgeResult.Parse b ->
-                                           { model.Resources.GameConfig with 
-                                                Parsed = b 
-                                                Loading = false }
+                                        | BridgeResult.INIOperation iOp ->
+                                            match iOp with
+                                            | INIOperationResult.DefaultDir(dOpt) ->
+                                                { model.Resources.GameConfig with
+                                                    Path = defaultArg dOpt "" }
+                                            | INIOperationResult.Exists b ->
+                                                { model.Resources.GameConfig with 
+                                                    Exists = b 
+                                                    Loading =  if b |> not then false else true } 
+                                            | INIOperationResult.Parse b ->
+                                               { model.Resources.GameConfig with 
+                                                    Parsed = b 
+                                                    Loading = false }
+                                            | _ ->  model.Resources.GameConfig
                                         | _ -> model.Resources.GameConfig } } )
                     >> (fun model -> 
                         { model with 
@@ -222,18 +230,21 @@ module State =
                                 { model.Resources with 
                                     EngineConfig =
                                         match br with
-                                        | BridgeResult.DefaultDir(dOpt) ->
-                                            { model.Resources.EngineConfig with
-                                                Path = defaultArg dOpt "" }
-                                        | BridgeResult.Exists b ->
-                                            { model.Resources.EngineConfig with 
-                                                Exists = b
-                                                Loading =  if b |> not then false else true } 
-                                        | BridgeResult.Parse b ->
-                                           { model.Resources.EngineConfig with 
-                                                Path = bMsg.File.Value.WorkingDir.Value
-                                                Parsed = b 
-                                                Loading = false }
+                                        | BridgeResult.INIOperation iOp ->
+                                            match iOp with
+                                            | INIOperationResult.DefaultDir(dOpt) ->
+                                                { model.Resources.EngineConfig with
+                                                    Path = defaultArg dOpt "" }
+                                            | INIOperationResult.Exists b ->
+                                                { model.Resources.EngineConfig with 
+                                                    Exists = b
+                                                    Loading =  if b |> not then false else true } 
+                                            | INIOperationResult.Parse b ->
+                                               { model.Resources.EngineConfig with 
+                                                    Path = bMsg.File.Value.WorkingDir.Value
+                                                    Parsed = b 
+                                                    Loading = false }
+                                            | _ ->  model.Resources.EngineConfig
                                         | _ -> model.Resources.EngineConfig } } )
                         >> (fun model -> 
                             { model with 
@@ -249,18 +260,21 @@ module State =
                                 { model.Resources with 
                                     GameUserConfig =
                                         match br with
-                                        | BridgeResult.DefaultDir(dOpt) ->
-                                            { model.Resources.GameUserConfig with
-                                                Path = defaultArg dOpt "" }
-                                        | BridgeResult.Exists b ->
-                                            { model.Resources.GameUserConfig with 
-                                                Exists = b
-                                                Loading = if b |> not then false else true } 
-                                        | BridgeResult.Parse b ->
-                                           { model.Resources.GameUserConfig with 
-                                                Path = bMsg.File.Value.WorkingDir.Value
-                                                Parsed = b 
-                                                Loading = false }
+                                        | BridgeResult.INIOperation iOp ->
+                                            match iOp with
+                                            | INIOperationResult.DefaultDir(dOpt) ->
+                                                { model.Resources.GameUserConfig with
+                                                    Path = defaultArg dOpt "" }
+                                            | INIOperationResult.Exists b ->
+                                                { model.Resources.GameUserConfig with 
+                                                    Exists = b
+                                                    Loading = if b |> not then false else true } 
+                                            | INIOperationResult.Parse b ->
+                                               { model.Resources.GameUserConfig with 
+                                                    Path = bMsg.File.Value.WorkingDir.Value
+                                                    Parsed = b 
+                                                    Loading = false }
+                                            | _ ->  model.Resources.GameUserConfig
                                         | _ -> model.Resources.GameUserConfig } } )
                     >> (fun model -> 
                         { model with 
@@ -284,16 +298,26 @@ module State =
                     | Some(iFile), _ ->
                         { m with Settings = m' } 
                         |> setResource bMsg (iFile.File)
-                    | None, BridgeResult.MapDirExists b ->
-                        { m with 
-                            Resources =
-                                { m.Resources with
-                                    Maps =
-                                        { m.Resources.Maps with 
-                                            Exists = b
-                                            Loading = false } }
-                            Settings = m' }
-                    | None, BridgeResult.DefaultDir _ ->
+                    | None, BridgeResult.MapOperation(mResult) ->
+                        match mResult with
+                        | MapOperationResult.DirExists b ->
+                            { m with 
+                                Resources =
+                                    { m.Resources with
+                                        Maps =
+                                            { m.Resources.Maps with 
+                                                Exists = b
+                                                Loading = false } }
+                                Settings = m' }
+                        | MapOperationResult.DefaultDir _ ->
+                            { m with 
+                                Resources =
+                                    { m.Resources with
+                                        Maps =
+                                            { m.Resources.Maps with 
+                                                Path = m'.MapsDir.Directory } }
+                                Settings = m' }
+                    | None, BridgeResult.INIOperation(INIOperationResult.DefaultDir _) ->
                         [ (m.Resources.GameConfig.Loading, ConfigFile.Game)
                           (m.Resources.EngineConfig.Loading, ConfigFile.Engine)
                           (m.Resources.GameUserConfig.Loading, ConfigFile.GameUserSettings) ]
@@ -303,14 +327,6 @@ module State =
                             { m with Settings = m' } 
                             |> setResource bMsg (res |> snd)
                         | _ -> { m with Settings = m' } 
-                    | None, BridgeResult.DefaultMapDir _ ->
-                        { m with 
-                            Resources =
-                                { m.Resources with
-                                    Maps =
-                                        { m.Resources.Maps with 
-                                            Path = m'.MapsDir.Directory } }
-                            Settings = m' }
                     | _ -> { m with Settings = m' } 
                     , Cmd.map SettingsMsg cmd
                 | _ -> m, Cmd.none

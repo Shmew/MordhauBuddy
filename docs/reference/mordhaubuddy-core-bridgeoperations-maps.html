@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Configs - MordhauBuddy</title>
+    <title>Maps - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,54 +34,65 @@
 
 
 
-<h1>Configs</h1>
+<h1>Maps</h1>
 <p>
-
-    <span>Namespace: MordhauBuddy.Shared</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-shared-electronbridge-initypes.html">INITypes</a></span><br />
-    </p>
+  <span>Namespace: MordhauBuddy.Core</span><br />
+  <span>Parent Module: <a href="mordhaubuddy-core-bridgeoperations.html">BridgeOperations</a></span>
+        <span>
+          Attributes:<br />
+[&lt;RequireQualifiedAccess&gt;]<br />
+          
+      </span>
+</p>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '540', 540)" onmouseover="showTip(event, '540', 540)">
-            GetConfigs(OptionGroup list)
+          <code onmouseout="hideTip(event, '124', 124)" onmouseover="showTip(event, '124', 124)">
+            Maps.defDir()
           </code>
-          <div class="tip" id="540">
-            <strong>Signature:</strong> OptionGroup list<br />
+          <div class="tip" id="124">
+            <strong>Signature:</strong> unit -&gt; string option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L130-130" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L73-73" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Try to locate the default Mordhau maps directory</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '541', 541)" onmouseover="showTip(event, '541', 541)">
-            MapConfigs(OptionGroup list)
+          <code onmouseout="hideTip(event, '125', 125)" onmouseover="showTip(event, '125', 125)">
+            Maps.dirExists(dir)
           </code>
-          <div class="tip" id="541">
-            <strong>Signature:</strong> OptionGroup list<br />
+          <div class="tip" id="125">
+            <strong>Signature:</strong> dir:string -&gt; bool<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L131-131" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L70-70" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Determine if input is valid maps directory</p>
+
+
         </td>
       </tr>
     </tbody>

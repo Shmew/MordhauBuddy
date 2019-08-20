@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>INIFile - MordhauBuddy</title>
+    <title>State - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,32 +34,33 @@
 
 
 
-<h1>INIFile</h1>
+<h1>State</h1>
 <p>
-
-    <span>Namespace: MordhauBuddy.Shared</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-shared-electronbridge-initypes.html">INITypes</a></span><br />
-    </p>
+  <span>Namespace: MordhauBuddy.App.Maps</span><br />
+  </p>
 <div class="xmldoc">
 </div>
-  <h3>Record Fields</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '555', 555)" onmouseover="showTip(event, '555', 555)">
-            File
+          <code onmouseout="hideTip(event, '85', 85)" onmouseover="showTip(event, '85', 85)">
+            init()
           </code>
-          <div class="tip" id="555">
-            <strong>Signature:</strong> ConfigFile<br />
+          <div class="tip" id="85">
+            <strong>Signature:</strong> unit -&gt; Model<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L109-109" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Maps/State.fs#L16-16" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -69,15 +70,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '556', 556)" onmouseover="showTip(event, '556', 556)">
-            WorkingDir
+          <code onmouseout="hideTip(event, '86', 86)" onmouseover="showTip(event, '86', 86)">
+            update msg model
           </code>
-          <div class="tip" id="556">
-            <strong>Signature:</strong> string option<br />
-                                  </div>
+          <div class="tip" id="86">
+            <strong>Signature:</strong> msg:Msg -&gt; model:Model -&gt; Model * Cmd&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L110-110" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Maps/State.fs#L29-29" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

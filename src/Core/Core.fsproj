@@ -8,6 +8,8 @@
   <ItemGroup>
     <Compile Include="INIReader.fs" />
     <Compile Include="INIConfiguration.fs" />
+    <Compile Include="FileOperations.fs" />
+    <Compile Include="BridgeOperations.fs" />
     <Compile Include="Bridge.fs" />
     <None Include="paket.references" />
   </ItemGroup>

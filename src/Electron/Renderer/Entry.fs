@@ -12,8 +12,7 @@ module Entry =
 
     Program.mkProgram State.init State.update View.view
     |> Program.withBridgeConfig(
-        Bridge.endpoint (endpoint + INIOperations.Endpoint)
-        |> Bridge.withName "INI"
+        Bridge.endpoint (endpoint + BridgeOperations.Endpoint)
         |> Bridge.withMapping (fun bridgeMsg ->
             bridgeMsg |> Types.Msg.ServerMsg)
         |> Bridge.withUrlMode UrlMode.Raw

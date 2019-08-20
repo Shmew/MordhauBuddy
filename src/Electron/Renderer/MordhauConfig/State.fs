@@ -38,7 +38,7 @@ module State =
                 Complete = false }
           Snack = Snackbar.State.init() }
 
-    let private sender = new INISender(Caller.MordhauConfig)
+    let private sender = new INIBridgeSender(Caller.MordhauConfig)
 
     let update (msg: Msg) (model: Model) =
         let submissionFailed (s: string) =
@@ -51,26 +51,29 @@ module State =
         match msg with
         | ClientMsg bMsg ->
             match bMsg.BridgeResult with
-            | BridgeResult.Parse _ ->
-                model, Cmd.namedBridgeSend "INI" (sender.getConfigs (model.Panels |> List.collect (fun p -> p.Items)))
-            | BridgeResult.Backup b ->
-                if b then
-                    let allPanels =
-                        model.Panels |> List.collect (fun p -> p.Items)
-                    model, Cmd.namedBridgeSend "INI" (sender.mapConfigs allPanels)
-                else
-                    submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg
-            | BridgeResult.CommitChanges b ->
-                if b then
-                    { model with
-                        Submit =
-                            { model.Submit with
-                                Waiting = false
-                                Error = false
-                                HelperText = "Changes successfully completed!"
-                                Complete = true } }
-                else submissionFailed "Error commiting changes to the file"
-                , Cmd.ofMsg SnackDismissMsg
+            | BridgeResult.INIOperation iOp ->
+                match iOp with
+                | INIOperationResult.Parse _ ->
+                    model, Cmd.bridgeSend (sender.GetConfigs (model.Panels |> List.collect (fun p -> p.Items)))
+                | INIOperationResult.Backup b ->
+                    if b then
+                        let allPanels =
+                            model.Panels |> List.collect (fun p -> p.Items)
+                        model, Cmd.bridgeSend (sender.MapConfigs allPanels)
+                    else
+                        submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg
+                | INIOperationResult.CommitChanges b ->
+                    if b then
+                        { model with
+                            Submit =
+                                { model.Submit with
+                                    Waiting = false
+                                    Error = false
+                                    HelperText = "Changes successfully completed!"
+                                    Complete = true } }
+                    else submissionFailed "Error commiting changes to the file"
+                    , Cmd.ofMsg SnackDismissMsg
+                | _ -> model, Cmd.none
             | BridgeResult.Config cr ->
                 match cr with
                 | ConfigResult.GetConfigs (oList) ->
@@ -99,8 +102,8 @@ module State =
                 | ConfigResult.MapConfigs b ->
                     if b then
                         model, 
-                        Cmd.namedBridgeSend "INI" 
-                            (sender.commit 
+                        Cmd.bridgeSend 
+                            (sender.Commit 
                                 [ { File = ConfigFile.Engine; WorkingDir = model.EngineDir.Directory |> Some }
                                   { File = ConfigFile.GameUserSettings; WorkingDir = model.GameUserDir.Directory |> Some } ])
                     else submissionFailed "Modifying INI failed", Cmd.ofMsg SnackDismissMsg
@@ -206,8 +209,8 @@ module State =
                 Submit =
                     { model.Submit with
                         Waiting = true } }
-            , Cmd.namedBridgeSend "INI" 
-                (sender.backup 
+            , Cmd.bridgeSend 
+                (sender.Backup 
                     [ { File = ConfigFile.Engine; WorkingDir = model.EngineDir.Directory |> Some }
                       { File = ConfigFile.GameUserSettings; WorkingDir = model.GameUserDir.Directory |> Some } ]) 
         | SnackMsg msg' ->

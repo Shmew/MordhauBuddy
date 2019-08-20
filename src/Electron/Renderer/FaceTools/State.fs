@@ -32,6 +32,7 @@ module State =
               Error = false
               HelperText = "" }
           TabSelected = 0
+          ImgLoaded = false
           Import = 
             { ImportString = ""
               Error = false
@@ -44,7 +45,7 @@ module State =
               Complete = false }
           Snack = Snackbar.State.init() }
 
-    let private sender = new INISender(Caller.FaceTools)
+    let private sender = new INIBridgeSender(Caller.FaceTools)
     let private fileWrap dir =
         { File = ConfigFile.Game
           WorkingDir = Some(dir) }
@@ -60,30 +61,33 @@ module State =
         match msg with
         | ClientMsg bRes ->
             match bRes with
-            | BridgeResult.Parse _ ->
-                model, Cmd.namedBridgeSend "INI" sender.getProfileList
-            | BridgeResult.Backup b ->
-                if b then
-                    let profiles =
-                        model.TransferList.RightProfiles |> List.map (fun p -> p.Name)
-                    match model.TabSelected with
-                    | 0 -> model, Cmd.namedBridgeSend "INI" (sender.setFrankenstein profiles)
-                    | 1 -> model, Cmd.namedBridgeSend "INI" (sender.setRandom profiles)
-                    | 2 -> model, Cmd.namedBridgeSend "INI" (sender.setCustom profiles model.Import.ImportString)
-                    | _ -> submissionFailed "Invalid submission", Cmd.ofMsg SnackDismissMsg
-                else
-                    submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg
-            | BridgeResult.CommitChanges b ->
-                if b then
-                    { model with
-                        StepperComplete = true
-                        Submit =
-                            { model.Submit with
-                                Waiting = false
-                                Error = false
-                                HelperText = "Changes successfully completed!" } }
-                else submissionFailed "Error commiting changes to the file"
-                , Cmd.ofMsg SnackDismissMsg
+            | BridgeResult.INIOperation iOp ->
+                match iOp with
+                | INIOperationResult.Parse _ ->
+                    model, Cmd.bridgeSend sender.GetProfileList
+                | INIOperationResult.Backup b ->
+                    if b then
+                        let profiles =
+                            model.TransferList.RightProfiles |> List.map (fun p -> p.Name)
+                        match model.TabSelected with
+                        | 0 -> model, Cmd.bridgeSend (sender.SetFrankenstein profiles)
+                        | 1 -> model, Cmd.bridgeSend (sender.SetRandom profiles)
+                        | 2 -> model, Cmd.bridgeSend (sender.SetCustom profiles model.Import.ImportString)
+                        | _ -> submissionFailed "Invalid submission", Cmd.ofMsg SnackDismissMsg
+                    else
+                        submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg
+                | INIOperationResult.CommitChanges b ->
+                    if b then
+                        { model with
+                            StepperComplete = true
+                            Submit =
+                                { model.Submit with
+                                    Waiting = false
+                                    Error = false
+                                    HelperText = "Changes successfully completed!" } }
+                    else submissionFailed "Error commiting changes to the file"
+                    , Cmd.ofMsg SnackDismissMsg
+                | _ -> model, Cmd.none
             | BridgeResult.Faces fr ->
                 match fr with
                 | FaceResult.ProfileList l ->
@@ -112,7 +116,7 @@ module State =
                 | FaceResult.Custom b
                     ->
                         if b then
-                            model, Cmd.namedBridgeSend "INI" (sender.commit([fileWrap(model.GameDir.Directory)]))
+                            model, Cmd.bridgeSend (sender.Commit([fileWrap(model.GameDir.Directory)]))
                         else submissionFailed "Modifying INI failed", Cmd.ofMsg SnackDismissMsg
             | _ -> model, Cmd.none
         | StepperSubmit -> 
@@ -120,12 +124,12 @@ module State =
                 Submit =
                     { model.Submit with
                         Waiting = true } }
-            , Cmd.namedBridgeSend "INI" 
-                (sender.backup([fileWrap(model.GameDir.Directory)]) )
+            , Cmd.bridgeSend
+                (sender.Backup([fileWrap(model.GameDir.Directory)]) )
         | StepperRestart -> 
             { init() with 
                 GameDir = model.GameDir }
-            , Cmd.namedBridgeSend "INI" (sender.parse(fileWrap(model.GameDir.Directory)))
+            , Cmd.bridgeSend (sender.Parse(fileWrap(model.GameDir.Directory)))
         | StepperNext ->
             { model with Stepper = model.Stepper.Next }, Cmd.none
         | StepperBack -> { model with Stepper = model.Stepper.Back }, Cmd.none
@@ -230,6 +234,8 @@ module State =
                 |> checkedCount, Cmd.none)
         | TabSelected(tabPicked) ->
             { model with TabSelected = tabPicked}, Cmd.none
+        | ImgSkeleton ->
+            { model with ImgLoaded = true }, Cmd.none
         | SetImportString s ->
             { model with 
                 Import = 

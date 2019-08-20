@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>BridgeOperations - MordhauBuddy</title>
+    <title>INI - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,14 +34,17 @@
 
 
 
-<h1>BridgeOperations</h1>
+<h1>INI</h1>
 <p>
   <span>Namespace: MordhauBuddy.Core</span><br />
-  <span>Parent Module: <a href="mordhaubuddy-core-iniconfiguration.html">INIConfiguration</a></span>
-  </p>
+  <span>Parent Module: <a href="mordhaubuddy-core-bridgeoperations.html">BridgeOperations</a></span>
+        <span>
+          Attributes:<br />
+[&lt;RequireQualifiedAccess&gt;]<br />
+          
+      </span>
+</p>
 <div class="xmldoc">
-<p>Mapping of internal functions to client requests</p>
-
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -55,15 +58,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '108', 108)" onmouseover="showTip(event, '108', 108)">
-            backup(iFile)
+          <code onmouseout="hideTip(event, '111', 111)" onmouseover="showTip(event, '111', 111)">
+            INI.backup(iFile)
           </code>
-          <div class="tip" id="108">
+          <div class="tip" id="111">
             <strong>Signature:</strong> iFile:INIFile -&gt; bool<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L438-438" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L35-35" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -75,15 +78,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '109', 109)" onmouseover="showTip(event, '109', 109)">
-            custom profiles iVal fVals
+          <code onmouseout="hideTip(event, '112', 112)" onmouseover="showTip(event, '112', 112)">
+            INI.custom profiles iVal fVals
           </code>
-          <div class="tip" id="109">
+          <div class="tip" id="112">
             <strong>Signature:</strong> profiles:string list -&gt; iVal:INIValue -&gt; fVals:string -&gt; INIValue option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L459-459" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L53-53" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -95,15 +98,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '110', 110)" onmouseover="showTip(event, '110', 110)">
-            defDir()
+          <code onmouseout="hideTip(event, '113', 113)" onmouseover="showTip(event, '113', 113)">
+            INI.defDir()
           </code>
-          <div class="tip" id="110">
+          <div class="tip" id="113">
             <strong>Signature:</strong> unit -&gt; string option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L446-446" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L43-43" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -115,35 +118,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '111', 111)" onmouseover="showTip(event, '111', 111)">
-            defMapDir()
+          <code onmouseout="hideTip(event, '114', 114)" onmouseover="showTip(event, '114', 114)">
+            INI.delete oVal selectors
           </code>
-          <div class="tip" id="111">
-            <strong>Signature:</strong> unit -&gt; string option<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L449-449" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Try to locate the default Mordhau maps directory</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '112', 112)" onmouseover="showTip(event, '112', 112)">
-            delete oVal selectors
-          </code>
-          <div class="tip" id="112">
+          <div class="tip" id="114">
             <strong>Signature:</strong> oVal:INIValue -&gt; selectors:string list -&gt; INIValue<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L419-419" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L19-19" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -155,15 +138,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '113', 113)" onmouseover="showTip(event, '113', 113)">
-            exists(iFile)
+          <code onmouseout="hideTip(event, '115', 115)" onmouseover="showTip(event, '115', 115)">
+            INI.exists(iFile)
           </code>
-          <div class="tip" id="113">
+          <div class="tip" id="115">
             <strong>Signature:</strong> iFile:INIFile -&gt; bool<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L422-422" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L22-22" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -175,15 +158,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '114', 114)" onmouseover="showTip(event, '114', 114)">
-            frankenstein profiles iVal
+          <code onmouseout="hideTip(event, '116', 116)" onmouseover="showTip(event, '116', 116)">
+            INI.frankenstein profiles iVal
           </code>
-          <div class="tip" id="114">
+          <div class="tip" id="116">
             <strong>Signature:</strong> profiles:string list -&gt; iVal:INIValue -&gt; INIValue option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L455-455" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L49-49" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -195,15 +178,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '115', 115)" onmouseover="showTip(event, '115', 115)">
-            getConfigs engine gameUser options
+          <code onmouseout="hideTip(event, '117', 117)" onmouseover="showTip(event, '117', 117)">
+            INI.getConfigs engine gameUser options
           </code>
-          <div class="tip" id="115">
+          <div class="tip" id="117">
             <strong>Signature:</strong> engine:INIValue -&gt; gameUser:INIValue -&gt; options:OptionGroup list -&gt; OptionGroup list<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L466-466" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L60-60" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -215,15 +198,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '116', 116)" onmouseover="showTip(event, '116', 116)">
-            mapConfigs engine gameUser options
+          <code onmouseout="hideTip(event, '118', 118)" onmouseover="showTip(event, '118', 118)">
+            INI.mapConfigs engine gameUser options
           </code>
-          <div class="tip" id="116">
+          <div class="tip" id="118">
             <strong>Signature:</strong> engine:INIValue -&gt; gameUser:INIValue -&gt; options:OptionGroup list -&gt; INIValue option * INIValue option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L470-470" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L64-64" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -235,35 +218,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '117', 117)" onmouseover="showTip(event, '117', 117)">
-            mapDirExists(dir)
+          <code onmouseout="hideTip(event, '119', 119)" onmouseover="showTip(event, '119', 119)">
+            INI.parse(iFile)
           </code>
-          <div class="tip" id="117">
-            <strong>Signature:</strong> dir:string -&gt; bool<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L425-425" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Determine if input is valid maps directory</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '118', 118)" onmouseover="showTip(event, '118', 118)">
-            parse(iFile)
-          </code>
-          <div class="tip" id="118">
+          <div class="tip" id="119">
             <strong>Signature:</strong> iFile:INIFile -&gt; INIValue option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L428-428" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L25-25" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -275,15 +238,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '119', 119)" onmouseover="showTip(event, '119', 119)">
-            profileList(iVal)
+          <code onmouseout="hideTip(event, '120', 120)" onmouseover="showTip(event, '120', 120)">
+            INI.profileList(iVal)
           </code>
-          <div class="tip" id="119">
+          <div class="tip" id="120">
             <strong>Signature:</strong> iVal:INIValue -&gt; (string * string) list<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L463-463" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L57-57" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -295,15 +258,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '120', 120)" onmouseover="showTip(event, '120', 120)">
-            random profiles iVal
+          <code onmouseout="hideTip(event, '121', 121)" onmouseover="showTip(event, '121', 121)">
+            INI.random profiles iVal
           </code>
-          <div class="tip" id="120">
+          <div class="tip" id="121">
             <strong>Signature:</strong> profiles:string list -&gt; iVal:INIValue -&gt; INIValue option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L452-452" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L46-46" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -315,15 +278,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '121', 121)" onmouseover="showTip(event, '121', 121)">
-            replace oVal iVal selectors
+          <code onmouseout="hideTip(event, '122', 122)" onmouseover="showTip(event, '122', 122)">
+            INI.replace oVal iVal selectors
           </code>
-          <div class="tip" id="121">
+          <div class="tip" id="122">
             <strong>Signature:</strong> oVal:INIValue -&gt; iVal:INIValue -&gt; selectors:string list -&gt; INIValue<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L416-416" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L16-16" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -335,15 +298,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '122', 122)" onmouseover="showTip(event, '122', 122)">
-            write iFile iVal
+          <code onmouseout="hideTip(event, '123', 123)" onmouseover="showTip(event, '123', 123)">
+            INI.write iFile iVal
           </code>
-          <div class="tip" id="122">
+          <div class="tip" id="123">
             <strong>Signature:</strong> iFile:INIFile -&gt; iVal:INIValue -&gt; bool<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L432-432" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/BridgeOperations.fs#L29-29" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

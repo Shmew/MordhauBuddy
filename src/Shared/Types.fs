@@ -80,16 +80,24 @@ module ElectronBridge =
         | MapConfigs of bool
 
     [<RequireQualifiedAccess>]
-    type BridgeResult =
+    type INIOperationResult =
+        | DefaultDir of string option
         | Replace of bool
         | Delete of bool
         | Exists of bool
-        | MapDirExists of bool
         | Parse of bool
         | Backup of bool
-        | DefaultDir of string option
-        | DefaultMapDir of string option
         | CommitChanges of bool
+
+    [<RequireQualifiedAccess>]
+    type MapOperationResult =
+        | DefaultDir of string option
+        | DirExists of bool
+
+    [<RequireQualifiedAccess>]
+    type BridgeResult =
+        | INIOperation of INIOperationResult
+        | MapOperation of MapOperationResult
         | Faces of FaceResult
         | Config of ConfigResult
 
@@ -101,7 +109,7 @@ module ElectronBridge =
         | App
 
     [<AutoOpen>]
-    module INITypes =
+    module Types =
         type Selectors =
             { Selectors: string list }
 
@@ -109,16 +117,20 @@ module ElectronBridge =
             { File: ConfigFile
               WorkingDir: string option }
 
-        type FileOperation =
+        [<RequireQualifiedAccess>]
+        type INIFileOperation =
+            | DefaultDir
             | Replace of string * Selectors * INIFile
             | Delete of Selectors * INIFile
             | Exists of INIFile
-            | MapDirExists of string
             | Parse of INIFile
             | Backup of INIFile list
-            | DefaultDir
-            | DefaultMapDir
             | Commit of INIFile list
+
+        [<RequireQualifiedAccess>]
+        type MapFileOperation =
+            | DefaultDir
+            | DirExists of string
 
         type Faces =
             | Random of string list
@@ -130,11 +142,12 @@ module ElectronBridge =
             | GetConfigs of OptionGroup list
             | MapConfigs of OptionGroup list
 
-        type INIOperations =
-            | Operation of FileOperation
+        type BridgeOperations =
+            | INIOperation of INIFileOperation
+            | MapOperation of MapFileOperation
             | Faces of Faces
             | Configs of Configs
-            static member Endpoint = "/ws/iniops"
+            static member Endpoint = "/ws"
 
     type BridgeMsg =
         { Caller: Caller
@@ -146,7 +159,7 @@ module ElectronBridge =
         | Connected
         | Disconnected
 
-    type RemoteServerMsg = INIOps of INIOperations * Caller
+    type RemoteServerMsg = BridgeOps of BridgeOperations * Caller
 
     let port = "8085" |> uint16
     let endpoint = sprintf "http://localhost:%i" port

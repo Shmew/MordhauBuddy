@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>FileOps - MordhauBuddy</title>
+    <title>Bridge - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,17 +34,44 @@
 
 
 
-<h1>FileOps</h1>
+<h1>Bridge</h1>
 <p>
   <span>Namespace: MordhauBuddy.Core</span><br />
-  <span>Parent Module: <a href="mordhaubuddy-core-iniconfiguration.html">INIConfiguration</a></span>
+  <span>Parent Module: <a href="mordhaubuddy-core-bridge.html">Bridge</a></span>
   </p>
 <div class="xmldoc">
-<p>Module for doing file operations</p>
+<p>Websocket bridge</p>
 
 </div>
 
 <!-- Render nested types and modules, if there are any -->
+  <h2>Nested types and modules</h2>
+  <div>
+      <table class="table table-bordered type-list">
+    <thead>
+      <tr><td>Type</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="type-name">
+            <a href="mordhaubuddy-core-bridge-bridge-model.html">Model</a>
+          </td>
+          <td class="xmldoc">
+          
+          </td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="mordhaubuddy-core-bridge-bridge-servermsg.html">ServerMsg</a>
+          </td>
+          <td class="xmldoc">
+          
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
 
   <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
@@ -55,141 +82,73 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '123', 123)" onmouseover="showTip(event, '123', 123)">
-            createBackup(file)
+          <code onmouseout="hideTip(event, '107', 107)" onmouseover="showTip(event, '107', 107)">
+            bridge
           </code>
-          <div class="tip" id="123">
-            <strong>Signature:</strong> file:string -&gt; bool<br />
+          <div class="tip" id="107">
+            <strong>Signature:</strong> HttpFunc -&gt; HttpContext -&gt; HttpFuncResult<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L73-73" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L181-181" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Create a backup of the given file into sub directory MordhauBuddy_backups</p>
-
-
+          
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '124', 124)" onmouseover="showTip(event, '124', 124)">
-            defConfigDir
+          <code onmouseout="hideTip(event, '108', 108)" onmouseover="showTip(event, '108', 108)">
+            createClientResp caller file br
           </code>
-          <div class="tip" id="124">
-            <strong>Signature:</strong> string option<br />
+          <div class="tip" id="108">
+            <strong>Signature:</strong> caller:Caller -&gt; file:INIFile option -&gt; br:BridgeResult -&gt; BridgeMsg<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L16-16" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L31-31" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Try to find the configuration directory</p>
-
-
+          
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '125', 125)" onmouseover="showTip(event, '125', 125)">
-            defMapDir
+          <code onmouseout="hideTip(event, '109', 109)" onmouseover="showTip(event, '109', 109)">
+            init clientDispatch ()
           </code>
-          <div class="tip" id="125">
-            <strong>Signature:</strong> string option<br />
-                                  </div>
+          <div class="tip" id="109">
+            <strong>Signature:</strong> clientDispatch:Dispatch&lt;RemoteClientMsg&gt; -&gt; unit -&gt; Model * Cmd&lt;&#39;?8530&gt;<br />
+                          <strong>Type parameters:</strong> '?8530                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L40-40" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L25-25" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Try to find the Map directory</p>
-
-
+          
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '126', 126)" onmouseover="showTip(event, '126', 126)">
-            tryFindMaps(dir)
+          <code onmouseout="hideTip(event, '110', 110)" onmouseover="showTip(event, '110', 110)">
+            update clientDispatch arg2 model
           </code>
-          <div class="tip" id="126">
-            <strong>Signature:</strong> dir:string -&gt; bool<br />
-                                  </div>
+          <div class="tip" id="110">
+            <strong>Signature:</strong> clientDispatch:Dispatch&lt;RemoteClientMsg&gt; -&gt; ServerMsg -&gt; model:Model -&gt; Model * Cmd&lt;&#39;?8533&gt;<br />
+                          <strong>Type parameters:</strong> '?8533                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L68-68" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L36-36" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Determine if maps directory is valid</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '127', 127)" onmouseover="showTip(event, '127', 127)">
-            tryGetFile file workingDir
-          </code>
-          <div class="tip" id="127">
-            <strong>Signature:</strong> file:string -&gt; workingDir:string option -&gt; string option<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L60-60" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Try to find the file given an <a href="mordhaubuddy-shared-electronbridge-initypes-inifile.html" title="INIFile"><code>INIFile</code></a></p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '128', 128)" onmouseover="showTip(event, '128', 128)">
-            tryReadINI(file)
-          </code>
-          <div class="tip" id="128">
-            <strong>Signature:</strong> file:string -&gt; INIValue option<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L92-92" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Try to read an INI file</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '129', 129)" onmouseover="showTip(event, '129', 129)">
-            writeINI iVal outFile
-          </code>
-          <div class="tip" id="129">
-            <strong>Signature:</strong> iVal:INIValue -&gt; outFile:string -&gt; string option<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/INIConfiguration.fs#L85-85" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Write <a href="mordhaubuddy-core-inireader-inivalue.html" title="INIValue"><code>INIValue</code></a> to file path</p>
-
-
+          
         </td>
       </tr>
     </tbody>

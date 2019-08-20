@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Model - MordhauBuddy</title>
+    <title>BridgeOperations - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,32 +34,32 @@
 
 
 
-<h1>Model</h1>
+<h1>BridgeOperations</h1>
 <p>
 
-    <span>Namespace: MordhauBuddy.Core</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-core-bridge-inibridge.html">INIBridge</a></span><br />
+    <span>Namespace: MordhauBuddy.Shared</span><br />
+        <span>Parent Module: <a href="mordhaubuddy-shared-electronbridge-types.html">Types</a></span><br />
     </p>
 <div class="xmldoc">
 </div>
-  <h3>Record Fields</h3>
+  <h3>Union Cases</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Union Case</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '441', 441)" onmouseover="showTip(event, '441', 441)">
-            Engine
+          <code onmouseout="hideTip(event, '577', 577)" onmouseover="showTip(event, '577', 577)">
+            Configs(Configs)
           </code>
-          <div class="tip" id="441">
-            <strong>Signature:</strong> INIValue option<br />
+          <div class="tip" id="577">
+            <strong>Signature:</strong> Configs<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L15-15" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L149-149" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -69,15 +69,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '442', 442)" onmouseover="showTip(event, '442', 442)">
-            Game
+          <code onmouseout="hideTip(event, '578', 578)" onmouseover="showTip(event, '578', 578)">
+            Faces(Faces)
           </code>
-          <div class="tip" id="442">
-            <strong>Signature:</strong> INIValue option<br />
+          <div class="tip" id="578">
+            <strong>Signature:</strong> Faces<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L14-14" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L148-148" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -87,15 +87,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '443', 443)" onmouseover="showTip(event, '443', 443)">
-            GameUserSettings
+          <code onmouseout="hideTip(event, '579', 579)" onmouseover="showTip(event, '579', 579)">
+            INIOperation(INIFileOperation)
           </code>
-          <div class="tip" id="443">
-            <strong>Signature:</strong> INIValue option<br />
+          <div class="tip" id="579">
+            <strong>Signature:</strong> INIFileOperation<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L16-16" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L146-146" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '580', 580)" onmouseover="showTip(event, '580', 580)">
+            MapOperation(MapFileOperation)
+          </code>
+          <div class="tip" id="580">
+            <strong>Signature:</strong> MapFileOperation<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L147-147" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -104,28 +122,29 @@
       </tr>
     </tbody>
   </table>
-  <h3>Instance members</h3>
+  <h3>Static members</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Instance member</td><td>Description</td></tr>
+      <tr><td>Static member</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '444', 444)" onmouseover="showTip(event, '444', 444)">
-            x.GetIVal(file)
+          <code onmouseout="hideTip(event, '581', 581)" onmouseover="showTip(event, '581', 581)">
+            BridgeOperations.Endpoint
           </code>
-          <div class="tip" id="444">
-            <strong>Signature:</strong> file:ConfigFile -&gt; INIValue option<br />
+          <div class="tip" id="581">
+            <strong>Signature:</strong> string<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L17-17" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L150-150" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
+              <p>CompiledName: <code>get_Endpoint</code></p>
         </td>
       </tr>
     </tbody>

@@ -28,6 +28,7 @@ module rec Types =
         | Toggle of ToggleDirection * Profile
         | Move of ToggleDirection
         | TabSelected of int
+        | ImgSkeleton
         | SetImportString of string
         | ValidateImport
         | CopiedClipboard
@@ -197,6 +198,7 @@ module rec Types =
           GameDir : ConfigDir 
           TransferList : TransferList
           TabSelected : int
+          ImgLoaded : bool
           Import : ImportStr
           Submit : Submit
           Snack : Snackbar.Types.Model<Msg> }

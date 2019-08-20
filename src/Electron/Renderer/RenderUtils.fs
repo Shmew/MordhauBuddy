@@ -3,25 +3,28 @@
 module BridgeUtils =
     open MordhauBuddy.Shared.ElectronBridge
 
-    type INISender(caller: Caller) =
-        let wrapOps iCmd = INIOps(Operation(iCmd), caller)
-        let wrapFace fCmd = INIOps(Faces(fCmd), caller)
-        let wrapConf cCmd = INIOps(Configs(cCmd), caller)
-        member this.replace s sels iFile = Replace(s,sels,iFile) |> wrapOps
-        member this.delete sels = Delete(sels) |> wrapOps
-        member this.exists iFile = Exists(iFile) |> wrapOps
-        member this.mapDirExists s = MapDirExists(s) |> wrapOps
-        member this.parse iFile = Parse(iFile) |> wrapOps
-        member this.backup iList = Backup(iList) |> wrapOps
-        member this.defDir = DefaultDir |> wrapOps
-        member this.defMapDir = DefaultMapDir |> wrapOps
-        member this.commit iList = Commit(iList) |> wrapOps
-        member this.setRandom profile = Random(profile) |> wrapFace
-        member this.setFrankenstein profile = Frankenstein(profile) |> wrapFace
-        member this.setCustom profile fVal = Custom(profile,fVal) |> wrapFace
-        member this.getProfileList = ProfileList |> wrapFace
-        member this.getConfigs oList = GetConfigs(oList) |> wrapConf
-        member this.mapConfigs oList = MapConfigs(oList) |> wrapConf
+    type INIBridgeSender(caller: Caller) =
+        let wrapOps iCmd = BridgeOps(INIOperation(iCmd), caller)
+        let wrapFace fCmd = BridgeOps(Faces(fCmd), caller)
+        let wrapConf cCmd = BridgeOps(Configs(cCmd), caller)
+        member this.Replace s sels iFile = INIFileOperation.Replace(s,sels,iFile) |> wrapOps
+        member this.Delete sels = INIFileOperation.Delete(sels) |> wrapOps
+        member this.Exists iFile = INIFileOperation.Exists(iFile) |> wrapOps
+        member this.Parse iFile = INIFileOperation.Parse(iFile) |> wrapOps
+        member this.Backup iList = INIFileOperation.Backup(iList) |> wrapOps
+        member this.DefaultDir = INIFileOperation.DefaultDir |> wrapOps
+        member this.Commit iList = INIFileOperation.Commit(iList) |> wrapOps
+        member this.SetRandom profile = Random(profile) |> wrapFace
+        member this.SetFrankenstein profile = Frankenstein(profile) |> wrapFace
+        member this.SetCustom profile fVal = Custom(profile,fVal) |> wrapFace
+        member this.GetProfileList = ProfileList |> wrapFace
+        member this.GetConfigs oList = GetConfigs(oList) |> wrapConf
+        member this.MapConfigs oList = MapConfigs(oList) |> wrapConf
+
+    type MapBridgeSender(caller: Caller) =
+        let wrapOps mCmd = BridgeOps(MapOperation(mCmd), caller)
+        member this.DefaultDir = MapFileOperation.DefaultDir |> wrapOps
+        member this.DirExists s = MapFileOperation.DirExists(s) |> wrapOps
 
 module RenderUtils =
     open Electron

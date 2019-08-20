@@ -5,11 +5,11 @@ module Bridge =
     open Elmish.Bridge
     open Saturn
     open INIReader
-    open INIConfiguration.BridgeOperations
+    open BridgeOperations
     open MordhauBuddy.Shared.ElectronBridge
 
     /// Websocket bridge
-    module INIBridge =
+    module Bridge =
         type Model =
             { Game: INIValue option
               Engine: INIValue option
@@ -42,44 +42,49 @@ module Bridge =
 
             let model, remoteCMsg =
                 match clientMsg with
-                | INIOps(ops, caller) ->
+                | BridgeOps(ops, caller) ->
                     match ops with
-                    | Operation iCmd ->
+                    | INIOperation iCmd ->
                         match iCmd with
-                        | Replace(s, sels, iFile) ->
+                        | INIFileOperation.DefaultDir ->
+                            model,
+                            INI.defDir()
+                            |> INIOperationResult.DefaultDir
+                            |> BridgeResult.INIOperation
+                            |> createClientResp caller None
+                        | INIFileOperation.Replace(s, sels, iFile) ->
                             let result =
-                                (replace (model.GetIVal(iFile.File).Value)
+                                (INI.replace (model.GetIVal(iFile.File).Value)
                                      (s
                                       |> Some
                                       |> INIValue.String) sels.Selectors
                                  |> Some)
                             updateModel iFile.File result model,
                             result.IsSome
-                            |> BridgeResult.Replace
+                            |> INIOperationResult.Replace
+                            |> BridgeResult.INIOperation
                             |> createClientResp caller (Some(iFile))
-                        | Delete(sels, iFile) ->
-                            let result = (delete (model.GetIVal(iFile.File).Value) sels.Selectors |> Some)
+                        | INIFileOperation.Delete(sels, iFile) ->
+                            let result = (INI.delete (model.GetIVal(iFile.File).Value) sels.Selectors |> Some)
                             updateModel iFile.File result model,
                             result.IsSome
-                            |> BridgeResult.Delete
+                            |> INIOperationResult.Delete
+                            |> BridgeResult.INIOperation
                             |> createClientResp caller (Some(iFile))
-                        | Exists(iFile) ->
+                        | INIFileOperation.Exists(iFile) ->
                             model,
-                            exists iFile
-                            |> BridgeResult.Exists
+                            INI.exists iFile
+                            |> INIOperationResult.Exists
+                            |> BridgeResult.INIOperation
                             |> createClientResp caller (Some(iFile))
-                        | MapDirExists(dir) ->
-                            model,
-                            mapDirExists dir
-                            |> BridgeResult.MapDirExists
-                            |> createClientResp caller None
-                        | Parse(iFile) ->
-                            let result = parse iFile
+                        | INIFileOperation.Parse(iFile) ->
+                            let result = INI.parse iFile
 
                             let m, cmd =
                                 updateModel iFile.File result model,
                                 result.IsSome
-                                |> BridgeResult.Parse
+                                |> INIOperationResult.Parse
+                                |> BridgeResult.INIOperation
                                 |> createClientResp caller (Some(iFile))
                             match iFile.File with
                             | ConfigFile.Game ->
@@ -96,44 +101,51 @@ module Bridge =
                                 |> clientDispatch
                             | _ -> ()
                             m, cmd
-                        | Backup(fList) ->
+                        | INIFileOperation.Backup(fList) ->
                             model,
                             fList
-                            |> List.map backup
+                            |> List.map INI.backup
                             |> List.forall id
-                            |> BridgeResult.Backup
+                            |> INIOperationResult.Backup
+                            |> BridgeResult.INIOperation
                             |> createClientResp caller None
-                        | DefaultDir ->
-                            model,
-                            defDir()
-                            |> BridgeResult.DefaultDir
-                            |> createClientResp caller None
-                        | DefaultMapDir ->
-                            model,
-                            defMapDir()
-                            |> BridgeResult.DefaultMapDir
-                            |> createClientResp caller None
-                        | Commit(fList) ->
+                        | INIFileOperation.Commit(fList) ->
                             model,
                             fList
-                            |> List.map (fun iFile -> write iFile (model.GetIVal(iFile.File).Value))
+                            |> List.map (fun iFile -> INI.write iFile (model.GetIVal(iFile.File).Value))
                             |> List.forall id
-                            |> BridgeResult.CommitChanges
+                            |> INIOperationResult.CommitChanges
+                            |> BridgeResult.INIOperation
                             |> createClientResp caller None
+                    | MapOperation mCmd ->
+                        match mCmd with
+                        | MapFileOperation.DefaultDir ->
+                            model,
+                            Maps.defDir()
+                            |> MapOperationResult.DefaultDir
+                            |> BridgeResult.MapOperation
+                            |> createClientResp caller None
+                        | MapFileOperation.DirExists(dir) ->
+                            model,
+                            Maps.dirExists dir
+                            |> MapOperationResult.DirExists
+                            |> BridgeResult.MapOperation
+                            |> createClientResp caller None
+
                     | Faces fCmd ->
                         let cResp br = createClientResp caller None br
                         match fCmd with
                         | Random(profiles) ->
-                            let result = random profiles (model.GetIVal(ConfigFile.Game).Value)
+                            let result = INI.random profiles (model.GetIVal(ConfigFile.Game).Value)
                             updateModel ConfigFile.Game result model, result.IsSome |> FaceResult.Random
                         | Frankenstein(profiles) ->
-                            let result = frankenstein profiles (model.GetIVal(ConfigFile.Game).Value)
+                            let result = INI.frankenstein profiles (model.GetIVal(ConfigFile.Game).Value)
                             updateModel ConfigFile.Game result model, result.IsSome |> FaceResult.Frankenstein
                         | Custom(profiles, fVal) ->
-                            let result = custom profiles (model.GetIVal(ConfigFile.Game).Value) fVal
+                            let result = INI.custom profiles (model.GetIVal(ConfigFile.Game).Value) fVal
                             updateModel ConfigFile.Game result model, result.IsSome |> FaceResult.Custom
                         | ProfileList ->
-                            model, profileList (model.GetIVal(ConfigFile.Game).Value) |> FaceResult.ProfileList
+                            model, INI.profileList (model.GetIVal(ConfigFile.Game).Value) |> FaceResult.ProfileList
                         |> fun (m, fr) ->
                             m,
                             fr
@@ -147,10 +159,10 @@ module Bridge =
                         | GetConfigs(oList) ->
                             model,
                             oList
-                            |> getConfigs engine gameUser
+                            |> INI.getConfigs engine gameUser
                             |> ConfigResult.GetConfigs
                         | MapConfigs(oList) ->
-                            let newEngine, newGameUser = oList |> mapConfigs engine gameUser
+                            let newEngine, newGameUser = oList |> INI.mapConfigs engine gameUser
                             model
                             |> (updateModel ConfigFile.Engine newEngine >> updateModel ConfigFile.Game newGameUser),
                             (newEngine.IsSome && newGameUser.IsSome) |> ConfigResult.MapConfigs
@@ -163,20 +175,15 @@ module Bridge =
 
 
 
-
-
-
-
-
             Resp(remoteCMsg) |> clientDispatch
             model, Cmd.none
 
         let bridge =
-            Bridge.mkServer INIOperations.Endpoint init update
+            Bridge.mkServer BridgeOperations.Endpoint init update
             |> Bridge.withConsoleTrace
             |> Bridge.run Giraffe.server
 
-    let server = router { get INIOperations.Endpoint INIBridge.bridge }
+    let server = router { get BridgeOperations.Endpoint Bridge.bridge }
 
     let app =
         application {

@@ -13,6 +13,10 @@ module View =
     open FSharp.Core /// To avoid shadowing Result<_,_>
     open Types
     open State
+    open RenderUtils.MaterialUI
+    open RenderUtils.MaterialUI.Core
+    open RenderUtils.MaterialUI.Themes
+    open RenderUtils.MaterialUI.Props
     open MordhauBuddy.Shared.ElectronBridge
 
     let private styles (theme : ITheme) : IStyles list =
@@ -62,6 +66,8 @@ module View =
             HTMLAttr.Selected (model.Page = page)
             HTMLAttr.Disabled <| //Display tool tip here when disabled to explain why
                 (match page with
+                | MapInstaller ->
+                    model.MapsInstaller.MapDir.Directory = ""
                 | FaceTools ->
                     model.FaceTools.GameDir.Directory = ""
                 | MordhauConfig ->
@@ -115,6 +121,7 @@ module View =
                 | _ -> ()
                 loading
             | _ -> loading
+        | MapInstaller -> lazyView2 Maps.View.view model.MapsInstaller (MapInstallerMsg >> dispatch)
         | FaceTools -> lazyView2 FaceTools.View.view model.FaceTools (FaceToolsMsg >> dispatch)
         | MordhauConfig -> lazyView2 MordhauConfig.View.view model.MordhauConfig (MordhauConfigMsg >> dispatch)
         | Settings -> lazyView2 Settings.View.view model.Settings (SettingsMsg >> dispatch)
@@ -124,23 +131,55 @@ module View =
         lazyView2 ContextMenu.View.view model.ContextMenu (ContextMenuMsg >> dispatch)
 
     let private getTheme (m: Model) =
-        if m.Store.DarkTheme then 
+        let dark =
+            { PaletteType = PaletteType.Dark
+              PMain = "#BB86FC"
+              PDark = "#3700B3"
+              PCText = Some("#000")
+              SMain = "#03DAC6"
+              SDark = Some("#7CFDF1")
+              SCText = Some("#FFF")
+              EMain = "#CF6679"
+              ECText = Some("#FFF")
+              PaperElev2 = "#303030"
+              MuiButtonCPHover = Some("#FFF")
+              MuiButtonCSecondary = Some("#000") }
+
+        let light =
+            { PaletteType = PaletteType.Light
+              PMain = "#6200EE"
+              PDark = "#3700B3"
+              PCText = None
+              SMain = "#03DAC6"
+              SDark = None
+              SCText = None
+              EMain = "#B00020"
+              ECText = None
+              PaperElev2 = "#FAFAFA"
+              MuiButtonCPHover = None
+              MuiButtonCSecondary = None }
+
+        let createTheme themeType =
             createMuiTheme [
                 ThemeProp.Palette [
-                    PaletteProp.Type PaletteType.Dark
+                    PaletteProp.Type themeType.PaletteType
                     PaletteProp.Primary [
-                        PaletteIntentionProp.Main "#BB86FC"
-                        PaletteIntentionProp.Dark "#3700B3"
-                        PaletteIntentionProp.ContrastText "#000"
+                        yield PaletteIntentionProp.Main themeType.PMain
+                        yield PaletteIntentionProp.Dark themeType.PDark
+                        if themeType.PCText.IsSome then
+                            yield PaletteIntentionProp.ContrastText themeType.PCText.Value
                     ]
                     PaletteProp.Secondary [
-                        PaletteIntentionProp.Main "#03DAC6"
-                        PaletteIntentionProp.Dark "#7CFDF1"
-                        PaletteIntentionProp.ContrastText "#FFF"
+                        yield PaletteIntentionProp.Main themeType.SMain
+                        if themeType.SDark.IsSome then
+                            yield PaletteIntentionProp.Dark themeType.SDark.Value
+                        if themeType.SCText.IsSome then
+                            yield PaletteIntentionProp.ContrastText themeType.SCText.Value
                     ]
                     PaletteProp.Error [
-                        PaletteIntentionProp.Main "#CF6679"
-                        PaletteIntentionProp.ContrastText "#FFF"
+                        yield PaletteIntentionProp.Main themeType.EMain
+                        if themeType.ECText.IsSome then
+                            yield PaletteIntentionProp.ContrastText themeType.ECText.Value
                     ]
                     PaletteProp.ContrastThreshold 3
                 ]
@@ -148,189 +187,118 @@ module View =
                     ThemeTypographyProp.UseNextVariants true
                 ]
                 ThemeProp.Overrides [
-                    OverridesProp.MuiOutlinedInput [
-                        Styles.Root [
-                            CSSProp.Custom ("&$focused $notchedOutline", [
-                                CSSProp.BorderColor "#03DAC6"
-                            ] |> keyValueList CaseRules.LowerFirst)
-                            CSSProp.Custom ("&:hover $notchedOutline", [
-                                CSSProp.BorderColor "#03DAC6"
-                            ] |> keyValueList CaseRules.LowerFirst)
+                    yield
+                        OverridesProp.MuiOutlinedInput [
+                            Styles.Root [
+                                CSSProp.Custom ("&$focused $notchedOutline", [
+                                    CSSProp.BorderColor themeType.SMain
+                                ] |> keyValueList CaseRules.LowerFirst)
+                                CSSProp.Custom ("&:hover $notchedOutline", [
+                                    CSSProp.BorderColor themeType.SMain
+                                ] |> keyValueList CaseRules.LowerFirst)
+                            ]
+                            Styles.NotchedOutline [
+                                CSSProp.BorderColor themeType.SMain
+                            ]
                         ]
-                        Styles.NotchedOutline [
-                            CSSProp.BorderColor "#03DAC6"
+                    yield
+                        OverridesProp.MuiFormLabel [
+                            Styles.Root [
+                                CSSProp.Custom ("&$focused", [
+                                    CSSProp.Color themeType.SMain
+                                ] |> keyValueList CaseRules.LowerFirst)
+                            ]
                         ]
-                    ]
-                    OverridesProp.MuiFormLabel [
-                        Styles.Root [
-                            CSSProp.Custom ("&$focused", [
-                                CSSProp.Color "#03DAC6"
-                            ] |> keyValueList CaseRules.LowerFirst)
+                    yield
+                        OverridesProp.MuiPaper [
+                            Styles.Elevation2 [
+                                CSSProp.BackgroundColor themeType.PaperElev2
+                            ]
                         ]
-                    ]
-                    OverridesProp.MuiPaper [
-                        Styles.Elevation2 [
-                            CSSProp.BackgroundColor "#303030"
+                    if themeType.MuiButtonCPHover.IsSome && themeType.MuiButtonCSecondary.IsSome then
+                        yield
+                            OverridesProp.MuiButton [
+                                Styles.Root [
+                                    CSSProp.TransitionProperty "background-color, color, box-shadow, border"
+                                ]
+                                Styles.ContainedPrimary [
+                                    CSSProp.Custom ("&:hover", [
+                                        CSSProp.Color themeType.MuiButtonCPHover.Value
+                                    ] |> keyValueList CaseRules.LowerFirst)
+                                ]
+                                Styles.ContainedSecondary [
+                                    CSSProp.Color themeType.MuiButtonCSecondary.Value
+                                ]
+                            ]
+                    yield 
+                        OverridesProp.MuiCard [
+                            Styles.Root [
+                                CSSProp.Overflow "visible"
+                            ]
                         ]
-                    ]
-                    OverridesProp.MuiButton [
-                        Styles.Root [
-                            CSSProp.TransitionProperty "background-color, color, box-shadow, border"
+                    yield 
+                        OverridesProp.MuiStepper [
+                            Styles.Root [
+                                CSSProp.BorderRadius "4px"
+                            ]
                         ]
-                        Styles.ContainedPrimary [
-                            CSSProp.Custom ("&:hover", [
-                                CSSProp.Color "#FFF"
-                            ] |> keyValueList CaseRules.LowerFirst)
+                    yield 
+                        OverridesProp.MuiExpansionPanel [
+                            Styles.Root [
+                                CSSProp.BorderBottom "1px solid"
+                                CSSProp.BorderColor "#BB86FC !important"
+                                CSSProp.BoxShadow "none"
+                                CSSProp.Custom ("&:last-child", [
+                                    CSSProp.BorderBottom "0em"  
+                                ] |> keyValueList CaseRules.LowerFirst)
+                                CSSProp.Custom ("&:before", [
+                                    CSSProp.Display DisplayOptions.None
+                                ] |> keyValueList CaseRules.LowerFirst)
+                                CSSProp.Custom ("&$expanded", [
+                                    CSSProp.Margin "auto"
+                                ] |> keyValueList CaseRules.LowerFirst)
+                            ]
+                            Styles.Rounded [
+                                CSSProp.Custom ("&:last-child", [
+                                    CSSProp.BorderBottom "0em"  
+                                ] |> keyValueList CaseRules.LowerFirst)
+                            ]
                         ]
-                        Styles.ContainedSecondary [
-                            CSSProp.Color "#000"
+                    yield 
+                        OverridesProp.MuiExpansionPanelSummary [
+                            Styles.Root [
+                                CSSProp.BorderBottom "1px solid"
+                                CSSProp.BorderColor "#BB86FC !important"
+                            ]
+                            Styles.Content [
+                                CSSProp.Custom ("&$expanded", [
+                                    CSSProp.Margin "1em 0em"
+                                ] |> keyValueList CaseRules.LowerFirst)
+                            ]
+                            Styles.ExpandIcon [
+                                CSSProp.ZIndex "2"
+                            ]
                         ]
-                    ]
-                    OverridesProp.MuiCard [
-                        Styles.Root [
-                            CSSProp.Overflow "visible"
+                    yield 
+                        OverridesProp.MuiExpansionPanelDetails [
+                            Styles.Root [
+                                CSSProp.Padding ("0em")
+                            ]
                         ]
-                    ]
-                    OverridesProp.MuiStepper [
-                        Styles.Root [
-                            CSSProp.BorderRadius "4px"
+                    yield 
+                        OverridesProp.MuiSkeleton [
+                            Styles.Text [
+                                CSSProp.MarginTop "0em"
+                                CSSProp.MarginBottom "0em"
+                            ]
                         ]
-                    ]
-                    OverridesProp.MuiExpansionPanel [
-                        Styles.Root [
-                            CSSProp.BorderBottom "1px solid"
-                            CSSProp.BorderColor "#BB86FC !important"
-                            CSSProp.BoxShadow "none"
-                            CSSProp.Custom ("&:last-child", [
-                                CSSProp.BorderBottom "0em"  
-                            ] |> keyValueList CaseRules.LowerFirst)
-                            CSSProp.Custom ("&:before", [
-                                CSSProp.Display DisplayOptions.None
-                            ] |> keyValueList CaseRules.LowerFirst)
-                            CSSProp.Custom ("&$expanded", [
-                                CSSProp.Margin "auto"
-                            ] |> keyValueList CaseRules.LowerFirst)
-                        ]
-                        Styles.Rounded [
-                            CSSProp.Custom ("&:last-child", [
-                                CSSProp.BorderBottom "0em"  
-                            ] |> keyValueList CaseRules.LowerFirst)
-                        ]
-                    ]
-                    OverridesProp.MuiExpansionPanelSummary [
-                        Styles.Root [
-                            CSSProp.BorderBottom "1px solid"
-                            CSSProp.BorderColor "#BB86FC !important"
-                        ]
-                        Styles.Content [
-                            CSSProp.Custom ("&$expanded", [
-                                CSSProp.Margin "1em 0em"
-                            ] |> keyValueList CaseRules.LowerFirst)
-                        ]
-                        Styles.ExpandIcon [
-                            CSSProp.ZIndex "2"
-                        ]
-                    ]
-                    OverridesProp.MuiExpansionPanelDetails [
-                        Styles.Root [
-                            CSSProp.Padding ("0em")
-                        ]
-                    ]
                 ]
             ]
             |> ProviderTheme.Theme
-        else
-            createMuiTheme [
-                ThemeProp.Palette [
-                    PaletteProp.Type PaletteType.Light
-                    PaletteProp.Primary [
-                        PaletteIntentionProp.Main "#6200EE"
-                        PaletteIntentionProp.Dark "#3700B3"
-                    ]
-                    PaletteProp.Secondary [
-                        PaletteIntentionProp.Main "#03DAC6"
-                    ]
-                    PaletteProp.Error [
-                        PaletteIntentionProp.Main "#B00020"
-                    ]
-                    PaletteProp.Action [
-                        PaletteActionProp.HoverOpacity 0.2
-                    ]
-                ]
-                ThemeProp.Typography [
-                    ThemeTypographyProp.UseNextVariants true
-                ]
-                ThemeProp.Overrides [
-                    OverridesProp.MuiOutlinedInput [
-                        Styles.Root [
-                            CSSProp.Custom ("&$focused $notchedOutline", [
-                                CSSProp.BorderColor "#03DAC6"
-                            ] |> keyValueList CaseRules.LowerFirst)
-                            CSSProp.Custom ("&:hover $notchedOutline", [
-                                CSSProp.BorderColor "#03DAC6"
-                            ] |> keyValueList CaseRules.LowerFirst)
-                        ]
-                        Styles.NotchedOutline [
-                            CSSProp.BorderColor "#03DAC6"
-                        ]
-                    ]
-                    OverridesProp.MuiFormLabel [
-                        Styles.Root [
-                            CSSProp.Custom ("&$focused", [
-                                CSSProp.Color "#03DAC6"
-                            ] |> keyValueList CaseRules.LowerFirst)
-                        ]
-                    ]
-                    OverridesProp.MuiPaper [
-                        Styles.Elevation2 [
-                            CSSProp.BackgroundColor "#FAFAFA"
-                        ]
-                    ]
-                    OverridesProp.MuiStepper [
-                        Styles.Root [
-                            CSSProp.BorderRadius "4px"
-                        ]
-                    ]
-                    OverridesProp.MuiExpansionPanel [
-                        Styles.Root [
-                            CSSProp.BorderBottom "1px solid"
-                            CSSProp.BorderColor "#BB86FC !important"
-                            CSSProp.BoxShadow "none"
-                            CSSProp.Custom ("&:not(:last-child)", [
-                                CSSProp.BorderBottom "0em"  
-                            ] |> keyValueList CaseRules.LowerFirst)
-                            CSSProp.Custom ("&:before", [
-                                CSSProp.Display DisplayOptions.None
-                            ] |> keyValueList CaseRules.LowerFirst)
-                            CSSProp.Custom ("&$expanded", [
-                                CSSProp.Margin "auto"
-                            ] |> keyValueList CaseRules.LowerFirst)
-                        ]
-                        Styles.Rounded [
-                            CSSProp.Custom ("&:last-child", [
-                                CSSProp.BorderBottom "0em"  
-                            ] |> keyValueList CaseRules.LowerFirst)
-                        ]
-                    ]
-                    OverridesProp.MuiExpansionPanelSummary [
-                        Styles.Root [
-                            CSSProp.BorderBottom "1px solid"
-                            CSSProp.BorderColor "#6200EE !important"
-                        ]
-                        Styles.Content [
-                            CSSProp.Custom ("&$expanded", [
-                                CSSProp.Margin "1em 0em"
-                            ] |> keyValueList CaseRules.LowerFirst)
-                        ]
-                    ]
-                    OverridesProp.MuiExpansionPanelDetails [
-                        Styles.Root [
-                            CSSProp.Padding ("0em")
-                        ]
-                    ]
-                ]
-            ]
-            |> ProviderTheme.Theme
+
+        if m.Store.DarkTheme then 
+            createTheme dark
+        else createTheme light
 
     let private view' (classes : IClasses) model dispatch =
         let hideIfMax (b: bool) =

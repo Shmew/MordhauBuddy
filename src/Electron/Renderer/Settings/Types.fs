@@ -16,7 +16,6 @@ module Types =
 
     type Msg =
         | ClientMsg of BridgeMsg
-        | Save
         | GetDefaultDir
         | GetMapDir
         | SetConfigDir of string * Result<string,string list> * ConfigFile

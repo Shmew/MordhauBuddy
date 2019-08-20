@@ -6,12 +6,13 @@ module Types =
 
     type Page =
         | Home
+        | MapInstaller
         | FaceTools
         | MordhauConfig
         | Settings
         | About
         static member All =
-            [ Home; FaceTools; MordhauConfig; Settings; About ]
+            [ Home; MapInstaller; FaceTools; MordhauConfig; Settings; About ]
 
     type Msg =
         | Navigate of Page
@@ -21,6 +22,7 @@ module Types =
         | LoadMap
         | StoreMsg of Store.Msg
         | ContextMenuMsg of ContextMenu.Types.Msg
+        | MapInstallerMsg of Maps.Types.Msg
         | FaceToolsMsg of FaceTools.Types.Msg
         | MordhauConfigMsg of MordhauConfig.Types.Msg
         | SettingsMsg of Settings.Types.Msg
@@ -53,8 +55,22 @@ module Types =
           IsBridgeConnected : bool
           Resources : Loaded
           ContextMenu : ContextMenu.Types.Model
+          MapsInstaller : Maps.Types.Model
           FaceTools : FaceTools.Types.Model
           MordhauConfig : MordhauConfig.Types.Model
           Settings : Settings.Types.Model
           About : About.Types.Model }
 
+    type AppTheme =
+        { PaletteType : Fable.MaterialUI.Themes.PaletteType
+          PMain : string
+          PDark : string
+          PCText : string option
+          SMain : string
+          SDark : string option
+          SCText : string option
+          EMain : string
+          ECText : string option
+          PaperElev2 : string
+          MuiButtonCPHover : string option
+          MuiButtonCSecondary : string option }

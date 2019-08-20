@@ -20,6 +20,9 @@
     <Compile Include="Settings\Types.fs" />
     <Compile Include="Settings\State.fs" />
     <Compile Include="Settings\View.fs" />
+    <Compile Include="Maps\Types.fs" />
+    <Compile Include="Maps\State.fs" />
+    <Compile Include="Maps\View.fs" />
     <Compile Include="FaceTools\Types.fs" />
     <Compile Include="FaceTools\State.fs" />
     <Compile Include="FaceTools\View.fs" />
