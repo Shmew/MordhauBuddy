@@ -376,6 +376,8 @@ module RenderUtils =
         module Core =
             let inline slider (b : IHTMLProp seq) c : ReactElement = 
                 ofImport "default" "@material-ui/core/Slider" (toObj b) c
+            let inline skeleton (b : IHTMLProp seq) : ReactElement =
+                ofImport "default" "@material-ui/lab/Skeleton" (toObj b) []
 
         [<AutoOpen>]
         module Themes =
@@ -389,6 +391,8 @@ module RenderUtils =
                 let inline MarkActive props = Custom ("markActive", props)
                 let inline MarkLabel props = Custom ("markLabel", props)
                 let inline MarkLabelActive props = Custom ("markLabelActive", props)
+                let inline Rect props = Custom ("rect", props)
+                let inline Animate props = Custom ("animate", props)
             
             type ClassNames =
                 | Marked of string
@@ -400,8 +404,10 @@ module RenderUtils =
                 | MarkActive of string
                 | MarkLabel of string
                 | MarkLabelActive of string
+                | Rect of string
+                | Animate of string
                 interface IClassNames
-
+        
         [<AutoOpen>]
         module Props =
             type SliderPropMarkValue =
@@ -436,12 +442,23 @@ module RenderUtils =
                 | ValueLabelFormat of U2<string,(float -> float)>
                 interface IHTMLProp
 
+            [<StringEnum; RequireQualifiedAccess>]
+            type SkeletonVariant =
+                | Text
+                | Rect
+                | Circle
+
+            type SkeletonProp =
+                | DisableAnimate of bool
+                | Variant of SkeletonVariant
+
             [<AutoOpen>]
             module OverridesProp =
                 let inline private pascalCaseProp (name : string) (props : Themes.IStyles seq) =
                     OverridesProp.Custom (name, props |> keyValueList CaseRules.LowerFirst)
 
                 let inline MuiSlider styles = pascalCaseProp "MuiSlider" styles
+                let inline MuiSkeleton styles = pascalCaseProp "MuiSkeleton" styles
 
             [<AutoOpen>]
             module ThemePropsProp =
@@ -449,3 +466,4 @@ module RenderUtils =
                     ThemePropsProp.Custom (name, props |> keyValueList CaseRules.LowerFirst)
 
                 let inline MuiSlider props = pascalCaseProp "MuiSlider" props
+                let inline MuiSkeleton styles = pascalCaseProp "MuiSkeleton" styles

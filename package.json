@@ -75,6 +75,7 @@
   "dependencies": {
     "@material-ui/core": "^4.3.0",
     "@material-ui/icons": "^4.2.1",
+    "@material-ui/lab": "^4.0.0-alpha.23",
     "autosuggest-highlight": "^3.1.1",
     "downshift": "^3.2.10",
     "electron-dl": "^1.14.0",

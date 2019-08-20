@@ -12,6 +12,9 @@ module View =
     open MordhauBuddy.App
     open RenderUtils
     open RenderUtils.Validation
+    open RenderUtils.MaterialUI.Core
+    open RenderUtils.MaterialUI.Props
+    open RenderUtils.MaterialUI.Themes
     open Elmish.React
     open Electron
     open Types
@@ -148,6 +151,7 @@ module View =
                         CSSProp.Display DisplayOptions.Flex
                     ] 
                 ] [
+                    skeleton []
                     img [
                         HTMLAttr.Src (stat "frankenstein.png")
                         Style [ CSSProp.BorderRadius "4px" ]
