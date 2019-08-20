@@ -18,12 +18,12 @@ module View =
     open Types
 
     let private styles (theme : ITheme) : IStyles list = [
-        Styles.Custom("accordHead", [
+        Styles.Custom ("accordHead", [
             CSSProp.FontSize (theme.typography.pxToRem(15.))
             CSSProp.FlexBasis "33.33%"
             CSSProp.FlexShrink 0
         ])
-        Styles.Custom("accordSubHead", [
+        Styles.Custom ("accordSubHead", [
             CSSProp.FontSize (theme.typography.pxToRem(15.))
             CSSProp.Color (theme.palette.text.secondary)
         ])
@@ -32,7 +32,14 @@ module View =
         ])
         Styles.Custom ("subExpansionPanelSummary", [
             CSSProp.Border "none"
-            CSSProp.MarginTop "-5em"
+            CSSProp.MarginTop "-4em"
+        ])
+        Styles.Custom ("optionList", [
+            CSSProp.MaxHeight "30em"
+            CSSProp.Width "100%"
+            CSSProp.PaddingTop "0em"
+            CSSProp.PaddingBottom "0em"
+            CSSProp.OverflowY "auto"
         ])
     ]
 
@@ -56,7 +63,7 @@ module View =
                                                 HTMLAttr.DefaultValue (s.GetDefault())
                                                 HTMLAttr.Disabled (oGroup.Enabled |> not)
                                                 SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto
-                                                SliderProp.Step <| 0.25 //fix this
+                                                SliderProp.Step <| s.Mutable.Value.Step
                                                 SliderProp.Marks <| Fable.Core.Case1(true)
                                                 SliderProp.Min <| s.Mutable.Value.Min.ToFloat()
                                                 SliderProp.Max <| s.Mutable.Value.Max.ToFloat()
@@ -108,11 +115,8 @@ module View =
                                 ]
                             ] [
                                 list [
+                                    Class classes?optionList
                                     MaterialProp.Dense true
-                                    Style [ 
-                                        CSSProp.MaxHeight "30em"
-                                        CSSProp.Width "100%"
-                                    ]
                                 ] <| subPanelDetails kvList
                             ]
                         ]
@@ -150,7 +154,7 @@ module View =
                             ]
                         ]
                         div [
-                            Style [ CSSProp.Width "33%" ]
+                            Style [ CSSProp.Width "50%" ]
                         ] [ 
                             typography [
                                 TypographyProp.Variant TypographyVariant.Caption
@@ -159,6 +163,7 @@ module View =
                     ]
                 if subPanel.IsSome then
                     yield subPanel.Value
+                else yield div [ Style [ CSSProp.PaddingBottom "1em" ] ] []
                 if oGroups.Length > ind + 1 then
                     yield divider []
             ])
@@ -190,12 +195,8 @@ module View =
                         Style [ CSSProp.Width "100%" ]
                     ] [
                         list [
+                            Class classes?optionList
                             MaterialProp.Dense false
-                            Style [ 
-                                CSSProp.OverflowY "auto"
-                                CSSProp.MaxHeight "30em"
-                                CSSProp.Width "100%"
-                            ]
                         ] <| panelDetails classes model dispatch p.Items 
                     ]
                 ]

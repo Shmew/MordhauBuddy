@@ -178,7 +178,8 @@ module RenderUtils =
                     Value = None
                     Mutable =
                         { KeyValues.Mutable.Min = KeyValues.MutableValues.MutFloat(0.)
-                          KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(3.) }
+                          KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(3.)
+                          KeyValues.Mutable.Step = 0.25 }
                         |> Some } ]
               File = ConfigFile.Engine 
               Enabled = false
@@ -213,14 +214,16 @@ module RenderUtils =
                     Value = None 
                     Mutable =
                         { KeyValues.Mutable.Min = KeyValues.MutableValues.MutFloat(0.)
-                          KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(1.) }
+                          KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(1.)
+                          KeyValues.Mutable.Step = 0.1 }
                         |> Some }
                   { Key = @"r.upscale.panini.s"
                     Default = KeyValues.Values.Float(0.025)
                     Value = None
                     Mutable =
                         { KeyValues.Mutable.Min = KeyValues.MutableValues.MutFloat(0.)
-                          KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(0.25) }
+                          KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(0.25) 
+                          KeyValues.Mutable.Step = 0.025 }
                         |> Some }]
               File = ConfigFile.Engine 
               Enabled = false

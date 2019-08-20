@@ -38,7 +38,8 @@ module ElectronBridge =
         [<RequireQualifiedAccess>]
         type Mutable =
             { Min: MutableValues
-              Max: MutableValues }
+              Max: MutableValues
+              Step: float }
 
     type KeyValues =
         { Key: string
