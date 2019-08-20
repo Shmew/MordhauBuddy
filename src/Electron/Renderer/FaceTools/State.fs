@@ -60,6 +60,8 @@ module State =
         match msg with
         | ClientMsg bRes ->
             match bRes with
+            | BridgeResult.Parse _ ->
+                model, Cmd.namedBridgeSend "INI" sender.getProfileList
             | BridgeResult.Backup b ->
                 if b then
                     let profiles =
@@ -121,11 +123,12 @@ module State =
             , Cmd.namedBridgeSend "INI" 
                 (sender.backup([fileWrap(model.GameDir.Directory)]) )
         | StepperRestart -> 
-            init(), Cmd.none
+            { init() with 
+                GameDir = model.GameDir }
+            , Cmd.namedBridgeSend "INI" (sender.parse(fileWrap(model.GameDir.Directory)))
         | StepperNext ->
             { model with Stepper = model.Stepper.Next }, Cmd.none
         | StepperBack -> { model with Stepper = model.Stepper.Back }, Cmd.none
-        | GetProfiles -> model, Cmd.namedBridgeSend "INI" sender.getProfileList
         | ToggleAll(dir,b) ->
             let toggleAll (iList) =
                 iList

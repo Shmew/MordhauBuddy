@@ -75,10 +75,27 @@ module Bridge =
                             |> createClientResp caller None
                         | Parse(iFile) ->
                             let result = parse iFile
-                            updateModel iFile.File result model,
-                            result.IsSome
-                            |> BridgeResult.Parse
-                            |> createClientResp caller (Some(iFile))
+
+                            let m, cmd =
+                                updateModel iFile.File result model,
+                                result.IsSome
+                                |> BridgeResult.Parse
+                                |> createClientResp caller (Some(iFile))
+                            match iFile.File with
+                            | ConfigFile.Game ->
+                                { cmd with Caller = Caller.FaceTools }
+                                |> Resp
+                                |> clientDispatch
+                            | ConfigFile.Engine when model.GameUserSettings.IsSome ->
+                                { cmd with Caller = Caller.MordhauConfig }
+                                |> Resp
+                                |> clientDispatch
+                            | ConfigFile.GameUserSettings when model.Engine.IsSome ->
+                                { cmd with Caller = Caller.MordhauConfig }
+                                |> Resp
+                                |> clientDispatch
+                            | _ -> ()
+                            m, cmd
                         | Backup(fList) ->
                             model,
                             fList
@@ -142,16 +159,6 @@ module Bridge =
                             cr
                             |> BridgeResult.Config
                             |> cResp
-
-
-
-
-
-
-
-
-
-
 
 
 

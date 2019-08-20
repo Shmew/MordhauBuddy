@@ -53,14 +53,10 @@ module View =
                                     formControlLabel [
                                         FormControlLabelProp.Control <|
                                             slider [
-                                                HTMLAttr.DefaultValue <| 
-                                                    (if s.Value.IsSome then
-                                                        s.Value.Value.ToString()
-                                                    else s.Default.ToString()
-                                                    |> box)
+                                                HTMLAttr.DefaultValue (s.GetDefault())
                                                 HTMLAttr.Disabled (oGroup.Enabled |> not)
                                                 SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto
-                                                SliderProp.Step <| 0.25
+                                                SliderProp.Step <| 0.25 //fix this
                                                 SliderProp.Marks <| Fable.Core.Case1(true)
                                                 SliderProp.Min <| s.Mutable.Value.Min.ToFloat()
                                                 SliderProp.Max <| s.Mutable.Value.Max.ToFloat()

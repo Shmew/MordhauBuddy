@@ -211,11 +211,17 @@ module RenderUtils =
                   { Key = @"r.upscale.panini.d"
                     Default = KeyValues.Values.Float(0.1)
                     Value = None 
-                    Mutable = None }
+                    Mutable =
+                        { KeyValues.Mutable.Min = KeyValues.MutableValues.MutFloat(0.)
+                          KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(1.) }
+                        |> Some }
                   { Key = @"r.upscale.panini.s"
                     Default = KeyValues.Values.Float(0.025)
                     Value = None
-                    Mutable = None } ]
+                    Mutable =
+                        { KeyValues.Mutable.Min = KeyValues.MutableValues.MutFloat(0.)
+                          KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(0.25) }
+                        |> Some }]
               File = ConfigFile.Engine 
               Enabled = false
               Expanded = false }

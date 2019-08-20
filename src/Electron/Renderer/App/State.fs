@@ -167,30 +167,6 @@ module State =
                     Settings = m' }
                 , Cmd.map SettingsMsg cmd
             | _ -> m, Cmd.none
-        | InitFaceTools ->
-            let init = 
-                let initTemp = FaceTools.State.init()
-                { initTemp with
-                    GameDir = 
-                        { initTemp.GameDir with
-                            Directory = m.Resources.GameConfig.Path
-                            Validated = (m.Resources.GameConfig.Path) <> "" } }
-            let m', cmd = FaceTools.State.update (FaceTools.Types.GetProfiles) init
-            { m with FaceTools = m'}, Cmd.map FaceToolsMsg cmd
-        | InitMordhauConfig ->
-            let init = 
-                let initTemp = MordhauConfig.State.init()
-                { initTemp with
-                    EngineDir = 
-                        { initTemp.EngineDir with
-                            Directory = m.Resources.EngineConfig.Path
-                            Validated = (m.Resources.EngineConfig.Path) <> "" }
-                    GameUserDir =
-                        { initTemp.EngineDir with
-                            Directory = m.Resources.GameUserConfig.Path
-                            Validated = (m.Resources.GameUserConfig.Path) <> "" } }
-            let m', cmd = MordhauConfig.State.update (MordhauConfig.Types.GetSettings) init
-            { m with MordhauConfig = m'}, Cmd.map MordhauConfigMsg cmd
         | StoreMsg msg' ->
             let m',cmd = Store.update msg' m.Store, Cmd.none
             { m with Store = m' }, Cmd.map StoreMsg cmd
@@ -336,13 +312,7 @@ module State =
                                             Path = m'.MapsDir.Directory } }
                             Settings = m' }
                     | _ -> { m with Settings = m' } 
-                    , Cmd.batch <|
-                        match bMsg.BridgeResult with
-                        | BridgeResult.Parse _ ->
-                            [ Cmd.map SettingsMsg cmd
-                              Cmd.ofMsg InitFaceTools
-                              Cmd.ofMsg InitMordhauConfig ]
-                        | _ -> [ Cmd.map SettingsMsg cmd ]
+                    , Cmd.map SettingsMsg cmd
                 | _ -> m, Cmd.none
             | Connected ->
                 { m with IsBridgeConnected = true}, Cmd.none

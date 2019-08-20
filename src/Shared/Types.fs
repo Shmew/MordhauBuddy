@@ -9,12 +9,22 @@ module ElectronBridge =
             | Bool of bool
             | Int of int
             | Float of float
+
             override this.ToString() =
                 match this with
                 | String(s) -> s |> string
                 | Bool(b) -> b |> string
                 | Int(i) -> i |> string
                 | Float(f) -> f |> string
+
+            member this.TryFloat() =
+                match this with
+                | Int(i) ->
+                    i
+                    |> float
+                    |> Some
+                | Float(f) -> f |> Some
+                | _ -> None
 
         [<RequireQualifiedAccess>]
         type MutableValues =
@@ -35,6 +45,11 @@ module ElectronBridge =
           Default: KeyValues.Values
           Value: KeyValues.Values option
           Mutable: KeyValues.Mutable option }
+        member this.GetDefault() =
+            match this.Value, this.Default.TryFloat() with
+            | Some(v), _ when v.TryFloat().IsSome -> v.TryFloat().Value
+            | _, Some(d) -> d
+            | _ -> 0.
 
     [<RequireQualifiedAccess>]
     type ConfigFile =

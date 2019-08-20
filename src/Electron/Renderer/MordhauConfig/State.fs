@@ -51,6 +51,8 @@ module State =
         match msg with
         | ClientMsg bMsg ->
             match bMsg.BridgeResult with
+            | BridgeResult.Parse _ ->
+                model, Cmd.namedBridgeSend "INI" (sender.getConfigs (model.Panels |> List.collect (fun p -> p.Items)))
             | BridgeResult.Backup b ->
                 if b then
                     let allPanels =
@@ -199,7 +201,6 @@ module State =
                     { model.Submit with
                         Complete = false }
                 Panels = newPanels}, Cmd.none
-        | GetSettings -> model, Cmd.namedBridgeSend "INI" (sender.getConfigs (model.Panels |> List.collect (fun p -> p.Items)))
         | Submit ->
             { model with
                 Submit =
