@@ -151,10 +151,17 @@ module View =
                         CSSProp.Display DisplayOptions.Flex
                     ] 
                 ] [
-                    skeleton []
+                    skeleton [ 
+                        HTMLAttr.Width "229px"
+                        HTMLAttr.Height "308px"
+                        SkeletonProp.DisableAnimate true 
+                    ]
                     img [
                         HTMLAttr.Src (stat "frankenstein.png")
-                        Style [ CSSProp.BorderRadius "4px" ]
+                        Style [ 
+                            CSSProp.MarginTop "-319px"
+                            CSSProp.BorderRadius "4px"
+                        ]
                     ]
                 ]
             | 2 ->

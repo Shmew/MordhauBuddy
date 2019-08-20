@@ -451,6 +451,7 @@ module RenderUtils =
             type SkeletonProp =
                 | DisableAnimate of bool
                 | Variant of SkeletonVariant
+                interface IHTMLProp
 
             [<AutoOpen>]
             module OverridesProp =

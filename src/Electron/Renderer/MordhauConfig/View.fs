@@ -39,7 +39,6 @@ module View =
             CSSProp.Width "100%"
             CSSProp.PaddingTop "0em"
             CSSProp.PaddingBottom "0em"
-            CSSProp.OverflowY "auto"
         ])
     ]
 
