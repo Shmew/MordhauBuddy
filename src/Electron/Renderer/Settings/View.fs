@@ -59,7 +59,7 @@ module View =
                 CSSProp.FlexDirection "column"
                 CSSProp.Display DisplayOptions.Flex
                 CSSProp.Height "inherit"
-                CSSProp.Padding "5em"
+                CSSProp.Padding "2em"
             ]
         ] [
             card [
