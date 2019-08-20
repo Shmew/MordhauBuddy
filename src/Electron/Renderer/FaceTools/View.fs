@@ -60,7 +60,7 @@ module View =
                         MaterialProp.Dense true
                         Style [ 
                             CSSProp.OverflowY "auto"
-                            CSSProp.Height "20em"
+                            CSSProp.Height "22em"
                         ]
                     ] [
                         for pItem in profiles do
