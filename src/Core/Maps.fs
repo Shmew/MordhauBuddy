@@ -228,7 +228,8 @@ module Maps =
 
         /// Get info file list
         let getInfoFiles() =
-            let downloadInfoFiles (gList : GHContents list) = gList |> List.map (fun c -> get (c.DownloadUrl, None))
+            let downloadInfoFiles (gList : GHContents list) =
+                gList |> List.map (fun c -> getDirect (c.DownloadUrl, None))
             get ("/repos/MordhauMappingModding/InfoFiles/contents", None)
             |> Result.map (Json.deserializeEx<GHContents list> Json.config)
             |> Result.map downloadInfoFiles
@@ -251,7 +252,7 @@ module Maps =
             try
                 s |> int
             with _ -> 0
-        match vStr.Split(Environment.NewLine) with
+        match vStr.Split('.') with
         | sList when sList.Length = 3 ->
             { MapVersion.Major = sList.[0] |> tryInt
               MapVersion.Minor = sList.[1] |> tryInt
@@ -271,13 +272,14 @@ module Maps =
 
     /// Because Json is too complex
     let getComMap (sInfoFile : string) =
-        let infoArr : string [] = sInfoFile.Split(Environment.NewLine)
+        let infoArr = sInfoFile.Split([| "\r\n"; "\r"; "\n" |], StringSplitOptions.None)
 
         let mapEmpty s =
             if s = "" then None
             else Some(s)
         if infoArr.Length < 9 then None
         else
+            System.Console.WriteLine(sInfoFile)
             { Name =
                   if infoArr.[0] = "" then None
                   else Some(infoArr.[0])

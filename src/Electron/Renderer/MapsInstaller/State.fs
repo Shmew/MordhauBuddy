@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.Maps
+﻿namespace MordhauBuddy.App.MapsInstaller
 
 module State =
     open FSharp.Core  // To avoid shadowing Result<_,_>
@@ -29,7 +29,7 @@ module State =
           TabSelected = Available
           Snack = Snackbar.State.init() }
 
-    let private sender = new MapBridgeSender(Caller.MordhauConfig)
+    let private sender = new MapBridgeSender(Caller.MapInstaller)
 
     let update (msg: Msg) (model: Model) =
         match msg with
@@ -57,6 +57,10 @@ module State =
                                     HelperText = "Maps directory not found"
                                     Validated = false } }, Cmd.none
                 | _ -> model, Cmd.none
+            | BridgeResult.Maps mRes ->
+                match mRes with
+                | MapResult.AvailableMaps cList ->
+                    { model with Available = cList }, Cmd.none
             | _ -> { model with Waiting = false }, Cmd.none
         | TabSelected i -> model, Cmd.none
         | ImgSkeleton -> model, Cmd.none
@@ -65,7 +69,7 @@ module State =
         | CancelInstall s -> model, Cmd.none
         | Update s -> model, Cmd.none
         | GetInstalled -> model, Cmd.none
-        | GetAvailable -> model, Cmd.bridgeSend (sender)
+        | GetAvailable -> model, Cmd.bridgeSend (sender.GetAvailable)
         | Refresh -> model, Cmd.none
         | SnackMsg msg' ->
             let m, cmd, actionCmd = Snackbar.State.update msg' model.Snack

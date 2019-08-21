@@ -36,77 +36,74 @@
 
 <h1>GHApi</h1>
 <p>
-
-    <span>Namespace: MordhauBuddy.Core</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-core-maps.html">Maps</a></span><br />
-    </p>
+  <span>Namespace: MordhauBuddy.Core</span><br />
+  <span>Parent Module: <a href="mordhaubuddy-core-maps.html">Maps</a></span>
+  </p>
 <div class="xmldoc">
-<p>Github Rest Api wrapper</p>
+<p>Functions for interacting with the Github Api</p>
 
 </div>
-  <h3>Constructors</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Constructor</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '554', 554)" onmouseover="showTip(event, '554', 554)">
-            new()
+          <code onmouseout="hideTip(event, '168', 168)" onmouseover="showTip(event, '168', 168)">
+            baseUri
           </code>
-          <div class="tip" id="554">
-            <strong>Signature:</strong> unit -&gt; GHApi<br />
+          <div class="tip" id="168">
+            <strong>Signature:</strong> string<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L165-165" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L186-186" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
-              <p>CompiledName: <code>.ctor</code></p>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <h3>Instance members</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Instance member</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="member-name">
+          <p>Github base uri</p>
 
-          <code onmouseout="hideTip(event, '555', 555)" onmouseover="showTip(event, '555', 555)">
-            x.DownloadFile(...)
-          </code>
-          <div class="tip" id="555">
-            <strong>Signature:</strong> (downloadUrl:string * fileName:string * dir:string) -&gt; unit<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L219-219" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '556', 556)" onmouseover="showTip(event, '556', 556)">
-            x.GetInfoFiles()
+          <code onmouseout="hideTip(event, '169', 169)" onmouseover="showTip(event, '169', 169)">
+            downloadFile(download)
           </code>
-          <div class="tip" id="556">
-            <strong>Signature:</strong> unit -&gt; Contents list<br />
+          <div class="tip" id="169">
+            <strong>Signature:</strong> download:DownloadFile -&gt; unit<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L208-208" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L244-244" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Download a file to the given directory with continuations -- finish this</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '170', 170)" onmouseover="showTip(event, '170', 170)">
+            getInfoFiles()
+          </code>
+          <div class="tip" id="170">
+            <strong>Signature:</strong> unit -&gt; Result&lt;Result&lt;string,string&gt; list,string&gt;<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L230-230" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -118,19 +115,39 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '557', 557)" onmouseover="showTip(event, '557', 557)">
-            x.GetMapFiles()
+          <code onmouseout="hideTip(event, '171', 171)" onmouseover="showTip(event, '171', 171)">
+            getMapFiles()
           </code>
-          <div class="tip" id="557">
-            <strong>Signature:</strong> unit -&gt; Contents list<br />
+          <div class="tip" id="171">
+            <strong>Signature:</strong> unit -&gt; GHContents list<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L214-214" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L238-238" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           <p>Get map zip list</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '172', 172)" onmouseover="showTip(event, '172', 172)">
+            reqHeaders
+          </code>
+          <div class="tip" id="172">
+            <strong>Signature:</strong> (string * string) list<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L189-189" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Construct request headers</p>
 
 
         </td>

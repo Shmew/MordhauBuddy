@@ -279,7 +279,7 @@ module View =
 
         card [ CardProp.Raised true ] [
             tabs [
-                HTMLAttr.Value (model.TabSelected)
+                HTMLAttr.Value (model.TabSelected.GetTag)
                 TabsProp.Variant TabsVariant.FullWidth
                 TabsProp.ScrollButtons ScrollButtonsType.On
                 TabsProp.IndicatorColor TabsIndicatorColor.Secondary

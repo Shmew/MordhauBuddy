@@ -10,7 +10,7 @@ module State =
     let pageTitle =
         function
         | Home -> "Home"
-        | MapInstaller -> "Map Installer"
+        | MapsInstaller -> "Map Installer"
         | FaceTools -> "Face Tools"
         | MordhauConfig -> "Mordhau Configuration"
         | Settings -> "Settings"
@@ -50,7 +50,7 @@ module State =
                       AttemptedLoad = false 
                       Loading = false } }
               ContextMenu = ContextMenu.State.init()
-              MapsInstaller = Maps.State.init()
+              MapsInstaller = MapsInstaller.State.init()
               FaceTools = FaceTools.State.init()
               MordhauConfig = MordhauConfig.State.init()
               Settings = Settings.State.init() 
@@ -175,9 +175,9 @@ module State =
         | ContextMenuMsg msg' ->
             let m',cmd = ContextMenu.State.update msg' m.ContextMenu
             { m with ContextMenu = m' }, Cmd.map ContextMenuMsg cmd
-        | MapInstallerMsg msg' ->
-            let m', cmd = Maps.State.update msg' m.MapsInstaller
-            { m with MapsInstaller = m' }, Cmd.map MapInstallerMsg cmd
+        | MapsInstallerMsg msg' ->
+            let m', cmd = MapsInstaller.State.update msg' m.MapsInstaller
+            { m with MapsInstaller = m' }, Cmd.map MapsInstallerMsg cmd
         | FaceToolsMsg msg' ->
             let m', cmd = FaceTools.State.update msg' m.FaceTools
             { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
@@ -286,6 +286,9 @@ module State =
             match msg' with
             | Resp (bMsg) ->
                 match bMsg.Caller with
+                | Caller.MapInstaller ->
+                    let m', cmd = MapsInstaller.State.update (MapsInstaller.Types.ClientMsg bMsg) m.MapsInstaller
+                    { m with MapsInstaller = m' }, Cmd.map MapsInstallerMsg cmd
                 | Caller.FaceTools ->
                     let m', cmd = FaceTools.State.update (FaceTools.Types.ClientMsg bMsg.BridgeResult) m.FaceTools
                     { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd

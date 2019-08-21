@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.Maps
+﻿namespace MordhauBuddy.App.MapsInstaller
 
 module View =
     open Fable.Core.JsInterop
@@ -66,7 +66,7 @@ module View =
             yield
                 card [ CardProp.Raised true ] [
                     tabs [
-                        HTMLAttr.Value (model.TabSelected)
+                        HTMLAttr.Value (model.TabSelected.GetTag)
                         TabsProp.Variant TabsVariant.FullWidth
                         TabsProp.ScrollButtons ScrollButtonsType.On
                         TabsProp.IndicatorColor TabsIndicatorColor.Secondary

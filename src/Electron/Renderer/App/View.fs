@@ -66,7 +66,7 @@ module View =
             HTMLAttr.Selected (model.Page = page)
             HTMLAttr.Disabled <| //Display tool tip here when disabled to explain why
                 (match page with
-                | MapInstaller ->
+                | MapsInstaller ->
                     model.MapsInstaller.MapsDir.Directory = ""
                 | FaceTools ->
                     model.FaceTools.GameDir.Directory = ""
@@ -121,7 +121,7 @@ module View =
                 | _ -> ()
                 loading
             | _ -> loading
-        | MapInstaller -> lazyView2 Maps.View.view model.MapsInstaller (MapInstallerMsg >> dispatch)
+        | MapsInstaller -> lazyView2 MapsInstaller.View.view model.MapsInstaller (MapsInstallerMsg >> dispatch)
         | FaceTools -> lazyView2 FaceTools.View.view model.FaceTools (FaceToolsMsg >> dispatch)
         | MordhauConfig -> lazyView2 MordhauConfig.View.view model.MordhauConfig (MordhauConfigMsg >> dispatch)
         | Settings -> lazyView2 Settings.View.view model.Settings (SettingsMsg >> dispatch)

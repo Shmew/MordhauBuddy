@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.Maps
+﻿namespace MordhauBuddy.App.MapsInstaller
 
 module Types =
     open FSharp.Core  /// To avoid shadowing Result<_,_>

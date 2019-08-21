@@ -6,13 +6,13 @@ module Types =
 
     type Page =
         | Home
-        | MapInstaller
+        | MapsInstaller
         | FaceTools
         | MordhauConfig
         | Settings
         | About
         static member All =
-            [ Home; MapInstaller; FaceTools; MordhauConfig; Settings; About ]
+            [ Home; MapsInstaller; FaceTools; MordhauConfig; Settings; About ]
 
     type Msg =
         | Navigate of Page
@@ -22,7 +22,7 @@ module Types =
         | LoadMap
         | StoreMsg of Store.Msg
         | ContextMenuMsg of ContextMenu.Types.Msg
-        | MapInstallerMsg of Maps.Types.Msg
+        | MapsInstallerMsg of MapsInstaller.Types.Msg
         | FaceToolsMsg of FaceTools.Types.Msg
         | MordhauConfigMsg of MordhauConfig.Types.Msg
         | SettingsMsg of Settings.Types.Msg
@@ -55,7 +55,7 @@ module Types =
           IsBridgeConnected : bool
           Resources : Loaded
           ContextMenu : ContextMenu.Types.Model
-          MapsInstaller : Maps.Types.Model
+          MapsInstaller : MapsInstaller.Types.Model
           FaceTools : FaceTools.Types.Model
           MordhauConfig : MordhauConfig.Types.Model
           Settings : Settings.Types.Model
