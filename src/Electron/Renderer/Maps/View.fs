@@ -22,35 +22,68 @@ module View =
         ])
     ]
 
+    let private tabContent (classes: IClasses) model dispatch =
+        match model.TabSelected with
+        | Available ->
+            grid [
+                GridProp.Container true
+                GridProp.Spacing GridSpacing.``0``
+                GridProp.Direction GridDirection.Column
+                GridProp.AlignItems GridAlignItems.Center
+                Style [ 
+                    CSSProp.Padding "1em 5em"
+                    CSSProp.Display DisplayOptions.Flex
+                ] 
+            ] [
+                //img [
+                //    HTMLAttr.Hidden (model.ImgLoaded |> not)
+                //    DOMAttr.OnLoad(fun _ -> dispatch ImgSkeleton)
+                //    HTMLAttr.Src (stat "frankenstein.png")
+                //    Style [ 
+                //        CSSProp.BorderRadius "4px"
+                //    ]
+                //]
+                //skeleton [ 
+                //    HTMLAttr.Hidden <| model.ImgLoaded
+                //    HTMLAttr.Width "229px"
+                //    HTMLAttr.Height "308px"
+                //    SkeletonProp.DisableAnimate true 
+                //]
+            ]
+        | Installed -> div [] []
+        | Installing -> div [] []
+
     let private view' (classes: IClasses) model dispatch =
         div [
             Style [
                 CSSProp.FlexDirection "column"
                 CSSProp.Display DisplayOptions.Flex
                 CSSProp.Height "inherit"
-                CSSProp.Padding "5em"
+                CSSProp.Padding "2em"
             ]
         ] [
-            card [
-                Style [ CSSProp.FlexGrow "1" ]
-            ] [
-                str "Insert logo here"
-                typography [] [str (sprintf "MordhauBuddy %s" (Bindings.Info.version))]
-                typography [] [str (sprintf "Electron: %s" (Bindings.Info.electronVersion))]
-                typography [] [str (sprintf "Chrome: %s" (Bindings.Info.chromeVersion))]
-                typography [] [str (sprintf "Node: %s" (Bindings.Info.nodeVersion))]
-                typography [] [str (sprintf "V8: %s" (Bindings.Info.v8Version))]
-                typography [] [str (sprintf "License: %s" (Bindings.Info.license))]
-                typography [] [str (sprintf "Author: %s" (Bindings.Info.author))]
-
-                link [
-                    DOMAttr.OnClick <| fun _ -> dispatch (OpenLink(Bindings.Info.homepage))
-                ] [ str "Repository" ]
-                link [
-                    DOMAttr.OnClick <| fun _ -> dispatch (OpenLink(Bindings.Info.issues))
-                ] [ str "Issues" ]
-                
-            ]
+            yield lazyView2 Snackbar.View.view model.Snack (SnackMsg >> dispatch)
+            yield
+                card [ CardProp.Raised true ] [
+                    tabs [
+                        HTMLAttr.Value (model.TabSelected)
+                        TabsProp.Variant TabsVariant.FullWidth
+                        TabsProp.ScrollButtons ScrollButtonsType.On
+                        TabsProp.IndicatorColor TabsIndicatorColor.Secondary
+                        TabsProp.TextColor TabsTextColor.Secondary
+                        TabsProp.Centered true
+                        TabsProp.OnChange (fun _ tabPicked -> dispatch <| TabSelected(Tab.GetTabFromTag(tabPicked)) )
+                    ] <|
+                        (Tab.GetTabs
+                        |> Seq.map (fun t ->
+                            tab [ HTMLAttr.Label (t.Text)]))
+                    divider []
+                    div [
+                        Style [ CSSProp.Padding "2em"; CSSProp.MinHeight "5em" ]
+                    ] [ 
+                        tabContent classes model dispatch
+                    ]
+                ]
         ]
 
     /// Workaround for using JSS with Elmish

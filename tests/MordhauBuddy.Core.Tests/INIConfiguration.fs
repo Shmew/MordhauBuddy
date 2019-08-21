@@ -17,21 +17,9 @@ module INIConfiguration =
         let gameUserFile =
             IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/GameUserSettings.ini") |> INIValue.Parse
         let profileNames =
-            [ "332 Bardiche"
-              "333 Greatsword"
-              "332 Eveningstar"
-              "333 Poleaxe t"
-              "231 Spear"
-              "231 Spear goofy"
-              "333 Maul"
-              "333 messer shield"
-              "333 Exec"
-              "010 Exec bl rush"
-              "333 Bastard Buckler"
-              "221 Halberd"
-              "333 Battle Axe t"
-              "333 War Axe sw"
-              "111 Halberd Bandage a" ]
+            [ "332 Bardiche"; "333 Greatsword"; "332 Eveningstar"; "333 Poleaxe t"; "231 Spear"; "231 Spear goofy";
+              "333 Maul"; "333 messer shield"; "333 Exec"; "010 Exec bl rush"; "333 Bastard Buckler"; "221 Halberd";
+              "333 Battle Axe t"; "333 War Axe sw"; "111 Halberd Bandage a" ]
         let bardExport =
             "(Translate=(15360,15360,15840,12656,15364,12653,15862,0,15385,0,16320,15847,15855,15855,384,8690,8683,480,480,480,31700,480,480,480,15360,15840,18144,15840,31690,15850,15860,11471,11471,12463,12463,11471,11471,15840,15840,0,0,0,0,0,0,0,0,7665,7660),Rotate=(0,0,0,0,0,0,16,0,0,0,0,14,0,0,12288,591,367,0,15855,15855,18976,0,0,0,0,18432,0,0,18816,0,0,0,0,0,0,0,0,655,335,0,0,15840,15840,0,0,15840,15840,0,0),Scale=(14351,14351,0,15360,0,15360,0,15855,0,15855,14336,0,0,0,14350,0,0,15855,15855,15855,15840,0,15855,15855,0,15914,6,0,15840,0,0,0,0,0,0,0,0,15855,15855,0,0,0,0,0,0,0,0,0,0))"
         let faceImport =
@@ -83,15 +71,15 @@ module INIConfiguration =
                 Enabled = true
                 Expanded = false } ]
 
-        let notOrigAndParses (iFile: INIValue) (strRes: string) =
+        let notOrigAndParses (iFile : INIValue) (strRes : string) =
             let original = iFile |> string
             let parseRes = strRes |> INIValue.TryParse
             strRes <> original && parseRes.IsSome
 
     let frankenstein =
         [ testCase "getCharacterProfileNames returns a list of profile names" <| fun () ->
-            let result = getCharacterProfileNames gameFile
-            Expect.equal result profileNames ""
+              let result = getCharacterProfileNames gameFile
+              Expect.equal result profileNames ""
           testCase "getCharacterProfileExports returns a list of profile names and export strings" <| fun () ->
               let result = getCharacterProfileExports gameFile [ "332 Bardiche" ] |> List.head
               let expected = ("332 Bardiche", bardExport)
@@ -119,44 +107,41 @@ module INIConfiguration =
 
     let mordhauConfig =
         [ testCase "getSettings returns an OptionGroup list with values set" <| fun () ->
-            let result = getSettings engineFile gameUserFile optGroupList
+              let result = getSettings engineFile gameUserFile optGroupList
 
-            let expected =
-                [ { Title = "Enable network parry debug"
-                    Caption = "Enables a utility that will print a small line of red \
+              let expected =
+                  [ { Title = "Enable network parry debug"
+                      Caption = "Enables a utility that will print a small line of red \
                          text when your parry was correct but missed due to latency."
-                    Settings =
-                        [ { Key = @"m.DebugNetworkParry"
-                            Default = KeyValues.Values.Int(1)
-                            Value = KeyValues.Values.Int(1) |> Some
-                            Mutable = None } ]
-                    File = ConfigFile.Engine
-                    Enabled = false
-                    Expanded = false }
-                  { Title = "Skip intro cut scenes"
-                    Caption = "This will disable the intro videos from playing."
-                    Settings =
-                        [ { Key = @"SkipStartupMovies"
-                            Default = KeyValues.Values.Int(1)
-                            Value = KeyValues.Values.Int(1) |> Some
-                            Mutable = None } ]
-                    File = ConfigFile.GameUserSettings
-                    Enabled = false
-                    Expanded = false } ]
-            Expect.equal result expected ""
+                      Settings =
+                          [ { Key = @"m.DebugNetworkParry"
+                              Default = KeyValues.Values.Int(1)
+                              Value = KeyValues.Values.Int(1) |> Some
+                              Mutable = None } ]
+                      File = ConfigFile.Engine
+                      Enabled = false
+                      Expanded = false }
+                    { Title = "Skip intro cut scenes"
+                      Caption = "This will disable the intro videos from playing."
+                      Settings =
+                          [ { Key = @"SkipStartupMovies"
+                              Default = KeyValues.Values.Int(1)
+                              Value = KeyValues.Values.Int(1) |> Some
+                              Mutable = None } ]
+                      File = ConfigFile.GameUserSettings
+                      Enabled = false
+                      Expanded = false } ]
+              Expect.equal result expected ""
           testCase "tryMapSettings returns a INIValue tuple option with new results" <| fun () ->
               let eFile, gFile = tryMapSettings engineFile gameUserFile newOptGroupList
-              (notOrigAndParses engineFile
-                   (eFile
-                    |> Option.get
-                    |> string)
-               && notOrigAndParses gameUserFile
-                      (gFile
-                       |> Option.get
-                       |> string))
+              (notOrigAndParses engineFile (eFile
+                                            |> Option.get
+                                            |> string)
+               && notOrigAndParses gameUserFile (gFile
+                                                 |> Option.get
+                                                 |> string))
               |> Expect.isTrue
               <| ""
-
           testCase "tryMapSettings removes values if disabled" <| fun () ->
               let disableFog =
                   [ { Title = "Disable fog"
@@ -171,10 +156,9 @@ module INIConfiguration =
                       Expanded = false } ]
 
               let eFile, _ = tryMapSettings engineFile gameUserFile disableFog
-              notOrigAndParses engineFile
-                  (eFile
-                   |> Option.get
-                   |> string)
+              notOrigAndParses engineFile (eFile
+                                           |> Option.get
+                                           |> string)
               |> Expect.isTrue
               <| ""
           testCase "tryMapSettings adds values if enabled and not present" <| fun () ->
@@ -196,11 +180,9 @@ module INIConfiguration =
                       Expanded = false } ]
 
               let eFile, _ = tryMapSettings engineFile gameUserFile disableFisheye
-
-              notOrigAndParses engineFile
-                  (eFile
-                   |> Option.get
-                   |> string)
+              notOrigAndParses engineFile (eFile
+                                           |> Option.get
+                                           |> string)
               |> Expect.isTrue
               <| "" ]
         |> testList "Mordhau Config"

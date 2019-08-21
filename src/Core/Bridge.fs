@@ -11,10 +11,10 @@ module Bridge =
     /// Websocket bridge
     module Bridge =
         type Model =
-            { Game: INIValue option
-              Engine: INIValue option
-              GameUserSettings: INIValue option }
-            member this.GetIVal(file: ConfigFile) =
+            { Game : INIValue option
+              Engine : INIValue option
+              GameUserSettings : INIValue option }
+            member this.GetIVal(file : ConfigFile) =
                 match file with
                 | ConfigFile.Game -> this.Game
                 | ConfigFile.Engine -> this.Engine
@@ -22,19 +22,19 @@ module Bridge =
 
         type ServerMsg = ClientMsg of RemoteServerMsg
 
-        let init (clientDispatch: Dispatch<RemoteClientMsg>) () =
+        let init (clientDispatch : Dispatch<RemoteClientMsg>) () =
             Connected |> clientDispatch
             { Game = None
               GameUserSettings = None
               Engine = None }, Cmd.none
 
-        let createClientResp (caller: Caller) (file: INIFile option) (br: BridgeResult) =
+        let createClientResp (caller : Caller) (file : INIFile option) (br : BridgeResult) =
             { Caller = caller
               File = file
               BridgeResult = br }
 
-        let update (clientDispatch: Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model: Model) =
-            let updateModel (file: ConfigFile) (iOpt: INIValue option) model =
+        let update (clientDispatch : Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model : Model) =
+            let updateModel (file : ConfigFile) (iOpt : INIValue option) model =
                 match file with
                 | ConfigFile.Game -> { model with Game = iOpt }
                 | ConfigFile.GameUserSettings -> { model with GameUserSettings = iOpt }
@@ -54,10 +54,9 @@ module Bridge =
                             |> createClientResp caller None
                         | INIFileOperation.Replace(s, sels, iFile) ->
                             let result =
-                                (INI.replace (model.GetIVal(iFile.File).Value)
-                                     (s
-                                      |> Some
-                                      |> INIValue.String) sels.Selectors
+                                (INI.replace (model.GetIVal(iFile.File).Value) (s
+                                                                                |> Some
+                                                                                |> INIValue.String) sels.Selectors
                                  |> Some)
                             updateModel iFile.File result model,
                             result.IsSome
@@ -126,12 +125,19 @@ module Bridge =
                             |> BridgeResult.MapOperation
                             |> createClientResp caller None
                         | MapFileOperation.DirExists(dir) ->
-                            model,
-                            Maps.dirExists dir
-                            |> MapOperationResult.DirExists
-                            |> BridgeResult.MapOperation
-                            |> createClientResp caller None
+                            let result = Maps.dirExists dir
 
+                            let m, cmd =
+                                model,
+                                result
+                                |> MapOperationResult.DirExists
+                                |> BridgeResult.MapOperation
+                                |> createClientResp caller None
+                            if result then
+                                { cmd with Caller = Caller.MapInstaller }
+                                |> Resp
+                                |> clientDispatch
+                            m, cmd
                     | Faces fCmd ->
                         let cResp br = createClientResp caller None br
                         match fCmd with
@@ -171,9 +177,6 @@ module Bridge =
                             cr
                             |> BridgeResult.Config
                             |> cResp
-
-
-
 
             Resp(remoteCMsg) |> clientDispatch
             model, Cmd.none

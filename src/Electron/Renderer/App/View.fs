@@ -67,7 +67,7 @@ module View =
             HTMLAttr.Disabled <| //Display tool tip here when disabled to explain why
                 (match page with
                 | MapInstaller ->
-                    model.MapsInstaller.MapDir.Directory = ""
+                    model.MapsInstaller.MapsDir.Directory = ""
                 | FaceTools ->
                     model.FaceTools.GameDir.Directory = ""
                 | MordhauConfig ->

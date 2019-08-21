@@ -124,23 +124,23 @@ module View =
     let private actionTabs (classes: IClasses) model dispatch =
         let tabDescription =
             match model.TabSelected with
-            | 0 ->
+            | Tab.Frankenstein ->
                 str "Frankenstein mode is done automatically \
                     and will select at random the maximum or \
                     minimum allowed values for each aspect of \
                     the character's face."
-            | 1 -> 
+            | Tab.Random -> 
                 str "Random mode is done automatically and \
                     will select at random all aspects of the \
                     character's face." 
-            | 2 -> 
+            | Tab.Import -> 
                 str "Import mode enables you to set faces from a face value string."
-            | _ ->
+            | Tab.Export ->
                 str "Export lets you generate string values of the profiles you've selected."
 
         let tabContent =
             match model.TabSelected with
-            | 0 ->
+            | Tab.Frankenstein ->
                 grid [
                     GridProp.Container true
                     GridProp.Spacing GridSpacing.``0``
@@ -166,7 +166,8 @@ module View =
                         SkeletonProp.DisableAnimate true 
                     ]
                 ]
-            | 2 ->
+            | Tab.Random -> div [] []
+            | Tab.Import ->
                 div [] [
                     div [ 
                         Style [ 
@@ -226,7 +227,7 @@ module View =
                         ]
                     ]
                 ]
-            | 3 ->
+            | Tab.Export ->
                 let profileInd =
                     model.TransferList.RightProfiles
                     |> List.indexed
@@ -275,7 +276,6 @@ module View =
                         ]
                     ]
                 ]
-            | _ -> div [] []
 
         card [ CardProp.Raised true ] [
             tabs [
@@ -285,7 +285,7 @@ module View =
                 TabsProp.IndicatorColor TabsIndicatorColor.Secondary
                 TabsProp.TextColor TabsTextColor.Secondary
                 TabsProp.Centered true
-                TabsProp.OnChange (fun _ tabPicked -> dispatch <| TabSelected(tabPicked) )
+                TabsProp.OnChange (fun _ tabPicked -> dispatch <| TabSelected(Tab.GetTabFromTag(tabPicked)) )
             ] [
                 tab [ HTMLAttr.Label "Frankenstein" ]
                 tab [ HTMLAttr.Label "Random" ]

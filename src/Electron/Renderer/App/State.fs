@@ -308,6 +308,12 @@ module State =
                                             { m.Resources.Maps with 
                                                 Exists = b
                                                 Loading = false } }
+                                MapsInstaller =
+                                    { m.MapsInstaller with
+                                        MapsDir =
+                                            { m.MapsInstaller.MapsDir with
+                                                Directory = if b then m'.MapsDir.Directory else "" 
+                                                Validated = true } }
                                 Settings = m' }
                         | MapOperationResult.DefaultDir _ ->
                             { m with 

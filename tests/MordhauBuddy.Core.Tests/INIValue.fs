@@ -29,7 +29,7 @@ module INIValue =
 
         let iStrSelectors = [ "TestSection"; "TestStr" ]
 
-        let buildINIString (sList: string list) =
+        let buildINIString (sList : string list) =
             sList
             |> List.reduce (fun acc elem -> acc + "\n" + elem)
             |> fun s -> s + "\n\n"
@@ -38,13 +38,13 @@ module INIValue =
     module OptionTests =
         open INIReader.INIExtensions.Options
 
-        let map (oVal: INIValue) (selectors: string list) (nVal: INIValue) = oVal.Map(selectors, nVal)
+        let map (oVal : INIValue) (selectors : string list) (nVal : INIValue) = oVal.Map(selectors, nVal)
 
     let parsing =
         [ testCase "Fails to parse empty document" <| fun () ->
-            let result = INIValue.TryParse ""
-            let expected = None
-            Expect.equal result expected ""
+              let result = INIValue.TryParse ""
+              let expected = None
+              Expect.equal result expected ""
           testCase "Fails to parse document without sections" <| fun () ->
               let result = INIValue.TryParse "Test=TestValue"
               let expected = None
@@ -136,15 +136,15 @@ module INIValue =
 
     let serializing =
         [ testCase "Can serialize document with section and multiple kv pairs" <| fun () ->
-            let result =
-                [ kvPair "TestStr" "Wowie"
-                  kvPair "TestInt" "1" ]
-                |> section "TestSection"
-                |> fileOne
-                |> serialI
+              let result =
+                  [ kvPair "TestStr" "Wowie"
+                    kvPair "TestInt" "1" ]
+                  |> section "TestSection"
+                  |> fileOne
+                  |> serialI
 
-            let expected = [ "[TestSection]"; "TestStr=Wowie"; "TestInt=1" ] |> buildINIString
-            Expect.equal result expected ""
+              let expected = [ "[TestSection]"; "TestStr=Wowie"; "TestInt=1" ] |> buildINIString
+              Expect.equal result expected ""
           testCase "Can serialize document with multiple sections" <| fun () ->
               let result =
                   let section1 =
@@ -187,12 +187,12 @@ module INIValue =
 
     let casting =
         [ testCase "Can parse strings" <| fun () ->
-            let result =
-                let iVal = iStr "string"
-                iVal?File?TestSection?TestStr.AsString()
+              let result =
+                  let iVal = iStr "string"
+                  iVal?File?TestSection?TestStr.AsString()
 
-            let expected = "string"
-            Expect.equal result expected ""
+              let expected = "string"
+              Expect.equal result expected ""
           testCase "Can parse booleans" <| fun () ->
               let result =
                   let iVal = iStr "true"
@@ -232,12 +232,12 @@ module INIValue =
 
     let operations =
         [ testCase "Can get inner text" <| fun () ->
-            let result =
-                let iVal = iStr "wowie"
-                iVal.InnerText()
+              let result =
+                  let iVal = iStr "wowie"
+                  iVal.InnerText()
 
-            let expected = "wowie"
-            Expect.equal result expected ""
+              let expected = "wowie"
+              Expect.equal result expected ""
           testCase "Can map kv pair" <| fun () ->
               let result =
                   let oVal = iStr "wowie"

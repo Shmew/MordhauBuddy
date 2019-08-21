@@ -18,6 +18,44 @@ module rec Types =
         | Left
         | Right
 
+    [<RequireQualifiedAccess>]
+    type Tab =
+        | Frankenstein
+        | Random
+        | Import
+        | Export
+        member this.Text =
+            this.ToString()
+            |> String.duToTitle
+
+        static member private Cases =
+            FSharpType.GetUnionCases typeof<Tab>
+
+        static member private Instantiate name =
+            Tab.Cases
+            |> Array.tryFind (fun uc -> uc.Name = name)
+            |> Option.map (fun uc -> 
+                Reflection.FSharpValue.MakeUnion( uc, [||] ) :?> Tab)
+            |> Option.get
+
+        static member GetTabs =
+            Tab.Cases
+            |> Array.map (fun uc ->
+                uc.Name |> Tab.Instantiate)
+
+        member this.GetTag =
+            Tab.Cases
+            |> Seq.tryFind (fun uc -> uc.Name = this.ToString())
+            |> Option.map (fun uc -> uc.Tag)
+            |> Option.get
+
+        static member GetTabFromTag (tag: int) =
+            Tab.Cases
+            |> Seq.tryFind (fun t -> t.Tag = tag)
+            |> Option.map (fun uc -> uc.Name |> Tab.Instantiate)
+            |> Option.get
+
+
     type Msg =
         | ClientMsg of BridgeResult
         | StepperSubmit
@@ -27,7 +65,7 @@ module rec Types =
         | ToggleAll of ToggleDirection * bool
         | Toggle of ToggleDirection * Profile
         | Move of ToggleDirection
-        | TabSelected of int
+        | TabSelected of Tab
         | ImgSkeleton
         | SetImportString of string
         | ValidateImport
@@ -115,7 +153,7 @@ module rec Types =
                     let isDisabled =
                         match this with
                         | ChooseProfiles when model.TransferList.RightProfiles.Length = 0 -> true
-                        | ChooseAction when (not model.Import.Validated && model.TabSelected = 2) || model.TabSelected = 3 -> true
+                        | ChooseAction when (not model.Import.Validated && model.TabSelected = Tab.Import) || model.TabSelected = Tab.Export -> true
                         | _ when model.Submit.Waiting -> true
                         | _ -> false
 
@@ -197,7 +235,7 @@ module rec Types =
           StepperComplete : bool
           GameDir : ConfigDir 
           TransferList : TransferList
-          TabSelected : int
+          TabSelected : Tab
           ImgLoaded : bool
           Import : ImportStr
           Submit : Submit

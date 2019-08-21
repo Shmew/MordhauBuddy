@@ -37,15 +37,15 @@ module ElectronBridge =
 
         [<RequireQualifiedAccess>]
         type Mutable =
-            { Min: MutableValues
-              Max: MutableValues
-              Step: float }
+            { Min : MutableValues
+              Max : MutableValues
+              Step : float }
 
     type KeyValues =
-        { Key: string
-          Default: KeyValues.Values
-          Value: KeyValues.Values option
-          Mutable: KeyValues.Mutable option }
+        { Key : string
+          Default : KeyValues.Values
+          Value : KeyValues.Values option
+          Mutable : KeyValues.Mutable option }
         member this.GetDefault() =
             match this.Value, this.Default.TryFloat() with
             | Some(v), _ when v.TryFloat().IsSome -> v.TryFloat().Value
@@ -60,12 +60,12 @@ module ElectronBridge =
         member this.Name = this.ToString() + ".ini"
 
     type OptionGroup =
-        { Title: string
-          Caption: string
-          Settings: KeyValues list
-          File: ConfigFile
-          Enabled: bool
-          Expanded: bool }
+        { Title : string
+          Caption : string
+          Settings : KeyValues list
+          File : ConfigFile
+          Enabled : bool
+          Expanded : bool }
 
     [<RequireQualifiedAccess>]
     type FaceResult =
@@ -90,6 +90,37 @@ module ElectronBridge =
         | CommitChanges of bool
 
     [<RequireQualifiedAccess>]
+    type MapVersion =
+        { Major : int
+          Minor : int
+          Patch : int
+          Prerelease : bool }
+
+    [<Measure>]
+    type MB
+
+    [<RequireQualifiedAccess>]
+    type PlayerRange =
+        | Min of int
+        | Max of int
+
+    [<RequireQualifiedAccess>]
+    type SuggestedPlayers =
+        | Range of PlayerRange
+        | Static of int
+
+    type CommunityMap =
+        { Name : string option
+          Folder : string
+          Description : string option
+          Author : string option
+          Version : MapVersion
+          ReleaseDate : System.DateTime
+          FileSize : float<MB>
+          Players : SuggestedPlayers
+          Image : System.Uri option } // Is this supported?
+
+    [<RequireQualifiedAccess>]
     type MapOperationResult =
         | DefaultDir of string option
         | DirExists of bool
@@ -103,6 +134,7 @@ module ElectronBridge =
 
     [<RequireQualifiedAccess>]
     type Caller =
+        | MapInstaller
         | FaceTools
         | MordhauConfig
         | Settings
@@ -111,11 +143,11 @@ module ElectronBridge =
     [<AutoOpen>]
     module Types =
         type Selectors =
-            { Selectors: string list }
+            { Selectors : string list }
 
         type INIFile =
-            { File: ConfigFile
-              WorkingDir: string option }
+            { File : ConfigFile
+              WorkingDir : string option }
 
         [<RequireQualifiedAccess>]
         type INIFileOperation =
@@ -150,9 +182,9 @@ module ElectronBridge =
             static member Endpoint = "/ws"
 
     type BridgeMsg =
-        { Caller: Caller
-          File: INIFile option
-          BridgeResult: BridgeResult }
+        { Caller : Caller
+          File : INIFile option
+          BridgeResult : BridgeResult }
 
     type RemoteClientMsg =
         | Resp of BridgeMsg

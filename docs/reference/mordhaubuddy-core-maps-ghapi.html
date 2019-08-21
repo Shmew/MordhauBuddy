@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Save - MordhauBuddy</title>
+    <title>GHApi - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,32 +34,61 @@
 
 
 
-<h1>Save</h1>
+<h1>GHApi</h1>
 <p>
 
-    <span>Namespace: MordhauBuddy.App.Settings</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-app-settings-types.html">Types</a></span><br />
+    <span>Namespace: MordhauBuddy.Core</span><br />
+        <span>Parent Module: <a href="mordhaubuddy-core-maps.html">Maps</a></span><br />
     </p>
 <div class="xmldoc">
+<p>Github Rest Api wrapper</p>
+
 </div>
-  <h3>Record Fields</h3>
+  <h3>Constructors</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Constructor</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '447', 447)" onmouseover="showTip(event, '447', 447)">
-            Complete
+          <code onmouseout="hideTip(event, '554', 554)" onmouseover="showTip(event, '554', 554)">
+            new()
           </code>
-          <div class="tip" id="447">
-            <strong>Signature:</strong> bool<br />
+          <div class="tip" id="554">
+            <strong>Signature:</strong> unit -&gt; GHApi<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Settings/Types.fs#L33-33" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L165-165" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>.ctor</code></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '555', 555)" onmouseover="showTip(event, '555', 555)">
+            x.DownloadFile(...)
+          </code>
+          <div class="tip" id="555">
+            <strong>Signature:</strong> (downloadUrl:string * fileName:string * dir:string) -&gt; unit<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L219-219" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -69,55 +98,41 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '448', 448)" onmouseover="showTip(event, '448', 448)">
-            Error
+          <code onmouseout="hideTip(event, '556', 556)" onmouseover="showTip(event, '556', 556)">
+            x.GetInfoFiles()
           </code>
-          <div class="tip" id="448">
-            <strong>Signature:</strong> bool<br />
+          <div class="tip" id="556">
+            <strong>Signature:</strong> unit -&gt; Contents list<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Settings/Types.fs#L31-31" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L208-208" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Get info file list</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '449', 449)" onmouseover="showTip(event, '449', 449)">
-            HelperText
+          <code onmouseout="hideTip(event, '557', 557)" onmouseover="showTip(event, '557', 557)">
+            x.GetMapFiles()
           </code>
-          <div class="tip" id="449">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="557">
+            <strong>Signature:</strong> unit -&gt; Contents list<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Settings/Types.fs#L32-32" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Maps.fs#L214-214" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
+          <p>Get map zip list</p>
 
-          <code onmouseout="hideTip(event, '450', 450)" onmouseover="showTip(event, '450', 450)">
-            Waiting
-          </code>
-          <div class="tip" id="450">
-            <strong>Signature:</strong> bool<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Settings/Types.fs#L30-30" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
+
         </td>
       </tr>
     </tbody>

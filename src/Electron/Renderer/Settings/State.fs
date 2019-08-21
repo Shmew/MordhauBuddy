@@ -46,25 +46,12 @@ module State =
                 Error = false
                 Label = "Mordhau maps directory"
                 HelperText = "" 
-                Validated = false }
-          Save =
-              { Waiting = false
-                Error = false
-                HelperText = ""
-                Complete = false }
-          Snack = Snackbar.State.init() }
+                Validated = false } }
 
     let private iniSender = new INIBridgeSender(Caller.Settings)
     let private mapSender = new MapBridgeSender(Caller.Settings)
 
     let update (msg: Msg) (model: Model) =
-        let submissionFailed (s: string) =
-            { model with
-                Save =
-                    { model.Save with
-                        Waiting = false
-                        Error = true
-                        HelperText = s } }
         match msg with
         | ClientMsg bMsg ->
             match bMsg.BridgeResult with
@@ -418,15 +405,3 @@ module State =
                     | DirSelect.Canceled -> LoadCanceled
             model, Cmd.OfPromise.perform selectDir () handleLoaded
         | LoadCanceled -> model, Cmd.none
-        | SnackMsg msg' ->
-            let m, cmd, actionCmd = Snackbar.State.update msg' model.Snack
-            { model with Snack = m },
-            Cmd.batch [ Cmd.map SnackMsg cmd
-                        actionCmd ]
-        | SnackDismissMsg ->
-            let cmd =
-                Snackbar.State.create model.Save.HelperText
-                |> Snackbar.State.withDismissAction "OK"
-                |> Snackbar.State.withTimeout 80000
-                |> Snackbar.State.add
-            model, Cmd.map SnackMsg cmd

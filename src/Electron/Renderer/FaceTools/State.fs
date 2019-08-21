@@ -31,7 +31,7 @@ module State =
               RightChecked = 0
               Error = false
               HelperText = "" }
-          TabSelected = 0
+          TabSelected = Tab.Frankenstein
           ImgLoaded = false
           Import = 
             { ImportString = ""
@@ -70,9 +70,9 @@ module State =
                         let profiles =
                             model.TransferList.RightProfiles |> List.map (fun p -> p.Name)
                         match model.TabSelected with
-                        | 0 -> model, Cmd.bridgeSend (sender.SetFrankenstein profiles)
-                        | 1 -> model, Cmd.bridgeSend (sender.SetRandom profiles)
-                        | 2 -> model, Cmd.bridgeSend (sender.SetCustom profiles model.Import.ImportString)
+                        | Tab.Frankenstein -> model, Cmd.bridgeSend (sender.SetFrankenstein profiles)
+                        | Tab.Random -> model, Cmd.bridgeSend (sender.SetRandom profiles)
+                        | Tab.Import -> model, Cmd.bridgeSend (sender.SetCustom profiles model.Import.ImportString)
                         | _ -> submissionFailed "Invalid submission", Cmd.ofMsg SnackDismissMsg
                     else
                         submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg

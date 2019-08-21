@@ -11,7 +11,7 @@ module FileOps =
     module INI =
         /// Try to find the configuration directory
         let defaultDir =
-            let bindDirectory (dir: string) =
+            let bindDirectory (dir : string) =
                 IO.DirectoryInfo dir
                 |> DirectoryInfo.exists
                 |> function
@@ -27,14 +27,14 @@ module FileOps =
                 [ "~/.steam/steam"; "~/.local/share/Steam" ]
                 |> List.tryFind (bindDirectory >> Option.isSome)
                 |> Option.bind
-                    (fun dir ->
-                    dir
-                    @@ "steamapps/compatdata/629760/pfx/drive_c/Users/steamuser/AppData/Local"
-                       @@ "Mordhau/Saved/Config/WindowsClient" |> Some)
+                       (fun dir ->
+                       dir
+                       @@ "steamapps/compatdata/629760/pfx/drive_c/Users/steamuser/AppData/Local"
+                          @@ "Mordhau/Saved/Config/WindowsClient" |> Some)
                 |> Option.bind bindDirectory
 
         /// Try to find the file given an `INIFile`
-        let tryGetFile (file: string) (workingDir: string option) =
+        let tryGetFile (file : string) (workingDir : string option) =
             let fiPath = IO.FileInfo(file).FullName
             match workingDir, (fiPath = file && File.exists file) with
             | _, true -> Some(file)
@@ -42,7 +42,7 @@ module FileOps =
             | _ -> None
 
         /// Create a backup of the given file into sub directory MordhauBuddy_backups
-        let createBackup (file: string) =
+        let createBackup (file : string) =
             let fi = FileInfo.ofPath (file)
             match File.exists file with
             | true ->
@@ -54,14 +54,14 @@ module FileOps =
             | false -> false
 
         /// Write `INIValue` to file path
-        let writeINI (iVal: INIValue) (outFile: string) =
+        let writeINI (iVal : INIValue) (outFile : string) =
             let fi = FileInfo.ofPath (outFile)
             Directory.ensure fi.DirectoryName
             File.writeString false fi.FullName (iVal.ToString())
             tryGetFile outFile None
 
         /// Try to read an INI file
-        let tryReadINI (file: string) =
+        let tryReadINI (file : string) =
             if File.exists file then
                 try
                     File.readAsString file |> INIValue.TryParse
@@ -80,7 +80,7 @@ module FileOps =
                     [ "~/.steam/steam"; "~/.local/share/Steam" ]
                     |> List.map (fun fol -> fol @@ @"Steam/steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps")
 
-            let bindDirectory (dir: string) =
+            let bindDirectory (dir : string) =
                 IO.DirectoryInfo dir
                 |> DirectoryInfo.exists
                 |> function
@@ -90,6 +90,6 @@ module FileOps =
             mapPath |> List.tryFind (bindDirectory >> Option.isSome)
 
         /// Determine if maps directory is valid
-        let tryFindMaps (dir: string) =
+        let tryFindMaps (dir : string) =
             let di = IO.DirectoryInfo(dir)
             di.Parent.Name = "Mordhau" && di.Exists && di.FullName.ToLower().Contains("steam")
