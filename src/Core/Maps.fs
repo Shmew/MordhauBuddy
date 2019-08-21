@@ -229,7 +229,11 @@ module Maps =
         /// Get info file list
         let getInfoFiles() =
             let downloadInfoFiles (gList : GHContents list) =
-                gList |> List.map (fun c -> getDirect (c.DownloadUrl, None))
+                gList
+                |> List.map (fun c -> async { return getDirect (c.DownloadUrl, None) })
+                |> Async.Parallel
+                |> Async.RunSynchronously
+                |> List.ofArray
             get ("/repos/MordhauMappingModding/InfoFiles/contents", None)
             |> Result.map (Json.deserializeEx<GHContents list> Json.config)
             |> Result.map downloadInfoFiles

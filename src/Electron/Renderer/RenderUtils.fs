@@ -27,6 +27,7 @@ module BridgeUtils =
         member this.DefaultDir = MapFileOperation.DefaultDir |> wrapOps
         member this.DirExists s = MapFileOperation.DirExists(s) |> wrapOps
         member this.GetAvailable = Maps.GetAvailableMaps |> wrapMaps
+        member this.GetInstalled s = Maps.GetInstalledMaps s |> wrapMaps
 
 module RenderUtils =
     open Electron
@@ -146,21 +147,8 @@ module RenderUtils =
         module RegPatterns =
             let translate = @"^\(Translate=\((\d*,?){49}\),Rotate=\((\d*,?){49}\),Scale=\((\d*,?){49}\)\)"
             let fileSize = @"^(\d+[, .]\d+|\d+)\s*(kb|mb|gb)$"
-            let semVersion = @"^(\d+)[. ,](\d+)[. ,](\d)$"
+            let semVersion = @"^(\d+)[. ,]*(\d+)*[. ,]*(\d)*"
             let players = @"^(\d+).*?(\d+)$"
-            //let uri = 
-            //    @"([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\"
-            //    + @")\*\+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!\$&'\(\)\*\+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0"
-            //    + @"-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|("
-            //    + @"([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=])*)(:\d*)?)(\/(([a-z]|\d"
-            //    + @"|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|"
-            //    + @"[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF"
-            //    + @"\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xF"
-            //    + @"DCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFF"
-            //    + @"EF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-"
-            //    + @"f]{2})|[!\$&'\(\)\*\+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!"
-            //    + @"\$&'\(\)\*\+,;=]|:|@)|[\xE000-\xF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\"
-            //    + @"da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?"
 
         [<AutoOpen>]
         module internal Helpers =
@@ -174,11 +162,14 @@ module RenderUtils =
                 |> Array.reduce (+)
 
             let applyRPattern (pattern : string) (input : string) f = 
-                Regex(pattern, RegexOptions.IgnoreCase).Match(input)
-                |> fun m -> seq { for items in m.Groups do yield items }
-                |> List.ofSeq 
-                |> List.tail 
-                |> List.map (fun g -> g.Value |> f)
+                try
+                    Regex(pattern, RegexOptions.IgnoreCase).Match(input)
+                    |> fun m -> seq { for items in m.Groups do yield items }
+                    |> List.ofSeq 
+                    |> List.tail 
+                    |> List.map (fun g -> g.Value |> f)
+                with
+                | _ -> []
 
             let getFileSize (s : string) =
                 let matchSize =

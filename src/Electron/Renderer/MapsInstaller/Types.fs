@@ -6,6 +6,7 @@ module Types =
     open RenderUtils
     open RenderUtils.Directory
     open RenderUtils.WebParsing
+    open RenderUtils.MapTypes
     open MordhauBuddy.Shared.ElectronBridge
     open Microsoft.FSharp.Reflection
 

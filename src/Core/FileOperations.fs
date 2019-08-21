@@ -69,6 +69,8 @@ module FileOps =
             else None
 
     module Maps =
+        open Fake.IO.Globbing.Operators
+
         /// Try to find the Map directory
         let defaultDir =
             let mapPath =
@@ -93,3 +95,12 @@ module FileOps =
         let tryFindMaps (dir : string) =
             let di = IO.DirectoryInfo(dir)
             di.Parent.Name = "Mordhau" && di.Exists && di.FullName.ToLower().Contains("steam")
+
+        /// Get all installed map metadata
+        let getInstalled (dir : string) =
+            !!(dir @@ "**/*.info.txt")
+            |> Seq.choose (fun f ->
+                   try
+                       File.readAsString f |> Some
+                   with _ -> None)
+            |> List.ofSeq

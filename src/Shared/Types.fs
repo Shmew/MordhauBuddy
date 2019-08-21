@@ -95,7 +95,9 @@ module ElectronBridge =
         | DirExists of bool
 
     [<RequireQualifiedAccess>]
-    type MapResult = AvailableMaps of string list
+    type MapResult =
+        | AvailableMaps of string list
+        | InstalledMaps of string list
 
     [<RequireQualifiedAccess>]
     type BridgeResult =
@@ -147,7 +149,9 @@ module ElectronBridge =
             | GetConfigs of OptionGroup list
             | MapConfigs of OptionGroup list
 
-        type Maps = GetAvailableMaps
+        type Maps =
+            | GetAvailableMaps
+            | GetInstalledMaps of string
 
         type BridgeOperations =
             | INIOperation of INIFileOperation

@@ -88,3 +88,6 @@ module BridgeOperations =
                        | Ok(infoF) when (infoArr infoF).Length >= 9 -> Some(infoF)
                        | _ -> None)
             | Error(e) -> []
+
+        /// Get all installed maps
+        let getInstalledMaps (dir : string) = FileOps.Maps.getInstalled dir

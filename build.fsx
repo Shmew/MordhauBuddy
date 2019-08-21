@@ -46,7 +46,9 @@ let excludeFormatting = [ (__SOURCE_DIRECTORY__ @@ "src/Electron/Renderer/**") ]
 
 // Web or JS related fs projects
 // Projects that have bindings to other languages where name linting needs to be more relaxed.
-let relaxedNameLinting = [ (__SOURCE_DIRECTORY__ @@ "src/Electron/**/*.fs") ]
+let relaxedNameLinting = 
+    [ (__SOURCE_DIRECTORY__ @@ "src/Electron/**/*.fs")
+      (__SOURCE_DIRECTORY__ @@ "src/Core/Maps.fs") ]
 
 let netCoreVersions = [ "netcoreapp3.0" ]
 let netFrameworkVersions = [ "net462" ]

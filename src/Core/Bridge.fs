@@ -186,6 +186,12 @@ module Bridge =
                             |> MapResult.AvailableMaps
                             |> BridgeResult.Maps
                             |> cResp
+                        | GetInstalledMaps dir ->
+                            model,
+                            Maps.getInstalledMaps dir
+                            |> MapResult.InstalledMaps
+                            |> BridgeResult.Maps
+                            |> cResp
 
             Resp(remoteCMsg) |> clientDispatch
             model, Cmd.none

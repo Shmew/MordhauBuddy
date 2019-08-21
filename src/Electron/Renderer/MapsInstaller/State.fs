@@ -62,6 +62,8 @@ module State =
                 match mRes with
                 | MapResult.AvailableMaps cList ->
                     { model with Available = (cList |> List.map getComMap) }, Cmd.none
+                | MapResult.InstalledMaps cList ->
+                    { model with Installed = (cList |> List.map getComMap) }, Cmd.none
             | _ -> { model with Waiting = false }, Cmd.none
         | TabSelected i -> model, Cmd.none
         | ImgSkeleton -> model, Cmd.none
@@ -69,7 +71,7 @@ module State =
         | Uninstall s -> model, Cmd.none
         | CancelInstall s -> model, Cmd.none
         | Update s -> model, Cmd.none
-        | GetInstalled -> model, Cmd.none
+        | GetInstalled -> model, Cmd.bridgeSend (sender.GetInstalled(model.MapsDir.Directory))
         | GetAvailable -> model, Cmd.bridgeSend (sender.GetAvailable)
         | Refresh -> model, Cmd.none
         | SnackMsg msg' ->

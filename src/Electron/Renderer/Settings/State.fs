@@ -50,6 +50,7 @@ module State =
 
     let private iniSender = new INIBridgeSender(Caller.Settings)
     let private mapSender = new MapBridgeSender(Caller.Settings)
+    let private mapSenderMap = new MapBridgeSender(Caller.MapInstaller)
 
     let update (msg: Msg) (model: Model) =
         match msg with
@@ -288,16 +289,19 @@ module State =
                                     HelperText = "Unable to automatically detect Mordhau map directory"
                                     Validated = false } }, Cmd.none
                 | MapOperationResult.DirExists b ->
-                    { model with
-                        Waiting = false 
-                        MapsDir =
-                            if b then
+                    if b then
+                        { model with
+                            Waiting = false 
+                            MapsDir =
                                 { model.MapsDir with
                                     Waiting = false
                                     Error = false
                                     HelperText = "Maps directory located"
-                                    Validated = true } 
-                            else
+                                    Validated = true } }, Cmd.bridgeSend (mapSenderMap.GetInstalled(model.MapsDir.Directory))
+                    else
+                        { model with
+                            Waiting = false 
+                            MapsDir =
                                 { model.MapsDir with
                                     Waiting = false
                                     Error = true
