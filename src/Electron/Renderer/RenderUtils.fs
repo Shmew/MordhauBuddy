@@ -23,8 +23,10 @@ module BridgeUtils =
 
     type MapBridgeSender(caller: Caller) =
         let wrapOps mCmd = BridgeOps(MapOperation(mCmd), caller)
+        let wrapMaps mCmd = BridgeOps(Maps(mCmd), caller)
         member this.DefaultDir = MapFileOperation.DefaultDir |> wrapOps
         member this.DirExists s = MapFileOperation.DirExists(s) |> wrapOps
+        member this.GetAvailable = Maps.GetAvailableMaps |> wrapMaps
 
 module RenderUtils =
     open Electron

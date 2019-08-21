@@ -93,16 +93,15 @@ module ElectronBridge =
     type MapVersion =
         { Major : int
           Minor : int
-          Patch : int
-          Prerelease : bool }
+          Patch : int }
 
     [<Measure>]
     type MB
 
     [<RequireQualifiedAccess>]
     type PlayerRange =
-        | Min of int
-        | Max of int
+        { Min : int
+          Max : int }
 
     [<RequireQualifiedAccess>]
     type SuggestedPlayers =
@@ -115,9 +114,9 @@ module ElectronBridge =
           Description : string option
           Author : string option
           Version : MapVersion
-          ReleaseDate : System.DateTime
-          FileSize : float<MB>
-          Players : SuggestedPlayers
+          ReleaseDate : System.DateTime option
+          FileSize : float<MB> option
+          Players : SuggestedPlayers option
           Image : System.Uri option } // Is this supported?
 
     [<RequireQualifiedAccess>]
@@ -126,11 +125,15 @@ module ElectronBridge =
         | DirExists of bool
 
     [<RequireQualifiedAccess>]
+    type MapResult = AvailableMaps of CommunityMap list
+
+    [<RequireQualifiedAccess>]
     type BridgeResult =
         | INIOperation of INIOperationResult
         | MapOperation of MapOperationResult
         | Faces of FaceResult
         | Config of ConfigResult
+        | Maps of MapResult
 
     [<RequireQualifiedAccess>]
     type Caller =
@@ -174,11 +177,14 @@ module ElectronBridge =
             | GetConfigs of OptionGroup list
             | MapConfigs of OptionGroup list
 
+        type Maps = GetAvailableMaps
+
         type BridgeOperations =
             | INIOperation of INIFileOperation
             | MapOperation of MapFileOperation
             | Faces of Faces
             | Configs of Configs
+            | Maps of Maps
             static member Endpoint = "/ws"
 
     type BridgeMsg =

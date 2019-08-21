@@ -1,17 +1,21 @@
 namespace MordhauBuddy.Core
 
-open INIReader
-open INIReader.INIExtensions.Options
-open INIConfiguration
 open MordhauBuddy.Shared.ElectronBridge
 
 /// Mapping of internal functions to client requests
 module BridgeOperations =
-    open Frankenstein
-    open MordhauConfig
-
+    /// INI related bridge commands
     [<RequireQualifiedAccess>]
     module INI =
+        open INIReader
+        open INIReader.INIExtensions.Options
+        open INIConfiguration
+        open Frankenstein
+        open MordhauConfig
+
+        /// Try to locate the default Mordhau configuration directory
+        let defDir() = FileOps.INI.defaultDir
+
         /// Replace the oVal with iVal based on selectors
         let replace (oVal : INIValue) (iVal : INIValue) (selectors : string list) = oVal.Map(selectors, iVal)
 
@@ -39,9 +43,6 @@ module BridgeOperations =
             | Some(b) when b -> b
             | _ -> false
 
-        /// Try to locate the default Mordhau configuration directory
-        let defDir() = FileOps.INI.defaultDir
-
         /// Ranomize the profiles if they are within the given `INIValue`
         let random (profiles : string list) (iVal : INIValue) = tryApplyChanges profiles iVal FaceActions.Random
 
@@ -64,10 +65,25 @@ module BridgeOperations =
         let mapConfigs (engine : INIValue) (gameUser : INIValue) (options : OptionGroup list) =
             tryMapSettings engine gameUser options
 
+    /// Map related bridge commands
     [<RequireQualifiedAccess>]
     module Maps =
-        /// Determine if input is valid maps directory
-        let dirExists (dir : string) = FileOps.Maps.tryFindMaps dir
+        open Maps
+        open Maps.GHApi
 
         /// Try to locate the default Mordhau maps directory
         let defDir() = FileOps.Maps.defaultDir
+
+        /// Determine if input is valid maps directory
+        let dirExists (dir : string) = FileOps.Maps.tryFindMaps dir
+
+        /// Get the list of valid community maps based on info files
+        let getAvailableMaps() =
+            match getInfoFiles() with
+            | Ok(resList) ->
+                resList
+                |> List.choose ((function
+                                | Ok(infoF) -> Some(infoF)
+                                | _ -> None)
+                                >> Option.bind (getComMap))
+            | Error(e) -> []

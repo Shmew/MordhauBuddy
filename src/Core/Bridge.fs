@@ -177,6 +177,15 @@ module Bridge =
                             cr
                             |> BridgeResult.Config
                             |> cResp
+                    | Maps mCmd ->
+                        let cResp br = createClientResp caller None br
+                        match mCmd with
+                        | GetAvailableMaps ->
+                            model,
+                            Maps.getAvailableMaps()
+                            |> MapResult.AvailableMaps
+                            |> BridgeResult.Maps
+                            |> cResp
 
             Resp(remoteCMsg) |> clientDispatch
             model, Cmd.none

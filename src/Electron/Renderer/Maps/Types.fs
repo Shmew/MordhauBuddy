@@ -47,13 +47,13 @@ module Types =
         | ClientMsg of BridgeMsg
         | TabSelected of Tab
         | ImgSkeleton
-        | InstallMap of string
-        | UninstallMap of string
-        | CancelMapInstall of string
-        | UpdateMap of string
-        | GetInstalledMaps
-        | GetAvailableMaps
-        | RefreshMaps
+        | Install of string
+        | Uninstall of string
+        | CancelInstall of string
+        | Update of string
+        | GetInstalled
+        | GetAvailable
+        | Refresh
         | SnackMsg of Snackbar.Types.Msg<Msg>
         | SnackDismissMsg
 

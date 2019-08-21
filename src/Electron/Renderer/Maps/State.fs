@@ -46,7 +46,7 @@ module State =
                                     Waiting = false
                                     Error = false
                                     HelperText = "Maps directory located"
-                                    Validated = true } }, Cmd.ofMsg GetAvailableMaps
+                                    Validated = true } }, Cmd.ofMsg GetAvailable
                     else
                         { model with
                             Waiting = false 
@@ -60,18 +60,17 @@ module State =
             | _ -> { model with Waiting = false }, Cmd.none
         | TabSelected i -> model, Cmd.none
         | ImgSkeleton -> model, Cmd.none
-        | InstallMap s -> model, Cmd.none
-        | UninstallMap s -> model, Cmd.none
-        | CancelMapInstall s -> model, Cmd.none
-        | UpdateMap s -> model, Cmd.none
-        | GetInstalledMaps -> model, Cmd.none
-        | GetAvailableMaps -> model, Cmd.none
-        | RefreshMaps -> model, Cmd.none
+        | Install s -> model, Cmd.none
+        | Uninstall s -> model, Cmd.none
+        | CancelInstall s -> model, Cmd.none
+        | Update s -> model, Cmd.none
+        | GetInstalled -> model, Cmd.none
+        | GetAvailable -> model, Cmd.bridgeSend (sender)
+        | Refresh -> model, Cmd.none
         | SnackMsg msg' ->
             let m, cmd, actionCmd = Snackbar.State.update msg' model.Snack
             { model with Snack = m },
-            Cmd.batch [ Cmd.map SnackMsg cmd
-                        actionCmd ]
+            Cmd.batch [ Cmd.map SnackMsg cmd; actionCmd ]
         | SnackDismissMsg ->
             let cmd =
                 Snackbar.State.create ""

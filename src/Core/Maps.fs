@@ -2,16 +2,24 @@ namespace MordhauBuddy.Core
 
 open System
 open System.Net
-open System.Net.Security
-open System.Text.RegularExpressions
 open FSharp.Data
 open FSharp.Json
+open MordhauBuddy.Shared.ElectronBridge
 
 /// Module for map related tasks
 module Maps =
-    [<AutoOpen>]
-    module GHResponses =
-        type Contents =
+    /// Record for download requests
+    type DownloadFile =
+        { Url : string
+          FileName : string
+          Directory : string
+          UpdateFun : unit -> unit
+          CompleteFun : unit -> unit
+          ErrorFun : unit -> unit }
+
+    module GHTypes =
+        /// Record to represent GH content api response
+        type GHContents =
             { Name : string
               Path : string
               Sha : string
@@ -27,7 +35,6 @@ module Maps =
               [<JsonField("_links")>]
               Links : obj }
 
-    [<AutoOpen>]
     module Helpers =
         /// Single case DU for creating GET queries
         type ParamValues =
@@ -131,9 +138,11 @@ module Maps =
                 | e when e < 300 && e >= 200 -> resp.ResponseStream |> Ok
                 | _ -> "Error downloading file." |> Error
 
+        /// Helper module for streams
         module Streaming =
             open System.IO
 
+            /// Download a file with continuations and progress updates
             let downloadFile (dest : DirectoryInfo) (fileName : string) (updateStatus : (string -> Async<unit>) option)
                 (stream : Async<Stream>) =
                 let errorMsg (e : exn) = sprintf "Error fetching file: %s%c%s" fileName '\n' (e.Message)
@@ -161,69 +170,156 @@ module Maps =
                     failwith err
                 Async.StartWithContinuations(download, onCompletion, onError, (fun _ -> ()))
 
+        /// Json helpers
         module Json =
+            /// Set FSharp.Json configuration
             let config =
                 JsonConfig.create
                     (jsonFieldNaming = Json.lowerCamelCase, allowUntyped = true, serializeNone = SerializeNone.Omit)
 
-    /// Github Rest Api wrapper
-    type GHApi() =
+    /// Functions for interacting with the Github Api
+    module GHApi =
+        open Helpers
+        open GHTypes
+
+        /// Github base uri
         let baseUri = @"https://api.github.com"
 
-        /// Constructs request headers
-        member internal this.ReqHeaders(?content : string) =
+        /// Construct request headers
+        let reqHeaders =
             [ HttpRequestHeaders.ContentLanguage HttpContentTypes.Json
               HttpRequestHeaders.Accept @"*/*"
               HttpRequestHeaders.AcceptEncoding "UTF8"
-              HttpRequestHeaders.ContentType(defaultArg content HttpContentTypes.Json)
+              HttpRequestHeaders.ContentType HttpContentTypes.Json
               HttpRequestHeaders.ContentEncoding "UTF8"
               HttpRequestHeaders.UserAgent "MordhauBuddy" ]
 
         /// Wrapper function to make http requests
-        member internal this.MakeRequest(req : unit -> HttpResponse) =
-            //ServicePointManager.ServerCertificateValidationCallback <- new RemoteCertificateValidationCallback(fun _ _ _ _ ->
-            //true)
+        let internal makeRequest (req : unit -> HttpResponse) =
             try
                 req()
             with e -> sprintf "Error making HTTP request via %s%c%s" baseUri '\n' e.Message |> failwith
             |> Http.httpOk
 
-        member internal this.MakeRequestStream(req : unit -> HttpResponseWithStream) =
-            //ServicePointManager.ServerCertificateValidationCallback <- new RemoteCertificateValidationCallback(fun _ _ _ _ ->
-            //true)
+        let internal makeRequestStream (req : unit -> HttpResponseWithStream) =
             try
                 req()
             with e -> sprintf "Error making HTTP request via %s%c%s" baseUri '\n' e.Message |> failwith
             |> Http.httpStreamOk
 
-        member internal this.Get(path : string, ?parameters : string, ?errors : bool, ?timeout : int) =
+        let internal get (path : string, parameters : string option) =
             let req() =
                 Http.Request
-                    (baseUri + path + defaultArg parameters "", httpMethod = "GET", headers = this.ReqHeaders(),
-                     ?silentHttpErrors = errors, timeout = defaultArg timeout 100000)
-            this.MakeRequest req
+                    (baseUri + path + defaultArg parameters "", httpMethod = "GET", headers = reqHeaders,
+                     timeout = 100000)
+            makeRequest req
 
-        member internal this.GetStream(downloadUrl : string, ?errors : bool, ?timeout : int) =
+        let internal getDirect (fullPath : string, parameters : string option) =
+            let req() =
+                Http.Request
+                    (fullPath + defaultArg parameters "", httpMethod = "GET", headers = reqHeaders, timeout = 100000)
+            makeRequest req
+
+        let internal getStream (downloadUrl : string, parameters : string option) =
             let req() =
                 Http.RequestStream
-                    (downloadUrl, httpMethod = "GET", headers = this.ReqHeaders(), ?silentHttpErrors = errors,
-                     timeout = defaultArg timeout 100000)
-            this.MakeRequestStream req
+                    (downloadUrl + defaultArg parameters "", httpMethod = "GET", headers = reqHeaders, timeout = 100000)
+            makeRequestStream req
 
         /// Get info file list
-        member this.GetInfoFiles() =
-            this.Get("/repos/MordhauMappingModding/InfoFiles/contents")
-            |> ResultParser.toString
-            |> Json.deserializeEx<Contents list> Json.config
+        let getInfoFiles() =
+            let downloadInfoFiles (gList : GHContents list) = gList |> List.map (fun c -> get (c.DownloadUrl, None))
+            get ("/repos/MordhauMappingModding/InfoFiles/contents", None)
+            |> Result.map (Json.deserializeEx<GHContents list> Json.config)
+            |> Result.map downloadInfoFiles
 
         /// Get map zip list
-        member this.GetMapFiles() =
-            this.Get("/repos/MordhauMappingModding/MapsFiles/contents")
+        let getMapFiles() =
+            get ("/repos/MordhauMappingModding/MapsFiles/contents", None)
             |> ResultParser.toString
-            |> Json.deserializeEx<Contents list> Json.config
+            |> Json.deserializeEx<GHContents list> Json.config
 
-        member this.DownloadFile(downloadUrl : string, fileName : string, dir : string, updater : unit -> unit, onComplete : unit -> unit, onError : unit -> unit) =
-            let dir = IO.DirectoryInfo(dir)
+        /// Download a file to the given directory with continuations -- finish this
+        let downloadFile (download : DownloadFile) =
+            let dir = IO.DirectoryInfo(download.Directory)
             let updateStatus = (fun (s : string) -> async { return () }) |> Some
-            async { return this.GetStream(downloadUrl) |> ResultParser.toGeneric }
-            |> Streaming.downloadFile dir fileName updateStatus
+            async { return getStream (download.Url, None) |> ResultParser.toGeneric }
+            |> Streaming.downloadFile dir download.FileName updateStatus
+
+    let getVer (vStr : string) =
+        let tryInt s =
+            try
+                s |> int
+            with _ -> 0
+        match vStr.Split(Environment.NewLine) with
+        | sList when sList.Length = 3 ->
+            { MapVersion.Major = sList.[0] |> tryInt
+              MapVersion.Minor = sList.[1] |> tryInt
+              MapVersion.Patch = sList.[2] |> tryInt }
+        | sList when sList.Length = 2 ->
+            { MapVersion.Major = sList.[0] |> tryInt
+              MapVersion.Minor = sList.[1] |> tryInt
+              MapVersion.Patch = 0 }
+        | [| s |] ->
+            { MapVersion.Major = s |> tryInt
+              MapVersion.Minor = 0
+              MapVersion.Patch = 0 }
+        | _ ->
+            { MapVersion.Major = 0
+              MapVersion.Minor = 0
+              MapVersion.Patch = 0 }
+
+    /// Because Json is too complex
+    let getComMap (sInfoFile : string) =
+        let infoArr : string [] = sInfoFile.Split(Environment.NewLine)
+
+        let mapEmpty s =
+            if s = "" then None
+            else Some(s)
+        if infoArr.Length < 9 then None
+        else
+            { Name =
+                  if infoArr.[0] = "" then None
+                  else Some(infoArr.[0])
+              Folder = infoArr.[1]
+              Description = infoArr.[2] |> mapEmpty
+              Author = infoArr.[3] |> mapEmpty
+              Version = infoArr.[4] |> getVer
+              ReleaseDate =
+                  match DateTime.TryParse(infoArr.[5]) with
+                  | (true, dt) -> dt |> Some
+                  | _ -> None
+              FileSize =
+                  Text.RegularExpressions.Regex(@"^\d+").Match(infoArr.[6])
+                  |> function
+                  | s when s.Success ->
+                      match Double.TryParse s.Value with
+                      | (true, d) -> d * 1.0<MB> |> Some
+                      | _ -> None
+                  | _ -> None
+              Players =
+                  match infoArr.[7] with
+                  | p when p.Split('-').Length = 1 ->
+                      match Int32.TryParse p with
+                      | (true, i) ->
+                          i
+                          |> SuggestedPlayers.Static
+                          |> Some
+                      | _ -> None
+                  | pRange when pRange.Split('-').Length = 2 ->
+                      let range = pRange.Split('-')
+                      let min = range.[0]
+                      let max = range.[1]
+                      match Int32.TryParse min, Int32.TryParse max with
+                      | (true, mi), (true, ma) ->
+                          { PlayerRange.Min = mi
+                            PlayerRange.Max = ma }
+                          |> SuggestedPlayers.Range
+                          |> Some
+                      | _ -> None
+                  | _ -> None
+              Image =
+                  match Uri.TryCreate(infoArr.[8], UriKind.Absolute) with
+                  | (true, uri) -> uri |> Some
+                  | _ -> None }
+            |> Some
