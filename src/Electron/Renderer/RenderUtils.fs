@@ -3,7 +3,7 @@
 module BridgeUtils =
     open MordhauBuddy.Shared.ElectronBridge
 
-    type INIBridgeSender(caller: Caller) =
+    type INIBridgeSender(caller : Caller) =
         let wrapOps iCmd = BridgeOps(INIOperation(iCmd), caller)
         let wrapFace fCmd = BridgeOps(Faces(fCmd), caller)
         let wrapConf cCmd = BridgeOps(Configs(cCmd), caller)
@@ -21,7 +21,7 @@ module BridgeUtils =
         member this.GetConfigs oList = GetConfigs(oList) |> wrapConf
         member this.MapConfigs oList = MapConfigs(oList) |> wrapConf
 
-    type MapBridgeSender(caller: Caller) =
+    type MapBridgeSender(caller : Caller) =
         let wrapOps mCmd = BridgeOps(MapOperation(mCmd), caller)
         let wrapMaps mCmd = BridgeOps(Maps(mCmd), caller)
         member this.DefaultDir = MapFileOperation.DefaultDir |> wrapOps
@@ -41,10 +41,10 @@ module RenderUtils =
     let getRemoteWin() = renderer.remote.getCurrentWindow()
 
     [<Emit("$0.persist()")>]
-    let eventPersist (e: Event) : unit = jsNative
+    let eventPersist (e : Event) : unit = jsNative
     
     [<Emit("try{document.elementFromPoint($0, $1)}catch(e){}")>]
-    let getElementAtPos (x: int) (y: int) : HTMLElement option = jsNative
+    let getElementAtPos (x : int) (y : int) : HTMLElement option = jsNative
 
     let getMousePositions () = 
         let absMouse = renderer.remote.screen.getCursorScreenPoint()
@@ -58,6 +58,50 @@ module RenderUtils =
 #else
         path.resolve (__dirname, "..", "..", "static", s)
 #endif
+
+    module MapTypes =
+        open System
+
+        [<RequireQualifiedAccess>]
+        type MapVersion =
+            { Major : int
+              Minor : int
+              Patch : int }
+            static member Create(major, minor, patch) =
+                { MapVersion.Major = major
+                  MapVersion.Minor = minor
+                  MapVersion.Patch = patch }
+
+        [<Measure>] type KB
+        [<Measure>] type MB
+        [<Measure>] type GB
+        
+        let kbPerMb : float<KB/MB> = 1000.<KB/MB>
+        let gbPerMb : float<GB/MB> = 0.001<GB/MB>
+
+        let convertKBtoMB (x : float<KB>) = x / kbPerMb
+        let convertGBtoMB (x : float<GB>) = x / gbPerMb
+
+        [<RequireQualifiedAccess>]
+        type PlayerRange =
+            { Min : int
+              Max : int }
+
+        [<RequireQualifiedAccess>]
+        type SuggestedPlayers =
+            | Range of PlayerRange
+            | Static of int
+
+        type CommunityMap =
+            { Name : string option
+              Folder : string
+              Description : string option
+              Author : string option
+              Version : MapVersion
+              ReleaseDate : DateTime option
+              FileSize : float<MB> option
+              Players : SuggestedPlayers option
+              Image : string option }
 
     module String =
         open System.Text.RegularExpressions
@@ -92,14 +136,100 @@ module RenderUtils =
 
         let errorStrings (res: Result<string,string list>) =
             match res with
-            | Ok (s: string) -> s
-            | Error (err: string list) -> 
+            | Ok (s : string) -> s
+            | Error (err : string list) -> 
                 err |> List.reduce (fun acc elem -> acc + " " + elem)
 
     module Validation =
         open System.Text.RegularExpressions
 
-        let validateDir (s: string) = Fable.Validation.Core.single <| fun t ->
+        module RegPatterns =
+            let translate = @"^\(Translate=\((\d*,?){49}\),Rotate=\((\d*,?){49}\),Scale=\((\d*,?){49}\)\)"
+            let fileSize = @"^(\d+[, .]\d+|\d+)\s*(kb|mb|gb)$"
+            let semVersion = @"^(\d+)[. ,](\d+)[. ,](\d)$"
+            let players = @"^(\d+).*?(\d+)$"
+            //let uri = 
+            //    @"([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\"
+            //    + @")\*\+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!\$&'\(\)\*\+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0"
+            //    + @"-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|("
+            //    + @"([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=])*)(:\d*)?)(\/(([a-z]|\d"
+            //    + @"|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|"
+            //    + @"[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF"
+            //    + @"\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xF"
+            //    + @"DCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFF"
+            //    + @"EF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-"
+            //    + @"f]{2})|[!\$&'\(\)\*\+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!"
+            //    + @"\$&'\(\)\*\+,;=]|:|@)|[\xE000-\xF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\"
+            //    + @"da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?"
+
+        [<AutoOpen>]
+        module internal Helpers =
+            open System
+            open MapTypes
+
+            let removeAllWs (s : string) =
+                s.Trim().ToCharArray() 
+                |> Array.choose (fun c -> 
+                    if c = ' ' then None else Some(string c)) 
+                |> Array.reduce (+)
+
+            let applyRPattern (pattern : string) (input : string) f = 
+                Regex(pattern, RegexOptions.IgnoreCase).Match(input)
+                |> fun m -> seq { for items in m.Groups do yield items }
+                |> List.ofSeq 
+                |> List.tail 
+                |> List.map (fun g -> g.Value |> f)
+
+            let getFileSize (s : string) =
+                let matchSize =
+                    applyRPattern RegPatterns.fileSize (removeAllWs s) id
+
+                let convUnit (s : string) (f : float) =
+                    match s.ToLower() with
+                    | "kb" -> 1.0<KB> * f |> convertKBtoMB |> Some
+                    | "mb" -> 1.0<MB> * f |> Some
+                    | "gb" -> 1.0<GB> * f |> convertGBtoMB |> Some
+                    | _ -> None
+
+                match matchSize with
+                | [num; sizeUnit] -> 
+                    match Double.TryParse num with
+                    | (true, f) -> Some(f)
+                    | _ -> None
+                    |> Option.bind (convUnit sizeUnit)
+                | _ -> None
+
+            let private getInt (s : string) =
+                match Int32.TryParse s with
+                | (true, i) -> i
+                | _ -> 0
+
+            let getVer (vStr : string) =
+                applyRPattern RegPatterns.semVersion vStr getInt
+                |> fun iList ->
+                match iList.Length with
+                | i when i >= 3 -> iList |> List.take 3
+                | i -> List.init (3 - i) (fun _ -> 0) |> List.append iList
+                |> fun iL -> MapVersion.Create(iL.[0], iL.[1], iL.[2])
+
+            let getDate (s : string) =
+                match DateTime.TryParse(s) with
+                | (true, dt) -> dt |> Some
+                | _ -> None
+
+            let getPlayers (s : string) =
+                match Int32.TryParse s with
+                | (true, i) ->
+                    SuggestedPlayers.Static(i)
+                    |> Some
+                | _ ->
+                    applyRPattern RegPatterns.players s getInt
+                    |> fun pList ->
+                    match pList with
+                    | [min;max] when pList.Length = 2 -> { PlayerRange.Min = min; PlayerRange.Max = max } |> SuggestedPlayers.Range |> Some
+                    | _ -> None
+
+        let validateDir (s : string) = Fable.Validation.Core.single <| fun t ->
             t.TestOne s
                 |> t.IsValid (fun _ -> 
                     try 
@@ -111,11 +241,54 @@ module RenderUtils =
                 |> t.NotBlank "Directory cannot be blank"
                 |> t.End
 
-        let validateImport (s: string) = Fable.Validation.Core.single <| fun t ->
+        let validateImport (s : string) = Fable.Validation.Core.single <| fun t ->
             t.TestOne s
                 |> t.Trim
                 |> t.NotBlank "Must provide import string"
-                |> t.Match (Regex @"^\(Translate=\((\d*,?){49}\),Rotate=\((\d*,?){49}\),Scale=\((\d*,?){49}\)\)") "Invalid import string"
+                |> t.Match (Regex RegPatterns.translate) "Invalid import string"
+                |> t.End
+
+        let validateUri (s : string) = Fable.Validation.Core.single <| fun t ->
+            t.TestOne s
+                |> t.Trim
+                |> t.NotBlank ""
+                |> t.IsUrl s
+                |> t.End
+
+        let validateVer (s : string) = Fable.Validation.Core.single <| fun t ->
+            t.TestOne s
+                |> t.Trim
+                |> t.Map getVer
+                |> t.End
+
+        let validateFileSize (s : string) = Fable.Validation.Core.single <| fun t ->
+            t.TestOne s
+                |> t.Trim
+                |> t.NotBlank ""
+                |> t.Map getFileSize
+                |> t.IsSome ""
+                |> t.End
+
+        let validateDate (s : string) = Fable.Validation.Core.single <| fun t ->
+            t.TestOne s
+                |> t.Trim
+                |> t.NotBlank ""
+                |> t.Map getDate
+                |> t.IsSome ""
+                |> t.End
+
+        let validatePlayers (s : string) = Fable.Validation.Core.single <| fun t ->
+            t.TestOne s
+                |> t.Trim
+                |> t.NotBlank ""
+                |> t.Map getPlayers
+                |> t.IsSome ""
+                |> t.End
+
+        let validateGeneric (s : string) = Fable.Validation.Core.single <| fun t ->
+            t.TestOne s
+                |> t.Trim
+                |> t.NotBlank ""
                 |> t.End
 
     module Directory =
@@ -168,6 +341,40 @@ module RenderUtils =
             30720,31704,30725,1,988,29,960,0,65535,0,65535,65535,16326,0,65535,65535,15383,30,960),Scale=(0,30,\
             4139,30749,65535,30749,0,65535,65535,0,0,0,0,65535,31709,0,0,190,0,0,0,589,0,0,0,30749,31166,989,\
             65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
+
+    module WebParsing =
+        open System
+        open Validation
+        open MapTypes
+
+        /// Because Json is too complex
+        let getComMap (sInfoFile : string) =
+            let infoArr = sInfoFile.Split([| "\r\n"; "\r"; "\n" |], StringSplitOptions.None)
+
+            let mapResult res =
+                match res with
+                | Ok(s) -> Some(s)
+                | _ -> None
+
+            let validateInfo (i : int) (vFun : string -> Result<'t,string list>) =
+                infoArr.[i]
+                |> vFun
+                |> mapResult
+
+            let vGeneric (i : int) = validateInfo i validateGeneric
+
+            { Name = vGeneric 0
+              Folder = infoArr.[1].Trim()
+              Description = vGeneric 2
+              Author = vGeneric 3
+              Version = 
+                validateInfo 4 validateVer 
+                |> Option.orElse (MapTypes.MapVersion.Create(0,0,0) |> Some) 
+                |> Option.get
+              ReleaseDate = validateInfo 5 validateDate
+              FileSize = validateInfo 6 validateFileSize
+              Players = validateInfo 7 validatePlayers
+              Image = validateInfo 8 validateUri }
 
     module rec EngineMods =
         open MordhauBuddy.Shared.ElectronBridge

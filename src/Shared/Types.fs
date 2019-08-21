@@ -90,42 +90,12 @@ module ElectronBridge =
         | CommitChanges of bool
 
     [<RequireQualifiedAccess>]
-    type MapVersion =
-        { Major : int
-          Minor : int
-          Patch : int }
-
-    [<Measure>]
-    type MB
-
-    [<RequireQualifiedAccess>]
-    type PlayerRange =
-        { Min : int
-          Max : int }
-
-    [<RequireQualifiedAccess>]
-    type SuggestedPlayers =
-        | Range of PlayerRange
-        | Static of int
-
-    type CommunityMap =
-        { Name : string option
-          Folder : string
-          Description : string option
-          Author : string option
-          Version : MapVersion
-          ReleaseDate : System.DateTime option
-          FileSize : float<MB> option
-          Players : SuggestedPlayers option
-          Image : System.Uri option } // Is this supported?
-
-    [<RequireQualifiedAccess>]
     type MapOperationResult =
         | DefaultDir of string option
         | DirExists of bool
 
     [<RequireQualifiedAccess>]
-    type MapResult = AvailableMaps of CommunityMap list
+    type MapResult = AvailableMaps of string list
 
     [<RequireQualifiedAccess>]
     type BridgeResult =

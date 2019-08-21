@@ -5,6 +5,7 @@ module Types =
     open MordhauBuddy.App
     open RenderUtils
     open RenderUtils.Directory
+    open RenderUtils.WebParsing
     open MordhauBuddy.Shared.ElectronBridge
     open Microsoft.FSharp.Reflection
 

@@ -5,6 +5,7 @@ module State =
     open MordhauBuddy.App
     open RenderUtils
     open RenderUtils.Validation
+    open RenderUtils.WebParsing
     open Elmish
     open Elmish.Bridge
     open MordhauBuddy.Shared.ElectronBridge
@@ -60,7 +61,7 @@ module State =
             | BridgeResult.Maps mRes ->
                 match mRes with
                 | MapResult.AvailableMaps cList ->
-                    { model with Available = cList }, Cmd.none
+                    { model with Available = (cList |> List.map getComMap) }, Cmd.none
             | _ -> { model with Waiting = false }, Cmd.none
         | TabSelected i -> model, Cmd.none
         | ImgSkeleton -> model, Cmd.none

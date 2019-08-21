@@ -70,6 +70,7 @@ module BridgeOperations =
     module Maps =
         open Maps
         open Maps.GHApi
+        open System
 
         /// Try to locate the default Mordhau maps directory
         let defDir() = FileOps.Maps.defaultDir
@@ -79,11 +80,11 @@ module BridgeOperations =
 
         /// Get the list of valid community maps based on info files
         let getAvailableMaps() =
+            let infoArr (s : string) = s.Split([| "\r\n"; "\r"; "\n" |], StringSplitOptions.None)
             match getInfoFiles() with
             | Ok(resList) ->
                 resList
-                |> List.choose ((function
-                                | Ok(infoF) -> Some(infoF)
-                                | _ -> None)
-                                >> Option.bind (getComMap))
+                |> List.choose (function
+                       | Ok(infoF) when (infoArr infoF).Length >= 9 -> Some(infoF)
+                       | _ -> None)
             | Error(e) -> []
