@@ -121,6 +121,10 @@ module RenderUtils =
                         sprintf "%i" i |> Some
                 | None -> None
 
+            member this.GetDate() =
+                this.ReleaseDate 
+                |> Option.map (fun d -> d.ToString("dd-MM-yyyy"))
+
             member this.GetMetaData() =
                 let desc = this.Description |> Option.map (fun s -> sprintf "%s%c" s '\n')
                 let author =

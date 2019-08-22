@@ -12,6 +12,8 @@ module View =
     open MordhauBuddy.App
     open RenderUtils
     open RenderUtils.Validation
+    open RenderUtils.MaterialUI
+    open RenderUtils.MaterialUI.Core
     open Elmish.React
     open Electron
     open Types
@@ -22,13 +24,13 @@ module View =
         ])
     ]
 
-    let renderMaps (classes: IClasses) model dispatch (cList : MapTypes.CommunityMap list) =
+    let private renderAvailableMaps (classes: IClasses) model dispatch =
         let getName (map : MapTypes.CommunityMap) =
             match map.Name with
             | Some(name) -> name
             | None -> map.Folder
 
-        cList
+        model.Available
         |> List.map (fun map ->
             grid [
                 GridProp.Item true
@@ -75,6 +77,38 @@ module View =
                 ]
             ])
 
+    let private renderInstalledMaps (classes: IClasses) model dispatch =
+        let getName (map : MapTypes.CommunityMap) =
+            match map.Name with
+            | Some(name) -> name
+            | None -> map.Folder
+
+        let defStr (sOpt: string option) = str (defaultArg sOpt "")
+
+        model.Installed
+        |> List.map (fun map -> 
+            tableRow [] [
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Left
+                ] [ str (map |> getName) ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                ] [ map.Author |> defStr ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                ] [ map.GetDate() |> defStr ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                ] [ str <| map.Version.GetString() ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                ] [ map.FileSize |> Option.map string |> defStr ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                ] [ map.GetPlayers() |> defStr ]
+            ]
+        )
+
     let private tabContent (classes: IClasses) model dispatch =
         grid [
             GridProp.Container true
@@ -88,9 +122,45 @@ module View =
             ] 
         ] <|
             match model.TabSelected with
-            | Available -> renderMaps classes model dispatch (model.Available)
-            | Installed -> renderMaps classes model dispatch (model.Installed)
-            | Installing -> renderMaps classes model dispatch (model.Installing)
+            | Available -> renderAvailableMaps classes model dispatch
+            | Installed -> 
+                [
+                    grid [
+                        GridProp.Item true
+                    ] [
+                        card [
+                            MaterialProp.Elevation 2
+                            CardProp.Raised true 
+                        ] [
+                            table [] [
+                                tableHead [] [
+                                    tableRow [] [
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Left
+                                        ] [ str "Name" ]
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Right
+                                        ] [ str "Author" ]
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Right
+                                        ] [ str "Release Date" ]
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Right
+                                        ] [ str "Version" ]
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Right
+                                        ] [ str "File Size" ]
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Right
+                                        ] [ str "Players" ]
+                                    ]
+                                ]
+                                tableBody [] <| renderInstalledMaps classes model dispatch
+                            ]
+                        ]
+                    ]
+                ]
+            | Installing -> []
 
     let private view' (classes: IClasses) model dispatch =
         div [
@@ -126,6 +196,26 @@ module View =
                     ] [ 
                         tabContent classes model dispatch
                     ]
+                ]
+            yield 
+                div [ 
+                    Style [
+                        CSSProp.MarginTop "auto"
+                        CSSProp.MarginLeft "auto"
+                    ] 
+                ] [
+                    button [
+                        HTMLAttr.Disabled <| model.Available.IsEmpty
+                        ButtonProp.Variant ButtonVariant.Contained
+                        MaterialProp.Color ComponentColor.Primary
+                        DOMAttr.OnClick <| fun _ -> 
+                            dispatch InstallAll
+                        Style [ 
+                            CSSProp.MaxHeight "2.6em"
+                            CSSProp.MarginTop "auto"
+                            CSSProp.MarginLeft "auto"
+                        ]
+                    ] [ str "Submit" ]
                 ]
         ]
 

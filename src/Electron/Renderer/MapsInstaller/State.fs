@@ -75,9 +75,11 @@ module State =
                     { model with Installed = (cList |> List.map getComMap) }
                     |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
             | _ -> { model with Waiting = false }, Cmd.none
-        | TabSelected i -> model, Cmd.none
+        | TabSelected tab -> 
+            { model with TabSelected = tab }, Cmd.none
         | ImgSkeleton -> model, Cmd.none
         | Install s -> model, Cmd.none
+        | InstallAll -> model, Cmd.none
         | Uninstall s -> model, Cmd.none
         | CancelInstall s -> model, Cmd.none
         | Update s -> model, Cmd.none

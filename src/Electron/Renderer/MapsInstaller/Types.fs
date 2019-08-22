@@ -50,6 +50,7 @@ module Types =
         | TabSelected of Tab
         | ImgSkeleton
         | Install of string
+        | InstallAll
         | Uninstall of string
         | CancelInstall of string
         | Update of string
