@@ -292,6 +292,12 @@ module View =
                                 CSSProp.MarginBottom "0em"
                             ]
                         ]
+                    yield
+                        OverridesProp.MuiFab [
+                            Styles.Secondary [
+                                CSSProp.Color "#000"
+                            ]
+                        ]
                 ]
             ]
             |> ProviderTheme.Theme

@@ -32,6 +32,14 @@ module State =
 
     let private sender = new MapBridgeSender(Caller.MapInstaller)
 
+    let private calcAvailableMaps (model : Model) =
+        model.Available 
+        |> List.filter (fun map -> 
+            (List.append model.Installed model.Installing) 
+            |> List.exists (fun (m : MapTypes.CommunityMap) -> 
+                m.Name = map.Name && m.Version = map.Version)
+            |> not)
+
     let update (msg: Msg) (model: Model) =
         match msg with
         | ClientMsg bMsg ->
@@ -61,9 +69,11 @@ module State =
             | BridgeResult.Maps mRes ->
                 match mRes with
                 | MapResult.AvailableMaps cList ->
-                    { model with Available = (cList |> List.map getComMap) }, Cmd.none
+                    { model with Available = cList |> List.map getComMap }
+                    |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
                 | MapResult.InstalledMaps cList ->
-                    { model with Installed = (cList |> List.map getComMap) }, Cmd.none
+                    { model with Installed = (cList |> List.map getComMap) }
+                    |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
             | _ -> { model with Waiting = false }, Cmd.none
         | TabSelected i -> model, Cmd.none
         | ImgSkeleton -> model, Cmd.none

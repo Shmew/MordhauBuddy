@@ -72,6 +72,8 @@ module RenderUtils =
                 { MapVersion.Major = major
                   MapVersion.Minor = minor
                   MapVersion.Patch = patch }
+            member this.GetString() =
+                sprintf "%i.%i.%i" this.Major this.Minor this.Patch
 
         [<Measure>] type KB
         [<Measure>] type MB
@@ -103,6 +105,40 @@ module RenderUtils =
               FileSize : float<MB> option
               Players : SuggestedPlayers option
               Image : string option }
+            member this.GetName() =
+                match this.Name with
+                | Some(name) -> name
+                | None -> this.Folder
+
+            member this.GetPlayers() =
+                match this.Players with
+                | Some(p) ->
+                    match p with
+                    | SuggestedPlayers.Range range -> 
+                        sprintf "%i - %i" range.Min range.Max 
+                        |> Some
+                    | SuggestedPlayers.Static i -> 
+                        sprintf "%i" i |> Some
+                | None -> None
+
+            member this.GetMetaData() =
+                let desc = this.Description |> Option.map (fun s -> sprintf "%s%c" s '\n')
+                let author =
+                    this.Author |> Option.map (fun s -> sprintf "Author: %s" s)
+                let date =
+                    this.ReleaseDate 
+                    |> Option.bind (fun d -> 
+                        if d.ToString() = "Invalid Date" then None 
+                        else (sprintf "Release Date: %s" <| d.ToString("dd-MM-yyyy")) |> Some)
+                let fileSize =
+                    this.FileSize 
+                    |> Option.map (fun s -> sprintf "File size: %s MB" <| s.ToString())
+                let players = 
+                    this.GetPlayers() 
+                    |> Option.map (fun s -> sprintf "Players: %s" s)
+                    
+                [ desc; author; date; fileSize; players ]
+                |> List.choose id
 
     module String =
         open System.Text.RegularExpressions

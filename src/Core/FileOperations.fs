@@ -99,8 +99,13 @@ module FileOps =
         /// Get all installed map metadata
         let getInstalled (dir : string) =
             !!(dir @@ "**/*.info.txt")
-            |> Seq.choose (fun f ->
-                   try
-                       File.readAsString f |> Some
-                   with _ -> None)
+            |> Seq.map (fun f ->
+                   async {
+                       try
+                           return File.readAsString f |> Some
+                       with _ -> return None
+                   })
+            |> Async.Parallel
+            |> Async.RunSynchronously
             |> List.ofSeq
+            |> List.choose id

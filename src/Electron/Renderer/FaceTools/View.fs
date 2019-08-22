@@ -324,16 +324,21 @@ module View =
                     ]
                 ] [
                     card [ CardProp.Raised true ] [
-                        stepper [
-                            //MaterialProp.Elevation 1
-                            StepperProp.ActiveStep (model.Stepper.GetTag)
-                        ]
+                        stepper [ StepperProp.ActiveStep (model.Stepper.GetTag) ]
                             <| model.Stepper.StepElems model.StepperComplete
                     ]
-                    div [ Style [ CSSProp.Padding (string "3em") ] ] [ 
-                        content classes model dispatch
-                    ]
-                    div [ Style [CSSProp.PaddingLeft "3em"] ] model.Stepper.StepCaption
+                    div [ 
+                        Style [
+                            CSSProp.PaddingLeft "3em"
+                            CSSProp.PaddingTop "2em"
+                        ]
+                    ] model.Stepper.StepCaption
+                    div [ 
+                        Style [ 
+                            CSSProp.Padding "3em"
+                            CSSProp.PaddingTop "2em"
+                        ] 
+                    ] [ content classes model dispatch ]
                     model.Stepper.Buttons dispatch model
                 ]
             ]

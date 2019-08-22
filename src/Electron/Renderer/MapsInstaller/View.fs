@@ -22,36 +22,75 @@ module View =
         ])
     ]
 
-    let private tabContent (classes: IClasses) model dispatch =
-        match model.TabSelected with
-        | Available ->
+    let renderMaps (classes: IClasses) model dispatch (cList : MapTypes.CommunityMap list) =
+        let getName (map : MapTypes.CommunityMap) =
+            match map.Name with
+            | Some(name) -> name
+            | None -> map.Folder
+
+        cList
+        |> List.map (fun map ->
             grid [
-                GridProp.Container true
-                GridProp.Spacing GridSpacing.``0``
-                GridProp.Direction GridDirection.Column
-                GridProp.AlignItems GridAlignItems.Center
-                Style [ 
-                    CSSProp.Padding "1em 5em"
-                    CSSProp.Display DisplayOptions.Flex
-                ] 
+                GridProp.Item true
             ] [
-                //img [
-                //    HTMLAttr.Hidden (model.ImgLoaded |> not)
-                //    DOMAttr.OnLoad(fun _ -> dispatch ImgSkeleton)
-                //    HTMLAttr.Src (stat "frankenstein.png")
-                //    Style [ 
-                //        CSSProp.BorderRadius "4px"
-                //    ]
-                //]
-                //skeleton [ 
-                //    HTMLAttr.Hidden <| model.ImgLoaded
-                //    HTMLAttr.Width "229px"
-                //    HTMLAttr.Height "308px"
-                //    SkeletonProp.DisableAnimate true 
-                //]
-            ]
-        | Installed -> div [] []
-        | Installing -> div [] []
+                card [
+                    MaterialProp.Elevation 2
+                    CardProp.Raised true 
+                    Style [
+                        CSSProp.MarginBottom "2em"
+                        CSSProp.MarginLeft "1em"
+                        CSSProp.MarginRight "1em"
+                        CSSProp.Width "50em"
+                    ]
+                ] [
+                    cardHeader [
+                        CardHeaderProp.Title <| str (map |> getName)
+                        CardHeaderProp.Subheader <| str (map.Version.GetString())
+                        CardHeaderProp.Action <|
+                            fab [
+                                MaterialProp.Color ComponentColor.Secondary
+                                FabProp.Size FabSize.Medium
+                            ] [ addIcon [] ]
+                    ] []
+                    cardMedia [
+                        match map.Image with
+                        | Some(mapImage) ->
+                            yield CardMediaProp.Image mapImage
+                            yield HTMLAttr.Title <| getName map
+                        | _ ->
+                            yield HTMLAttr.Title "No picture provided"
+                        yield 
+                            Style [
+                                CSSProp.Width "50em"
+                                CSSProp.Height "20em"
+                            ]
+                    ]
+                    cardContent [
+                    ] <|
+                        (map.GetMetaData() 
+                        |> List.map (fun s ->
+                            typography [
+                                TypographyProp.Variant TypographyVariant.Body2
+                            ] [ str s ] ))
+                ]
+            ])
+
+    let private tabContent (classes: IClasses) model dispatch =
+        grid [
+            GridProp.Container true
+            GridProp.AlignItems GridAlignItems.Center
+            GridProp.Justify GridJustify.Center
+            GridProp.Direction GridDirection.Row
+            GridProp.Wrap GridWrap.Wrap
+            Style [ 
+                CSSProp.Display DisplayOptions.Flex
+                CSSProp.Width "100%"
+            ] 
+        ] <|
+            match model.TabSelected with
+            | Available -> renderMaps classes model dispatch (model.Available)
+            | Installed -> renderMaps classes model dispatch (model.Installed)
+            | Installing -> renderMaps classes model dispatch (model.Installing)
 
     let private view' (classes: IClasses) model dispatch =
         div [
@@ -59,7 +98,6 @@ module View =
                 CSSProp.FlexDirection "column"
                 CSSProp.Display DisplayOptions.Flex
                 CSSProp.Height "inherit"
-                CSSProp.Padding "2em"
             ]
         ] [
             yield lazyView2 Snackbar.View.view model.Snack (SnackMsg >> dispatch)
@@ -79,7 +117,12 @@ module View =
                             tab [ HTMLAttr.Label (t.Text)]))
                     divider []
                     div [
-                        Style [ CSSProp.Padding "2em"; CSSProp.MinHeight "5em" ]
+                        Style [ 
+                            CSSProp.Padding "2em"
+                            CSSProp.MinHeight "5em"
+                            CSSProp.MaxHeight "50em"
+                            CSSProp.OverflowY "Scroll"
+                        ]
                     ] [ 
                         tabContent classes model dispatch
                     ]
