@@ -11,11 +11,7 @@ module Maps =
     open FSharp.Data.JsonExtensions
 
     let http =
-        [ testCase "ResultParser extracts and parses" <| fun () ->
-              let result = Ok("""{"createDuplicate":true}""") |> ResultParser.toJson
-              let expected = """{"createDuplicate":true}""" |> JsonValue.Parse
-              Expect.equal result expected ""
-          testCase "paramBuilder constructs a proper string" <| fun () ->
+        [ testCase "paramBuilder constructs a proper string" <| fun () ->
               let result =
                   Http.paramBuilder ([ Param(("name", Some("wow")))
                                        Param(("folder", None))

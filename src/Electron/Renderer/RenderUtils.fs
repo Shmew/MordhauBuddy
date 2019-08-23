@@ -28,6 +28,7 @@ module BridgeUtils =
         member this.DirExists s = MapFileOperation.DirExists(s) |> wrapOps
         member this.GetAvailable = Maps.GetAvailableMaps |> wrapMaps
         member this.GetInstalled s = Maps.GetInstalledMaps s |> wrapMaps
+        member this.Install s = Maps.InstallMap s |> wrapMaps
 
 module RenderUtils =
     open Electron
@@ -155,6 +156,8 @@ module RenderUtils =
             MatchEvaluator(fun m -> " " + m.Value)
             |> (fun m -> Regex.Replace(s.Substring(1), "[A-Z]", m))
             |> (+) (s.Substring(0, 1))
+
+        let defStr (sOpt: string option) = Fable.React.Helpers.str (defaultArg sOpt "")
 
     [<AutoOpen>]
     module Extensions =

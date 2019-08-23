@@ -98,6 +98,7 @@ module ElectronBridge =
     type MapResult =
         | AvailableMaps of string list
         | InstalledMaps of string list
+        | InstallMap of string * Result<bool,string>
 
     [<RequireQualifiedAccess>]
     type BridgeResult =
@@ -152,6 +153,7 @@ module ElectronBridge =
         type Maps =
             | GetAvailableMaps
             | GetInstalledMaps of string
+            | InstallMap of string
 
         type BridgeOperations =
             | INIOperation of INIFileOperation

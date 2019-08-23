@@ -62,7 +62,14 @@ module Types =
 
     type CommunityMapWithProgress =
         { Map : CommunityMap
-          Progress : int }
+          Progress : int
+          Error : bool
+          HelperText : string }
+        static member Init (map : CommunityMap) =
+            { Map = map
+              Progress = 0
+              Error = false
+              HelperText = "" }
 
     type Model = 
         { Waiting : bool

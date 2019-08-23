@@ -40,6 +40,11 @@ module State =
                 m.Name = map.Name && m.Version = map.Version)
             |> not)
 
+    let private partitionComMaps (cList : MapTypes.CommunityMap list) map =
+        let newInstalling,newAvailable =
+            cList |> List.partition (fun m -> m.GetName() = map)
+        (newInstalling |> List.map CommunityMapWithProgress.Init),newAvailable
+
     let update (msg: Msg) (model: Model) =
         match msg with
         | ClientMsg bMsg ->
@@ -74,11 +79,33 @@ module State =
                 | MapResult.InstalledMaps cList ->
                     { model with Installed = (cList |> List.map getComMap) }
                     |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
+                | MapResult.InstallMap (map, res) ->
+                    match res with
+                    | Ok(_) ->
+                        let finished,inProcess = model.Installing |> List.partition (fun m -> m.Map.GetName() = map)
+                        { model with 
+                            Installed = (finished |> List.map (fun m -> m.Map))
+                            Installing = inProcess }, Cmd.none
+                    | Error(errMsg) ->
+                        let setError =
+                            model.Installing 
+                            |> List.map (fun m -> 
+                                if m.Map.GetName() = map then 
+                                    { m with 
+                                        Error = true
+                                        HelperText = errMsg }
+                                else m)
+                        { model with Installing = setError }, Cmd.none
             | _ -> { model with Waiting = false }, Cmd.none
         | TabSelected tab -> 
             { model with TabSelected = tab }, Cmd.none
         | ImgSkeleton -> model, Cmd.none
-        | Install s -> model, Cmd.none
+        | Install s -> 
+            let newInstalling,newAvailable =
+                partitionComMaps model.Available s
+            { model with
+                Available = newAvailable
+                Installing = (List.append model.Installing newInstalling) }, Cmd.bridgeSend (sender.Install(s))
         | InstallAll -> model, Cmd.none
         | Uninstall s -> model, Cmd.none
         | CancelInstall s -> model, Cmd.none

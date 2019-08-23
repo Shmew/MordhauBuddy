@@ -12,10 +12,11 @@ module Maps =
     type DownloadFile =
         { Url : string
           FileName : string
-          Directory : string
-          UpdateFun : unit -> unit
-          CompleteFun : unit -> unit
-          ErrorFun : unit -> unit }
+          Directory : IO.DirectoryInfo
+          UpdateFun : float -> unit
+          CompleteFun : bool -> unit
+          ErrorFun : string -> unit
+          CancelFun : OperationCanceledException -> unit }
 
     module GHTypes =
         /// Record to represent GH content api response
@@ -53,24 +54,6 @@ module Maps =
                 | Param(_, b) when b.IsSome -> true
                 | Flag(_, b) when b -> true
                 | _ -> false
-
-        /// Functions to unwrap `Result<'t,string>` into various outputs
-        [<RequireQualifiedAccess>]
-        module ResultParser =
-            /// Applies `Result<'t,string>` to given function
-            let rParser (resp : Result<'t, string>) f =
-                match resp with
-                | Ok(r) -> r |> f
-                | Error(e) -> failwith e
-
-            /// Gets `JsonValue`
-            let toJson (resp : Result<string, string>) = rParser resp JsonValue.Parse
-
-            /// Gets `string`
-            let toString (resp : Result<string, string>) = rParser resp string
-
-            /// Gets `'t` of `Result<'t,string>` by applying identity function
-            let toGeneric (resp : Result<'t, string>) = rParser resp id
 
         /// Http related helper fuctions
         module Http =
@@ -143,33 +126,36 @@ module Maps =
             open System.IO
 
             /// Download a file with continuations and progress updates
-            let downloadFile (dest : DirectoryInfo) (fileName : string) (updateStatus : (string -> Async<unit>) option)
-                (stream : Async<Stream>) =
-                let errorMsg (e : exn) = sprintf "Error fetching file: %s%c%s" fileName '\n' (e.Message)
-
-                let setStatus (newStatus : string) =
-                    match updateStatus with
-                    | Some(statusFunc) -> statusFunc newStatus |> Async.Ignore
-                    | None -> async { return () }
+            let downloadFile (downloadFile : DownloadFile) (stream : Async<Result<Stream,string>>) =
+                let errorMsg (e : exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' (e.Message)
 
                 let download =
                     async {
-                        do! setStatus "S"
-                        let! request = stream
-                        use streamDest = new FileStream((dest.FullName + @"\" + fileName), FileMode.Create)
-                        do! request.CopyToAsync(streamDest) |> Async.AwaitTask
+                        let! requestRes = stream
+                        let request =
+                            match requestRes with
+                            | Ok(s) -> s
+                            | Error(e) -> failwith e
+                        let position () = request.Position / request.Length / 1000000L
+                        use streamDest = new FileStream((downloadFile.Directory.FullName + @"\" + downloadFile.FileName), FileMode.Create)
+                        let updater =
+                            async {
+                                while request.Position <> request.Length do
+                                    downloadFile.UpdateFun (position() |> float)
+                            }
+                        let copyStream = request.CopyToAsync(streamDest) |> Async.AwaitTask
+                        [ updater; copyStream ] |> Async.Parallel
+                        |> Async.RunSynchronously
+                        |> ignore
                     }
 
-                let onCompletion() = async { do! setStatus "C" } |> Async.RunSynchronously
+                let onCompletion() = true |> downloadFile.CompleteFun
 
                 let onError (e : exn) =
-                    let err = errorMsg e
-                    try
-                        async { do! setStatus "N" } |> Async.RunSynchronously
-                    with e2 -> sprintf "%s%c%s" e2.Message '\n' err |> failwith
-                    failwith err
-                Async.StartWithContinuations(download, onCompletion, onError, (fun _ -> ()))
+                    errorMsg e |> downloadFile.ErrorFun
 
+                Async.StartWithContinuations(download, onCompletion, onError, downloadFile.CancelFun)
+                
         /// Json helpers
         module Json =
             /// Set FSharp.Json configuration
@@ -241,12 +227,10 @@ module Maps =
         /// Get map zip list
         let getMapFiles() =
             get ("/repos/MordhauMappingModding/MapsFiles/contents", None)
-            |> ResultParser.toString
-            |> Json.deserializeEx<GHContents list> Json.config
+            |> Result.map (Json.deserializeEx<GHContents list> Json.config)
 
         /// Download a file to the given directory with continuations -- finish this
         let downloadFile (download : DownloadFile) =
-            let dir = IO.DirectoryInfo(download.Directory)
-            let updateStatus = (fun (s : string) -> async { return () }) |> Some
-            async { return getStream (download.Url, None) |> ResultParser.toGeneric }
-            |> Streaming.downloadFile dir download.FileName updateStatus
+            async { return getStream (download.Url, None) }
+            |> fun s -> Streaming.downloadFile download s
+            

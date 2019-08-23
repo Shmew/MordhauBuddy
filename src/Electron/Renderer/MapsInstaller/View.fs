@@ -11,6 +11,7 @@ module View =
     open FSharp.Core  /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
+    open RenderUtils.String
     open RenderUtils.Validation
     open RenderUtils.MaterialUI
     open RenderUtils.MaterialUI.Core
@@ -52,6 +53,7 @@ module View =
                             fab [
                                 MaterialProp.Color ComponentColor.Secondary
                                 FabProp.Size FabSize.Medium
+                                DOMAttr.OnClick <| fun _ -> dispatch (Install(map.GetName()))
                             ] [ addIcon [] ]
                     ] []
                     cardMedia [
@@ -76,8 +78,6 @@ module View =
                             ] [ str s ] ))
                 ]
             ])
-
-    let private defStr (sOpt: string option) = str (defaultArg sOpt "")
 
     let private renderInstalledMaps (classes: IClasses) model dispatch =
         let getName (map : MapTypes.CommunityMap) =

@@ -32,6 +32,7 @@ module Bridge =
             { Caller = caller
               File = file
               BridgeResult = br }
+            |> Some
 
         let update (clientDispatch : Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model : Model) =
             let updateModel (file : ConfigFile) (iOpt : INIValue option) model =
@@ -87,15 +88,15 @@ module Bridge =
                                 |> createClientResp caller (Some(iFile))
                             match iFile.File with
                             | ConfigFile.Game ->
-                                { cmd with Caller = Caller.FaceTools }
+                                { cmd.Value with Caller = Caller.FaceTools }
                                 |> Resp
                                 |> clientDispatch
                             | ConfigFile.Engine when model.GameUserSettings.IsSome ->
-                                { cmd with Caller = Caller.MordhauConfig }
+                                { cmd.Value with Caller = Caller.MordhauConfig }
                                 |> Resp
                                 |> clientDispatch
                             | ConfigFile.GameUserSettings when model.Engine.IsSome ->
-                                { cmd with Caller = Caller.MordhauConfig }
+                                { cmd.Value with Caller = Caller.MordhauConfig }
                                 |> Resp
                                 |> clientDispatch
                             | _ -> ()
@@ -134,7 +135,7 @@ module Bridge =
                                 |> BridgeResult.MapOperation
                                 |> createClientResp caller None
                             if result then
-                                { cmd with Caller = Caller.MapInstaller }
+                                { cmd.Value with Caller = Caller.MapInstaller }
                                 |> Resp
                                 |> clientDispatch
                             m, cmd
@@ -192,8 +193,18 @@ module Bridge =
                             |> MapResult.InstalledMaps
                             |> BridgeResult.Maps
                             |> cResp
-
-            Resp(remoteCMsg) |> clientDispatch
+                        | InstallMap s ->
+                            if Maps.installMap s then 
+                                model, None
+                            else 
+                                model,
+                                (s,Error("Unable to find map archive file."))
+                                |> MapResult.InstallMap 
+                                |> BridgeResult.Maps 
+                                |> cResp
+            match remoteCMsg with
+            | Some(rMsg) -> Resp(rMsg) |> clientDispatch
+            | _ -> ()
             model, Cmd.none
 
         let bridge =

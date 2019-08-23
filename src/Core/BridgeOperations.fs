@@ -91,3 +91,18 @@ module BridgeOperations =
 
         /// Get all installed maps
         let getInstalledMaps (dir : string) = FileOps.Maps.getInstalled dir
+
+        /// Download map if available
+        let installMap (s : string) =
+            match getMapFiles() with
+            | Ok(mList) when (mList |> List.filter (fun m -> m.Name = s) |> List.length > 0) -> 
+                { Url = ""
+                  FileName = s
+                  Directory = IO.DirectoryInfo("")
+                  UpdateFun = fun _ -> ()
+                  CompleteFun = fun _ -> ()
+                  ErrorFun = fun _ -> ()
+                  CancelFun = fun _ -> () }
+                |> downloadFile
+                true
+            | _ -> false
