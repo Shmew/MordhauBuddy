@@ -60,11 +60,15 @@ module Types =
         | SnackMsg of Snackbar.Types.Msg<Msg>
         | SnackDismissMsg
 
+    type CommunityMapWithProgress =
+        { Map : CommunityMap
+          Progress : int }
+
     type Model = 
         { Waiting : bool
           MapsDir : ConfigDir
           Available : CommunityMap list
           Installed : CommunityMap list
-          Installing : CommunityMap list
+          Installing : CommunityMapWithProgress list
           TabSelected : Tab
           Snack : Snackbar.Types.Model<Msg> }

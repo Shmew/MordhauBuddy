@@ -35,7 +35,7 @@ module State =
     let private calcAvailableMaps (model : Model) =
         model.Available 
         |> List.filter (fun map -> 
-            (List.append model.Installed model.Installing) 
+            (List.append model.Installed (model.Installing |> List.map (fun c -> c.Map))) 
             |> List.exists (fun (m : MapTypes.CommunityMap) -> 
                 m.Name = map.Name && m.Version = map.Version)
             |> not)

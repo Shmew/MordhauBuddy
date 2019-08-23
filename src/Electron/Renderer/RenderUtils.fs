@@ -186,9 +186,10 @@ module RenderUtils =
 
         module RegPatterns =
             let translate = @"^\(Translate=\((\d*,?){49}\),Rotate=\((\d*,?){49}\),Scale=\((\d*,?){49}\)\)"
-            let fileSize = @"^(\d+[, .]\d+|\d+)\s*(kb|mb|gb)$"
+            let fileSize = @"^(\d+[,.]\d+|\d+)\s*(kb|mb|gb)"
             let semVersion = @"^(\d+)[. ,]*(\d+)*[. ,]*(\d)*"
-            let players = @"^(\d+).*?(\d+)$"
+            let playersStatic = @"^(\d+)\w*.\w*\D+$"
+            let playersRange = @"^(\d+).*?(\d+)"
 
         [<AutoOpen>]
         module internal Helpers =
@@ -213,7 +214,7 @@ module RenderUtils =
 
             let getFileSize (s : string) =
                 let matchSize =
-                    applyRPattern RegPatterns.fileSize (removeAllWs s) id
+                    applyRPattern RegPatterns.fileSize (removeAllWs s) (fun s -> s.Replace(",","."))
 
                 let convUnit (s : string) (f : float) =
                     match s.ToLower() with
@@ -235,6 +236,11 @@ module RenderUtils =
                 | (true, i) -> i
                 | _ -> 0
 
+            let private tryGetInt (s : string) =
+                match Int32.TryParse s with
+                | (true, i) -> i |> Some
+                | _ -> None
+
             let getVer (vStr : string) =
                 applyRPattern RegPatterns.semVersion vStr getInt
                 |> fun iList ->
@@ -244,17 +250,25 @@ module RenderUtils =
                 |> fun iL -> MapVersion.Create(iL.[0], iL.[1], iL.[2])
 
             let getDate (s : string) =
+                s.Split('/') 
+                |> fun sArr -> sprintf "%s/%s/%s" sArr.[1] sArr.[0] sArr.[2]
+                |> fun s ->
                 match DateTime.TryParse(s) with
                 | (true, dt) -> dt |> Some
                 | _ -> None
 
             let getPlayers (s : string) =
-                match Int32.TryParse s with
-                | (true, i) ->
+                applyRPattern RegPatterns.playersStatic s id 
+                |> List.tryHead 
+                |> Option.bind tryGetInt
+                |> fun tryStatic ->
+                match Int32.TryParse s, tryStatic with
+                | (true, i), _
+                | _, Some(i) ->
                     SuggestedPlayers.Static(i)
                     |> Some
                 | _ ->
-                    applyRPattern RegPatterns.players s getInt
+                    applyRPattern RegPatterns.playersRange s getInt
                     |> fun pList ->
                     match pList with
                     | [min;max] when pList.Length = 2 -> { PlayerRange.Min = min; PlayerRange.Max = max } |> SuggestedPlayers.Range |> Some

@@ -298,6 +298,19 @@ module View =
                                 CSSProp.Color "#000"
                             ]
                         ]
+                    yield
+                        OverridesProp.MuiTableCell [
+                            Styles.Root [
+                                CSSProp.Padding "1em"
+                            ]
+                        ]
+                    yield
+                        OverridesProp.MuiBadge [
+                            Styles.Badge [
+                                CSSProp.Position PositionOptions.Inherit
+                                CSSProp.MarginLeft "-1em"
+                            ]
+                        ]
                 ]
             ]
             |> ProviderTheme.Theme

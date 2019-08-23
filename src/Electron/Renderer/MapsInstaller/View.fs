@@ -77,13 +77,13 @@ module View =
                 ]
             ])
 
+    let private defStr (sOpt: string option) = str (defaultArg sOpt "")
+
     let private renderInstalledMaps (classes: IClasses) model dispatch =
         let getName (map : MapTypes.CommunityMap) =
             match map.Name with
             | Some(name) -> name
             | None -> map.Folder
-
-        let defStr (sOpt: string option) = str (defaultArg sOpt "")
 
         model.Installed
         |> List.map (fun map -> 
@@ -102,12 +102,47 @@ module View =
                 ] [ str <| map.Version.GetString() ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Right
-                ] [ map.FileSize |> Option.map string |> defStr ]
+                ] [ 
+                    map.FileSize 
+                    |> Option.map (fun v -> 
+                        sprintf "%s %s" (v |> string) "MB") 
+                    |> defStr 
+                ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Right
                 ] [ map.GetPlayers() |> defStr ]
-            ]
-        )
+            ])
+
+    let private renderInstallingMaps (classes: IClasses) model dispatch =
+        let getName (map : MapTypes.CommunityMap) =
+            match map.Name with
+            | Some(name) -> name
+            | None -> map.Folder
+
+        model.Installing
+        |> List.map (fun map ->
+            tableRow [] [
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Left
+                ] [ str (map.Map |> getName) ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Center
+                    Style [ CSSProp.MinWidth "15em" ]
+                ] [ 
+                    linearProgress [ LinearProgressProp.Value <| map.Progress ]
+                    typography [] [
+                        str (sprintf "%s%s" (map.Progress/100 |> string) "%")
+                    ]
+                ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Center
+                ] [ 
+                    map.Map.FileSize 
+                    |> Option.map (fun v -> 
+                        sprintf "%s %s" (v |> string) "MB") 
+                    |> defStr 
+                ]
+            ])
 
     let private tabContent (classes: IClasses) model dispatch =
         grid [
@@ -127,12 +162,14 @@ module View =
                 [
                     grid [
                         GridProp.Item true
+                        Style [ CSSProp.Width "100%" ]
                     ] [
                         card [
                             MaterialProp.Elevation 2
                             CardProp.Raised true 
                         ] [
-                            table [] [
+                            table [
+                            ] [
                                 tableHead [] [
                                     tableRow [] [
                                         tableCell [
@@ -143,7 +180,7 @@ module View =
                                         ] [ str "Author" ]
                                         tableCell [
                                             TableCellProp.Align TableCellAlign.Right
-                                        ] [ str "Release Date" ]
+                                        ] [ str "Version"]
                                         tableCell [
                                             TableCellProp.Align TableCellAlign.Right
                                         ] [ str "Version" ]
@@ -160,7 +197,38 @@ module View =
                         ]
                     ]
                 ]
-            | Installing -> []
+            | Installing ->
+                [
+                    grid [
+                        GridProp.Item true
+                        Style [ CSSProp.Width "100%" ]
+                    ] [
+                        card [
+                            MaterialProp.Elevation 2
+                            CardProp.Raised true 
+                        ] [
+                            table [
+                                Style [ CSSProp.Width "100%" ]
+                            ] [
+                                tableHead [] [
+                                    tableRow [] [
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Left
+                                        ] [ str "Name" ]
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Center
+                                            Style [ CSSProp.Width "15em" ]
+                                        ] [ str "Progress" ]
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Center
+                                        ] [ str "Downloaded" ]
+                                    ]
+                                ]
+                                tableBody [] <| renderInstallingMaps classes model dispatch
+                            ]
+                        ]
+                    ]
+                ]
 
     let private view' (classes: IClasses) model dispatch =
         div [
@@ -181,16 +249,32 @@ module View =
                         TabsProp.TextColor TabsTextColor.Secondary
                         TabsProp.Centered true
                         TabsProp.OnChange (fun _ tabPicked -> dispatch <| TabSelected(Tab.GetTabFromTag(tabPicked)) )
-                    ] <|
-                        (Tab.GetTabs
-                        |> Seq.map (fun t ->
-                            tab [ HTMLAttr.Label (t.Text)]))
+                    ] [
+                        tab [ 
+                            HTMLAttr.Label <| Available.Text
+                            HTMLAttr.Disabled <| model.Available.IsEmpty
+                        ]
+                        tab [
+                            HTMLAttr.Label <| Installed.Text
+                            HTMLAttr.Disabled <| model.Installed.IsEmpty
+                        ]
+                        tab [
+                            HTMLAttr.Disabled <| model.Installing.IsEmpty
+                            MaterialProp.Label <|
+                                badge [
+                                    BadgeProp.Color BadgeColor.Primary
+                                    BadgeProp.Max 100
+                                    BadgeProp.Invisible (model.Installing.IsEmpty)
+                                    BadgeProp.BadgeContent <| ofInt (model.Installing.Length)
+                                ] [ str Installing.Text ]
+                        ]
+                    ]
                     divider []
                     div [
                         Style [ 
                             CSSProp.Padding "2em"
                             CSSProp.MinHeight "5em"
-                            CSSProp.MaxHeight "50em"
+                            CSSProp.MaxHeight "73vh"
                             CSSProp.OverflowY "Scroll"
                         ]
                     ] [ 
@@ -205,7 +289,11 @@ module View =
                     ] 
                 ] [
                     button [
-                        HTMLAttr.Disabled <| model.Available.IsEmpty
+                        HTMLAttr.Disabled <| 
+                            match model.TabSelected with
+                            | Available -> model.Available.IsEmpty
+                            | Installed -> model.Installed.IsEmpty
+                            | Installing -> model.Installing.IsEmpty
                         ButtonProp.Variant ButtonVariant.Contained
                         MaterialProp.Color ComponentColor.Primary
                         DOMAttr.OnClick <| fun _ -> 
@@ -215,7 +303,13 @@ module View =
                             CSSProp.MarginTop "auto"
                             CSSProp.MarginLeft "auto"
                         ]
-                    ] [ str "Submit" ]
+                    ] [ 
+                        yield
+                            match model.TabSelected with
+                            | Available -> str "Install All"
+                            | Installed -> str "Uninstall All"
+                            | Installing -> str "Cancel All"
+                    ]
                 ]
         ]
 

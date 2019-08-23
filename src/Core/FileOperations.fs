@@ -98,7 +98,7 @@ module FileOps =
 
         /// Get all installed map metadata
         let getInstalled (dir : string) =
-            !!(dir @@ "**/*.info.txt")
+            !! (dir @@ "**/*.info.txt")
             |> Seq.map (fun f ->
                    async {
                        try
