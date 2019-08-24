@@ -129,7 +129,10 @@ module View =
                     TableCellProp.Align TableCellAlign.Center
                     Style [ CSSProp.MinWidth "15em" ]
                 ] [ 
-                    linearProgress [ LinearProgressProp.Value <| map.Progress ]
+                    linearProgress [ 
+                        LinearProgressProp.Value <| map.Progress 
+                        LinearProgressProp.Variant LinearProgressVariant.Determinate
+                    ]
                     typography [] [
                         str (sprintf "%s%s" (map.Progress/100 |> string) "%")
                     ]

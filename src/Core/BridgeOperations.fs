@@ -69,7 +69,7 @@ module BridgeOperations =
     [<RequireQualifiedAccess>]
     module Maps =
         open Maps
-        open Maps.GHApi
+        open Maps.WebRequests
         open System
 
         /// Try to locate the default Mordhau maps directory
@@ -93,31 +93,44 @@ module BridgeOperations =
         let getInstalledMaps (dir : string) = FileOps.Maps.getInstalled dir
 
         /// Download map if available
-        let installMap (s : string) (dir : string) (dispatchWrapper : MapResult -> unit) =
-            let fName = s + ".zip"
+        let installMap (mCmd : MapTarget) (dispatchWrapper : MapResult -> unit) =
+            let fName = mCmd.Folder + ".zip"
             let getMap (mList : GHTypes.GHContents list) = mList |> List.filter (fun m -> m.Name = fName)
-            let diDir = IO.DirectoryInfo(dir)
-            match getMapFiles() with
-            | Ok(mList) when (mList
-                              |> getMap
-                              |> List.length > 0)
-                             && diDir.Exists ->
-                let fileInfo =
-                    mList
-                    |> getMap
-                    |> List.head
-                { Url = fileInfo.DownloadUrl
+            let diDir = IO.DirectoryInfo(mCmd.Directory)
+            match mCmd.GDrive with
+            | Some(gd) ->
+                { Url = sprintf "https://www.googleapis.com/drive/v3/files/%s" gd.ID
                   FileName = fName
                   Directory = diDir
-                  Size =
-                      Math.DivRem(fileInfo.Size, 1000000L)
-                      |> fun (i1, i2) -> sprintf "%i.%i" i1 i2
-                      |> float
-                      |> (*) 1.0<MB>
-                  UpdateFun = fun i -> MapResult.InstallMapProgress(s, i) |> dispatchWrapper
-                  CompleteFun = fun c -> MapResult.InstallMapComplete(s) |> dispatchWrapper
-                  ErrorFun = fun e -> MapResult.InstallMapError(s, e) |> dispatchWrapper
-                  CancelFun = fun c -> MapResult.InstallMapCancelled(s, true) |> dispatchWrapper }
-                |> downloadFile
+                  Size = gd.Size
+                  UpdateFun = fun i -> MapResult.InstallMapProgress(mCmd.Folder, i) |> dispatchWrapper
+                  CompleteFun = fun () -> MapResult.InstallMapComplete(mCmd.Folder) |> dispatchWrapper
+                  ErrorFun = fun e -> MapResult.InstallMapError(mCmd.Folder, e) |> dispatchWrapper
+                  CancelFun = fun c -> MapResult.InstallMapCancelled(mCmd.Folder, true) |> dispatchWrapper }
+                |> downloadGDFile
                 true
-            | _ -> false
+            | _ ->
+                match getMapFiles() with
+                | Ok(mList) when (mList
+                                  |> getMap
+                                  |> List.length > 0)
+                                 && diDir.Exists ->
+                    let fileInfo =
+                        mList
+                        |> getMap
+                        |> List.head
+                    { Url = fileInfo.DownloadUrl
+                      FileName = fName
+                      Directory = diDir
+                      Size =
+                          Math.DivRem(fileInfo.Size, 1000000L)
+                          |> fun (i1, i2) -> sprintf "%i.%i" i1 i2
+                          |> float
+                          |> (*) 1.0<MB>
+                      UpdateFun = fun i -> MapResult.InstallMapProgress(mCmd.Folder, i) |> dispatchWrapper
+                      CompleteFun = fun () -> MapResult.InstallMapComplete(mCmd.Folder) |> dispatchWrapper
+                      ErrorFun = fun e -> MapResult.InstallMapError(mCmd.Folder, e) |> dispatchWrapper
+                      CancelFun = fun c -> MapResult.InstallMapCancelled(mCmd.Folder, true) |> dispatchWrapper }
+                    |> downloadFile
+                    true
+                | _ -> false

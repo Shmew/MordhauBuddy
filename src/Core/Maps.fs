@@ -15,7 +15,7 @@ module Maps =
           Directory : IO.DirectoryInfo
           Size : float<MB>
           UpdateFun : int -> unit
-          CompleteFun : bool -> unit
+          CompleteFun : unit -> unit
           ErrorFun : string -> unit
           CancelFun : OperationCanceledException -> unit }
 
@@ -125,6 +125,7 @@ module Maps =
         /// Helper module for streams
         module Streaming =
             open System.IO
+            open SharpCompress
 
             /// Download a file with continuations and progress updates
             let downloadFile (downloadFile : DownloadFile) (stream : Async<Result<Stream, string>>) =
@@ -132,42 +133,76 @@ module Maps =
 
                 let download =
                     async {
+                        let mutable downloading = true
+                        let mutable extracting = true
                         let! requestRes = stream
+
+                        let position (streamDest : Stream) =
+                            Math.DivRem(streamDest.Position, 1000000L)
+                            |> fun (i1, i2) -> sprintf "%i.%i" i1 i2
+                            |> float
+                            |> (*) 1.0<MB>
+
                         let request =
                             match requestRes with
                             | Ok(s) -> s
                             | Error(e) -> failwith e
 
                         use streamDest = File.Create(downloadFile.Directory.FullName + @"\" + downloadFile.FileName)
-                        let mutable writing = true
 
-                        let updater =
-                            let position() =
-                                Math.DivRem(streamDest.Position, 1000000L)
-                                |> fun (i1, i2) -> sprintf "%i.%i" i1 i2
-                                |> float
-                                |> (*) 1.0<MB>
+
+                        let downloadUpdater (streamDest : Stream) =
                             async {
-                                while writing do
-                                    downloadFile.UpdateFun(position() / downloadFile.Size |> float |> (*) 100. |> int)
+                                while downloading do
+                                    downloadFile.UpdateFun(position streamDest / downloadFile.Size
+                                                            |> float
+                                                            |> (*) 250.
+                                                            |> int)
                                     Async.Sleep 200 |> Async.RunSynchronously
                             }
 
-                        let copyStream =
+                        let extractUpdater (streamDest : Stream) =
                             async {
-                                do! request.CopyToAsync(streamDest) |> Async.AwaitTask
-                                writing <- false
+                                while extracting do
+                                    downloadFile.UpdateFun(position streamDest / downloadFile.Size
+                                                            |> float
+                                                            |> (*) 62.5
+                                                            |> int)
+                                    Async.Sleep 200 |> Async.RunSynchronously
                             }
 
-                        [ updater; copyStream ]
-                        |> Async.Parallel
+                        async {
+                            do! downloadUpdater streamDest
+                            do! request.CopyToAsync(streamDest) |> Async.AwaitTask
+                            downloading <- false
+                            do! Async.Sleep 1000
+                            do request.Dispose()
+                            do streamDest.Dispose()
+
+                            use zipStream =
+                                File.OpenRead(downloadFile.Directory.FullName + @"\" + downloadFile.FileName)
+                            do! extractUpdater zipStream
+                            use archiveReader = SharpCompress.Readers.ReaderFactory.Open(zipStream)
+                            while archiveReader.MoveToNextEntry() do
+                                if archiveReader.Entry.IsDirectory then
+                                    archiveReader.Entry.Key
+                                    |> fun k ->
+                                        Directory.CreateDirectory(downloadFile.Directory.FullName + @"\" + k)
+                                    |> ignore
+                                else
+                                    use entryStream = archiveReader.OpenEntryStream()
+                                    File.Create(downloadFile.Directory.FullName + @"\" + archiveReader.Entry.Key)
+                                    |> entryStream.CopyToAsync
+                                    |> Async.AwaitTask
+                                    |> Async.RunSynchronously
+                            extracting <- false
+                        }
                         |> Async.RunSynchronously
                         |> ignore
                     }
 
-                let onCompletion() = true |> downloadFile.CompleteFun
                 let onError (e : exn) = errorMsg e |> downloadFile.ErrorFun
-                Async.StartWithContinuations(download, onCompletion, onError, downloadFile.CancelFun)
+                Async.StartWithContinuations(download, downloadFile.CompleteFun, onError, downloadFile.CancelFun)
 
         /// Json helpers
         module Json =
@@ -177,21 +212,34 @@ module Maps =
                     (jsonFieldNaming = Json.lowerCamelCase, allowUntyped = true, serializeNone = SerializeNone.Omit)
 
     /// Functions for interacting with the Github Api
-    module GHApi =
+    module WebRequests =
         open Helpers
         open GHTypes
 
-        /// Github base uri
-        let baseUri = @"https://api.github.com"
+        [<NoComparison>]
+        type GDKey =
+            { Key : string option }
 
-        /// Construct request headers
-        let reqHeaders =
-            [ HttpRequestHeaders.ContentLanguage HttpContentTypes.Json
-              HttpRequestHeaders.Accept @"*/*"
-              HttpRequestHeaders.AcceptEncoding "UTF8"
-              HttpRequestHeaders.ContentType HttpContentTypes.Json
-              HttpRequestHeaders.ContentEncoding "UTF8"
-              HttpRequestHeaders.UserAgent "MordhauBuddy" ]
+        /// Github base uri
+        let private baseUri = @"https://api.github.com"
+
+        /// Header options for requests
+        [<RequireQualifiedAccess>]
+        type internal ReqHeaders =
+            | Github
+            | GoogleDrive
+            member this.Headers =
+                match this with
+                | Github ->
+                    [ HttpRequestHeaders.ContentLanguage HttpContentTypes.Json
+                      HttpRequestHeaders.Accept @"*/*"
+                      HttpRequestHeaders.AcceptEncoding "UTF8"
+                      HttpRequestHeaders.ContentType HttpContentTypes.Json
+                      HttpRequestHeaders.ContentEncoding "UTF8"
+                      HttpRequestHeaders.UserAgent "MordhauBuddy" ]
+                | GoogleDrive ->
+                    [ HttpRequestHeaders.Accept @"*/*"
+                      HttpRequestHeaders.UserAgent "MordhauBuddy" ]
 
         /// Wrapper function to make http requests
         let internal makeRequest (req : unit -> HttpResponse) =
@@ -206,42 +254,63 @@ module Maps =
             with e -> sprintf "Error making HTTP request via %s%c%s" baseUri '\n' e.Message |> failwith
             |> Http.httpStreamOk
 
-        let internal get (path : string, parameters : string option) =
+        let internal get (path : string, parameters : string option, headers : ReqHeaders) =
             let req() =
                 Http.Request
-                    (baseUri + path + defaultArg parameters "", httpMethod = "GET", headers = reqHeaders,
+                    (baseUri + path + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
                      timeout = 100000)
             makeRequest req
 
-        let internal getDirect (fullPath : string, parameters : string option) =
+        let internal getDirect (fullPath : string, parameters : string option, headers : ReqHeaders) =
             let req() =
                 Http.Request
-                    (fullPath + defaultArg parameters "", httpMethod = "GET", headers = reqHeaders, timeout = 100000)
+                    (fullPath + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
+                     timeout = 100000)
             makeRequest req
 
-        let internal getStream (downloadUrl : string, parameters : string option) =
+        let internal getStream (downloadUrl : string, parameters : string option, headers : ReqHeaders) =
             let req() =
                 Http.RequestStream
-                    (downloadUrl + defaultArg parameters "", httpMethod = "GET", headers = reqHeaders, timeout = 100000)
+                    (downloadUrl + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
+                     timeout = 100000)
+            makeRequestStream req
+
+        let internal getGDStream (downloadUrl : string, parameters : string option, headers : ReqHeaders) =
+            let req() =
+                Http.RequestStream
+                    (downloadUrl + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
+                     timeout = 100000)
             makeRequestStream req
 
         /// Get info file list
         let getInfoFiles() =
             let downloadInfoFiles (gList : GHContents list) =
                 gList
-                |> List.map (fun c -> async { return getDirect (c.DownloadUrl, None) })
+                |> List.map (fun c -> async { return getDirect (c.DownloadUrl, None, ReqHeaders.Github) })
                 |> Async.Parallel
                 |> Async.RunSynchronously
                 |> List.ofArray
-            get ("/repos/MordhauMappingModding/InfoFiles/contents", None)
+            get ("/repos/MordhauMappingModding/InfoFiles/contents", None, ReqHeaders.Github)
             |> Result.map (Json.deserializeEx<GHContents list> Json.config)
             |> Result.map downloadInfoFiles
 
         /// Get map zip list
         let getMapFiles() =
-            get ("/repos/MordhauMappingModding/MapsFiles/contents", None)
+            get ("/repos/MordhauMappingModding/MapsFiles/contents", None, ReqHeaders.Github)
             |> Result.map (Json.deserializeEx<GHContents list> Json.config)
 
-        /// Download a file to the given directory with continuations -- finish this
+        /// Download a file to the given directory with continuations
         let downloadFile (download : DownloadFile) =
-            async { return getStream (download.Url, None) } |> fun s -> Streaming.downloadFile download s
+            async { return getStream (download.Url, None, ReqHeaders.Github) }
+            |> fun s -> Streaming.downloadFile download s
+
+        let downloadGDFile (download : DownloadFile) =
+            let key = FileOps.Maps.tryGetGDKey() |> Option.map (Json.deserializeEx<GDKey> Json.config)
+            match key with
+            | Some(gdKey) ->
+                [ Param(("key", gdKey.Key))
+                  Param(("alt", Some("media"))) ]
+                |> Http.paramBuilder
+                |> (fun s -> async { return getGDStream (download.Url + s, None, ReqHeaders.GoogleDrive) })
+                |> fun s -> Streaming.downloadFile download s
+            | _ -> download.ErrorFun "Failed to get Google Drive key"

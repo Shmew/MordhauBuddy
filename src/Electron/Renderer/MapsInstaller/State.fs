@@ -81,11 +81,6 @@ module State =
                     |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
                 | MapResult.InstallMap (map, res) ->
                     match res with
-                    | Ok(_) ->
-                        let finished,inProcess = model.Installing |> List.partition (fun m -> m.Map.Folder = map)
-                        { model with 
-                            Installed = (finished |> List.map (fun m -> m.Map))
-                            Installing = inProcess }, Cmd.none
                     | Error(errMsg) ->
                         let setError =
                             model.Installing 
@@ -96,6 +91,7 @@ module State =
                                         HelperText = errMsg }
                                 else m)
                         { model with Installing = setError }, Cmd.none
+                    | _ -> model, Cmd.none
                 | MapResult.InstallMapCancelled (map, b) -> model, Cmd.none
                 | MapResult.InstallMapProgress (map, prog) -> 
                     let newProg = 
@@ -118,10 +114,20 @@ module State =
         | Install (name,fName) -> 
             let newInstalling,newAvailable =
                 partitionComMaps model.Available name
+            let mCmd =
+                { MapTarget.Folder = fName
+                  MapTarget.Directory = model.MapsDir.Directory
+                  MapTarget.GDrive = 
+                    let map = newInstalling.Head.Map
+                    match map.GoogleDriveID, map.FileSize with
+                    | Some(gId), Some(size) ->
+                        { GoogleDrive.ID = gId; GoogleDrive.Size = size }
+                        |> Some
+                    | _ -> None }
             { model with
                 Available = newAvailable
                 Installing = (List.append model.Installing newInstalling) }
-            , Cmd.bridgeSend (sender.Install(fName,model.MapsDir.Directory))
+            , Cmd.bridgeSend (sender.Install(mCmd))
         | InstallAll -> model, Cmd.none
         | Uninstall s -> model, Cmd.none
         | CancelInstall s -> model, Cmd.none

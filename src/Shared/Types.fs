@@ -18,10 +18,12 @@ module ElectronBridge =
         let bPerKb : float<B / KB> = 1000.<B/KB>
         let bPerMb : float<B / MB> = 1000000.<B/MB>
         let kbPerMb : float<KB / MB> = 1000.<KB/MB>
+        let mbPerKb : float<MB / KB> = 0.001<MB/KB>
         let gbPerMb : float<GB / MB> = 0.001<GB/MB>
         let convertBtoKB (x : float<B>) = x / bPerKb
         let convertBtoMB (x : float<B>) = x / bPerMb
         let convertKBtoMB (x : float<KB>) = x / kbPerMb
+        let convertMBtoKB (x : float<MB>) = x / mbPerKb
         let convertGBtoMB (x : float<GB>) = x / gbPerMb
 
     [<RequireQualifiedAccess>]
@@ -143,53 +145,62 @@ module ElectronBridge =
         | Settings
         | App
 
-    [<AutoOpen>]
-    module Types =
-        type Selectors =
-            { Selectors : string list }
+    type Selectors =
+        { Selectors : string list }
 
-        type INIFile =
-            { File : ConfigFile
-              WorkingDir : string option }
+    type INIFile =
+        { File : ConfigFile
+          WorkingDir : string option }
 
-        [<RequireQualifiedAccess>]
-        type INIFileOperation =
-            | DefaultDir
-            | Replace of string * Selectors * INIFile
-            | Delete of Selectors * INIFile
-            | Exists of INIFile
-            | Parse of INIFile
-            | Backup of INIFile list
-            | Commit of INIFile list
+    [<RequireQualifiedAccess>]
+    type INIFileOperation =
+        | DefaultDir
+        | Replace of string * Selectors * INIFile
+        | Delete of Selectors * INIFile
+        | Exists of INIFile
+        | Parse of INIFile
+        | Backup of INIFile list
+        | Commit of INIFile list
 
-        [<RequireQualifiedAccess>]
-        type MapFileOperation =
-            | DefaultDir
-            | DirExists of string
+    [<RequireQualifiedAccess>]
+    type MapFileOperation =
+        | DefaultDir
+        | DirExists of string
 
-        type Faces =
-            | Random of string list
-            | Frankenstein of string list
-            | Custom of string list * string
-            | ProfileList
+    type Faces =
+        | Random of string list
+        | Frankenstein of string list
+        | Custom of string list * string
+        | ProfileList
 
-        type Configs =
-            | GetConfigs of OptionGroup list
-            | MapConfigs of OptionGroup list
+    type Configs =
+        | GetConfigs of OptionGroup list
+        | MapConfigs of OptionGroup list
 
-        type Maps =
-            | GetAvailableMaps
-            | GetInstalledMaps of string
-            | InstallMap of string * string
-            | CancelMap of string
+    [<RequireQualifiedAccess>]
+    type GoogleDrive =
+        { ID : string
+          Size : float<MB> }
 
-        type BridgeOperations =
-            | INIOperation of INIFileOperation
-            | MapOperation of MapFileOperation
-            | Faces of Faces
-            | Configs of Configs
-            | Maps of Maps
-            static member Endpoint = "/ws"
+    [<RequireQualifiedAccess>]
+    type MapTarget =
+        { Folder : string
+          Directory : string
+          GDrive : GoogleDrive option }
+
+    type Maps =
+        | GetAvailableMaps
+        | GetInstalledMaps of string
+        | InstallMap of MapTarget
+        | CancelMap of string
+
+    type BridgeOperations =
+        | INIOperation of INIFileOperation
+        | MapOperation of MapFileOperation
+        | Faces of Faces
+        | Configs of Configs
+        | Maps of Maps
+        static member Endpoint = "/ws"
 
     type BridgeMsg =
         { Caller : Caller

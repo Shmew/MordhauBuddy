@@ -96,7 +96,8 @@ module RenderUtils =
               ReleaseDate : DateTime option
               FileSize : float<MB> option
               Players : SuggestedPlayers option
-              Image : string option }
+              Image : string option
+              GoogleDriveID : string option }
             member this.GetName() =
                 match this.Name with
                 | Some(name) -> name
@@ -184,6 +185,7 @@ module RenderUtils =
             let semVersion = @"^(\d+)[. ,]*(\d+)*[. ,]*(\d)*"
             let playersStatic = @"^(\d+)\w*.\w*\D+$"
             let playersRange = @"^(\d+).*?(\d+)"
+            let gDrive = @"^.*drive.google.com\/open\?id=(.*)$|^.*drive.google.com\/file\/d\/(.*)\/view$|^.*drive.google.com\/uc\?id=(.*)&export=download$"
 
         [<AutoOpen>]
         module internal Helpers =
@@ -268,6 +270,11 @@ module RenderUtils =
                     | [min;max] when pList.Length = 2 -> { PlayerRange.Min = min; PlayerRange.Max = max } |> SuggestedPlayers.Range |> Some
                     | _ -> None
 
+            let getGDriveID (s : string) =
+                applyRPattern RegPatterns.gDrive s id
+                |> List.filter (fun s -> s <> "")
+                |> List.tryHead
+                
         let validateDir (s : string) = Fable.Validation.Core.single <| fun t ->
             t.TestOne s
                 |> t.IsValid (fun _ -> 
@@ -292,6 +299,15 @@ module RenderUtils =
                 |> t.Trim
                 |> t.NotBlank ""
                 |> t.IsUrl s
+                |> t.End
+
+        let validateGDrive (s : string) = Fable.Validation.Core.single <| fun t ->
+            t.TestOne s
+                |> t.Trim
+                |> t.NotBlank ""
+                |> t.IsUrl s
+                |> t.Map getGDriveID
+                |> t.IsSome ""
                 |> t.End
 
         let validateVer (s : string) = Fable.Validation.Core.single <| fun t ->
@@ -396,9 +412,12 @@ module RenderUtils =
                 | _ -> None
 
             let validateInfo (i : int) (vFun : string -> Result<'t,string list>) =
-                infoArr.[i]
-                |> vFun
-                |> mapResult
+                if infoArr.Length - 1 < i then
+                    None
+                else
+                    infoArr.[i]
+                    |> vFun
+                    |> mapResult
 
             let vGeneric (i : int) = validateInfo i validateGeneric
 
@@ -413,7 +432,8 @@ module RenderUtils =
               ReleaseDate = validateInfo 5 validateDate
               FileSize = validateInfo 6 validateFileSize
               Players = validateInfo 7 validatePlayers
-              Image = validateInfo 8 validateUri }
+              Image = validateInfo 8 validateUri
+              GoogleDriveID = validateInfo 9 validateGDrive }
 
     module rec EngineMods =
         open MordhauBuddy.Shared.ElectronBridge

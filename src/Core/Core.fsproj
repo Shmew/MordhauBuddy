@@ -6,10 +6,13 @@
     <RuntimeIdentifiers>win-x64;win-x86;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Key.json">
+      <CustomToolNamespace>MordhauBuddy.Core</CustomToolNamespace>
+    </EmbeddedResource>
     <Compile Include="INIReader.fs" />
     <Compile Include="INIConfiguration.fs" />
-    <Compile Include="Maps.fs" />
     <Compile Include="FileOperations.fs" />
+    <Compile Include="Maps.fs" />
     <Compile Include="BridgeOperations.fs" />
     <Compile Include="Bridge.fs" />
     <None Include="paket.references" />

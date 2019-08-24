@@ -10,3 +10,4 @@
 	Fable.Elmish
 	Elmish.Bridge.Giraffe
 	FSharp.Json
+	sharpcompress
