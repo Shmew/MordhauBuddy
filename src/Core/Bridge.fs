@@ -193,15 +193,22 @@ module Bridge =
                             |> MapResult.InstalledMaps
                             |> BridgeResult.Maps
                             |> cResp
-                        | InstallMap s ->
-                            if Maps.installMap s then 
-                                model, None
-                            else 
+                        | InstallMap(s, dir) ->
+                            let dispatchWrapper (mr : MapResult) =
+                                BridgeResult.Maps(mr)
+                                |> createClientResp caller None
+                                |> Option.get
+                                |> Resp
+                                |> clientDispatch
+                            if Maps.installMap s dir dispatchWrapper then model, None
+                            else
                                 model,
-                                (s,Error("Unable to find map archive file."))
-                                |> MapResult.InstallMap 
-                                |> BridgeResult.Maps 
+                                (s, Error("Unable to find map archive file."))
+                                |> MapResult.InstallMap
+                                |> BridgeResult.Maps
                                 |> cResp
+                        | _ -> model, None
+
             match remoteCMsg with
             | Some(rMsg) -> Resp(rMsg) |> clientDispatch
             | _ -> ()

@@ -13,7 +13,8 @@ module Maps =
         { Url : string
           FileName : string
           Directory : IO.DirectoryInfo
-          UpdateFun : float -> unit
+          Size : float<MB>
+          UpdateFun : int -> unit
           CompleteFun : bool -> unit
           ErrorFun : string -> unit
           CancelFun : OperationCanceledException -> unit }
@@ -24,7 +25,7 @@ module Maps =
             { Name : string
               Path : string
               Sha : string
-              Size : int
+              Size : int64
               Url : string
               [<JsonField("html_url")>]
               HtmlUrl : string
@@ -126,7 +127,7 @@ module Maps =
             open System.IO
 
             /// Download a file with continuations and progress updates
-            let downloadFile (downloadFile : DownloadFile) (stream : Async<Result<Stream,string>>) =
+            let downloadFile (downloadFile : DownloadFile) (stream : Async<Result<Stream, string>>) =
                 let errorMsg (e : exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' (e.Message)
 
                 let download =
@@ -136,26 +137,38 @@ module Maps =
                             match requestRes with
                             | Ok(s) -> s
                             | Error(e) -> failwith e
-                        let position () = request.Position / request.Length / 1000000L
-                        use streamDest = new FileStream((downloadFile.Directory.FullName + @"\" + downloadFile.FileName), FileMode.Create)
+
+                        use streamDest = File.Create(downloadFile.Directory.FullName + @"\" + downloadFile.FileName)
+                        let mutable writing = true
+
                         let updater =
+                            let position() =
+                                Math.DivRem(streamDest.Position, 1000000L)
+                                |> fun (i1, i2) -> sprintf "%i.%i" i1 i2
+                                |> float
+                                |> (*) 1.0<MB>
                             async {
-                                while request.Position <> request.Length do
-                                    downloadFile.UpdateFun (position() |> float)
+                                while writing do
+                                    downloadFile.UpdateFun(position() / downloadFile.Size |> float |> (*) 100. |> int)
+                                    Async.Sleep 200 |> Async.RunSynchronously
                             }
-                        let copyStream = request.CopyToAsync(streamDest) |> Async.AwaitTask
-                        [ updater; copyStream ] |> Async.Parallel
+
+                        let copyStream =
+                            async {
+                                do! request.CopyToAsync(streamDest) |> Async.AwaitTask
+                                writing <- false
+                            }
+
+                        [ updater; copyStream ]
+                        |> Async.Parallel
                         |> Async.RunSynchronously
                         |> ignore
                     }
 
                 let onCompletion() = true |> downloadFile.CompleteFun
-
-                let onError (e : exn) =
-                    errorMsg e |> downloadFile.ErrorFun
-
+                let onError (e : exn) = errorMsg e |> downloadFile.ErrorFun
                 Async.StartWithContinuations(download, onCompletion, onError, downloadFile.CancelFun)
-                
+
         /// Json helpers
         module Json =
             /// Set FSharp.Json configuration
@@ -231,6 +244,4 @@ module Maps =
 
         /// Download a file to the given directory with continuations -- finish this
         let downloadFile (download : DownloadFile) =
-            async { return getStream (download.Url, None) }
-            |> fun s -> Streaming.downloadFile download s
-            
+            async { return getStream (download.Url, None) } |> fun s -> Streaming.downloadFile download s

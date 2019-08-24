@@ -82,7 +82,7 @@ module State =
                 | MapResult.InstallMap (map, res) ->
                     match res with
                     | Ok(_) ->
-                        let finished,inProcess = model.Installing |> List.partition (fun m -> m.Map.GetName() = map)
+                        let finished,inProcess = model.Installing |> List.partition (fun m -> m.Map.Folder = map)
                         { model with 
                             Installed = (finished |> List.map (fun m -> m.Map))
                             Installing = inProcess }, Cmd.none
@@ -90,22 +90,38 @@ module State =
                         let setError =
                             model.Installing 
                             |> List.map (fun m -> 
-                                if m.Map.GetName() = map then 
+                                if m.Map.Folder = map then 
                                     { m with 
                                         Error = true
                                         HelperText = errMsg }
                                 else m)
                         { model with Installing = setError }, Cmd.none
+                | MapResult.InstallMapCancelled (map, b) -> model, Cmd.none
+                | MapResult.InstallMapProgress (map, prog) -> 
+                    let newProg = 
+                        model.Installing 
+                        |> List.map (fun m -> 
+                            if m.Map.Folder = map then 
+                                { m with Progress = prog } 
+                            else m)
+                    { model with Installing = newProg }, Cmd.none
+                | MapResult.InstallMapComplete map -> 
+                    let finished,inProcess = model.Installing |> List.partition (fun m -> m.Map.Folder = map)
+                    { model with 
+                        Installed = (finished |> List.map (fun m -> m.Map)) |> List.append model.Installed
+                        Installing = inProcess }, Cmd.none
+                | MapResult.InstallMapError (map, err) -> model, Cmd.none
             | _ -> { model with Waiting = false }, Cmd.none
         | TabSelected tab -> 
             { model with TabSelected = tab }, Cmd.none
         | ImgSkeleton -> model, Cmd.none
-        | Install s -> 
+        | Install (name,fName) -> 
             let newInstalling,newAvailable =
-                partitionComMaps model.Available s
+                partitionComMaps model.Available name
             { model with
                 Available = newAvailable
-                Installing = (List.append model.Installing newInstalling) }, Cmd.bridgeSend (sender.Install(s))
+                Installing = (List.append model.Installing newInstalling) }
+            , Cmd.bridgeSend (sender.Install(fName,model.MapsDir.Directory))
         | InstallAll -> model, Cmd.none
         | Uninstall s -> model, Cmd.none
         | CancelInstall s -> model, Cmd.none

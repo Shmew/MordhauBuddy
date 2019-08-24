@@ -1,6 +1,29 @@
 namespace MordhauBuddy.Shared
 
 module ElectronBridge =
+    [<AutoOpen>]
+    module UnitsOfMeasure =
+        [<Measure>]
+        type B
+
+        [<Measure>]
+        type KB
+
+        [<Measure>]
+        type MB
+
+        [<Measure>]
+        type GB
+
+        let bPerKb : float<B / KB> = 1000.<B/KB>
+        let bPerMb : float<B / MB> = 1000000.<B/MB>
+        let kbPerMb : float<KB / MB> = 1000.<KB/MB>
+        let gbPerMb : float<GB / MB> = 0.001<GB/MB>
+        let convertBtoKB (x : float<B>) = x / bPerKb
+        let convertBtoMB (x : float<B>) = x / bPerMb
+        let convertKBtoMB (x : float<KB>) = x / kbPerMb
+        let convertGBtoMB (x : float<GB>) = x / gbPerMb
+
     [<RequireQualifiedAccess>]
     module KeyValues =
         [<RequireQualifiedAccess>]
@@ -98,7 +121,11 @@ module ElectronBridge =
     type MapResult =
         | AvailableMaps of string list
         | InstalledMaps of string list
-        | InstallMap of string * Result<bool,string>
+        | InstallMap of string * Result<bool, string>
+        | InstallMapCancelled of string * bool
+        | InstallMapProgress of string * int
+        | InstallMapComplete of string
+        | InstallMapError of string * string
 
     [<RequireQualifiedAccess>]
     type BridgeResult =
@@ -153,7 +180,8 @@ module ElectronBridge =
         type Maps =
             | GetAvailableMaps
             | GetInstalledMaps of string
-            | InstallMap of string
+            | InstallMap of string * string
+            | CancelMap of string
 
         type BridgeOperations =
             | INIOperation of INIFileOperation

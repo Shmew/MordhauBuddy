@@ -53,7 +53,7 @@ module View =
                             fab [
                                 MaterialProp.Color ComponentColor.Secondary
                                 FabProp.Size FabSize.Medium
-                                DOMAttr.OnClick <| fun _ -> dispatch (Install(map.GetName()))
+                                DOMAttr.OnClick <| fun _ -> dispatch (Install(map.GetName(), map.Folder))
                             ] [ addIcon [] ]
                     ] []
                     cardMedia [

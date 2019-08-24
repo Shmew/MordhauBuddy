@@ -49,7 +49,7 @@ module Types =
         | ClientMsg of BridgeMsg
         | TabSelected of Tab
         | ImgSkeleton
-        | Install of string
+        | Install of string * string
         | InstallAll
         | Uninstall of string
         | CancelInstall of string

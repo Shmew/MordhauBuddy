@@ -93,16 +93,31 @@ module BridgeOperations =
         let getInstalledMaps (dir : string) = FileOps.Maps.getInstalled dir
 
         /// Download map if available
-        let installMap (s : string) =
+        let installMap (s : string) (dir : string) (dispatchWrapper : MapResult -> unit) =
+            let fName = s + ".zip"
+            let getMap (mList : GHTypes.GHContents list) = mList |> List.filter (fun m -> m.Name = fName)
+            let diDir = IO.DirectoryInfo(dir)
             match getMapFiles() with
-            | Ok(mList) when (mList |> List.filter (fun m -> m.Name = s) |> List.length > 0) -> 
-                { Url = ""
-                  FileName = s
-                  Directory = IO.DirectoryInfo("")
-                  UpdateFun = fun _ -> ()
-                  CompleteFun = fun _ -> ()
-                  ErrorFun = fun _ -> ()
-                  CancelFun = fun _ -> () }
+            | Ok(mList) when (mList
+                              |> getMap
+                              |> List.length > 0)
+                             && diDir.Exists ->
+                let fileInfo =
+                    mList
+                    |> getMap
+                    |> List.head
+                { Url = fileInfo.DownloadUrl
+                  FileName = fName
+                  Directory = diDir
+                  Size =
+                      Math.DivRem(fileInfo.Size, 1000000L)
+                      |> fun (i1, i2) -> sprintf "%i.%i" i1 i2
+                      |> float
+                      |> (*) 1.0<MB>
+                  UpdateFun = fun i -> MapResult.InstallMapProgress(s, i) |> dispatchWrapper
+                  CompleteFun = fun c -> MapResult.InstallMapComplete(s) |> dispatchWrapper
+                  ErrorFun = fun e -> MapResult.InstallMapError(s, e) |> dispatchWrapper
+                  CancelFun = fun c -> MapResult.InstallMapCancelled(s, true) |> dispatchWrapper }
                 |> downloadFile
                 true
             | _ -> false

@@ -37,6 +37,7 @@ module RenderUtils =
     open Fable.Import
     open Browser.Types
     open Node.Api
+    open MordhauBuddy.Shared.ElectronBridge
     
     let isWindows = Node.Api.``process``.platform = Node.Base.Platform.Win32
     
@@ -75,16 +76,6 @@ module RenderUtils =
                   MapVersion.Patch = patch }
             member this.GetString() =
                 sprintf "%i.%i.%i" this.Major this.Minor this.Patch
-
-        [<Measure>] type KB
-        [<Measure>] type MB
-        [<Measure>] type GB
-        
-        let kbPerMb : float<KB/MB> = 1000.<KB/MB>
-        let gbPerMb : float<GB/MB> = 0.001<GB/MB>
-
-        let convertKBtoMB (x : float<KB>) = x / kbPerMb
-        let convertGBtoMB (x : float<GB>) = x / gbPerMb
 
         [<RequireQualifiedAccess>]
         type PlayerRange =
@@ -605,7 +596,7 @@ module RenderUtils =
             { Message = msg
               Title = "" }
 
-        let withTitle title msg = { msg with Title = title }
+        let withTitle title msg : ToastrMsg = { msg with Title = title }
 
         let success (msg : ToastrMsg) : Cmd<_> =
             [ fun _ -> 
