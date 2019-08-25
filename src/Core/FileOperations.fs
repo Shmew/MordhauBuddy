@@ -113,21 +113,24 @@ module FileOps =
         /// Try to get the Google Drive API key from embedded resource
         let tryGetGDKey() =
             try
-                Console.WriteLine("Trying to fetch key")
                 System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames()
                 |> Array.iter Console.WriteLine
                 use stream =
                     new IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly()
                                               .GetManifestResourceStream("Core.Key.json"))
-                let data = stream.ReadToEnd()
-                Console.WriteLine(data)
-                data |> Some
+                stream.ReadToEnd() |> Some
             with _ -> None
 
         /// Try to delete the given map
-        let tryUninstall (fName : string) =
+        let tryUninstall (dir : string) (fName : string) =
             try
-                let folder = new IO.DirectoryInfo(__SOURCE_DIRECTORY__ @@ fName)
+                let folder = new IO.DirectoryInfo(dir @@ fName)
                 if DirectoryInfo.exists (folder) then Shell.deleteDir (folder.FullName)
-                Ok("Successful")
+                Ok(true)
             with e -> Error(e.Message)
+
+        /// Delete a zip if it exists
+        let asyncDeleteZip (path : string) =
+            async {
+                if File.exists (path) then Shell.rm path
+            }

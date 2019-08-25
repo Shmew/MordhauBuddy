@@ -64,12 +64,14 @@ module Types =
         { Map : CommunityMap
           Progress : int
           Error : bool
-          HelperText : string }
+          HelperText : string
+          CancellationToken : string }
         static member Init (map : CommunityMap) =
             { Map = map
               Progress = 0
               Error = false
-              HelperText = "" }
+              HelperText = ""
+              CancellationToken = "" }
 
     type Model = 
         { Waiting : bool

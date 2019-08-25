@@ -134,7 +134,7 @@ module View =
                         LinearProgressProp.Variant LinearProgressVariant.Determinate
                     ]
                     typography [] [
-                        str (sprintf "%s%s" (map.Progress/100 |> string) "%")
+                        str (sprintf "%s%s" (map.Progress |> string) "%")
                     ]
                 ]
                 tableCell [
@@ -142,7 +142,7 @@ module View =
                 ] [ 
                     map.Map.FileSize 
                     |> Option.map (fun v -> 
-                        sprintf "%s %s" (v |> string) "MB") 
+                        sprintf "%f / %s %s" (map.Progress |> float |> (/) 0.8) (v |> string) "MB") 
                     |> defStr 
                 ]
             ])

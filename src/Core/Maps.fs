@@ -124,11 +124,13 @@ module Maps =
 
         /// Helper module for streams
         module Streaming =
+            open Fake.IO.FileSystemOperators
             open System.IO
-            open SharpCompress
+            open System.Threading
 
-            /// Download a file with continuations and progress updates
-            let downloadFile (downloadFile : DownloadFile) (stream : Async<Result<Stream, string>>) =
+            /// Download and extract a file with continuations and progress updates
+            let downloadFile (downloadFile : DownloadFile) (stream : Async<Result<Stream, string>>)
+                (cToken : CancellationToken) =
                 let errorMsg (e : exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' (e.Message)
 
                 let download =
@@ -136,58 +138,55 @@ module Maps =
                         let mutable downloading = true
                         let mutable extracting = true
                         let! requestRes = stream
+                        let path = downloadFile.Directory.FullName @@ downloadFile.FileName
 
-                        let position (streamDest : Stream) =
-                            Math.DivRem(streamDest.Position, 1000000L)
-                            |> fun (i1, i2) -> sprintf "%i.%i" i1 i2
-                            |> float
-                            |> (*) 1.0<MB>
+                        let calcPercentage (weight : float) (i : int64) =
+                            float (i)
+                            |> fun f -> Math.Log(f, 1024.)
+                            |> (*) 1.0<KB>
+                            |> convertKBtoMB
+                            |> fun mb -> mb / downloadFile.Size
+                            |> (*) weight
+                            |> (*) 10.
+                            |> int
 
                         let request =
                             match requestRes with
                             | Ok(s) -> s
                             | Error(e) -> failwith e
 
-                        use streamDest = File.Create(downloadFile.Directory.FullName + @"\" + downloadFile.FileName)
-
+                        use streamDest = File.Create path
 
                         let downloadUpdater (streamDest : Stream) =
                             async {
                                 while downloading do
-                                    downloadFile.UpdateFun(position streamDest / downloadFile.Size
-                                                            |> float
-                                                            |> (*) 250.
-                                                            |> int)
+                                    downloadFile.UpdateFun(streamDest.Position |> calcPercentage 0.8)
                                     Async.Sleep 200 |> Async.RunSynchronously
                             }
 
                         let extractUpdater (streamDest : Stream) =
                             async {
                                 while extracting do
-                                    downloadFile.UpdateFun(position streamDest / downloadFile.Size
-                                                            |> float
-                                                            |> (*) 62.5
-                                                            |> int)
+                                    downloadFile.UpdateFun(streamDest.Position
+                                                           |> calcPercentage 0.2
+                                                           |> (+) 80)
                                     Async.Sleep 200 |> Async.RunSynchronously
                             }
 
                         async {
-                            do! downloadUpdater streamDest
+                            downloadUpdater streamDest |> Async.Start
                             do! request.CopyToAsync(streamDest) |> Async.AwaitTask
                             downloading <- false
                             do! Async.Sleep 1000
-                            do request.Dispose()
-                            do streamDest.Dispose()
-
-                            use zipStream =
-                                File.OpenRead(downloadFile.Directory.FullName + @"\" + downloadFile.FileName)
-                            do! extractUpdater zipStream
+                            request.Dispose()
+                            streamDest.Dispose()
+                            use zipStream = File.OpenRead path
+                            extractUpdater zipStream |> Async.Start
                             use archiveReader = SharpCompress.Readers.ReaderFactory.Open(zipStream)
                             while archiveReader.MoveToNextEntry() do
                                 if archiveReader.Entry.IsDirectory then
                                     archiveReader.Entry.Key
-                                    |> fun k ->
-                                        Directory.CreateDirectory(downloadFile.Directory.FullName + @"\" + k)
+                                    |> fun k -> Directory.CreateDirectory(downloadFile.Directory.FullName + @"\" + k)
                                     |> ignore
                                 else
                                     use entryStream = archiveReader.OpenEntryStream()
@@ -196,13 +195,18 @@ module Maps =
                                     |> Async.AwaitTask
                                     |> Async.RunSynchronously
                             extracting <- false
+                            do! Async.Sleep 1000
+                            archiveReader.Dispose()
+                            zipStream.Dispose()
+                            do! FileOps.Maps.asyncDeleteZip (path)
                         }
                         |> Async.RunSynchronously
                         |> ignore
                     }
 
                 let onError (e : exn) = errorMsg e |> downloadFile.ErrorFun
-                Async.StartWithContinuations(download, downloadFile.CompleteFun, onError, downloadFile.CancelFun)
+                Async.StartWithContinuations
+                    (download, downloadFile.CompleteFun, onError, downloadFile.CancelFun, cToken)
 
         /// Json helpers
         module Json =
@@ -215,6 +219,7 @@ module Maps =
     module WebRequests =
         open Helpers
         open GHTypes
+        open System.Threading
 
         [<NoComparison>]
         type GDKey =
@@ -300,11 +305,11 @@ module Maps =
             |> Result.map (Json.deserializeEx<GHContents list> Json.config)
 
         /// Download a file to the given directory with continuations
-        let downloadFile (download : DownloadFile) =
+        let downloadFile (cToken : CancellationToken) (download : DownloadFile) =
             async { return getStream (download.Url, None, ReqHeaders.Github) }
-            |> fun s -> Streaming.downloadFile download s
+            |> fun s -> Streaming.downloadFile download s cToken
 
-        let downloadGDFile (download : DownloadFile) =
+        let downloadGDFile (cToken : CancellationToken) (download : DownloadFile) =
             let key = FileOps.Maps.tryGetGDKey() |> Option.map (Json.deserializeEx<GDKey> Json.config)
             match key with
             | Some(gdKey) ->
@@ -312,5 +317,5 @@ module Maps =
                   Param(("alt", Some("media"))) ]
                 |> Http.paramBuilder
                 |> (fun s -> async { return getGDStream (download.Url + s, None, ReqHeaders.GoogleDrive) })
-                |> fun s -> Streaming.downloadFile download s
+                |> fun s -> Streaming.downloadFile download s cToken
             | _ -> download.ErrorFun "Failed to get Google Drive key"

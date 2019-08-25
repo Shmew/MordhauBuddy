@@ -307,6 +307,7 @@ module State =
                                     Error = true
                                     HelperText = "Maps directory not found"
                                     Validated = false } }, Cmd.none
+                | _ -> { model with Waiting = false }, Cmd.none
             | _ -> { model with Waiting = false }, Cmd.none
         | GetDefaultDir ->
             model, Cmd.bridgeSend (iniSender.DefaultDir)

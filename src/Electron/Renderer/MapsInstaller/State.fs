@@ -92,7 +92,22 @@ module State =
                                 else m)
                         { model with Installing = setError }, Cmd.none
                     | _ -> model, Cmd.none
-                | MapResult.InstallMapCancelled (map, b) -> model, Cmd.none
+                | MapResult.InstallMapCancelled (map, b) -> 
+                    if b then
+                        { model with
+                            Installing = (model.Installing |> List.filter (fun m -> m.Map.Folder <> map))}
+                        , Cmd.ofMsg GetAvailable
+                    else
+                        { model with
+                            Installing = 
+                                (model.Installing 
+                                |> List.map (fun m -> 
+                                    if m.Map.Folder = map then 
+                                        { m with 
+                                            Error = true
+                                            HelperText = "Error cancelling installation" }
+                                    else m))}
+                        , Cmd.none
                 | MapResult.InstallMapProgress (map, prog) -> 
                     let newProg = 
                         model.Installing 
@@ -106,7 +121,17 @@ module State =
                     { model with 
                         Installed = (finished |> List.map (fun m -> m.Map)) |> List.append model.Installed
                         Installing = inProcess }, Cmd.none
-                | MapResult.InstallMapError (map, err) -> model, Cmd.none
+                | MapResult.InstallMapError (map, err) -> 
+                    { model with
+                        Installing = 
+                            (model.Installing 
+                            |> List.map (fun m -> 
+                                if m.Map.Folder = map then 
+                                    { m with 
+                                        Error = true
+                                        HelperText = err } 
+                                else m))}
+                    , Cmd.none
             | _ -> { model with Waiting = false }, Cmd.none
         | TabSelected tab -> 
             { model with TabSelected = tab }, Cmd.none
@@ -129,8 +154,8 @@ module State =
                 Installing = (List.append model.Installing newInstalling) }
             , Cmd.bridgeSend (sender.Install(mCmd))
         | InstallAll -> model, Cmd.none
-        | Uninstall s -> model, Cmd.none
-        | CancelInstall s -> model, Cmd.none
+        | Uninstall s -> model, Cmd.bridgeSend (sender.Uninstall model.MapsDir.Directory s)
+        | CancelInstall s -> model, Cmd.bridgeSend (sender.Cancel s)
         | Update s -> model, Cmd.none
         | GetInstalled -> model, Cmd.bridgeSend (sender.GetInstalled(model.MapsDir.Directory))
         | GetAvailable -> model, Cmd.bridgeSend (sender.GetAvailable)

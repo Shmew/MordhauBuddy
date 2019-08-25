@@ -326,6 +326,7 @@ module State =
                                             { m.Resources.Maps with 
                                                 Path = m'.MapsDir.Directory } }
                                 Settings = m' }
+                        | _ -> { m with Settings = m' }
                     | None, BridgeResult.INIOperation(INIOperationResult.DefaultDir _) ->
                         [ (m.Resources.GameConfig.Loading, ConfigFile.Game)
                           (m.Resources.EngineConfig.Loading, ConfigFile.Engine)

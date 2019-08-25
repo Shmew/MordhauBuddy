@@ -71,6 +71,7 @@ module BridgeOperations =
         open Maps
         open Maps.WebRequests
         open System
+        open System.Threading
 
         /// Try to locate the default Mordhau maps directory
         let defDir() = FileOps.Maps.defaultDir
@@ -93,7 +94,7 @@ module BridgeOperations =
         let getInstalledMaps (dir : string) = FileOps.Maps.getInstalled dir
 
         /// Download map if available
-        let installMap (mCmd : MapTarget) (dispatchWrapper : MapResult -> unit) =
+        let installMap (mCmd : MapTarget) (dispatchWrapper : MapResult -> unit) (cToken : CancellationToken) =
             let fName = mCmd.Folder + ".zip"
             let getMap (mList : GHTypes.GHContents list) = mList |> List.filter (fun m -> m.Name = fName)
             let diDir = IO.DirectoryInfo(mCmd.Directory)
@@ -107,13 +108,14 @@ module BridgeOperations =
                   CompleteFun = fun () -> MapResult.InstallMapComplete(mCmd.Folder) |> dispatchWrapper
                   ErrorFun = fun e -> MapResult.InstallMapError(mCmd.Folder, e) |> dispatchWrapper
                   CancelFun = fun c -> MapResult.InstallMapCancelled(mCmd.Folder, true) |> dispatchWrapper }
-                |> downloadGDFile
+                |> downloadGDFile cToken
                 true
             | _ ->
                 match getMapFiles() with
                 | Ok(mList) when (mList
                                   |> getMap
-                                  |> List.length > 0)
+                                  |> List.isEmpty
+                                  |> not)
                                  && diDir.Exists ->
                     let fileInfo =
                         mList
@@ -131,6 +133,9 @@ module BridgeOperations =
                       CompleteFun = fun () -> MapResult.InstallMapComplete(mCmd.Folder) |> dispatchWrapper
                       ErrorFun = fun e -> MapResult.InstallMapError(mCmd.Folder, e) |> dispatchWrapper
                       CancelFun = fun c -> MapResult.InstallMapCancelled(mCmd.Folder, true) |> dispatchWrapper }
-                    |> downloadFile
+                    |> downloadFile cToken
                     true
                 | _ -> false
+
+        /// Remove a map
+        let uninstallMap (dir : string) (fName : string) = FileOps.Maps.tryUninstall dir fName

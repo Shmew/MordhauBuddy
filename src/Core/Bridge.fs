@@ -7,13 +7,15 @@ module Bridge =
     open INIReader
     open BridgeOperations
     open MordhauBuddy.Shared.ElectronBridge
+    open System.Threading
 
     /// Websocket bridge
     module Bridge =
         type Model =
             { Game : INIValue option
               Engine : INIValue option
-              GameUserSettings : INIValue option }
+              GameUserSettings : INIValue option
+              InstallingMaps : (string * CancellationTokenSource) list }
             member this.GetIVal(file : ConfigFile) =
                 match file with
                 | ConfigFile.Game -> this.Game
@@ -26,7 +28,8 @@ module Bridge =
             Connected |> clientDispatch
             { Game = None
               GameUserSettings = None
-              Engine = None }, Cmd.none
+              Engine = None
+              InstallingMaps = [] }, Cmd.none
 
         let createClientResp (caller : Caller) (file : INIFile option) (br : BridgeResult) =
             { Caller = caller
@@ -125,7 +128,7 @@ module Bridge =
                             |> MapOperationResult.DefaultDir
                             |> BridgeResult.MapOperation
                             |> createClientResp caller None
-                        | MapFileOperation.DirExists(dir) ->
+                        | MapFileOperation.DirExists dir ->
                             let result = Maps.dirExists dir
 
                             let m, cmd =
@@ -139,6 +142,12 @@ module Bridge =
                                 |> Resp
                                 |> clientDispatch
                             m, cmd
+                        | MapFileOperation.Delete(dir, fName) ->
+                            model,
+                            (fName, Maps.uninstallMap dir fName)
+                            |> MapOperationResult.Delete
+                            |> BridgeResult.MapOperation
+                            |> createClientResp caller None
                     | Faces fCmd ->
                         let cResp br = createClientResp caller None br
                         match fCmd with
@@ -194,20 +203,27 @@ module Bridge =
                             |> BridgeResult.Maps
                             |> cResp
                         | InstallMap(mCmd) ->
+                            let cSource = new CancellationTokenSource()
+
                             let dispatchWrapper (mr : MapResult) =
                                 BridgeResult.Maps(mr)
                                 |> createClientResp caller None
                                 |> Option.get
                                 |> Resp
                                 |> clientDispatch
-                            if Maps.installMap mCmd dispatchWrapper then model, None
+                            if Maps.installMap mCmd dispatchWrapper cSource.Token then
+                                { model with InstallingMaps = ((mCmd.Folder, cSource) :: model.InstallingMaps) }, None
                             else
                                 model,
                                 (mCmd.Folder, Error("Unable to find map archive file."))
                                 |> MapResult.InstallMap
                                 |> BridgeResult.Maps
                                 |> cResp
-                        | _ -> model, None
+                        | Maps.CancelMap fName ->
+                            let toCancel, installing =
+                                model.InstallingMaps |> List.partition (fun (name, _) -> fName = name)
+                            toCancel |> List.iter (fun (_, cSource) -> cSource.Cancel())
+                            { model with InstallingMaps = installing }, None
 
             match remoteCMsg with
             | Some(rMsg) -> Resp(rMsg) |> clientDispatch

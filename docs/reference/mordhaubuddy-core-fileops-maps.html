@@ -12,8 +12,8 @@
     <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
     <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
 
-    <link type="text/css" rel="stylesheet" href="/MordhauBuddy/content/style.css" />
-    <script type="text/javascript" src="/MordhauBuddy/content/tips.js"></script>
+    <link type="text/css" rel="stylesheet" href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/style.css" />
+    <script type="text/javascript" src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/content/tips.js"></script>
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -25,7 +25,7 @@
         <ul class="nav nav-pills pull-right">
           <li><a href="http://fsharp.org">fsharp.org</a></li>
         </ul>
-        <h3 class="muted"><a href="/MordhauBuddy/index.html">MordhauBuddy</a></h3>
+        <h3 class="muted"><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">MordhauBuddy</a></h3>
       </div>
       <hr />
       <div class="row">
@@ -53,10 +53,30 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '146', 146)" onmouseover="showTip(event, '146', 146)">
+          <code onmouseout="hideTip(event, '150', 150)" onmouseover="showTip(event, '150', 150)">
+            asyncDeleteZip(path)
+          </code>
+          <div class="tip" id="150">
+            <strong>Signature:</strong> path:string -&gt; Async&lt;unit&gt;<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L133-133" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Delete a zip if it exists</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '151', 151)" onmouseover="showTip(event, '151', 151)">
             defaultDir
           </code>
-          <div class="tip" id="146">
+          <div class="tip" id="151">
             <strong>Signature:</strong> string option<br />
                                   </div>
         </td>
@@ -73,10 +93,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '147', 147)" onmouseover="showTip(event, '147', 147)">
+          <code onmouseout="hideTip(event, '152', 152)" onmouseover="showTip(event, '152', 152)">
             getInstalled(dir)
           </code>
-          <div class="tip" id="147">
+          <div class="tip" id="152">
             <strong>Signature:</strong> dir:string -&gt; string list<br />
                                   </div>
         </td>
@@ -93,10 +113,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '148', 148)" onmouseover="showTip(event, '148', 148)">
+          <code onmouseout="hideTip(event, '153', 153)" onmouseover="showTip(event, '153', 153)">
             tryFindMaps(dir)
           </code>
-          <div class="tip" id="148">
+          <div class="tip" id="153">
             <strong>Signature:</strong> dir:string -&gt; bool<br />
                                   </div>
         </td>
@@ -113,10 +133,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '149', 149)" onmouseover="showTip(event, '149', 149)">
+          <code onmouseout="hideTip(event, '154', 154)" onmouseover="showTip(event, '154', 154)">
             tryGetGDKey()
           </code>
-          <div class="tip" id="149">
+          <div class="tip" id="154">
             <strong>Signature:</strong> unit -&gt; string option<br />
                                   </div>
         </td>
@@ -133,15 +153,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '150', 150)" onmouseover="showTip(event, '150', 150)">
-            tryUninstall(fName)
+          <code onmouseout="hideTip(event, '155', 155)" onmouseover="showTip(event, '155', 155)">
+            tryUninstall dir fName
           </code>
-          <div class="tip" id="150">
-            <strong>Signature:</strong> fName:string -&gt; Result&lt;string,string&gt;<br />
+          <div class="tip" id="155">
+            <strong>Signature:</strong> dir:string -&gt; fName:string -&gt; Result&lt;bool,string&gt;<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L128-128" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L125-125" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -155,26 +175,26 @@
 
         </div>
         <div class="span3">
-          <img src="/MordhauBuddy/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />  
+          <img src="C:\Users\Shmew\source\repos\MordhauBuddy\docs/img/logo.png" alt="F# Project" style="width:150px;margin:10px" />  
           <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
             <li class="nav-header">MordhauBuddy</li>
             <li class="divider"></li>
             <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
-            <li><a href="/MordhauBuddy/release-notes.html">Release Notes</a></li>
-            <li><a href="/MordhauBuddy/contributing.html">Contributing</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/release-notes.html">Release Notes</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/contributing.html">Contributing</a></li>
             
             <li class="nav-header">Documentation</li>
-            <li><a href="/MordhauBuddy/index.html">Introduction</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/index.html">Introduction</a></li>
             <li class="divider"></li>
-            <li><a href="/MordhauBuddy/a.html">a</a></li>
-            <li><a href="/MordhauBuddy/b.html">b</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/a.html">a</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/b.html">b</a></li>
 
             <li class="nav-header">Tutorials</li>
-            <li><a href="/MordhauBuddy/at.html">at</a></li>
-            <li><a href="/MordhauBuddy/bt.html">bt</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/at.html">at</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/bt.html">bt</a></li>
 
             <li class="nav-header">Reference</li>
-            <li><a href="/MordhauBuddy/reference/index.html">API Reference</a></li>
+            <li><a href="C:\Users\Shmew\source\repos\MordhauBuddy\docs/reference/index.html">API Reference</a></li>
           </ul>
         </div>
       </div>

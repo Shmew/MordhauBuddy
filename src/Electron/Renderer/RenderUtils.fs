@@ -28,7 +28,9 @@ module BridgeUtils =
         member this.DirExists s = MapFileOperation.DirExists(s) |> wrapOps
         member this.GetAvailable = Maps.GetAvailableMaps |> wrapMaps
         member this.GetInstalled s = Maps.GetInstalledMaps s |> wrapMaps
-        member this.Install s = Maps.InstallMap s |> wrapMaps
+        member this.Install mt = Maps.InstallMap mt |> wrapMaps
+        member this.Uninstall dir fName = MapFileOperation.Delete(dir,fName) |> wrapOps 
+        member this.Cancel fName = Maps.CancelMap fName |> wrapMaps
 
 module RenderUtils =
     open Electron
@@ -347,8 +349,6 @@ module RenderUtils =
                 |> t.End
 
     module Directory =
-        open MordhauBuddy.Shared.ElectronBridge
-
         type Dirs =
             { Game : string
               Engine : string
@@ -436,8 +436,6 @@ module RenderUtils =
               GoogleDriveID = validateInfo 9 validateGDrive }
 
     module rec EngineMods =
-        open MordhauBuddy.Shared.ElectronBridge
-
         let cosmetics = [
             { Title = "Sharpen picture"
               Caption = 

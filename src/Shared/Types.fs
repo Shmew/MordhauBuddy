@@ -118,6 +118,7 @@ module ElectronBridge =
     type MapOperationResult =
         | DefaultDir of string option
         | DirExists of bool
+        | Delete of string * Result<bool, string>
 
     [<RequireQualifiedAccess>]
     type MapResult =
@@ -166,6 +167,7 @@ module ElectronBridge =
     type MapFileOperation =
         | DefaultDir
         | DirExists of string
+        | Delete of string * string
 
     type Faces =
         | Random of string list
