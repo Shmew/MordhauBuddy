@@ -194,6 +194,7 @@ module ElectronBridge =
         | GetAvailableMaps
         | GetInstalledMaps of string
         | InstallMap of MapTarget
+        | ConfirmInstalled of string
         | CancelMap of string
 
     type BridgeOperations =

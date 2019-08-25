@@ -29,6 +29,7 @@ module BridgeUtils =
         member this.GetAvailable = Maps.GetAvailableMaps |> wrapMaps
         member this.GetInstalled s = Maps.GetInstalledMaps s |> wrapMaps
         member this.Install mt = Maps.InstallMap mt |> wrapMaps
+        member this.ConfirmInstall s = Maps.ConfirmInstalled s |> wrapMaps
         member this.Uninstall dir fName = MapFileOperation.Delete(dir,fName) |> wrapOps 
         member this.Cancel fName = Maps.CancelMap fName |> wrapMaps
 

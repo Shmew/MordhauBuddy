@@ -120,7 +120,7 @@ module State =
                     let finished,inProcess = model.Installing |> List.partition (fun m -> m.Map.Folder = map)
                     { model with 
                         Installed = (finished |> List.map (fun m -> m.Map)) |> List.append model.Installed
-                        Installing = inProcess }, Cmd.none
+                        Installing = inProcess }, Cmd.bridgeSend (sender.ConfirmInstall map)
                 | MapResult.InstallMapError (map, err) -> 
                     { model with
                         Installing = 
@@ -153,9 +153,23 @@ module State =
                 Available = newAvailable
                 Installing = (List.append model.Installing newInstalling) }
             , Cmd.bridgeSend (sender.Install(mCmd))
-        | InstallAll -> model, Cmd.none
+        | InstallAll -> 
+            model, Cmd.batch 
+                (model.Available 
+                |> List.map (fun m -> 
+                    Install(m.GetName(),m.Folder) |> Cmd.ofMsg))
         | Uninstall s -> model, Cmd.bridgeSend (sender.Uninstall model.MapsDir.Directory s)
+        | UninstallAll -> 
+            model, Cmd.batch 
+                (model.Installed 
+                |> List.map (fun m -> 
+                    Uninstall(m.Folder) |> Cmd.ofMsg))
         | CancelInstall s -> model, Cmd.bridgeSend (sender.Cancel s)
+        | CancelInstallAll -> 
+            model, Cmd.batch 
+                (model.Installing 
+                |> List.map (fun m -> 
+                    CancelInstall(m.Map.Folder) |> Cmd.ofMsg))
         | Update s -> model, Cmd.none
         | GetInstalled -> model, Cmd.bridgeSend (sender.GetInstalled(model.MapsDir.Directory))
         | GetAvailable -> model, Cmd.bridgeSend (sender.GetAvailable)

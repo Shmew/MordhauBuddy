@@ -102,6 +102,7 @@ module BridgeOperations =
             | Some(gd) ->
                 { Url = sprintf "https://www.googleapis.com/drive/v3/files/%s" gd.ID
                   FileName = fName
+                  MapName = mCmd.Folder
                   Directory = diDir
                   Size = gd.Size
                   UpdateFun = fun i -> MapResult.InstallMapProgress(mCmd.Folder, i) |> dispatchWrapper
@@ -123,10 +124,10 @@ module BridgeOperations =
                         |> List.head
                     { Url = fileInfo.DownloadUrl
                       FileName = fName
+                      MapName = mCmd.Folder
                       Directory = diDir
                       Size =
-                          Math.DivRem(fileInfo.Size, 1000000L)
-                          |> fun (i1, i2) -> sprintf "%i.%i" i1 i2
+                          fileInfo.Size
                           |> float
                           |> (*) 1.0<MB>
                       UpdateFun = fun i -> MapResult.InstallMapProgress(mCmd.Folder, i) |> dispatchWrapper

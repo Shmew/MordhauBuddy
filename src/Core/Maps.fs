@@ -12,6 +12,7 @@ module Maps =
     type DownloadFile =
         { Url : string
           FileName : string
+          MapName : string
           Directory : IO.DirectoryInfo
           Size : float<MB>
           UpdateFun : int -> unit
@@ -126,28 +127,35 @@ module Maps =
         module Streaming =
             open Fake.IO.FileSystemOperators
             open System.IO
+            open System.IO.Compression
             open System.Threading
 
             /// Download and extract a file with continuations and progress updates
             let downloadFile (downloadFile : DownloadFile) (stream : Async<Result<Stream, string>>)
-                (cToken : CancellationToken) =
+                (size : Result<int64, string>) (cToken : CancellationToken) =
                 let errorMsg (e : exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' (e.Message)
 
                 let download =
                     async {
                         let mutable downloading = true
-                        let mutable extracting = true
                         let! requestRes = stream
                         let path = downloadFile.Directory.FullName @@ downloadFile.FileName
 
-                        let calcPercentage (weight : float) (i : int64) =
+                        let dlSize =
+                            match size with
+                            | Ok(i) ->
+                                i
+                                |> float
+                                |> (*) 1.<B>
+                                |> convertBtoMB
+                            | _ -> downloadFile.Size
+
+                        let calcPercentage (i : int64) =
                             float (i)
-                            |> fun f -> Math.Log(f, 1024.)
-                            |> (*) 1.0<KB>
-                            |> convertKBtoMB
-                            |> fun mb -> mb / downloadFile.Size
-                            |> (*) weight
-                            |> (*) 10.
+                            |> (*) 1.<B>
+                            |> convertBtoMB
+                            |> fun mb -> mb / dlSize
+                            |> (*) 100.
                             |> int
 
                         let request =
@@ -160,19 +168,9 @@ module Maps =
                         let downloadUpdater (streamDest : Stream) =
                             async {
                                 while downloading do
-                                    downloadFile.UpdateFun(streamDest.Position |> calcPercentage 0.8)
+                                    downloadFile.UpdateFun(streamDest.Position |> calcPercentage)
                                     Async.Sleep 200 |> Async.RunSynchronously
                             }
-
-                        let extractUpdater (streamDest : Stream) =
-                            async {
-                                while extracting do
-                                    downloadFile.UpdateFun(streamDest.Position
-                                                           |> calcPercentage 0.2
-                                                           |> (+) 80)
-                                    Async.Sleep 200 |> Async.RunSynchronously
-                            }
-
                         async {
                             downloadUpdater streamDest |> Async.Start
                             do! request.CopyToAsync(streamDest) |> Async.AwaitTask
@@ -180,23 +178,11 @@ module Maps =
                             do! Async.Sleep 1000
                             request.Dispose()
                             streamDest.Dispose()
-                            use zipStream = File.OpenRead path
-                            extractUpdater zipStream |> Async.Start
-                            use archiveReader = SharpCompress.Readers.ReaderFactory.Open(zipStream)
-                            while archiveReader.MoveToNextEntry() do
-                                if archiveReader.Entry.IsDirectory then
-                                    archiveReader.Entry.Key
-                                    |> fun k -> Directory.CreateDirectory(downloadFile.Directory.FullName + @"\" + k)
-                                    |> ignore
-                                else
-                                    use entryStream = archiveReader.OpenEntryStream()
-                                    File.Create(downloadFile.Directory.FullName + @"\" + archiveReader.Entry.Key)
-                                    |> entryStream.CopyToAsync
-                                    |> Async.AwaitTask
-                                    |> Async.RunSynchronously
-                            extracting <- false
+                            FileOps.Maps.deleteDir (downloadFile.Directory.FullName @@ downloadFile.MapName)
                             do! Async.Sleep 1000
-                            archiveReader.Dispose()
+                            use zipStream = ZipFile.OpenRead path
+                            zipStream.ExtractToDirectory(downloadFile.Directory.FullName)
+                            do! Async.Sleep 1000
                             zipStream.Dispose()
                             do! FileOps.Maps.asyncDeleteZip (path)
                         }
@@ -224,6 +210,10 @@ module Maps =
         [<NoComparison>]
         type GDKey =
             { Key : string option }
+
+        [<NoComparison>]
+        type GDSize =
+            { Size : int64 }
 
         /// Github base uri
         let private baseUri = @"https://api.github.com"
@@ -307,15 +297,21 @@ module Maps =
         /// Download a file to the given directory with continuations
         let downloadFile (cToken : CancellationToken) (download : DownloadFile) =
             async { return getStream (download.Url, None, ReqHeaders.Github) }
-            |> fun s -> Streaming.downloadFile download s cToken
+            |> fun s -> Streaming.downloadFile download s (Error("")) cToken
 
         let downloadGDFile (cToken : CancellationToken) (download : DownloadFile) =
             let key = FileOps.Maps.tryGetGDKey() |> Option.map (Json.deserializeEx<GDKey> Json.config)
             match key with
             | Some(gdKey) ->
+                let size =
+                    [ Param(("key", gdKey.Key))
+                      Param(("fields", Some("size"))) ]
+                    |> Http.paramBuilder
+                    |> fun s -> getDirect (download.Url, Some(s), ReqHeaders.GoogleDrive)
+                    |> Result.map ((Json.deserializeEx<GDSize> Json.config) >> (fun gdSize -> gdSize.Size))
                 [ Param(("key", gdKey.Key))
                   Param(("alt", Some("media"))) ]
                 |> Http.paramBuilder
-                |> (fun s -> async { return getGDStream (download.Url + s, None, ReqHeaders.GoogleDrive) })
-                |> fun s -> Streaming.downloadFile download s cToken
+                |> (fun s -> async { return getGDStream (download.Url, Some(s), ReqHeaders.GoogleDrive) })
+                |> fun s -> Streaming.downloadFile download s size cToken
             | _ -> download.ErrorFun "Failed to get Google Drive key"

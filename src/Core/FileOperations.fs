@@ -113,8 +113,6 @@ module FileOps =
         /// Try to get the Google Drive API key from embedded resource
         let tryGetGDKey() =
             try
-                System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames()
-                |> Array.iter Console.WriteLine
                 use stream =
                     new IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly()
                                               .GetManifestResourceStream("Core.Key.json"))
@@ -134,3 +132,6 @@ module FileOps =
             async {
                 if File.exists (path) then Shell.rm path
             }
+
+        /// Delete a directory if it exists
+        let deleteDir (path : string) = Shell.deleteDir path

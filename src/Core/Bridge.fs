@@ -202,7 +202,7 @@ module Bridge =
                             |> MapResult.InstalledMaps
                             |> BridgeResult.Maps
                             |> cResp
-                        | InstallMap(mCmd) ->
+                        | InstallMap mCmd ->
                             let cSource = new CancellationTokenSource()
 
                             let dispatchWrapper (mr : MapResult) =
@@ -219,7 +219,10 @@ module Bridge =
                                 |> MapResult.InstallMap
                                 |> BridgeResult.Maps
                                 |> cResp
-                        | Maps.CancelMap fName ->
+                        | ConfirmInstalled map ->
+                            { model with InstallingMaps = (model.InstallingMaps |> List.filter (fun (s, _) -> s <> map)) },
+                            None
+                        | CancelMap fName ->
                             let toCancel, installing =
                                 model.InstallingMaps |> List.partition (fun (name, _) -> fName = name)
                             toCancel |> List.iter (fun (_, cSource) -> cSource.Cancel())

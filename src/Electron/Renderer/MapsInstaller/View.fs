@@ -119,6 +119,9 @@ module View =
             | Some(name) -> name
             | None -> map.Folder
 
+        if model.Installing.IsEmpty then
+            dispatch <| TabSelected(Tab.Installed)
+
         model.Installing
         |> List.map (fun map ->
             tableRow [] [
@@ -142,7 +145,7 @@ module View =
                 ] [ 
                     map.Map.FileSize 
                     |> Option.map (fun v -> 
-                        sprintf "%f / %s %s" (map.Progress |> float |> (/) 0.8) (v |> string) "MB") 
+                        sprintf "%f / %s %s" (map.Progress |> float |> (*) v) (v |> string) "MB") 
                     |> defStr 
                 ]
             ])
@@ -300,7 +303,10 @@ module View =
                         ButtonProp.Variant ButtonVariant.Contained
                         MaterialProp.Color ComponentColor.Primary
                         DOMAttr.OnClick <| fun _ -> 
-                            dispatch InstallAll
+                            match model.TabSelected with
+                            | Available -> dispatch InstallAll
+                            | Installed -> dispatch UninstallAll
+                            | Installing -> dispatch CancelInstallAll
                         Style [ 
                             CSSProp.MaxHeight "2.6em"
                             CSSProp.MarginTop "auto"

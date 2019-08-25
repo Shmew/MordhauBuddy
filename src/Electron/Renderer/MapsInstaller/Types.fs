@@ -52,7 +52,9 @@ module Types =
         | Install of string * string
         | InstallAll
         | Uninstall of string
+        | UninstallAll
         | CancelInstall of string
+        | CancelInstallAll
         | Update of string
         | GetInstalled
         | GetAvailable
