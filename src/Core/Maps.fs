@@ -132,7 +132,7 @@ module Maps =
 
             /// Download and extract a file with continuations and progress updates
             let downloadFile (downloadFile : DownloadFile) (stream : Async<Result<Stream, string>>)
-                (size : Result<int64, string>) (cToken : CancellationToken) =
+                (size : Result<string, string>) (cToken : CancellationToken) =
                 let errorMsg (e : exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' (e.Message)
 
                 let download =
@@ -168,13 +168,20 @@ module Maps =
                         let downloadUpdater (streamDest : Stream) =
                             async {
                                 while downloading do
-                                    downloadFile.UpdateFun(streamDest.Position |> calcPercentage)
-                                    Async.Sleep 200 |> Async.RunSynchronously
+                                    try
+                                        downloadFile.UpdateFun(streamDest.Position |> calcPercentage)
+                                        Async.Sleep 200 |> Async.RunSynchronously
+                                    with _ -> downloading <- false
                             }
                         async {
                             downloadUpdater streamDest |> Async.Start
-                            do! request.CopyToAsync(streamDest) |> Async.AwaitTask
+#if NETFRAMEWORK
+#else
+                            do! request.CopyToAsync(streamDest, cancellationToken = cToken) |> Async.AwaitTask
+#endif
+
                             downloading <- false
+                            downloadFile.UpdateFun(100)
                             do! Async.Sleep 1000
                             request.Dispose()
                             streamDest.Dispose()
@@ -186,13 +193,12 @@ module Maps =
                             zipStream.Dispose()
                             do! FileOps.Maps.asyncDeleteZip (path)
                         }
-                        |> Async.RunSynchronously
+                        |> fun a -> Async.RunSynchronously(a, cancellationToken = cToken)
                         |> ignore
                     }
 
                 let onError (e : exn) = errorMsg e |> downloadFile.ErrorFun
-                Async.StartWithContinuations
-                    (download, downloadFile.CompleteFun, onError, downloadFile.CancelFun, cToken)
+                Async.StartWithContinuations(download, downloadFile.CompleteFun, onError, downloadFile.CancelFun)
 
         /// Json helpers
         module Json =
@@ -213,7 +219,7 @@ module Maps =
 
         [<NoComparison>]
         type GDSize =
-            { Size : int64 }
+            { Size : string }
 
         /// Github base uri
         let private baseUri = @"https://api.github.com"
@@ -263,6 +269,10 @@ module Maps =
                      timeout = 100000)
             makeRequest req
 
+        let internal getDirectAsync (fullPath : string, parameters : string option, headers : ReqHeaders) =
+            Http.AsyncRequestString
+                (fullPath + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers, timeout = 100000)
+
         let internal getStream (downloadUrl : string, parameters : string option, headers : ReqHeaders) =
             let req() =
                 Http.RequestStream
@@ -281,7 +291,13 @@ module Maps =
         let getInfoFiles() =
             let downloadInfoFiles (gList : GHContents list) =
                 gList
-                |> List.map (fun c -> async { return getDirect (c.DownloadUrl, None, ReqHeaders.Github) })
+                |> List.map (fun c ->
+                       async {
+                           try
+                               let! result = getDirectAsync (c.DownloadUrl, None, ReqHeaders.Github)
+                               return result |> Some
+                           with _ -> return None
+                       })
                 |> Async.Parallel
                 |> Async.RunSynchronously
                 |> List.ofArray

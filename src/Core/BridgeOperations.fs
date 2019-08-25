@@ -86,9 +86,9 @@ module BridgeOperations =
             | Ok(resList) ->
                 resList
                 |> List.choose (function
-                       | Ok(infoF) when (infoArr infoF).Length >= 9 -> Some(infoF)
+                       | Some(infoF) as i when (infoArr infoF).Length >= 9 -> i
                        | _ -> None)
-            | Error(e) -> []
+            | Error(_) -> []
 
         /// Get all installed maps
         let getInstalledMaps (dir : string) = FileOps.Maps.getInstalled dir
@@ -100,16 +100,19 @@ module BridgeOperations =
             let diDir = IO.DirectoryInfo(mCmd.Directory)
             match mCmd.GDrive with
             | Some(gd) ->
-                { Url = sprintf "https://www.googleapis.com/drive/v3/files/%s" gd.ID
-                  FileName = fName
-                  MapName = mCmd.Folder
-                  Directory = diDir
-                  Size = gd.Size
-                  UpdateFun = fun i -> MapResult.InstallMapProgress(mCmd.Folder, i) |> dispatchWrapper
-                  CompleteFun = fun () -> MapResult.InstallMapComplete(mCmd.Folder) |> dispatchWrapper
-                  ErrorFun = fun e -> MapResult.InstallMapError(mCmd.Folder, e) |> dispatchWrapper
-                  CancelFun = fun c -> MapResult.InstallMapCancelled(mCmd.Folder, true) |> dispatchWrapper }
-                |> downloadGDFile cToken
+                async {
+                    { Url = sprintf "https://www.googleapis.com/drive/v3/files/%s" gd.ID
+                      FileName = fName
+                      MapName = mCmd.Folder
+                      Directory = diDir
+                      Size = gd.Size
+                      UpdateFun = fun i -> MapResult.InstallMapProgress(mCmd.Folder, i) |> dispatchWrapper
+                      CompleteFun = fun () -> MapResult.InstallMapComplete(mCmd.Folder) |> dispatchWrapper
+                      ErrorFun = fun e -> MapResult.InstallMapError(mCmd.Folder, e) |> dispatchWrapper
+                      CancelFun = fun c -> MapResult.InstallMapCancelled(mCmd.Folder, true) |> dispatchWrapper }
+                    |> downloadGDFile cToken
+                }
+                |> Async.Start
                 true
             | _ ->
                 match getMapFiles() with
@@ -118,23 +121,27 @@ module BridgeOperations =
                                   |> List.isEmpty
                                   |> not)
                                  && diDir.Exists ->
-                    let fileInfo =
-                        mList
-                        |> getMap
-                        |> List.head
-                    { Url = fileInfo.DownloadUrl
-                      FileName = fName
-                      MapName = mCmd.Folder
-                      Directory = diDir
-                      Size =
-                          fileInfo.Size
-                          |> float
-                          |> (*) 1.0<MB>
-                      UpdateFun = fun i -> MapResult.InstallMapProgress(mCmd.Folder, i) |> dispatchWrapper
-                      CompleteFun = fun () -> MapResult.InstallMapComplete(mCmd.Folder) |> dispatchWrapper
-                      ErrorFun = fun e -> MapResult.InstallMapError(mCmd.Folder, e) |> dispatchWrapper
-                      CancelFun = fun c -> MapResult.InstallMapCancelled(mCmd.Folder, true) |> dispatchWrapper }
-                    |> downloadFile cToken
+                    async {
+                        let fileInfo =
+                            mList
+                            |> getMap
+                            |> List.head
+                        { Url = fileInfo.DownloadUrl
+                          FileName = fName
+                          MapName = mCmd.Folder
+                          Directory = diDir
+                          Size =
+                              fileInfo.Size
+                              |> float
+                              |> (*) 1.0<B>
+                              |> convertBtoMB
+                          UpdateFun = fun i -> MapResult.InstallMapProgress(mCmd.Folder, i) |> dispatchWrapper
+                          CompleteFun = fun () -> MapResult.InstallMapComplete(mCmd.Folder) |> dispatchWrapper
+                          ErrorFun = fun e -> MapResult.InstallMapError(mCmd.Folder, e) |> dispatchWrapper
+                          CancelFun = fun c -> MapResult.InstallMapCancelled(mCmd.Folder, true) |> dispatchWrapper }
+                        |> downloadFile cToken
+                    }
+                    |> Async.Start
                     true
                 | _ -> false
 

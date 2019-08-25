@@ -55,10 +55,8 @@ module Types =
         | UninstallAll
         | CancelInstall of string
         | CancelInstallAll
-        | Update of string
         | GetInstalled
         | GetAvailable
-        | Refresh
         | SnackMsg of Snackbar.Types.Msg<Msg>
         | SnackDismissMsg
 
@@ -78,8 +76,8 @@ module Types =
     type Model = 
         { Waiting : bool
           MapsDir : ConfigDir
-          Available : CommunityMap list
-          Installed : CommunityMap list
+          Available : CommunityMapWithProgress list
+          Installed : CommunityMapWithProgress list
           Installing : CommunityMapWithProgress list
           TabSelected : Tab
           Snack : Snackbar.Types.Model<Msg> }

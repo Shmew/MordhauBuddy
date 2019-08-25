@@ -35,15 +35,13 @@ module State =
     let private calcAvailableMaps (model : Model) =
         model.Available 
         |> List.filter (fun map -> 
-            (List.append model.Installed (model.Installing |> List.map (fun c -> c.Map))) 
-            |> List.exists (fun (m : MapTypes.CommunityMap) -> 
-                m.Name = map.Name && m.Version = map.Version)
+            (List.append model.Installed model.Installing) 
+            |> List.exists (fun m -> 
+                m.Map.Name = map.Map.Name && m.Map.Version = map.Map.Version)
             |> not)
 
-    let private partitionComMaps (cList : MapTypes.CommunityMap list) map =
-        let newInstalling,newAvailable =
-            cList |> List.partition (fun m -> m.GetName() = map)
-        (newInstalling |> List.map CommunityMapWithProgress.Init),newAvailable
+    let private partitionComMaps (cList : CommunityMapWithProgress list) map =
+        cList |> List.partition (fun m -> m.Map.GetName() = map)
 
     let update (msg: Msg) (model: Model) =
         match msg with
@@ -70,14 +68,28 @@ module State =
                                     Error = true
                                     HelperText = "Maps directory not found"
                                     Validated = false } }, Cmd.none
+                | MapOperationResult.Delete (map, res) ->
+                    match res with
+                    | Ok(_) ->
+                        { model with 
+                            Installed = (model.Installed |> List.filter (fun m -> m.Map.Folder <> map)) }
+                        , Cmd.ofMsg GetAvailable
+                    | Error(e) ->
+                        { model with 
+                            Installed = 
+                                (model.Installed 
+                                 |> List.map (fun m -> 
+                                    if m.Map.Folder = map then 
+                                        { m with Error = true; HelperText = e } 
+                                    else m)) }, Cmd.none
                 | _ -> model, Cmd.none
             | BridgeResult.Maps mRes ->
                 match mRes with
                 | MapResult.AvailableMaps cList ->
-                    { model with Available = cList |> List.map getComMap }
+                    { model with Available = cList |> List.map (getComMap >> CommunityMapWithProgress.Init) }
                     |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
                 | MapResult.InstalledMaps cList ->
-                    { model with Installed = (cList |> List.map getComMap) }
+                    { model with Installed = (cList |> List.map (getComMap >> CommunityMapWithProgress.Init)) }
                     |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
                 | MapResult.InstallMap (map, res) ->
                     match res with
@@ -119,7 +131,7 @@ module State =
                 | MapResult.InstallMapComplete map -> 
                     let finished,inProcess = model.Installing |> List.partition (fun m -> m.Map.Folder = map)
                     { model with 
-                        Installed = (finished |> List.map (fun m -> m.Map)) |> List.append model.Installed
+                        Installed = finished |> List.append model.Installed
                         Installing = inProcess }, Cmd.bridgeSend (sender.ConfirmInstall map)
                 | MapResult.InstallMapError (map, err) -> 
                     { model with
@@ -157,23 +169,21 @@ module State =
             model, Cmd.batch 
                 (model.Available 
                 |> List.map (fun m -> 
-                    Install(m.GetName(),m.Folder) |> Cmd.ofMsg))
+                    Install(m.Map.GetName(),m.Map.Folder) |> Cmd.ofMsg))
         | Uninstall s -> model, Cmd.bridgeSend (sender.Uninstall model.MapsDir.Directory s)
         | UninstallAll -> 
             model, Cmd.batch 
                 (model.Installed 
                 |> List.map (fun m -> 
-                    Uninstall(m.Folder) |> Cmd.ofMsg))
+                    Uninstall(m.Map.Folder) |> Cmd.ofMsg))
         | CancelInstall s -> model, Cmd.bridgeSend (sender.Cancel s)
         | CancelInstallAll -> 
             model, Cmd.batch 
                 (model.Installing 
                 |> List.map (fun m -> 
                     CancelInstall(m.Map.Folder) |> Cmd.ofMsg))
-        | Update s -> model, Cmd.none
         | GetInstalled -> model, Cmd.bridgeSend (sender.GetInstalled(model.MapsDir.Directory))
         | GetAvailable -> model, Cmd.bridgeSend (sender.GetAvailable)
-        | Refresh -> model, Cmd.none
         | SnackMsg msg' ->
             let m, cmd, actionCmd = Snackbar.State.update msg' model.Snack
             { model with Snack = m },

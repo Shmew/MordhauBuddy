@@ -47,20 +47,20 @@ module View =
                     ]
                 ] [
                     cardHeader [
-                        CardHeaderProp.Title <| str (map |> getName)
-                        CardHeaderProp.Subheader <| str (map.Version.GetString())
+                        CardHeaderProp.Title <| str (map.Map |> getName)
+                        CardHeaderProp.Subheader <| str (map.Map.Version.GetString())
                         CardHeaderProp.Action <|
                             fab [
                                 MaterialProp.Color ComponentColor.Secondary
                                 FabProp.Size FabSize.Medium
-                                DOMAttr.OnClick <| fun _ -> dispatch (Install(map.GetName(), map.Folder))
+                                DOMAttr.OnClick <| fun _ -> dispatch (Install(map.Map.GetName(), map.Map.Folder))
                             ] [ addIcon [] ]
                     ] []
                     cardMedia [
-                        match map.Image with
+                        match map.Map.Image with
                         | Some(mapImage) ->
                             yield CardMediaProp.Image mapImage
-                            yield HTMLAttr.Title <| getName map
+                            yield HTMLAttr.Title <| getName map.Map
                         | _ ->
                             yield HTMLAttr.Title "No picture provided"
                         yield 
@@ -71,7 +71,7 @@ module View =
                     ]
                     cardContent [
                     ] <|
-                        (map.GetMetaData() 
+                        (map.Map.GetMetaData() 
                         |> List.map (fun s ->
                             typography [
                                 TypographyProp.Variant TypographyVariant.Body2
@@ -90,27 +90,27 @@ module View =
             tableRow [] [
                 tableCell [
                     TableCellProp.Align TableCellAlign.Left
-                ] [ str (map |> getName) ]
+                ] [ str (map.Map |> getName) ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Right
-                ] [ map.Author |> defStr ]
+                ] [ map.Map.Author |> defStr ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Right
-                ] [ map.GetDate() |> defStr ]
+                ] [ map.Map.GetDate() |> defStr ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Right
-                ] [ str <| map.Version.GetString() ]
+                ] [ str <| map.Map.Version.GetString() ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Right
                 ] [ 
-                    map.FileSize 
+                    map.Map.FileSize 
                     |> Option.map (fun v -> 
                         sprintf "%s %s" (v |> string) "MB") 
                     |> defStr 
                 ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Right
-                ] [ map.GetPlayers() |> defStr ]
+                ] [ map.Map.GetPlayers() |> defStr ]
             ])
 
     let private renderInstallingMaps (classes: IClasses) model dispatch =
@@ -145,7 +145,14 @@ module View =
                 ] [ 
                     map.Map.FileSize 
                     |> Option.map (fun v -> 
-                        sprintf "%f / %s %s" (map.Progress |> float |> (*) v) (v |> string) "MB") 
+                        sprintf "%.1f / %s %s" 
+                            (if map.Progress = 100 then v
+                             else
+                                map.Progress 
+                                |> float 
+                                |> fun f -> f / 100. 
+                                |> (*) v) 
+                            (v |> string) "MB") 
                     |> defStr 
                 ]
             ])
@@ -163,7 +170,15 @@ module View =
             ] 
         ] <|
             match model.TabSelected with
-            | Available -> renderAvailableMaps classes model dispatch
+            | Available -> 
+                let available = renderAvailableMaps classes model dispatch
+                if available.IsEmpty then
+                    [ 
+                        typography [ 
+                            TypographyProp.Align TypographyAlign.Center
+                            TypographyProp.Variant TypographyVariant.H6
+                        ] [ str "No maps available for download." ] ]
+                else available
             | Installed -> 
                 [
                     grid [
@@ -256,14 +271,8 @@ module View =
                         TabsProp.Centered true
                         TabsProp.OnChange (fun _ tabPicked -> dispatch <| TabSelected(Tab.GetTabFromTag(tabPicked)) )
                     ] [
-                        tab [ 
-                            HTMLAttr.Label <| Available.Text
-                            HTMLAttr.Disabled <| model.Available.IsEmpty
-                        ]
-                        tab [
-                            HTMLAttr.Label <| Installed.Text
-                            HTMLAttr.Disabled <| model.Installed.IsEmpty
-                        ]
+                        tab [ HTMLAttr.Label <| Available.Text ]
+                        tab [ HTMLAttr.Label <| Installed.Text ]
                         tab [
                             HTMLAttr.Disabled <| model.Installing.IsEmpty
                             MaterialProp.Label <|
