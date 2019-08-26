@@ -86,7 +86,7 @@ module BridgeOperations =
             | Ok(resList) ->
                 resList
                 |> List.choose (function
-                       | Some(infoF) as i when (infoArr infoF).Length >= 9 -> i
+                       | Some(infoF) as i when (infoArr infoF).Length >= 5 -> i
                        | _ -> None)
             | Error(_) -> []
 

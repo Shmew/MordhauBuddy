@@ -101,4 +101,5 @@ module rec Types =
           Available : CommunityMapWithState list
           Installed : CommunityMapWithState list
           Installing : CommunityMapWithState list
-          TabSelected : Tab }
+          TabSelected : Tab
+          Refreshing : bool }

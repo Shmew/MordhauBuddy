@@ -23,7 +23,8 @@ module State =
           Available = []
           Installed = []
           Installing = []
-          TabSelected = Available }
+          TabSelected = Available
+          Refreshing = false }
 
     let private sender = new MapBridgeSender(Caller.MapInstaller)
 
@@ -38,6 +39,15 @@ module State =
     let private partitionComMaps (cList : CommunityMapWithState list) map =
         cList |> List.partition (fun m -> m.Map.GetName() = map)
 
+    let private autoRefresh (availMsg : Msg) (installedMsg : Msg) dispatch =
+        async {
+            while true do
+                do! Async.Sleep 1800000
+                dispatch availMsg
+                do! Async.Sleep 600000
+                dispatch installedMsg
+        } |> Async.StartImmediate
+
     let update (msg: Msg) (model: Model) =
         match msg with
         | ClientMsg bMsg ->
@@ -49,8 +59,12 @@ module State =
                         { model with
                             MapsDir =
                                 { model.MapsDir with
-                                    State = DirState.Success "Maps directory located" } }
-                        , Cmd.ofMsg GetAvailable
+                                    State = DirState.Success "Maps directory located" } 
+                            Refreshing = true }
+                        , Cmd.batch 
+                            [ yield Cmd.ofMsg GetAvailable
+                              if model.Refreshing |> not then 
+                                yield Cmd.ofSub <| autoRefresh GetAvailable GetInstalled ]
                     else
                         { model with
                             MapsDir =
