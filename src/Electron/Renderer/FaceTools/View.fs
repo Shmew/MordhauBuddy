@@ -183,11 +183,11 @@ module View =
                             HTMLAttr.Value model.Import.ImportString
                             MaterialProp.Color ComponentColor.Secondary
                             DOMAttr.OnChange (fun ev -> dispatch <| SetImportString(ev.Value) )
-                            MaterialProp.Error model.Import.Error
-                            TextFieldProp.HelperText (model.Import.HelperText |> str)
+                            MaterialProp.Error model.Import.State.IsImportError
+                            TextFieldProp.HelperText (model.Import.State.HelperText |> str)
                         ] []
                         button [
-                            HTMLAttr.Disabled model.Import.Validated
+                            HTMLAttr.Disabled model.Import.State.IsImportSuccess
                             ButtonProp.Variant ButtonVariant.Contained
                             MaterialProp.Color ComponentColor.Secondary
                             DOMAttr.OnClick <| fun _ -> dispatch ValidateImport

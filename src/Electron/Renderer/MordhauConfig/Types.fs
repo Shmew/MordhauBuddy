@@ -79,12 +79,6 @@ module rec Types =
           Expanded : bool
           Items : OptionGroup list }
 
-    type Submit =
-        { Waiting : bool
-          Error : bool
-          HelperText : string
-          Complete : bool }
-
     type Model = 
         { Complete : bool
           Panels : Panel list

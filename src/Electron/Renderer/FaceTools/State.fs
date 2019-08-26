@@ -18,31 +18,21 @@ module State =
           StepperComplete = false
           GameDir = 
             { Dir = DirLoad.ConfigFiles(ConfigFile.Game)
-              Label = ""
-              Waiting = false
               Directory = ""
-              Error = false
-              HelperText = "" 
-              Validated = false }
+              Label = ""
+              State = DirState.Init "" }
           TransferList =
             { LeftProfiles = []
               LeftChecked = 0
               RightProfiles = []
               RightChecked = 0
-              Error = false
-              HelperText = "" }
+              State = TransferState.Valid "" }
           TabSelected = Tab.Frankenstein
           ImgLoaded = false
           Import = 
             { ImportString = ""
-              Error = false
-              HelperText = "You must validate the string before submission" 
-              Validated = false } 
-          Submit =
-            { Waiting = false
-              Error = false
-              HelperText = ""
-              Complete = false }
+              State = ImportState.Init "You must validate the string before submission"  }
+          Submit = Submit.Init
           Snack = Snackbar.State.init() }
 
     let private sender = new INIBridgeSender(Caller.FaceTools)
@@ -51,13 +41,6 @@ module State =
           WorkingDir = Some(dir) }
 
     let update (msg: Msg) (model: Model) =
-        let submissionFailed (s: string) =
-            { model with
-                Submit =
-                    { model.Submit with
-                        Waiting = false
-                        Error = true
-                        HelperText = s } }
         match msg with
         | ClientMsg bRes ->
             match bRes with
@@ -73,19 +56,15 @@ module State =
                         | Tab.Frankenstein -> model, Cmd.bridgeSend (sender.SetFrankenstein profiles)
                         | Tab.Random -> model, Cmd.bridgeSend (sender.SetRandom profiles)
                         | Tab.Import -> model, Cmd.bridgeSend (sender.SetCustom profiles model.Import.ImportString)
-                        | _ -> submissionFailed "Invalid submission", Cmd.ofMsg SnackDismissMsg
+                        | _ -> { model with Submit = Submit.Error "Invalid submission" }, Cmd.ofMsg SnackDismissMsg
                     else
-                        submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg
+                        { model with Submit = Submit.Error "Error creating backup" }, Cmd.ofMsg SnackDismissMsg
                 | INIOperationResult.CommitChanges b ->
                     if b then
                         { model with
                             StepperComplete = true
-                            Submit =
-                                { model.Submit with
-                                    Waiting = false
-                                    Error = false
-                                    HelperText = "Changes successfully completed!" } }
-                    else submissionFailed "Error commiting changes to the file"
+                            Submit = Submit.Success "Changes successfully completed!" }
+                    else { model with Submit = Submit.Error "Error commiting changes to the file" }
                     , Cmd.ofMsg SnackDismissMsg
                 | _ -> model, Cmd.none
             | BridgeResult.Faces fr ->
@@ -99,8 +78,7 @@ module State =
                                     LeftChecked = 0
                                     RightProfiles = []
                                     RightChecked = 0
-                                    Error = true
-                                    HelperText = "No profiles found!"}
+                                    State = TransferState.Error "No profiles found!" }
                             else
                                 { model.TransferList with
                                     LeftProfiles =
@@ -108,8 +86,7 @@ module State =
                                     LeftChecked = 0
                                     RightProfiles = []
                                     RightChecked = 0
-                                    Error = false
-                                    HelperText = "Please select which profiles you'd like to modify"}
+                                    State = TransferState.Valid "Please select which profiles you'd like to modify" }
                         }, Cmd.none
                 | FaceResult.Frankenstein b
                 | FaceResult.Random b
@@ -117,14 +94,10 @@ module State =
                     ->
                         if b then
                             model, Cmd.bridgeSend (sender.Commit([fileWrap(model.GameDir.Directory)]))
-                        else submissionFailed "Modifying INI failed", Cmd.ofMsg SnackDismissMsg
+                        else { model with Submit = Submit.Error "Modifying INI failed" }, Cmd.ofMsg SnackDismissMsg
             | _ -> model, Cmd.none
         | StepperSubmit -> 
-            { model with
-                Submit =
-                    { model.Submit with
-                        Waiting = true } }
-            , Cmd.bridgeSend
+            { model with Submit = Submit.Waiting }, Cmd.bridgeSend
                 (sender.Backup([fileWrap(model.GameDir.Directory)]) )
         | StepperRestart -> 
             { init() with 
@@ -241,9 +214,7 @@ module State =
                 Import = 
                     { model.Import with
                         ImportString = s
-                        Validated = false
-                        HelperText = 
-                            "You must validate the string before submission"} }
+                        State = ImportState.Init "You must validate the string before submission" } }
             , Cmd.none
         | ValidateImport ->
             let res = validateImport model.Import.ImportString
@@ -252,16 +223,12 @@ module State =
                 { model with
                     Import =
                         { model.Import with
-                            Error = false
-                            Validated = true
-                            HelperText = "Validation successful" } }
+                            State = ImportState.Success "Validation successful" } }
             | Error _ ->
                 { model with
                     Import = 
                         { model.Import with
-                            Error = true
-                            Validated = false
-                            HelperText = errorStrings res } }
+                            State = ImportState.Error <| errorStrings res } }
             |> (fun m -> m, Cmd.none)
         | CopiedClipboard ->
             model, Toastr.success <| Toastr.message "Copied to clipboard!"
@@ -271,9 +238,14 @@ module State =
             Cmd.batch [ Cmd.map SnackMsg cmd
                         actionCmd ]
         | SnackDismissMsg ->
-            let cmd =
-                Snackbar.State.create model.Submit.HelperText
-                |> Snackbar.State.withDismissAction "OK"
-                |> Snackbar.State.withTimeout 80000
-                |> Snackbar.State.add
-            model, Cmd.map SnackMsg cmd
+            match model.Submit with
+            | Submit.Success helperText
+            | Submit.Error helperText
+                ->
+                let cmd =
+                    Snackbar.State.create helperText
+                    |> Snackbar.State.withDismissAction "OK"
+                    |> Snackbar.State.withTimeout 80000
+                    |> Snackbar.State.add
+                model, Cmd.map SnackMsg cmd
+            | _ -> model, Cmd.none

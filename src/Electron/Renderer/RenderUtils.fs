@@ -64,6 +64,33 @@ module RenderUtils =
 #else
         path.resolve (__dirname, "..", "..", "static", s)
 #endif
+    [<AutoOpen>]
+    module RenderTypes =
+        [<RequireQualifiedAccess>]
+        type Submit =
+            | Waiting
+            | Init
+            | Error of string
+            | Success of string
+            member this.IsSubmitWaiting =
+                match this with
+                | Submit.Waiting -> true
+                | _ -> false
+
+            member this.IsSubmitInit =
+                match this with
+                | Submit.Init -> true
+                | _ -> false
+
+            member this.IsSubmitError =
+                match this with
+                | Submit.Error _ -> true
+                | _ -> false
+
+            member this.IsSubmitSuccess =
+                match this with
+                | Submit.Success _ -> true
+                | _ -> false
 
     module MapTypes =
         open System
@@ -360,14 +387,37 @@ module RenderUtils =
             | ConfigFiles of ConfigFile
             | MapDir
 
+        [<RequireQualifiedAccess>]
+        type DirState =
+            | Waiting
+            | Init of string
+            | Error of string
+            | Success of string
+            member this.IsDirWaiting =
+                match this with
+                | DirState.Waiting -> true
+                | _ -> false
+
+            member this.IsDirInit =
+                match this with
+                | DirState.Init _ -> true
+                | _ -> false
+
+            member this.IsDirError =
+                match this with
+                | DirState.Error _ -> true
+                | _ -> false
+
+            member this.IsDirSuccess =
+                match this with
+                | DirState.Success _ -> true
+                | _ -> false
+
         type ConfigDir =
             { Dir : DirLoad
-              Waiting : bool  
               Directory : string
-              Error : bool
               Label : string
-              HelperText : string
-              Validated : bool }
+              State : DirState }
 
         [<RequireQualifiedAccess>]
         type DirSelect =

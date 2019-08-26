@@ -103,7 +103,7 @@ module State =
                 match cFile with
                 | ConfigFile.Game ->
                     m.Resources.GameConfig, 
-                        m.Settings.GameDir.Error, 
+                        m.Settings.GameDir.State.IsDirError, 
                         (fun (sModel : Settings.Types.Model) ->
                             { m.Resources with 
                                 GameConfig = 
@@ -112,7 +112,7 @@ module State =
                                         AttemptedLoad = true } } )
                 | ConfigFile.Engine ->
                     m.Resources.EngineConfig, 
-                        m.Settings.EngineDir.Error, 
+                        m.Settings.EngineDir.State.IsDirError, 
                         (fun (sModel : Settings.Types.Model) ->
                             { m.Resources with 
                                 EngineConfig = 
@@ -121,7 +121,7 @@ module State =
                                         AttemptedLoad = true } } )
                 | ConfigFile.GameUserSettings ->
                     m.Resources.GameUserConfig, 
-                        m.Settings.GameUserDir.Error, 
+                        m.Settings.GameUserDir.State.IsDirError, 
                         (fun (sModel : Settings.Types.Model) ->
                             { m.Resources with 
                                 GameUserConfig = 
@@ -157,7 +157,7 @@ module State =
                                     AttemptedLoad = true } }
                     Settings = m' }
                 , Cmd.map SettingsMsg cmd
-            | s when m.Resources.Maps.Exists |> not && m.Settings.MapsDir.Error |> not ->
+            | s when m.Resources.Maps.Exists |> not && m.Settings.MapsDir.State.IsDirError |> not ->
                 let m',cmd = Settings.State.update (Settings.Types.SetMapDir(s,Ok s)) m.Settings
                 { m with 
                     Resources =
@@ -316,7 +316,7 @@ module State =
                                         MapsDir =
                                             { m.MapsInstaller.MapsDir with
                                                 Directory = if b then m'.MapsDir.Directory else "" 
-                                                Validated = true } }
+                                                State = Directory.DirState.Success "Maps directory located" } }
                                 Settings = m' }
                         | MapOperationResult.DefaultDir _ ->
                             { m with 

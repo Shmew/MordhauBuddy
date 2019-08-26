@@ -15,20 +15,15 @@ module State =
     open Electron
 
     let init() =
-        { Waiting = true
-          MapsDir = 
+        { MapsDir = 
               { Dir = DirLoad.MapDir
-                Label = ""
-                Waiting = false
                 Directory = ""
-                Error = false
-                HelperText = "" 
-                Validated = false }
+                Label = ""
+                State = DirState.Init "" }
           Available = []
           Installed = []
           Installing = []
-          TabSelected = Available
-          Snack = Snackbar.State.init() }
+          TabSelected = Available }
 
     let private sender = new MapBridgeSender(Caller.MapInstaller)
 
@@ -40,7 +35,7 @@ module State =
                 m.Map.Name = map.Map.Name && m.Map.Version = map.Map.Version)
             |> not)
 
-    let private partitionComMaps (cList : CommunityMapWithProgress list) map =
+    let private partitionComMaps (cList : CommunityMapWithState list) map =
         cList |> List.partition (fun m -> m.Map.GetName() = map)
 
     let update (msg: Msg) (model: Model) =
@@ -52,22 +47,16 @@ module State =
                 | MapOperationResult.DirExists b ->
                     if b then
                         { model with
-                            Waiting = false 
                             MapsDir =
                                 { model.MapsDir with
-                                    Waiting = false
-                                    Error = false
-                                    HelperText = "Maps directory located"
-                                    Validated = true } }, Cmd.ofMsg GetAvailable
+                                    State = DirState.Success "Maps directory located" } }
+                        , Cmd.ofMsg GetAvailable
                     else
                         { model with
-                            Waiting = false 
                             MapsDir =
                                 { model.MapsDir with
-                                    Waiting = false
-                                    Error = true
-                                    HelperText = "Maps directory not found"
-                                    Validated = false } }, Cmd.none
+                                    State = DirState.Error "Maps directory not found" } }
+                        , Cmd.none
                 | MapOperationResult.Delete (map, res) ->
                     match res with
                     | Ok(_) ->
@@ -80,7 +69,7 @@ module State =
                                 (model.Installed 
                                  |> List.map (fun m -> 
                                     if m.Map.Folder = map then 
-                                        { m with Error = true; HelperText = e } 
+                                        { m with State = ComMapState.Error e } 
                                     else m)) }, Cmd.none
                 | _ -> model, Cmd.none
             | BridgeResult.Maps mRes ->
@@ -89,11 +78,11 @@ module State =
                     { model with 
                         Available = 
                             cList 
-                            |> List.map (getComMap >> CommunityMapWithProgress.Init) 
+                            |> List.map (getComMap >> CommunityMapWithState.Init) 
                             |> List.sortBy (fun k -> k.Map.GetName()) }
                     |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
                 | MapResult.InstalledMaps cList ->
-                    { model with Installed = (cList |> List.map (getComMap >> CommunityMapWithProgress.Init)) }
+                    { model with Installed = (cList |> List.map (getComMap >> CommunityMapWithState.Init)) }
                     |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
                 | MapResult.InstallMap (map, res) ->
                     match res with
@@ -103,8 +92,7 @@ module State =
                             |> List.map (fun m -> 
                                 if m.Map.Folder = map then 
                                     { m with 
-                                        Error = true
-                                        HelperText = errMsg }
+                                        State = ComMapState.Error errMsg }
                                 else m)
                         { model with Installing = setError }, Cmd.none
                     | _ -> model, Cmd.none
@@ -120,16 +108,15 @@ module State =
                                 |> List.map (fun m -> 
                                     if m.Map.Folder = map then 
                                         { m with 
-                                            Error = true
-                                            HelperText = "Error cancelling installation" }
+                                            State = ComMapState.Error "Error cancelling installation" }
                                     else m))}
                         , Cmd.none
                 | MapResult.InstallMapProgress (map, prog) -> 
                     let newProg = 
                         model.Installing 
                         |> List.map (fun m -> 
-                            if m.Map.Folder = map then 
-                                { m with Progress = prog } 
+                            if m.Map.Folder = map && m.State.IsStateSuccess then 
+                                { m with State = ComMapState.Success prog } 
                             else m)
                     { model with Installing = newProg }, Cmd.none
                 | MapResult.InstallMapComplete map -> 
@@ -144,11 +131,10 @@ module State =
                             |> List.map (fun m -> 
                                 if m.Map.Folder = map then 
                                     { m with 
-                                        Error = true
-                                        HelperText = err } 
+                                        State = ComMapState.Error err } 
                                 else m))}
                     , Cmd.none
-            | _ -> { model with Waiting = false }, Cmd.none
+            | _ -> model, Cmd.none
         | TabSelected tab -> 
             { model with TabSelected = tab }, Cmd.none
         | ImgSkeleton -> model, Cmd.none
@@ -184,7 +170,7 @@ module State =
         | CancelInstall s -> 
             let cancelled,inProcess = model.Installing |> List.partition (fun m -> m.Map.Folder = s)
             { model with 
-                Available = cancelled |> List.map (fun m -> m.Map |> CommunityMapWithProgress.Init) |> List.append model.Available
+                Available = cancelled |> List.map (fun m -> m.Map |> CommunityMapWithState.Init) |> List.append model.Available
                 Installing = inProcess }, Cmd.bridgeSend (sender.Cancel s)
         | CancelInstallAll -> 
             model, Cmd.batch 
@@ -193,13 +179,7 @@ module State =
                     CancelInstall(m.Map.Folder) |> Cmd.ofMsg))
         | GetInstalled -> model, Cmd.bridgeSend (sender.GetInstalled(model.MapsDir.Directory))
         | GetAvailable -> model, Cmd.bridgeSend (sender.GetAvailable)
-        | ToggleMenu (tab, fName, bOpt) -> 
-            let pos = getMousePositions()
-            let toggle b =
-                match bOpt with
-                | Some(tBool) -> tBool
-                | _ -> b |> not
-
+        | ToggleMenu (tab, fName) -> 
             match tab with
             | Available -> model, Cmd.none
             | Installed -> 
@@ -209,11 +189,7 @@ module State =
                          |> List.map (fun m -> 
                             if m.Map.Folder = fName then 
                                 { m with 
-                                    MenuOpen = m.MenuOpen |> toggle
-                                    Position =
-                                        { m.Position with
-                                            X = pos.X
-                                            Y = pos.Y } } 
+                                    MenuState = MenuState.Toggle(m) } 
                             else m ))}, Cmd.none
             | Installing ->
                 { model with
@@ -222,22 +198,5 @@ module State =
                          |> List.map (fun m -> 
                             if m.Map.Folder = fName then 
                                 { m with 
-                                    MenuOpen = m.MenuOpen |> toggle 
-                                    Position =
-                                        { m.Position with
-                                            X = pos.X
-                                            Y = pos.Y } } 
+                                    MenuState = MenuState.Toggle(m) } 
                             else m ))}, Cmd.none
-        | SnackMsg msg' ->
-            let m, cmd, actionCmd = Snackbar.State.update msg' model.Snack
-            { model with Snack = m },
-            Cmd.batch [ Cmd.map SnackMsg cmd; actionCmd ]
-        | SnackDismissMsg ->
-            let cmd =
-                Snackbar.State.create ""
-                |> Snackbar.State.withDismissAction "OK"
-                |> Snackbar.State.withTimeout 80000
-                |> Snackbar.State.add
-            model, Cmd.map SnackMsg cmd
-
-

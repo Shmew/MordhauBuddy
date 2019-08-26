@@ -13,40 +13,26 @@ module State =
     open Types
 
     let init() =
-        { Waiting = true
-          Complete = false
-          GameDir = 
+        { GameDir = 
               { Dir = DirLoad.ConfigFiles(ConfigFile.Game)
-                Waiting = false
                 Directory = ""
-                Error = false
                 Label = "Mordhau Game.ini directory"
-                HelperText = "" 
-                Validated = false }
+                State = DirState.Init "" }
           EngineDir = 
               { Dir = DirLoad.ConfigFiles(ConfigFile.Engine)
-                Waiting = false
                 Directory = ""
-                Error = false
                 Label = "Mordhau Engine.ini directory"
-                HelperText = "" 
-                Validated = false }
+                State = DirState.Init "" }
           GameUserDir =
               { Dir = DirLoad.ConfigFiles(ConfigFile.GameUserSettings)
-                Waiting = false
                 Directory = ""
-                Error = false
                 Label = "Mordhau GameUserSettings.ini directory"
-                HelperText = "" 
-                Validated = false }
+                State = DirState.Init "" }
           MapsDir =
               { Dir = DirLoad.MapDir
-                Waiting = false
                 Directory = ""
-                Error = false
                 Label = "Mordhau maps directory"
-                HelperText = "" 
-                Validated = false } }
+                State = DirState.Init "" } }
 
     let private iniSender = new INIBridgeSender(Caller.Settings)
     let private mapSender = new MapBridgeSender(Caller.Settings)
@@ -64,50 +50,35 @@ module State =
                         match f.File with 
                         | ConfigFile.Game ->
                             { model with
-                                Waiting = false
                                 GameDir =
                                     { model.GameDir with
-                                        Waiting = false
-                                        Error = true
-                                        HelperText = "Error parsing Engine.ini" }}
+                                        State = DirState.Error "Error parsing Engine.ini" }}
                             , Cmd.none
                         | ConfigFile.Engine ->
                             { model with
-                                Waiting = false
                                 EngineDir =
                                     { model.EngineDir with
-                                        Waiting = false
-                                        Error = true
-                                        HelperText = "Error parsing Engine.ini" }}
+                                        State = DirState.Error "Error parsing Engine.ini" }}
                             , Cmd.none
                         | ConfigFile.GameUserSettings ->
                             { model with
-                                Waiting = false
                                 GameUserDir =
                                     { model.GameUserDir with
-                                        Waiting = false
-                                        Error = true
-                                        HelperText = "Error parsing GameUserSettings.ini" }}
+                                        State = DirState.Error "Error parsing GameUserSettings.ini" }}
                             , Cmd.none
                     | Some(f), true ->
                         let setGameValid m =
-                            { m with
-                                GameDir =
-                                    { m.GameDir with
-                                        Waiting = false
-                                        Validated = true } }
+                            { m with GameDir = { m.GameDir with State = DirState.Success "" } }
                         let setGameUserValid m =
                             { m with
                                 GameUserDir =
                                     { m.GameUserDir with
-                                        Waiting = false
-                                        Validated = true } }
+                                        State = DirState.Success "" } }
                         let setEngineValid m =
                             { m with
                                 EngineDir =
                                     { m.EngineDir with
-                                        Waiting = false
-                                        Validated = true } }
+                                        State = DirState.Success "" } }
                         match f.File with
                         | ConfigFile.Game  ->
                             model |> setGameValid, Cmd.none
@@ -115,62 +86,44 @@ module State =
                             model |> setEngineValid, Cmd.none
                         | ConfigFile.GameUserSettings ->
                             model |> setGameUserValid, Cmd.none
-                    | _ -> { model with Waiting = false }, Cmd.none
+                    | _ -> model, Cmd.none
                 | INIOperationResult.Exists b ->
                     match bMsg.File with
                     | Some(f) when f.File = ConfigFile.Game ->
                         { model with
-                            Waiting = false
                             GameDir =
                                 if b then
                                     { model.GameDir with
-                                        Waiting = true
-                                        Error = false
-                                        HelperText = "Game.ini located"
-                                        Validated = true } 
+                                        State = DirState.Success "Game.ini located" } 
                                 else
                                     { model.GameDir with
-                                        Error = true
-                                        HelperText = "Game.ini not found"
-                                        Validated = false } }, 
+                                        State = DirState.Error "Game.ini not found" } }, 
                         if b then
                             Cmd.bridgeSend
                                 (iniSender.Parse { File = ConfigFile.Game; WorkingDir = model.GameDir.Directory |> Some })
                         else Cmd.none
                     | Some(f) when f.File = ConfigFile.Engine ->
                         { model with
-                            Waiting = false
                             EngineDir =
                                 if b then
                                     { model.EngineDir with
-                                        Waiting = true
-                                        Error = false
-                                        HelperText = "Engine.ini located"
-                                        Validated = true } 
+                                        State = DirState.Success "Engine.ini located" } 
                                 else
                                     { model.EngineDir with
-                                        Error = true
-                                        HelperText = "Engine.ini not found"
-                                        Validated = false } }, 
+                                        State = DirState.Error "Engine.ini not found" } }, 
                         if b then
                             Cmd.bridgeSend
                                 (iniSender.Parse { File = ConfigFile.Engine; WorkingDir = model.EngineDir.Directory |> Some })
                         else Cmd.none
                     | Some(f) when f.File = ConfigFile.GameUserSettings ->
                         { model with
-                            Waiting = false
                             GameUserDir =
                                 if b then
                                     { model.GameUserDir with
-                                        Waiting = true
-                                        Error = false
-                                        HelperText = "GameUserSettings.ini located"
-                                        Validated = true } 
+                                        State = DirState.Success "GameUserSettings.ini located" } 
                                 else
                                     { model.GameUserDir with
-                                        Error = true
-                                        HelperText = "GameUserSettings.ini not found"
-                                        Validated = false } }, 
+                                        State = DirState.Error "GameUserSettings.ini not found" } }, 
                         if b then
                             Cmd.bridgeSend 
                                 (iniSender.Parse { File = ConfigFile.GameUserSettings; WorkingDir = model.GameUserDir.Directory |> Some })
@@ -183,25 +136,22 @@ module State =
                             { model with
                                 GameDir =
                                     { model.GameDir with
-                                        Directory = d 
-                                        HelperText = "Mordhau directory located"
-                                        Validated = false } }
+                                        Directory = d
+                                        State = DirState.Init "Mordhau directory located" } }
                         let mapEngine model =
                             { model with
                                 EngineDir =
                                     { model.EngineDir with
-                                        Directory = d 
-                                        HelperText = "Mordhau directory located"
-                                        Validated = false } }
+                                        Directory = d
+                                        State = DirState.Init "Mordhau directory located" } }
                         let mapGameUser model =
                             { model with
                                 GameUserDir =
                                     { model.GameUserDir with
-                                        Directory = d 
-                                        HelperText = "Mordhau directory located"
-                                        Validated = false } }
+                                        Directory = d
+                                        State = DirState.Init "Mordhau directory located" } }
 
-                        { model with Waiting = false}
+                        model
                         |> fun modelWait ->
                             let mList =
                                 [ {| IsEmpty = model.GameDir.Directory = ""
@@ -233,28 +183,19 @@ module State =
                             { model with
                                 GameDir =
                                     { model.GameDir with 
-                                        Waiting = false
-                                        Error = true
-                                        HelperText = "Unable to automatically detect Mordhau directory"
-                                        Validated = false } }
+                                        State = DirState.Error "Unable to automatically detect Mordhau directory" } }
                         let mapEngine model =
                             { model with
                                 EngineDir =
                                     { model.EngineDir with
-                                        Waiting = false
-                                        Error = true
-                                        HelperText = "Unable to automatically detect Mordhau directory"
-                                        Validated = false } }
+                                        State = DirState.Error "Unable to automatically detect Mordhau directory" } }
                         let mapGameUser model =
                             { model with
                                 GameUserDir =
                                     { model.GameUserDir with
-                                        Waiting = false
-                                        Error = true
-                                        HelperText = "Unable to automatically detect Mordhau directoryd"
-                                        Validated = false } }
+                                        State = DirState.Error "Unable to automatically detect Mordhau directoryd" } }
 
-                        { model with Waiting = false}
+                        model
                         |> fun modelWait ->
                             let mList =
                                 [ {| IsEmpty = model.GameDir.Directory = ""
@@ -273,42 +214,32 @@ module State =
                     match dOpt with
                     | Some(d) ->
                         { model with 
-                            Waiting = false
                             MapsDir =
                                 {model.MapsDir with
                                     Directory = d
-                                    HelperText = "Mordhau map directory located"
-                                    Validated = false } }
+                                    State = DirState.Init "Mordhau map directory located" } }
                         |> fun m -> m, Cmd.bridgeSend (mapSender.DirExists(m.MapsDir.Directory))
                     | None ->
                         { model with
-                            Waiting = false
                             MapsDir =
                                 { model.MapsDir with
-                                    Error = true
-                                    HelperText = "Unable to automatically detect Mordhau map directory"
-                                    Validated = false } }, Cmd.none
+                                    State = DirState.Error "Unable to automatically detect Mordhau map directory" } }
+                        , Cmd.none
                 | MapOperationResult.DirExists b ->
                     if b then
                         { model with
-                            Waiting = false 
                             MapsDir =
                                 { model.MapsDir with
-                                    Waiting = false
-                                    Error = false
-                                    HelperText = "Maps directory located"
-                                    Validated = true } }, Cmd.bridgeSend (mapSenderMap.GetInstalled(model.MapsDir.Directory))
+                                    State = DirState.Success "Maps directory located" } }
+                        , Cmd.bridgeSend (mapSenderMap.GetInstalled(model.MapsDir.Directory))
                     else
                         { model with
-                            Waiting = false 
                             MapsDir =
                                 { model.MapsDir with
-                                    Waiting = false
-                                    Error = true
-                                    HelperText = "Maps directory not found"
-                                    Validated = false } }, Cmd.none
-                | _ -> { model with Waiting = false }, Cmd.none
-            | _ -> { model with Waiting = false }, Cmd.none
+                                    State = DirState.Error "Maps directory not found" } }
+                        , Cmd.none
+                | _ -> model, Cmd.none
+            | _ -> model, Cmd.none
         | GetDefaultDir ->
             model, Cmd.bridgeSend (iniSender.DefaultDir)
         | GetMapDir ->
@@ -322,8 +253,7 @@ module State =
                         GameDir =
                             { model.GameDir with
                                 Directory = s
-                                Error = false
-                                HelperText = "" } }
+                                State = DirState.Init "" } }
                     , Cmd.bridgeSend (iniSender.Exists <|
                         { File = cFile
                           WorkingDir = Some(s) })
@@ -332,8 +262,7 @@ module State =
                         GameDir =
                             { model.GameDir with
                                 Directory = s
-                                Error = true
-                                HelperText = errorStrings res } }
+                                State = DirState.Error <| errorStrings res } }
                     , Cmd.none
             | ConfigFile.Engine ->
                 match res with
@@ -342,8 +271,7 @@ module State =
                         EngineDir =
                             { model.EngineDir with
                                 Directory = s
-                                Error = false
-                                HelperText = "" } }
+                                State = DirState.Init "" } }
                     , Cmd.bridgeSend (iniSender.Exists <|
                         { File = cFile
                           WorkingDir = Some(s) })
@@ -352,8 +280,7 @@ module State =
                         EngineDir =
                             { model.EngineDir with
                                 Directory = s
-                                Error = true
-                                HelperText = errorStrings res } }
+                                State = DirState.Error <| errorStrings res } }
                     , Cmd.none
             | ConfigFile.GameUserSettings ->
                 match res with
@@ -362,8 +289,7 @@ module State =
                         GameUserDir =
                             { model.GameUserDir with
                                 Directory = s
-                                Error = false
-                                HelperText = "" } }
+                                State = DirState.Init "" } }
                     , Cmd.bridgeSend (iniSender.Exists <|
                         { File = cFile
                           WorkingDir = Some(s) })
@@ -372,8 +298,7 @@ module State =
                         GameUserDir =
                             { model.GameUserDir with
                                 Directory = s
-                                Error = true
-                                HelperText = errorStrings res } }
+                                State = DirState.Error <| errorStrings res } }
                     , Cmd.none
         | SetMapDir (s,res) ->
             match res with
@@ -382,16 +307,14 @@ module State =
                     MapsDir =
                         { model.MapsDir with
                             Directory = s
-                            Error = false
-                            HelperText = "" } }
+                            State = DirState.Init "" } }
                 , Cmd.bridgeSend (mapSender.DirExists s)
             | Error _ ->
                 { model with
                     GameUserDir =
                         { model.GameUserDir with
                             Directory = s
-                            Error = true
-                            HelperText = errorStrings res } }
+                            State = DirState.Error <| errorStrings res } }
                 , Cmd.none
         | RequestLoad dirLoad ->
             let handleLoaded =

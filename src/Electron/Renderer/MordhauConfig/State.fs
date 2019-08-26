@@ -17,37 +17,20 @@ module State =
           Panels = ExpansionPanels.Init()
           EngineDir = 
               { Dir = DirLoad.ConfigFiles(ConfigFile.Engine)
-                Label = ""
-                Waiting = false
                 Directory = ""
-                Error = false
-                HelperText = "" 
-                Validated = false }
+                Label = ""
+                State = DirState.Init "" }
           GameUserDir =
               { Dir = DirLoad.ConfigFiles(ConfigFile.GameUserSettings)
-                Label = ""
-                Waiting = false
                 Directory = ""
-                Error = false
-                HelperText = "" 
-                Validated = false }
-          Submit =
-              { Waiting = false
-                Error = false
-                HelperText = ""
-                Complete = false }
+                Label = ""
+                State = DirState.Init "" }
+          Submit = Submit.Init
           Snack = Snackbar.State.init() }
 
     let private sender = new INIBridgeSender(Caller.MordhauConfig)
 
     let update (msg: Msg) (model: Model) =
-        let submissionFailed (s: string) =
-            { model with
-                Submit =
-                    { model.Submit with
-                        Waiting = false
-                        Error = true
-                        HelperText = s } }
         match msg with
         | ClientMsg bMsg ->
             match bMsg.BridgeResult with
@@ -61,17 +44,10 @@ module State =
                             model.Panels |> List.collect (fun p -> p.Items)
                         model, Cmd.bridgeSend (sender.MapConfigs allPanels)
                     else
-                        submissionFailed "Error creating backup", Cmd.ofMsg SnackDismissMsg
+                        { model with Submit = Submit.Error "Error creating backup" }, Cmd.ofMsg SnackDismissMsg
                 | INIOperationResult.CommitChanges b ->
-                    if b then
-                        { model with
-                            Submit =
-                                { model.Submit with
-                                    Waiting = false
-                                    Error = false
-                                    HelperText = "Changes successfully completed!"
-                                    Complete = true } }
-                    else submissionFailed "Error commiting changes to the file"
+                    if b then { model with Submit = Submit.Success "Changes successfully completed!" }
+                    else { model with Submit = Submit.Error "Error commiting changes to the file" }
                     , Cmd.ofMsg SnackDismissMsg
                 | _ -> model, Cmd.none
             | BridgeResult.Config cr ->
@@ -80,10 +56,10 @@ module State =
                     { model with
                         EngineDir = 
                             { model.EngineDir with
-                                Waiting = false }
+                                State = DirState.Init "" }
                         GameUserDir = 
                             { model.GameUserDir with
-                                Waiting = false }
+                                State = DirState.Init "" }
                         Panels =
                             model.Panels 
                             |> List.map (fun (p: Panel) ->
@@ -106,7 +82,7 @@ module State =
                             (sender.Commit 
                                 [ { File = ConfigFile.Engine; WorkingDir = model.EngineDir.Directory |> Some }
                                   { File = ConfigFile.GameUserSettings; WorkingDir = model.GameUserDir.Directory |> Some } ])
-                    else submissionFailed "Modifying INI failed", Cmd.ofMsg SnackDismissMsg
+                    else { model with Submit = Submit.Error "Modifying INI failed" }, Cmd.ofMsg SnackDismissMsg
             | _ -> model, Cmd.none
         | Expand(p) ->
             model.Panels
@@ -157,9 +133,7 @@ module State =
                                 else { s with Value = None })
                     Enabled = toggle }
             { model with
-                Submit =
-                    { model.Submit with
-                        Complete = false }
+                Submit = Submit.Init
                 Panels =
                     model.Panels 
                     |> List.map (fun p ->
@@ -200,15 +174,11 @@ module State =
                                 mapOGroups p.Items } 
                     else p )
             { model with
-                Submit =
-                    { model.Submit with
-                        Complete = false }
+                Submit = Submit.Init
                 Panels = newPanels}, Cmd.none
         | Submit ->
             { model with
-                Submit =
-                    { model.Submit with
-                        Waiting = true } }
+                Submit = Submit.Waiting }
             , Cmd.bridgeSend 
                 (sender.Backup 
                     [ { File = ConfigFile.Engine; WorkingDir = model.EngineDir.Directory |> Some }
@@ -219,9 +189,14 @@ module State =
             Cmd.batch [ Cmd.map SnackMsg cmd
                         actionCmd ]
         | SnackDismissMsg ->
-            let cmd =
-                Snackbar.State.create model.Submit.HelperText
-                |> Snackbar.State.withDismissAction "OK"
-                |> Snackbar.State.withTimeout 80000
-                |> Snackbar.State.add
-            model, Cmd.map SnackMsg cmd
+            match model.Submit with
+            | Submit.Success helperText
+            | Submit.Error helperText
+                ->
+                let cmd =
+                    Snackbar.State.create helperText
+                    |> Snackbar.State.withDismissAction "OK"
+                    |> Snackbar.State.withTimeout 80000
+                    |> Snackbar.State.add
+                model, Cmd.map SnackMsg cmd
+            | _ -> model, Cmd.none

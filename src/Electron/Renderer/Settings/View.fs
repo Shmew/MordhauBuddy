@@ -37,8 +37,14 @@ module View =
                 MaterialProp.FullWidth true
                 HTMLAttr.Label dir.Label
                 HTMLAttr.Value dir.Directory
-                MaterialProp.Error dir.Error
-                TextFieldProp.HelperText (dir.HelperText |> str)
+                MaterialProp.Error dir.State.IsDirError
+                match dir.State with
+                | DirState.Init s 
+                | DirState.Error s
+                | DirState.Success s
+                    -> s
+                | _ -> ""
+                |> fun s -> TextFieldProp.HelperText (s |> str)
             ] []
             button [
                 ButtonProp.Variant ButtonVariant.Contained

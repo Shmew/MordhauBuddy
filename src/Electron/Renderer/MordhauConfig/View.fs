@@ -215,7 +215,7 @@ module View =
                 ] 
             ] [
                 button [
-                    HTMLAttr.Disabled <| model.Submit.Complete
+                    HTMLAttr.Disabled <| model.Submit.IsSubmitSuccess
                     ButtonProp.Variant ButtonVariant.Contained
                     MaterialProp.Color ComponentColor.Primary
                     DOMAttr.OnClick <| fun _ -> 
@@ -226,7 +226,7 @@ module View =
                         CSSProp.MarginLeft "auto"
                     ]
                 ] [ 
-                    if model.Submit.Waiting then 
+                    if model.Submit.IsSubmitWaiting then 
                         yield circularProgress [ 
                             CircularProgressProp.Size (
                                 CircularProgressSize.Case1(20))

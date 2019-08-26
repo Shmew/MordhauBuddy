@@ -153,8 +153,9 @@ module rec Types =
                     let isDisabled =
                         match this with
                         | ChooseProfiles when model.TransferList.RightProfiles.Length = 0 -> true
-                        | ChooseAction when (not model.Import.Validated && model.TabSelected = Tab.Import) || model.TabSelected = Tab.Export -> true
-                        | _ when model.Submit.Waiting -> true
+                        | ChooseAction when (not model.Import.State.IsImportSuccess 
+                            && model.TabSelected = Tab.Import) || model.TabSelected = Tab.Export -> true
+                        | _ when model.Submit.IsSubmitWaiting -> true
                         | _ -> false
 
                     [
@@ -170,7 +171,7 @@ module rec Types =
                                 dispatch (if this.Last then StepperSubmit else StepperNext)
                             Style [ CSSProp.MaxHeight "2.6em" ]
                         ] [ 
-                            if model.Submit.Waiting then 
+                            if model.Submit.IsSubmitWaiting then 
                                 yield 
                                     circularProgress [ 
                                         CircularProgressProp.Size (CircularProgressSize.Case1(20))
@@ -210,25 +211,56 @@ module rec Types =
           Checked : bool
           Export : string }
 
+    [<RequireQualifiedAccess>]
+    type TransferState =
+        | Valid of string
+        | Error of string
+        member this.IsTransferValid =
+            match this with
+            | TransferState.Valid _ -> true
+            | _ -> false
+
+        member this.IsTransferError =
+            match this with
+            | TransferState.Error _ -> true
+            | _ -> false
+
     type TransferList =
         { LeftProfiles : Profile list
           LeftChecked : int
           RightProfiles : Profile list
           RightChecked : int 
-          Error : bool
-          HelperText : string }
+          State : TransferState }
+
+    [<RequireQualifiedAccess>]
+    type ImportState =
+        | Init of string
+        | Error of string
+        | Success of string
+        member this.IsImportSuccess =
+            match this with
+            | ImportState.Success _ -> true
+            | _ -> false
+
+        member this.IsImportError =
+            match this with
+            | ImportState.Error _ -> true
+            | _ -> false
+
+        member this.IsImportInit =
+            match this with
+            | ImportState.Init _ -> true
+            | _ -> false
+
+        member this.HelperText =
+            match this with
+            | ImportState.Init s -> s
+            | ImportState.Error s -> s
+            | ImportState.Success s -> s
 
     type ImportStr =
         { ImportString : string
-          Error : bool
-          HelperText : string
-          Validated : bool }
-
-    type Submit =
-        { Waiting : bool
-          Error : bool
-          HelperText : string
-          Complete : bool }
+          State : ImportState }
 
     type Model = 
         { Stepper : Steps

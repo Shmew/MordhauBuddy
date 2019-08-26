@@ -18,6 +18,7 @@ module View =
     open Elmish.React
     open Electron
     open Types
+    open MordhauBuddy.Shared.ElectronBridge
 
     let private styles (theme : ITheme) : IStyles list = [
         Styles.Custom ("darkList", [
@@ -30,22 +31,23 @@ module View =
             TooltipProp.Title (error |> str)
         ] [ elem ]
 
-    let private tableMenu (classes: IClasses) model dispatch (map : CommunityMapWithProgress) =
+    let private tableMenu (classes: IClasses) model dispatch (map : CommunityMapWithState) =
         div [] [
             yield
                 iconButton [
-                    DOMAttr.OnClick <| fun _ -> dispatch (ToggleMenu(model.TabSelected, map.Map.Folder, None)) 
+                    DOMAttr.OnClick <| fun _ -> dispatch (ToggleMenu(model.TabSelected, map.Map.Folder)) 
                 ] [ moreVertIcon [] ]
-            if map.MenuOpen then
+            match map.MenuState with
+            | MenuState.Open(pos) ->
                 yield
                     menu [
                         MaterialProp.Open true
                         MaterialProp.KeepMounted true
                         PopoverProp.AnchorReference AnchorReference.AnchorPosition
-                        PopoverProp.AnchorPosition { left = (map.Position.X); top = (map.Position.Y) }
+                        PopoverProp.AnchorPosition { left = pos.X; top = pos.Y }
                     ] [
                         clickAwayListener [
-                            ClickAwayListenerProp.OnClickAway <| fun _ -> dispatch (ToggleMenu(model.TabSelected, map.Map.Folder, Some(false))) 
+                            ClickAwayListenerProp.OnClickAway <| fun _ -> dispatch (ToggleMenu(model.TabSelected, map.Map.Folder)) 
                         ] [
                             div [] <|
                                 match model.TabSelected with
@@ -64,6 +66,7 @@ module View =
                                 | _ -> []
                         ]
                     ]
+            | _ -> ()
         ]
 
     let private renderAvailableMaps (classes: IClasses) model dispatch =
@@ -134,7 +137,7 @@ module View =
                     TableCellProp.Align TableCellAlign.Left
                 ] [
                     typography [
-                        if map.Error then
+                        if map.State.IsStateError then
                             yield TypographyProp.Color TypographyColor.Error
                         yield TypographyProp.Variant TypographyVariant.Body2
                     ] [ str (map.Map |> getName) ]
@@ -164,7 +167,7 @@ module View =
                     TableCellProp.Align TableCellAlign.Right
                 ] [
                     typography [
-                        if map.Error then
+                        if map.State.IsStateError then
                             yield TypographyProp.Color TypographyColor.Error
                         yield TypographyProp.Variant TypographyVariant.Body2
                     ] [ map.Map.Author |> defStr ]
@@ -174,7 +177,7 @@ module View =
                     Style [ CSSProp.MinWidth "8em" ]
                 ] [
                     typography [
-                        if map.Error then
+                        if map.State.IsStateError then
                             yield TypographyProp.Color TypographyColor.Error
                         yield TypographyProp.Variant TypographyVariant.Body2
                     ] [ map.Map.GetDate() |> defStr ]
@@ -183,7 +186,7 @@ module View =
                     TableCellProp.Align TableCellAlign.Right
                 ] [
                     typography [
-                        if map.Error then
+                        if map.State.IsStateError then
                             yield TypographyProp.Color TypographyColor.Error
                         yield TypographyProp.Variant TypographyVariant.Body2
                     ] [ str <| map.Map.Version.GetString() ]
@@ -193,7 +196,7 @@ module View =
                     Style [ CSSProp.MinWidth "6em" ]
                 ] [
                     typography [
-                        if map.Error then
+                        if map.State.IsStateError then
                             yield TypographyProp.Color TypographyColor.Error
                         yield TypographyProp.Variant TypographyVariant.Body2
                     ] [ 
@@ -208,7 +211,7 @@ module View =
                     Style [ CSSProp.MinWidth "6em" ]
                 ] [
                     typography [
-                        if map.Error then
+                        if map.State.IsStateError then
                             yield TypographyProp.Color TypographyColor.Error
                         yield TypographyProp.Variant TypographyVariant.Body2
                     ] [ map.Map.GetPlayers() |> defStr ]
@@ -219,9 +222,10 @@ module View =
                 ] [ tableMenu classes model dispatch map ]
             ]
             |> fun tRow ->
-                if map.Error then
-                    addMapErrorTooltip tRow (map.HelperText)
-                else tRow)
+                match map.State with
+                | ComMapState.Error(errMsg) ->
+                    addMapErrorTooltip tRow errMsg
+                | _ -> tRow)
 
     let private renderInstallingMaps (classes: IClasses) model dispatch =
         let getName (map : MapTypes.CommunityMap) =
@@ -239,7 +243,7 @@ module View =
                     TableCellProp.Align TableCellAlign.Left
                 ] [
                     typography [
-                        if map.Error then
+                        if map.State.IsStateError then
                             yield TypographyProp.Color TypographyColor.Error
                         yield TypographyProp.Variant TypographyVariant.Body2
                     ] [ str (map.Map |> getName) ]
@@ -249,37 +253,44 @@ module View =
                     Style [ CSSProp.MinWidth "15em" ]
                 ] [
                     typography [
-                        if map.Error then
+                        if map.State.IsStateError then
                             yield TypographyProp.Color TypographyColor.Error
                         yield TypographyProp.Variant TypographyVariant.Body2
                     ] [ 
-                        linearProgress [ 
-                            LinearProgressProp.Value <| map.Progress 
-                            LinearProgressProp.Variant LinearProgressVariant.Determinate
-                        ]
-                        typography [] [
-                            str (sprintf "%s%s" (map.Progress |> string) "%")
-                        ]
+                        match map.State with
+                        | ComMapState.Success i ->
+                            yield 
+                                linearProgress [ 
+                                    LinearProgressProp.Value i 
+                                    LinearProgressProp.Variant LinearProgressVariant.Determinate
+                                ]
+                            yield
+                                typography [] [
+                                    str (sprintf "%s%s" (i |> string) "%")
+                                ]
+                        | _ -> ()
                     ]
                 ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Center
+                    Style [ CSSProp.MinWidth "10em" ]
                 ] [
                     typography [
-                        if map.Error then
+                        if map.State.IsStateError then
                             yield TypographyProp.Color TypographyColor.Error
                         yield TypographyProp.Variant TypographyVariant.Body2
                     ] [ 
                         map.Map.FileSize 
                         |> Option.map (fun v -> 
-                            sprintf "%.1f / %s %s" 
-                                (if map.Progress = 100 then v
-                                 else
-                                    map.Progress 
-                                    |> float 
+                            let progress =
+                                match map.State with
+                                | ComMapState.Success i when i = 100 -> v
+                                | ComMapState.Success i -> 
+                                    float(i)
                                     |> fun f -> f / 100. 
-                                    |> (*) v) 
-                                (v |> string) "MB") 
+                                    |> (*) v
+                                | _ -> 0. * 1.<MB>
+                            sprintf "%.1f / %s %s" progress (v |> string) "MB") 
                         |> defStr 
                     ]
                 ]
@@ -289,9 +300,10 @@ module View =
                 ] [ tableMenu classes model dispatch map ]
             ]
             |> fun tRow ->
-                if map.Error then
-                    addMapErrorTooltip tRow (map.HelperText)
-                else tRow)
+                match map.State with
+                | ComMapState.Error(errMsg) ->
+                    addMapErrorTooltip tRow errMsg
+                | _ -> tRow)
 
     let private tabContent (classes: IClasses) model dispatch =
         grid [
@@ -405,7 +417,6 @@ module View =
                 CSSProp.Height "inherit"
             ]
         ] [
-            yield lazyView2 Snackbar.View.view model.Snack (SnackMsg >> dispatch)
             yield
                 card [ CardProp.Raised true ] [
                     tabs [

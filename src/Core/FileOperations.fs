@@ -135,3 +135,7 @@ module FileOps =
 
         /// Delete a directory if it exists
         let deleteDir (path : string) = Shell.deleteDir path
+
+        /// Write an info
+        let writeFile (dir : string) (fName : string) (data : string) =
+            File.writeString false (dir @@ fName @@ (fName + ".info.txt")) data

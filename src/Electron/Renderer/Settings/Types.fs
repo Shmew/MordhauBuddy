@@ -24,9 +24,7 @@ module Types =
         | LoadCanceled
 
     type Model = 
-        { Waiting : bool
-          Complete : bool
-          EngineDir : ConfigDir
+        { EngineDir : ConfigDir
           GameDir : ConfigDir
           GameUserDir : ConfigDir 
           MapsDir : ConfigDir }

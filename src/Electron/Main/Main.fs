@@ -96,6 +96,7 @@ module Main =
                     o.autoHideMenuBar <- true
                     o.webPreferences <-
                         jsOptions<WebPreferences> (fun w ->
+                            w.webSecurity <- false
                             w.contextIsolation <- false
                             w.nodeIntegration <- true)
                     o.frame <- false

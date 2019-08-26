@@ -170,7 +170,7 @@ module Maps =
                                 while downloading do
                                     try
                                         downloadFile.UpdateFun(streamDest.Position |> calcPercentage)
-                                        Async.Sleep 200 |> Async.RunSynchronously
+                                        Async.Sleep 500 |> Async.RunSynchronously
                                     with _ -> downloading <- false
                             }
                         async {
@@ -330,4 +330,17 @@ module Maps =
                 |> Http.paramBuilder
                 |> (fun s -> async { return getGDStream (download.Url, Some(s), ReqHeaders.GoogleDrive) })
                 |> fun s -> Streaming.downloadFile download s size cToken
+                getInfoFiles()
+                |> function
+                | Ok(sOptList) ->
+                    sOptList
+                    |> List.choose id
+                    |> List.tryFind (fun (i : string) ->
+                           i.Split('\n')
+                           |> Array.tryFind (fun s -> s.Trim() = download.MapName)
+                           |> Option.isSome)
+                    |> function
+                    | Some(s) -> FileOps.Maps.writeFile download.Directory.FullName download.MapName s
+                    | _ -> ()
+                | _ -> ()
             | _ -> download.ErrorFun "Failed to get Google Drive key"
