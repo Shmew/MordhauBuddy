@@ -86,7 +86,11 @@ module State =
             | BridgeResult.Maps mRes ->
                 match mRes with
                 | MapResult.AvailableMaps cList ->
-                    { model with Available = cList |> List.map (getComMap >> CommunityMapWithProgress.Init) }
+                    { model with 
+                        Available = 
+                            cList 
+                            |> List.map (getComMap >> CommunityMapWithProgress.Init) 
+                            |> List.sortBy (fun k -> k.Map.GetName()) }
                     |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
                 | MapResult.InstalledMaps cList ->
                     { model with Installed = (cList |> List.map (getComMap >> CommunityMapWithProgress.Init)) }
@@ -131,7 +135,7 @@ module State =
                 | MapResult.InstallMapComplete map -> 
                     let finished,inProcess = model.Installing |> List.partition (fun m -> m.Map.Folder = map)
                     { model with 
-                        Installed = finished |> List.append model.Installed
+                        Installed = finished |> List.append model.Installed |> List.sortBy (fun k -> k.Map.GetName())
                         Installing = inProcess }, Cmd.bridgeSend (sender.ConfirmInstall map)
                 | MapResult.InstallMapError (map, err) -> 
                     { model with
@@ -163,6 +167,7 @@ module State =
                     | _ -> None }
             { model with
                 Available = newAvailable
+                Installed = (model.Installed |> List.filter (fun m -> m.Map.Folder <> fName))
                 Installing = (List.append model.Installing newInstalling) }
             , Cmd.bridgeSend (sender.Install(mCmd))
         | InstallAll -> 
@@ -176,7 +181,11 @@ module State =
                 (model.Installed 
                 |> List.map (fun m -> 
                     Uninstall(m.Map.Folder) |> Cmd.ofMsg))
-        | CancelInstall s -> model, Cmd.bridgeSend (sender.Cancel s)
+        | CancelInstall s -> 
+            let cancelled,inProcess = model.Installing |> List.partition (fun m -> m.Map.Folder = s)
+            { model with 
+                Available = cancelled |> List.map (fun m -> m.Map |> CommunityMapWithProgress.Init) |> List.append model.Available
+                Installing = inProcess }, Cmd.bridgeSend (sender.Cancel s)
         | CancelInstallAll -> 
             model, Cmd.batch 
                 (model.Installing 
@@ -184,6 +193,41 @@ module State =
                     CancelInstall(m.Map.Folder) |> Cmd.ofMsg))
         | GetInstalled -> model, Cmd.bridgeSend (sender.GetInstalled(model.MapsDir.Directory))
         | GetAvailable -> model, Cmd.bridgeSend (sender.GetAvailable)
+        | ToggleMenu (tab, fName, bOpt) -> 
+            let pos = getMousePositions()
+            let toggle b =
+                match bOpt with
+                | Some(tBool) -> tBool
+                | _ -> b |> not
+
+            match tab with
+            | Available -> model, Cmd.none
+            | Installed -> 
+                { model with
+                    Installed = 
+                        (model.Installed 
+                         |> List.map (fun m -> 
+                            if m.Map.Folder = fName then 
+                                { m with 
+                                    MenuOpen = m.MenuOpen |> toggle
+                                    Position =
+                                        { m.Position with
+                                            X = pos.X
+                                            Y = pos.Y } } 
+                            else m ))}, Cmd.none
+            | Installing ->
+                { model with
+                    Installing = 
+                        (model.Installing 
+                         |> List.map (fun m -> 
+                            if m.Map.Folder = fName then 
+                                { m with 
+                                    MenuOpen = m.MenuOpen |> toggle 
+                                    Position =
+                                        { m.Position with
+                                            X = pos.X
+                                            Y = pos.Y } } 
+                            else m ))}, Cmd.none
         | SnackMsg msg' ->
             let m, cmd, actionCmd = Snackbar.State.update msg' model.Snack
             { model with Snack = m },

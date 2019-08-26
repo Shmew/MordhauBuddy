@@ -4,38 +4,49 @@ module View =
     open Fable.Core.JsInterop
     open Fable.React
     open Fable.React.Props
+    open Fable.MaterialUI
     open Fable.MaterialUI.Core
-    open Fable.MaterialUI.Themes
-    open Fable.MaterialUI.Props
+    open Fable.MaterialUI.MaterialDesignIcons
+    open Fable.MaterialUI.Icons
+    open FSharp.Core  /// To avoid shadowing Result<_,_>
+    open MordhauBuddy.App
+    open RenderUtils
+    open RenderUtils.String
+    open RenderUtils.Validation
+    open RenderUtils.MaterialUI
+    open RenderUtils.MaterialUI.Core
+    open Elmish.React
+    open Electron
     open Types
 
     let private styles (theme : ITheme) : IStyles list = []
 
-    let private view' (classes: IClasses) model dispatch =
-        let menuItems =
-            model.MenuItems
+    let private menuItems (classes: IClasses) model dispatch =
+        div [] <|
+            (model.MenuItems
             |> List.map (fun item ->
                 menuItem [
                     DOMAttr.OnClick <| fun _ -> dispatch <| Action(item.Action)
                     Style [ CSSProp.MinHeight "0em" ]
                 ] [ 
                     str item.Label
-                ])
-            |> Seq.ofList
+                ]))
 
+    let private view' (classes: IClasses) model dispatch =
         menu [
             MenuProp.DisableAutoFocusItem true
             MaterialProp.KeepMounted true
             MaterialProp.Open model.Opened
             MaterialProp.OnClose <| fun _ -> dispatch Close
-            Style [ CSSProp.TransitionDuration "5ms" ]
-            PaperProps [
-                Style [ CSSProp.Width "10em" ]
-            ]
-            
             PopoverProp.AnchorReference AnchorReference.AnchorPosition
             PopoverProp.AnchorPosition { left = (model.Position.X); top = (model.Position.Y) }
-        ] menuItems
+        ] [
+            if model.Opened then
+                yield
+                    clickAwayListener [
+                        ClickAwayListenerProp.OnClickAway <| fun _ -> dispatch Close 
+                    ] [ menuItems classes model dispatch ]
+        ]
             
     /// Workaround for using JSS with Elmish
     /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471

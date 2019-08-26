@@ -18,7 +18,7 @@ module State =
         match msg with
         | Open e ->
             if model.Opened then
-                model,Cmd.ofMsg Close
+                model, Cmd.ofMsg Close
             else 
                 let pos = getMousePositions()
                 let element = getElementAtPos pos.X pos.Y
@@ -41,7 +41,7 @@ module State =
                             Action = SelectAll } ]
                     | _ ->
                         [ ]
-                if actionList.IsEmpty then model,Cmd.none
+                if actionList.IsEmpty then model, Cmd.none
                 else
                     { model with 
                         Opened = true
@@ -49,8 +49,8 @@ module State =
                             { model.Position with
                                 X = pos.X
                                 Y = pos.Y }
-                        MenuItems = actionList },Cmd.none
-        | Close -> { model with Opened = false },Cmd.none
+                        MenuItems = actionList }, Cmd.none
+        | Close -> { model with Opened = false }, Cmd.none
         | Action(f) -> 
             f.GetAction()
-            model,Cmd.ofMsg Close
+            model, Cmd.ofMsg Close

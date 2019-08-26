@@ -57,21 +57,32 @@ module Types =
         | CancelInstallAll
         | GetInstalled
         | GetAvailable
+        | ToggleMenu of Tab * string * (bool option)
         | SnackMsg of Snackbar.Types.Msg<Msg>
         | SnackDismissMsg
+
+    type MenuPosition =
+        { X : int
+          Y : int }
 
     type CommunityMapWithProgress =
         { Map : CommunityMap
           Progress : int
           Error : bool
           HelperText : string
-          CancellationToken : string }
+          CancellationToken : string
+          MenuOpen : bool
+          Position : MenuPosition }
         static member Init (map : CommunityMap) =
             { Map = map
               Progress = 0
               Error = false
               HelperText = ""
-              CancellationToken = "" }
+              CancellationToken = ""
+              MenuOpen = false
+              Position = 
+                { X = 0
+                  Y = 0 } }
 
     type Model = 
         { Waiting : bool

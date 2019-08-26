@@ -25,6 +25,47 @@ module View =
         ])
     ]
 
+    let private addMapErrorTooltip (elem : ReactElement) (error : string) =
+        tooltip [
+            TooltipProp.Title (error |> str)
+        ] [ elem ]
+
+    let private tableMenu (classes: IClasses) model dispatch (map : CommunityMapWithProgress) =
+        div [] [
+            yield
+                iconButton [
+                    DOMAttr.OnClick <| fun _ -> dispatch (ToggleMenu(model.TabSelected, map.Map.Folder, None)) 
+                ] [ moreVertIcon [] ]
+            if map.MenuOpen then
+                yield
+                    menu [
+                        MaterialProp.Open true
+                        MaterialProp.KeepMounted true
+                        PopoverProp.AnchorReference AnchorReference.AnchorPosition
+                        PopoverProp.AnchorPosition { left = (map.Position.X); top = (map.Position.Y) }
+                    ] [
+                        clickAwayListener [
+                            ClickAwayListenerProp.OnClickAway <| fun _ -> dispatch (ToggleMenu(model.TabSelected, map.Map.Folder, Some(false))) 
+                        ] [
+                            div [] <|
+                                match model.TabSelected with
+                                | Installed -> 
+                                    [ menuItem [
+                                        HTMLAttr.Disabled (model.Available |> List.exists (fun m -> m.Map.Folder = map.Map.Folder) |> not)
+                                        DOMAttr.OnClick <| fun _ -> dispatch (Install(map.Map.GetName(), map.Map.Folder))
+                                      ] [ str "Update" ]
+                                      menuItem [
+                                          DOMAttr.OnClick <| fun _ -> dispatch (Uninstall(map.Map.Folder))
+                                      ] [ str "Uninstall" ] ]
+                                | Installing -> 
+                                    [ menuItem [
+                                          DOMAttr.OnClick <| fun _ -> dispatch (CancelInstall(map.Map.Folder))
+                                      ] [ str "Cancel" ] ]
+                                | _ -> []
+                        ]
+                    ]
+        ]
+
     let private renderAvailableMaps (classes: IClasses) model dispatch =
         let getName (map : MapTypes.CommunityMap) =
             match map.Name with
@@ -87,31 +128,100 @@ module View =
 
         model.Installed
         |> List.map (fun map -> 
-            tableRow [] [
+            tableRow [
+            ] [
                 tableCell [
                     TableCellProp.Align TableCellAlign.Left
-                ] [ str (map.Map |> getName) ]
+                ] [
+                    typography [
+                        if map.Error then
+                            yield TypographyProp.Color TypographyColor.Error
+                        yield TypographyProp.Variant TypographyVariant.Body2
+                    ] [ str (map.Map |> getName) ]
+                ]
                 tableCell [
-                    TableCellProp.Align TableCellAlign.Right
-                ] [ map.Map.Author |> defStr ]
-                tableCell [
-                    TableCellProp.Align TableCellAlign.Right
-                ] [ map.Map.GetDate() |> defStr ]
-                tableCell [
-                    TableCellProp.Align TableCellAlign.Right
-                ] [ str <| map.Map.Version.GetString() ]
-                tableCell [
-                    TableCellProp.Align TableCellAlign.Right
-                ] [ 
-                    map.Map.FileSize 
-                    |> Option.map (fun v -> 
-                        sprintf "%s %s" (v |> string) "MB") 
-                    |> defStr 
+                    TableCellProp.Align TableCellAlign.Left
+                    Style [ CSSProp.MinWidth "10em" ]
+                ] [
+                    card [
+                        
+                    ] [
+                        cardMedia [
+                            match map.Map.Image with
+                            | Some(mapImage) ->
+                                yield CardMediaProp.Image mapImage
+                                yield HTMLAttr.Title <| getName map.Map
+                            | _ ->
+                                yield HTMLAttr.Title "No picture provided"
+                            yield 
+                                Style [
+                                    CSSProp.Height "5em"
+                                ]
+                        ]
+                    ]
                 ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Right
-                ] [ map.Map.GetPlayers() |> defStr ]
-            ])
+                ] [
+                    typography [
+                        if map.Error then
+                            yield TypographyProp.Color TypographyColor.Error
+                        yield TypographyProp.Variant TypographyVariant.Body2
+                    ] [ map.Map.Author |> defStr ]
+                ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                    Style [ CSSProp.MinWidth "8em" ]
+                ] [
+                    typography [
+                        if map.Error then
+                            yield TypographyProp.Color TypographyColor.Error
+                        yield TypographyProp.Variant TypographyVariant.Body2
+                    ] [ map.Map.GetDate() |> defStr ]
+                ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                ] [
+                    typography [
+                        if map.Error then
+                            yield TypographyProp.Color TypographyColor.Error
+                        yield TypographyProp.Variant TypographyVariant.Body2
+                    ] [ str <| map.Map.Version.GetString() ]
+                ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                    Style [ CSSProp.MinWidth "6em" ]
+                ] [
+                    typography [
+                        if map.Error then
+                            yield TypographyProp.Color TypographyColor.Error
+                        yield TypographyProp.Variant TypographyVariant.Body2
+                    ] [ 
+                        map.Map.FileSize 
+                        |> Option.map (fun v -> 
+                            sprintf "%s %s" (v |> string) "MB") 
+                        |> defStr 
+                    ]
+                ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                    Style [ CSSProp.MinWidth "6em" ]
+                ] [
+                    typography [
+                        if map.Error then
+                            yield TypographyProp.Color TypographyColor.Error
+                        yield TypographyProp.Variant TypographyVariant.Body2
+                    ] [ map.Map.GetPlayers() |> defStr ]
+                ]
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                    Style [ CSSProp.Width "1em" ]
+                ] [ tableMenu classes model dispatch map ]
+            ]
+            |> fun tRow ->
+                if map.Error then
+                    addMapErrorTooltip tRow (map.HelperText)
+                else tRow)
 
     let private renderInstallingMaps (classes: IClasses) model dispatch =
         let getName (map : MapTypes.CommunityMap) =
@@ -127,35 +237,61 @@ module View =
             tableRow [] [
                 tableCell [
                     TableCellProp.Align TableCellAlign.Left
-                ] [ str (map.Map |> getName) ]
+                ] [
+                    typography [
+                        if map.Error then
+                            yield TypographyProp.Color TypographyColor.Error
+                        yield TypographyProp.Variant TypographyVariant.Body2
+                    ] [ str (map.Map |> getName) ]
+                ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Center
                     Style [ CSSProp.MinWidth "15em" ]
-                ] [ 
-                    linearProgress [ 
-                        LinearProgressProp.Value <| map.Progress 
-                        LinearProgressProp.Variant LinearProgressVariant.Determinate
-                    ]
-                    typography [] [
-                        str (sprintf "%s%s" (map.Progress |> string) "%")
+                ] [
+                    typography [
+                        if map.Error then
+                            yield TypographyProp.Color TypographyColor.Error
+                        yield TypographyProp.Variant TypographyVariant.Body2
+                    ] [ 
+                        linearProgress [ 
+                            LinearProgressProp.Value <| map.Progress 
+                            LinearProgressProp.Variant LinearProgressVariant.Determinate
+                        ]
+                        typography [] [
+                            str (sprintf "%s%s" (map.Progress |> string) "%")
+                        ]
                     ]
                 ]
                 tableCell [
                     TableCellProp.Align TableCellAlign.Center
-                ] [ 
-                    map.Map.FileSize 
-                    |> Option.map (fun v -> 
-                        sprintf "%.1f / %s %s" 
-                            (if map.Progress = 100 then v
-                             else
-                                map.Progress 
-                                |> float 
-                                |> fun f -> f / 100. 
-                                |> (*) v) 
-                            (v |> string) "MB") 
-                    |> defStr 
+                ] [
+                    typography [
+                        if map.Error then
+                            yield TypographyProp.Color TypographyColor.Error
+                        yield TypographyProp.Variant TypographyVariant.Body2
+                    ] [ 
+                        map.Map.FileSize 
+                        |> Option.map (fun v -> 
+                            sprintf "%.1f / %s %s" 
+                                (if map.Progress = 100 then v
+                                 else
+                                    map.Progress 
+                                    |> float 
+                                    |> fun f -> f / 100. 
+                                    |> (*) v) 
+                                (v |> string) "MB") 
+                        |> defStr 
+                    ]
                 ]
-            ])
+                tableCell [
+                    TableCellProp.Align TableCellAlign.Right
+                    Style [ CSSProp.Width "1em" ]
+                ] [ tableMenu classes model dispatch map ]
+            ]
+            |> fun tRow ->
+                if map.Error then
+                    addMapErrorTooltip tRow (map.HelperText)
+                else tRow)
 
     let private tabContent (classes: IClasses) model dispatch =
         grid [
@@ -191,17 +327,21 @@ module View =
                         ] [
                             table [
                             ] [
-                                tableHead [] [
+                                tableHead [
+                                ] [
                                     tableRow [] [
                                         tableCell [
                                             TableCellProp.Align TableCellAlign.Left
                                         ] [ str "Name" ]
                                         tableCell [
+                                            TableCellProp.Align TableCellAlign.Left
+                                        ] []
+                                        tableCell [
                                             TableCellProp.Align TableCellAlign.Right
                                         ] [ str "Author" ]
                                         tableCell [
                                             TableCellProp.Align TableCellAlign.Right
-                                        ] [ str "Version"]
+                                        ] [ str "Release Date"]
                                         tableCell [
                                             TableCellProp.Align TableCellAlign.Right
                                         ] [ str "Version" ]
@@ -211,6 +351,9 @@ module View =
                                         tableCell [
                                             TableCellProp.Align TableCellAlign.Right
                                         ] [ str "Players" ]
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Right
+                                        ] []
                                     ]
                                 ]
                                 tableBody [] <| renderInstalledMaps classes model dispatch
@@ -243,6 +386,9 @@ module View =
                                         tableCell [
                                             TableCellProp.Align TableCellAlign.Center
                                         ] [ str "Downloaded" ]
+                                        tableCell [
+                                            TableCellProp.Align TableCellAlign.Right
+                                        ] []
                                     ]
                                 ]
                                 tableBody [] <| renderInstallingMaps classes model dispatch
