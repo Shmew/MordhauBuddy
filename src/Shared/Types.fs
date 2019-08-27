@@ -15,16 +15,16 @@ module ElectronBridge =
         [<Measure>]
         type GB
 
-        let bPerKb : float<B / KB> = 1000.<B/KB>
-        let bPerMb : float<B / MB> = 1000000.<B/MB>
-        let kbPerMb : float<KB / MB> = 1000.<KB/MB>
-        let mbPerKb : float<MB / KB> = 0.001<MB/KB>
-        let gbPerMb : float<GB / MB> = 0.001<GB/MB>
-        let convertBtoKB (x : float<B>) = x / bPerKb
-        let convertBtoMB (x : float<B>) = x / bPerMb
-        let convertKBtoMB (x : float<KB>) = x / kbPerMb
-        let convertMBtoKB (x : float<MB>) = x / mbPerKb
-        let convertGBtoMB (x : float<GB>) = x / gbPerMb
+        let bPerKb: float<B / KB> = 1000.<B/KB>
+        let bPerMb: float<B / MB> = 1000000.<B/MB>
+        let kbPerMb: float<KB / MB> = 1000.<KB/MB>
+        let mbPerKb: float<MB / KB> = 0.001<MB/KB>
+        let gbPerMb: float<GB / MB> = 0.001<GB/MB>
+        let convertBtoKB (x: float<B>) = x / bPerKb
+        let convertBtoMB (x: float<B>) = x / bPerMb
+        let convertKBtoMB (x: float<KB>) = x / kbPerMb
+        let convertMBtoKB (x: float<MB>) = x / mbPerKb
+        let convertGBtoMB (x: float<GB>) = x / gbPerMb
 
     [<RequireQualifiedAccess>]
     module KeyValues =
@@ -62,15 +62,15 @@ module ElectronBridge =
 
         [<RequireQualifiedAccess>]
         type Mutable =
-            { Min : MutableValues
-              Max : MutableValues
-              Step : float }
+            { Min: MutableValues
+              Max: MutableValues
+              Step: float }
 
     type KeyValues =
-        { Key : string
-          Default : KeyValues.Values
-          Value : KeyValues.Values option
-          Mutable : KeyValues.Mutable option }
+        { Key: string
+          Default: KeyValues.Values
+          Value: KeyValues.Values option
+          Mutable: KeyValues.Mutable option }
         member this.GetDefault() =
             match this.Value, this.Default.TryFloat() with
             | Some(v), _ when v.TryFloat().IsSome -> v.TryFloat().Value
@@ -85,12 +85,12 @@ module ElectronBridge =
         member this.Name = this.ToString() + ".ini"
 
     type OptionGroup =
-        { Title : string
-          Caption : string
-          Settings : KeyValues list
-          File : ConfigFile
-          Enabled : bool
-          Expanded : bool }
+        { Title: string
+          Caption: string
+          Settings: KeyValues list
+          File: ConfigFile
+          Enabled: bool
+          Expanded: bool }
 
     [<RequireQualifiedAccess>]
     type FaceResult =
@@ -147,11 +147,11 @@ module ElectronBridge =
         | App
 
     type Selectors =
-        { Selectors : string list }
+        { Selectors: string list }
 
     type INIFile =
-        { File : ConfigFile
-          WorkingDir : string option }
+        { File: ConfigFile
+          WorkingDir: string option }
 
     [<RequireQualifiedAccess>]
     type INIFileOperation =
@@ -181,14 +181,14 @@ module ElectronBridge =
 
     [<RequireQualifiedAccess>]
     type GoogleDrive =
-        { ID : string
-          Size : float<MB> }
+        { ID: string
+          Size: float<MB> }
 
     [<RequireQualifiedAccess>]
     type MapTarget =
-        { Folder : string
-          Directory : string
-          GDrive : GoogleDrive option }
+        { Folder: string
+          Directory: string
+          GDrive: GoogleDrive option }
 
     type Maps =
         | GetAvailableMaps
@@ -206,9 +206,9 @@ module ElectronBridge =
         static member Endpoint = "/ws"
 
     type BridgeMsg =
-        { Caller : Caller
-          File : INIFile option
-          BridgeResult : BridgeResult }
+        { Caller: Caller
+          File: INIFile option
+          BridgeResult: BridgeResult }
 
     type RemoteClientMsg =
         | Resp of BridgeMsg

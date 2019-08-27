@@ -10,33 +10,33 @@ open MordhauBuddy.Shared.ElectronBridge
 module Maps =
     /// Record for download requests
     type DownloadFile =
-        { Url : string
-          FileName : string
-          MapName : string
-          Directory : IO.DirectoryInfo
-          Size : float<MB>
-          UpdateFun : int -> unit
-          CompleteFun : unit -> unit
-          ErrorFun : string -> unit
-          CancelFun : OperationCanceledException -> unit }
+        { Url: string
+          FileName: string
+          MapName: string
+          Directory: IO.DirectoryInfo
+          Size: float<MB>
+          UpdateFun: int -> unit
+          CompleteFun: unit -> unit
+          ErrorFun: string -> unit
+          CancelFun: OperationCanceledException -> unit }
 
     module GHTypes =
         /// Record to represent GH content api response
         type GHContents =
-            { Name : string
-              Path : string
-              Sha : string
-              Size : int64
-              Url : string
+            { Name: string
+              Path: string
+              Sha: string
+              Size: int64
+              Url: string
               [<JsonField("html_url")>]
-              HtmlUrl : string
+              HtmlUrl: string
               [<JsonField("html_url")>]
-              GitUrl : string
+              GitUrl: string
               [<JsonField("download_url")>]
-              DownloadUrl : string
-              Type : string
+              DownloadUrl: string
+              Type: string
               [<JsonField("_links")>]
-              Links : obj }
+              Links: obj }
 
     module Helpers =
         /// Single case DU for creating GET queries
@@ -62,14 +62,14 @@ module Maps =
             open FSharp.Data.JsonExtensions
 
             /// Maps and encodes input list to GET query format
-            let paramBuilder (paramList : ParamValues list) =
-                let urlify (k : string, v : string) = (k, WebUtility.UrlEncode(v))
+            let paramBuilder (paramList: ParamValues list) =
+                let urlify (k: string, v: string) = (k, WebUtility.UrlEncode(v))
                 paramList
                 |> List.filter (fun e -> e.IsValid)
                 |> List.map (fun elem ->
-                       match elem with
-                       | Param(a, b) -> urlify (a, b.Value) |> (fun (k, v) -> sprintf "%s=%s" k v)
-                       | Flag(a, _) -> a)
+                    match elem with
+                    | Param(a, b) -> urlify (a, b.Value) |> (fun (k, v) -> sprintf "%s=%s" k v)
+                    | Flag(a, _) -> a)
                 |> (fun p ->
                 match p with
                 | _ when p |> List.isEmpty -> ""
@@ -79,21 +79,21 @@ module Maps =
                     |> (+) "?")
 
             /// Converts a text `HttpResponseBody` to string
-            let unwrapTextBody (body : HttpResponseBody) =
+            let unwrapTextBody (body: HttpResponseBody) =
                 match body with
                 | Text(t) -> t
                 | Binary(_) -> ""
 
             /// Gets the error message(s) from a `HttpResponse` if present
-            let httpErrorMsg (resp : HttpResponse) =
-                let getErrorMsgs (jParse : JsonValue option) =
+            let httpErrorMsg (resp: HttpResponse) =
+                let getErrorMsgs (jParse: JsonValue option) =
                     try
                         jParse.Value?errors.AsArray()
                         |> Array.map (fun elem -> elem?message.AsString())
                         |> Array.reduce (fun acc elem -> acc + ('\n'.ToString()) + elem)
                     with _ -> "Unable to parse response."
 
-                let parseResp (jParse : JsonValue option) =
+                let parseResp (jParse: JsonValue option) =
                     match jParse.IsSome with
                     | true -> getErrorMsgs jParse
                     | false -> "No message given by the server."
@@ -104,10 +104,10 @@ module Maps =
                 |> parseResp
 
             /// Returns error code message
-            let httpError (code : int) (errors : string) = sprintf "%i Error:%c%s" code '\n' errors
+            let httpError (code: int) (errors: string) = sprintf "%i Error:%c%s" code '\n' errors
 
             /// Evaluates `HttpResponse` to `Ok` or `Error`
-            let httpOk (resp : HttpResponse) =
+            let httpOk (resp: HttpResponse) =
                 match resp.StatusCode with
                 | e when e < 300 && e >= 200 ->
                     resp.Body
@@ -118,7 +118,7 @@ module Maps =
                     |> httpError resp.StatusCode
                     |> Error
 
-            let httpStreamOk (resp : HttpResponseWithStream) =
+            let httpStreamOk (resp: HttpResponseWithStream) =
                 match resp.StatusCode with
                 | e when e < 300 && e >= 200 -> resp.ResponseStream |> Ok
                 | _ -> "Error downloading file." |> Error
@@ -131,9 +131,9 @@ module Maps =
             open System.Threading
 
             /// Download and extract a file with continuations and progress updates
-            let downloadFile (downloadFile : DownloadFile) (stream : Async<Result<Stream, string>>)
-                (size : Result<string, string>) (cToken : CancellationToken) =
-                let errorMsg (e : exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' (e.Message)
+            let downloadFile (downloadFile: DownloadFile) (stream: Async<Result<Stream, string>>)
+                (size: Result<string, string>) (cToken: CancellationToken) =
+                let errorMsg (e: exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' (e.Message)
 
                 let download =
                     async {
@@ -150,7 +150,7 @@ module Maps =
                                 |> convertBtoMB
                             | _ -> downloadFile.Size
 
-                        let calcPercentage (i : int64) =
+                        let calcPercentage (i: int64) =
                             float (i)
                             |> (*) 1.<B>
                             |> convertBtoMB
@@ -165,7 +165,7 @@ module Maps =
 
                         use streamDest = File.Create path
 
-                        let downloadUpdater (streamDest : Stream) =
+                        let downloadUpdater (streamDest: Stream) =
                             async {
                                 while downloading do
                                     try
@@ -197,7 +197,7 @@ module Maps =
                         |> ignore
                     }
 
-                let onError (e : exn) = errorMsg e |> downloadFile.ErrorFun
+                let onError (e: exn) = errorMsg e |> downloadFile.ErrorFun
                 Async.StartWithContinuations(download, downloadFile.CompleteFun, onError, downloadFile.CancelFun)
 
         /// Json helpers
@@ -215,11 +215,11 @@ module Maps =
 
         [<NoComparison>]
         type GDKey =
-            { Key : string option }
+            { Key: string option }
 
         [<NoComparison>]
         type GDSize =
-            { Size : string }
+            { Size: string }
 
         /// Github base uri
         let private baseUri = @"https://api.github.com"
@@ -243,44 +243,44 @@ module Maps =
                       HttpRequestHeaders.UserAgent "MordhauBuddy" ]
 
         /// Wrapper function to make http requests
-        let internal makeRequest (req : unit -> HttpResponse) =
+        let internal makeRequest (req: unit -> HttpResponse) =
             try
                 req()
             with e -> sprintf "Error making HTTP request via %s%c%s" baseUri '\n' e.Message |> failwith
             |> Http.httpOk
 
-        let internal makeRequestStream (req : unit -> HttpResponseWithStream) =
+        let internal makeRequestStream (req: unit -> HttpResponseWithStream) =
             try
                 req()
             with e -> sprintf "Error making HTTP request via %s%c%s" baseUri '\n' e.Message |> failwith
             |> Http.httpStreamOk
 
-        let internal get (path : string, parameters : string option, headers : ReqHeaders) =
+        let internal get (path: string, parameters: string option, headers: ReqHeaders) =
             let req() =
                 Http.Request
                     (baseUri + path + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
                      timeout = 100000)
             makeRequest req
 
-        let internal getDirect (fullPath : string, parameters : string option, headers : ReqHeaders) =
+        let internal getDirect (fullPath: string, parameters: string option, headers: ReqHeaders) =
             let req() =
                 Http.Request
                     (fullPath + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
                      timeout = 100000)
             makeRequest req
 
-        let internal getDirectAsync (fullPath : string, parameters : string option, headers : ReqHeaders) =
+        let internal getDirectAsync (fullPath: string, parameters: string option, headers: ReqHeaders) =
             Http.AsyncRequestString
                 (fullPath + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers, timeout = 100000)
 
-        let internal getStream (downloadUrl : string, parameters : string option, headers : ReqHeaders) =
+        let internal getStream (downloadUrl: string, parameters: string option, headers: ReqHeaders) =
             let req() =
                 Http.RequestStream
                     (downloadUrl + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
                      timeout = 100000)
             makeRequestStream req
 
-        let internal getGDStream (downloadUrl : string, parameters : string option, headers : ReqHeaders) =
+        let internal getGDStream (downloadUrl: string, parameters: string option, headers: ReqHeaders) =
             let req() =
                 Http.RequestStream
                     (downloadUrl + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
@@ -289,15 +289,15 @@ module Maps =
 
         /// Get info file list
         let getInfoFiles() =
-            let downloadInfoFiles (gList : GHContents list) =
+            let downloadInfoFiles (gList: GHContents list) =
                 gList
                 |> List.map (fun c ->
-                       async {
-                           try
-                               let! result = getDirectAsync (c.DownloadUrl, None, ReqHeaders.Github)
-                               return result |> Some
-                           with _ -> return None
-                       })
+                    async {
+                        try
+                            let! result = getDirectAsync (c.DownloadUrl, None, ReqHeaders.Github)
+                            return result |> Some
+                        with _ -> return None
+                    })
                 |> Async.Parallel
                 |> Async.RunSynchronously
                 |> List.ofArray
@@ -311,11 +311,11 @@ module Maps =
             |> Result.map (Json.deserializeEx<GHContents list> Json.config)
 
         /// Download a file to the given directory with continuations
-        let downloadFile (cToken : CancellationToken) (download : DownloadFile) =
+        let downloadFile (cToken: CancellationToken) (download: DownloadFile) =
             async { return getStream (download.Url, None, ReqHeaders.Github) }
             |> fun s -> Streaming.downloadFile download s (Error("")) cToken
 
-        let downloadGDFile (cToken : CancellationToken) (download : DownloadFile) =
+        let downloadGDFile (cToken: CancellationToken) (download: DownloadFile) =
             let key = FileOps.Maps.tryGetGDKey() |> Option.map (Json.deserializeEx<GDKey> Json.config)
             match key with
             | Some(gdKey) ->
@@ -335,10 +335,10 @@ module Maps =
                 | Ok(sOptList) ->
                     sOptList
                     |> List.choose id
-                    |> List.tryFind (fun (i : string) ->
-                           i.Split('\n')
-                           |> Array.tryFind (fun s -> s.Trim() = download.MapName)
-                           |> Option.isSome)
+                    |> List.tryFind (fun (i: string) ->
+                        i.Split('\n')
+                        |> Array.tryFind (fun s -> s.Trim() = download.MapName)
+                        |> Option.isSome)
                     |> function
                     | Some(s) -> FileOps.Maps.writeFile download.Directory.FullName download.MapName s
                     | _ -> ()

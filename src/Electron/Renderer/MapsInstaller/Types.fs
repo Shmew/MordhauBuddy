@@ -1,7 +1,7 @@
-﻿namespace MordhauBuddy.App.MapsInstaller
+namespace MordhauBuddy.App.MapsInstaller
 
 module rec Types =
-    open FSharp.Core  /// To avoid shadowing Result<_,_>
+    open FSharp.Core /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
     open RenderUtils.Directory
@@ -14,24 +14,17 @@ module rec Types =
         | Available
         | Installed
         | Installing
-        member this.Text =
-            this.ToString()
-            |> String.duToTitle
+        member this.Text = this.ToString() |> String.duToTitle
 
-        static member private Cases =
-            FSharpType.GetUnionCases typeof<Tab>
+        static member private Cases = FSharpType.GetUnionCases typeof<Tab>
 
         static member private Instantiate name =
             Tab.Cases
             |> Array.tryFind (fun uc -> uc.Name = name)
-            |> Option.map (fun uc -> 
-                Reflection.FSharpValue.MakeUnion( uc, [||] ) :?> Tab)
+            |> Option.map (fun uc -> Reflection.FSharpValue.MakeUnion(uc, [||]) :?> Tab)
             |> Option.get
 
-        static member GetTabs =
-            Tab.Cases
-            |> Array.map (fun uc ->
-                uc.Name |> Tab.Instantiate)
+        static member GetTabs = Tab.Cases |> Array.map (fun uc -> uc.Name |> Tab.Instantiate)
 
         member this.GetTag =
             Tab.Cases
@@ -39,7 +32,7 @@ module rec Types =
             |> Option.map (fun uc -> uc.Tag)
             |> Option.get
 
-        static member GetTabFromTag (tag: int) =
+        static member GetTabFromTag(tag: int) =
             Tab.Cases
             |> Seq.tryFind (fun t -> t.Tag = tag)
             |> Option.map (fun uc -> uc.Name |> Tab.Instantiate)
@@ -60,49 +53,53 @@ module rec Types =
         | ToggleMenu of Tab * string
 
     type MenuPosition =
-        { X : int
-          Y : int }
+        { X: int
+          Y: int }
 
     [<RequireQualifiedAccess>]
     type MenuState =
         | Open of MenuPosition
         | Closed
-        static member Toggle(map : CommunityMapWithState) =
+        static member Toggle(map: CommunityMapWithState) =
             match map.MenuState with
             | MenuState.Open _ -> MenuState.Closed
-            | MenuState.Closed -> 
+            | MenuState.Closed ->
                 let pos = getMousePositions()
-                MenuState.Open({ X = pos.X; Y = pos.Y })
+                MenuState.Open
+                    ({ X = pos.X
+                       Y = pos.Y })
 
     [<RequireQualifiedAccess>]
     type ComMapState =
         | Success of int
         | Error of string
+
         member this.IsStateSuccess =
             match this with
             | ComMapState.Success _ -> true
             | ComMapState.Error _ -> false
+
         member this.IsStateError =
             match this with
             | ComMapState.Error _ -> true
             | ComMapState.Success _ -> false
 
     type CommunityMapWithState =
-        { Map : CommunityMap
-          State : ComMapState
-          MenuState : MenuState }
-        static member Init (map : CommunityMap) =
+        { Map: CommunityMap
+          State: ComMapState
+          MenuState: MenuState }
+        static member Init(map: CommunityMap) =
             { Map = map
               State = ComMapState.Success 0
               MenuState = MenuState.Closed }
 
-    type Model = 
-        { MapsDir : ConfigDir
-          Available : CommunityMapWithState list
-          Installed : CommunityMapWithState list
-          Installing : CommunityMapWithState list
-          Uninstalling : string list
-          ActiveInstalling : string list
-          ActiveUninstalling : string option
-          TabSelected : Tab
-          Refreshing : bool }
+    type Model =
+        { MapsDir: ConfigDir
+          Available: CommunityMapWithState list
+          Installed: CommunityMapWithState list
+          Installing: CommunityMapWithState list
+          Uninstalling: string list
+          ActiveInstalling: string list
+          ActiveUninstalling: string option
+          TabSelected: Tab
+          Refreshing: bool }

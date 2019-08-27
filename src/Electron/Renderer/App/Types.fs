@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App
+namespace MordhauBuddy.App
 
 module Types =
     open MordhauBuddy.Shared.ElectronBridge
@@ -11,8 +11,7 @@ module Types =
         | MordhauConfig
         | Settings
         | About
-        static member All =
-            [ Home; MapsInstaller; FaceTools; MordhauConfig; Settings; About ]
+        static member All = [ Home; MapsInstaller; FaceTools; MordhauConfig; Settings; About ]
 
     type Msg =
         | Navigate of Page
@@ -30,47 +29,47 @@ module Types =
         | ServerMsg of RemoteClientMsg
 
     type ConfigDir =
-        { Path : string
-          Exists : bool
-          Parsed : bool
-          AttemptedLoad : bool
-          Loading : bool }
+        { Path: string
+          Exists: bool
+          Parsed: bool
+          AttemptedLoad: bool
+          Loading: bool }
 
     type MapDir =
-        { Path : string 
-          Exists : bool
-          AttemptedLoad : bool 
-          Loading : bool }
+        { Path: string
+          Exists: bool
+          AttemptedLoad: bool
+          Loading: bool }
 
     type Loaded =
-        { GameConfig : ConfigDir
-          EngineConfig : ConfigDir
-          GameUserConfig : ConfigDir
-          Maps : MapDir }
+        { GameConfig: ConfigDir
+          EngineConfig: ConfigDir
+          GameUserConfig: ConfigDir
+          Maps: MapDir }
 
     type Model =
-        { Page : Page
-          IsMax : bool
-          Store : Store.Model
-          IsBridgeConnected : bool
-          Resources : Loaded
-          ContextMenu : ContextMenu.Types.Model
-          MapsInstaller : MapsInstaller.Types.Model
-          FaceTools : FaceTools.Types.Model
-          MordhauConfig : MordhauConfig.Types.Model
-          Settings : Settings.Types.Model
-          About : About.Types.Model }
+        { Page: Page
+          IsMax: bool
+          Store: Store.Model
+          IsBridgeConnected: bool
+          Resources: Loaded
+          ContextMenu: ContextMenu.Types.Model
+          MapsInstaller: MapsInstaller.Types.Model
+          FaceTools: FaceTools.Types.Model
+          MordhauConfig: MordhauConfig.Types.Model
+          Settings: Settings.Types.Model
+          About: About.Types.Model }
 
     type AppTheme =
-        { PaletteType : Fable.MaterialUI.Themes.PaletteType
-          PMain : string
-          PDark : string
-          PCText : string option
-          SMain : string
-          SDark : string option
-          SCText : string option
-          EMain : string
-          ECText : string option
-          PaperElev2 : string
-          MuiButtonCPHover : string option
-          MuiButtonCSecondary : string option }
+        { PaletteType: Fable.MaterialUI.Themes.PaletteType
+          PMain: string
+          PDark: string
+          PCText: string option
+          SMain: string
+          SDark: string option
+          SCText: string option
+          EMain: string
+          ECText: string option
+          PaperElev2: string
+          MuiButtonCPHover: string option
+          MuiButtonCSecondary: string option }

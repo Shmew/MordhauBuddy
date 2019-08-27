@@ -12,13 +12,14 @@ module Maps =
 
     let http =
         [ testCase "paramBuilder constructs a proper string" <| fun () ->
-              let result =
-                  Http.paramBuilder ([ Param(("name", Some("wow")))
-                                       Param(("folder", None))
-                                       Flag("dothing", true)
-                                       Flag("really", false)
-                                       Param(("maybe", Some("yes"))) ])
-              Expect.equal result "?name=wow&dothing&maybe=yes" ""
+            let result =
+                Http.paramBuilder
+                    ([ Param(("name", Some("wow")))
+                       Param(("folder", None))
+                       Flag("dothing", true)
+                       Flag("really", false)
+                       Param(("maybe", Some("yes"))) ])
+            Expect.equal result "?name=wow&dothing&maybe=yes" ""
           testCase "httpErrorMsg parses the error response" <| fun () ->
               let result =
                   let json =

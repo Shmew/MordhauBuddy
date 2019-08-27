@@ -40,11 +40,6 @@ let website = "/MordhauBuddy"
 // Github repository
 let repo = @"https://github.com/Shmew/MordhauBuddy"
 
-// List project directories to avoid formatting
-// Typically projects that have very nested lists for web building
-let excludeFormatting = 
-    [ __SOURCE_DIRECTORY__ @@ "src/Electron/**" ]
-
 // Web or JS related fs projects
 // Projects that have bindings to other languages where name linting needs to be more relaxed.
 let relaxedNameLinting = 
@@ -422,8 +417,7 @@ Target.create "PublishDotNet" <| fun _ ->
 // Lint and format source code to ensure consistency
 
 Target.create "Format" <| fun _ ->
-    excludeFormatting
-    |> (fun dirs -> List.fold foldExcludeGlobs fsSrcAndTest dirs)
+    fsSrcAndTest 
     |> Seq.iter (fun file ->
         dotnet.fantomas id
             (sprintf "%s --pageWidth 120" file))

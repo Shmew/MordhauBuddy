@@ -17,26 +17,26 @@ module BridgeOperations =
         let defDir() = FileOps.INI.defaultDir
 
         /// Replace the oVal with iVal based on selectors
-        let replace (oVal : INIValue) (iVal : INIValue) (selectors : string list) = oVal.Map(selectors, iVal)
+        let replace (oVal: INIValue) (iVal: INIValue) (selectors: string list) = oVal.Map(selectors, iVal)
 
         /// Delete contents of oVal that match selectors
-        let delete (oVal : INIValue) (selectors : string list) = oVal.Map(selectors, INIValue.String(None))
+        let delete (oVal: INIValue) (selectors: string list) = oVal.Map(selectors, INIValue.String(None))
 
         /// Determine if a file exists
-        let exists (iFile : INIFile) = FileOps.INI.tryGetFile iFile.File.Name iFile.WorkingDir |> Option.isSome
+        let exists (iFile: INIFile) = FileOps.INI.tryGetFile iFile.File.Name iFile.WorkingDir |> Option.isSome
 
         /// Try to open and parse a ini file
-        let parse (iFile : INIFile) =
+        let parse (iFile: INIFile) =
             FileOps.INI.tryGetFile iFile.File.Name iFile.WorkingDir |> Option.bind FileOps.INI.tryReadINI
 
         /// Write an `INIValue` to a file, overwriting if it already exists
-        let write (iFile : INIFile) (iVal : INIValue) =
+        let write (iFile: INIFile) (iVal: INIValue) =
             FileOps.INI.tryGetFile iFile.File.Name iFile.WorkingDir
             |> Option.bind (FileOps.INI.writeINI iVal)
             |> Option.isSome
 
         /// Create a backup of a file by putting it into a subdirectory
-        let backup (iFile : INIFile) =
+        let backup (iFile: INIFile) =
             FileOps.INI.tryGetFile iFile.File.Name iFile.WorkingDir
             |> Option.map FileOps.INI.createBackup
             |> function
@@ -44,25 +44,25 @@ module BridgeOperations =
             | _ -> false
 
         /// Ranomize the profiles if they are within the given `INIValue`
-        let random (profiles : string list) (iVal : INIValue) = tryApplyChanges profiles iVal FaceActions.Random
+        let random (profiles: string list) (iVal: INIValue) = tryApplyChanges profiles iVal FaceActions.Random
 
         /// Frankenstein the profiles if they are within the given `INIValue`
-        let frankenstein (profiles : string list) (iVal : INIValue) =
+        let frankenstein (profiles: string list) (iVal: INIValue) =
             tryApplyChanges profiles iVal FaceActions.Frankenstein
 
         /// Set the profiles to a custom import string if they are within the given `INIValue`
-        let custom (profiles : string list) (iVal : INIValue) (fVals : string) =
+        let custom (profiles: string list) (iVal: INIValue) (fVals: string) =
             tryApplyChanges profiles iVal <| FaceActions.Custom(fVals)
 
         /// Get the profiles within the given `INIValue`
-        let profileList (iVal : INIValue) = getCharacterProfileNames iVal |> getCharacterProfileExports iVal
+        let profileList (iVal: INIValue) = getCharacterProfileNames iVal |> getCharacterProfileExports iVal
 
         /// Get the configurations set in the two INIValues if present
-        let getConfigs (engine : INIValue) (gameUser : INIValue) (options : OptionGroup list) =
+        let getConfigs (engine: INIValue) (gameUser: INIValue) (options: OptionGroup list) =
             getSettings engine gameUser options
 
         /// Apply the new values into the two INIValues or add them
-        let mapConfigs (engine : INIValue) (gameUser : INIValue) (options : OptionGroup list) =
+        let mapConfigs (engine: INIValue) (gameUser: INIValue) (options: OptionGroup list) =
             tryMapSettings engine gameUser options
 
     /// Map related bridge commands
@@ -77,26 +77,26 @@ module BridgeOperations =
         let defDir() = FileOps.Maps.defaultDir
 
         /// Determine if input is valid maps directory
-        let dirExists (dir : string) = FileOps.Maps.tryFindMaps dir
+        let dirExists (dir: string) = FileOps.Maps.tryFindMaps dir
 
         /// Get the list of valid community maps based on info files
         let getAvailableMaps() =
-            let infoArr (s : string) = s.Split([| "\r\n"; "\r"; "\n" |], StringSplitOptions.None)
+            let infoArr (s: string) = s.Split([| "\r\n"; "\r"; "\n" |], StringSplitOptions.None)
             match getInfoFiles() with
             | Ok(resList) ->
                 resList
                 |> List.choose (function
-                       | Some(infoF) as i when (infoArr infoF).Length >= 5 -> i
-                       | _ -> None)
+                    | Some(infoF) as i when (infoArr infoF).Length >= 5 -> i
+                    | _ -> None)
             | Error(_) -> []
 
         /// Get all installed maps
-        let getInstalledMaps (dir : string) = FileOps.Maps.getInstalled dir
+        let getInstalledMaps (dir: string) = FileOps.Maps.getInstalled dir
 
         /// Download map if available
-        let installMap (mCmd : MapTarget) (dispatchWrapper : MapResult -> unit) (cToken : CancellationToken) =
+        let installMap (mCmd: MapTarget) (dispatchWrapper: MapResult -> unit) (cToken: CancellationToken) =
             let fName = mCmd.Folder + ".zip"
-            let getMap (mList : GHTypes.GHContents list) = mList |> List.filter (fun m -> m.Name = fName)
+            let getMap (mList: GHTypes.GHContents list) = mList |> List.filter (fun m -> m.Name = fName)
             let diDir = IO.DirectoryInfo(mCmd.Directory)
             match mCmd.GDrive with
             | Some(gd) ->
@@ -146,4 +146,4 @@ module BridgeOperations =
                 | _ -> false
 
         /// Remove a map
-        let uninstallMap (dir : string) (fName : string) = FileOps.Maps.tryUninstall dir fName
+        let uninstallMap (dir: string) (fName: string) = FileOps.Maps.tryUninstall dir fName

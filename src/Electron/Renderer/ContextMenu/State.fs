@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.ContextMenu
+namespace MordhauBuddy.App.ContextMenu
 
 module State =
     open Elmish
@@ -8,25 +8,26 @@ module State =
     open Types
 
     let init() =
-        { Opened = false 
+        { Opened = false
           Position =
-            { X = 0
-              Y = 0 }
+              { X = 0
+                Y = 0 }
           MenuItems = [] }
 
     let update (msg: Msg) (model: Model) =
         match msg with
         | Open e ->
-            if model.Opened then
-                model, Cmd.ofMsg Close
-            else 
+            if model.Opened then model, Cmd.ofMsg Close
+            else
                 let pos = getMousePositions()
                 let element = getElementAtPos pos.X pos.Y
-                
+
                 let classes =
-                    element 
-                    |> Option.bind (fun e -> e.className |> Some) 
-                    |> defaultArg <| ""
+                    element
+                    |> Option.bind (fun e -> e.className |> Some)
+                    |> defaultArg
+                    <| ""
+
                 let actionList =
                     eventPersist e
                     match classes with
@@ -39,18 +40,18 @@ module State =
                             Action = Paste }
                           { Label = "Select All"
                             Action = SelectAll } ]
-                    | _ ->
-                        [ ]
+                    | _ -> []
+
                 if actionList.IsEmpty then model, Cmd.none
                 else
-                    { model with 
-                        Opened = true
-                        Position =
-                            { model.Position with
-                                X = pos.X
-                                Y = pos.Y }
-                        MenuItems = actionList }, Cmd.none
+                    { model with
+                          Opened = true
+                          Position =
+                              { model.Position with
+                                    X = pos.X
+                                    Y = pos.Y }
+                          MenuItems = actionList }, Cmd.none
         | Close -> { model with Opened = false }, Cmd.none
-        | Action(f) -> 
+        | Action(f) ->
             f.GetAction()
             model, Cmd.ofMsg Close

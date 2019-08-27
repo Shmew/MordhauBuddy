@@ -1,11 +1,11 @@
-﻿namespace MordhauBuddy.App.Snackbar
+namespace MordhauBuddy.App.Snackbar
 
 module Types =
     type Snack<'msg> =
-        { Message : string
-          ActionTxt : string option
-          ActionMsg : 'msg option
-          TimeoutMs : int }
+        { Message: string
+          ActionTxt: string option
+          ActionMsg: 'msg option
+          TimeoutMs: int }
 
     type Msg<'msg> =
         | Add of Snack<'msg>
@@ -21,7 +21,7 @@ module Types =
         | Waiting of Snack<'msg>
 
     type Model<'msg> =
-        { Queue : Snack<'msg> list
-          IntervalMs : int
-          State : State<'msg>
-          CurrentSnackId : int }
+        { Queue: Snack<'msg> list
+          IntervalMs: int
+          State: State<'msg>
+          CurrentSnackId: int }

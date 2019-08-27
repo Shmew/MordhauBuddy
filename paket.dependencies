@@ -60,6 +60,7 @@ group Testing
 group Tooling
 	source https://nuget.org/api/v2
 	source https://api.nuget.org/v3/index.json
+	source https://www.myget.org/F/fantomas/api/v3/index.json
 
 	nuget Fake.IO.FileSystem ~> 5.15.4
 	nuget FSharp.Core ~> 4.6.2 redirects:force
@@ -70,7 +71,7 @@ group Tooling
 
 	clitool dotnet-fable ~> 2.0.11
 	clitool dotnet-fake ~> 5.15.4
-	clitool dotnet-fantomas ~> 2.9.2
+	clitool dotnet-fantomas ~> 3.0.0-beta-002
 	clitool Femto ~> 0.5.2
 
 group Formatting

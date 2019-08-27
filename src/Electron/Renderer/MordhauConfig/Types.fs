@@ -1,9 +1,9 @@
-﻿namespace MordhauBuddy.App.MordhauConfig
+namespace MordhauBuddy.App.MordhauConfig
 
 module rec Types =
     open System
     open Fable.Core
-    open FSharp.Core  /// To avoid shadowing Result<_,_>
+    open FSharp.Core /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
     open RenderUtils.Directory
@@ -26,46 +26,42 @@ module rec Types =
         | Utilities
         | Performance
         | Quality
-        member this.Header =
-            this.ToString()
-            |> String.duToTitle
+        member this.Header = this.ToString() |> String.duToTitle
 
         member this.SubHeader =
             match this with
             | Cosmetic -> "Make the game look different"
             | Utilities -> "Settings to gather information"
-            | Performance -> "Improve game performance" 
+            | Performance -> "Improve game performance"
             | Quality -> "Improve game quality"
+
+
+
+
 
         member private this.Modifications =
             match this with
             | Cosmetic -> cosmetics
             | Utilities -> utilities
-            | Performance -> performance 
+            | Performance -> performance
             | Quality -> quality
 
-        static member private Cases =
-            FSharpType.GetUnionCases typeof<ExpansionPanels>
+        static member private Cases = FSharpType.GetUnionCases typeof<ExpansionPanels>
 
         static member private Instantiate name =
             ExpansionPanels.Cases
             |> Array.tryFind (fun uc -> uc.Name = name)
-            |> Option.map (fun uc -> 
-                Reflection.FSharpValue.MakeUnion( uc, [||] ) :?> ExpansionPanels)
+            |> Option.map (fun uc -> Reflection.FSharpValue.MakeUnion(uc, [||]) :?> ExpansionPanels)
             |> Option.get
 
-        static member GetPanels =
-            ExpansionPanels.Cases
-            |> Array.map (fun uc ->
-                uc.Name |> ExpansionPanels.Instantiate)
+        static member GetPanels = ExpansionPanels.Cases |> Array.map (fun uc -> uc.Name |> ExpansionPanels.Instantiate)
 
-        static member Init() : Panel list =
+        static member Init(): Panel list =
             ExpansionPanels.GetPanels
             |> Array.map (fun p ->
                 { Panel = p
                   Expanded = false
-                  Items =
-                    (ExpansionPanels.Instantiate p.Header).Modifications })
+                  Items = (ExpansionPanels.Instantiate p.Header).Modifications })
             |> List.ofArray
 
         member this.GetTag =
@@ -75,14 +71,14 @@ module rec Types =
             |> Option.get
 
     type Panel =
-        { Panel : ExpansionPanels
-          Expanded : bool
-          Items : OptionGroup list }
+        { Panel: ExpansionPanels
+          Expanded: bool
+          Items: OptionGroup list }
 
-    type Model = 
-        { Complete : bool
-          Panels : Panel list
-          EngineDir : ConfigDir
-          GameUserDir : ConfigDir
-          Submit : Submit
-          Snack : Snackbar.Types.Model<Msg> }
+    type Model =
+        { Complete: bool
+          Panels: Panel list
+          EngineDir: ConfigDir
+          GameUserDir: ConfigDir
+          Submit: Submit
+          Snack: Snackbar.Types.Model<Msg> }

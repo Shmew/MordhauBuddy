@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>ConfigResult - MordhauBuddy</title>
+    <title>DevTools - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,37 +34,34 @@
 
 
 
-<h1>ConfigResult</h1>
+<h1>DevTools</h1>
 <p>
-
-    <span>Namespace: MordhauBuddy.Shared</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-shared-electronbridge.html">ElectronBridge</a></span><br />
-            <span>
-            Attributes: <br />
-[&lt;RequireQualifiedAccess&gt;]<br />
-            
-        </span>
-</p>
+  <span>Namespace: MordhauBuddy.App</span><br />
+  <span>Parent Module: <a href="mordhaubuddy-app-main.html">Main</a></span>
+  </p>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '694', 694)" onmouseover="showTip(event, '694', 694)">
-            GetConfigs(OptionGroup list)
+          <code onmouseout="hideTip(event, '17', 17)" onmouseover="showTip(event, '17', 17)">
+            connectRemoteDevViaExtension
           </code>
-          <div class="tip" id="694">
-            <strong>Signature:</strong> OptionGroup list<br />
+          <div class="tip" id="17">
+            <strong>Signature:</strong> unit -&gt; unit<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L104-104" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L38-38" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -74,15 +71,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '695', 695)" onmouseover="showTip(event, '695', 695)">
-            MapConfigs(bool)
+          <code onmouseout="hideTip(event, '18', 18)" onmouseover="showTip(event, '18', 18)">
+            installAllDevTools(win)
           </code>
-          <div class="tip" id="695">
-            <strong>Signature:</strong> bool<br />
+          <div class="tip" id="18">
+            <strong>Signature:</strong> win:BrowserWindow -&gt; unit<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L105-105" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L30-30" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '19', 19)" onmouseover="showTip(event, '19', 19)">
+            uninstallAllDevTools(win)
+          </code>
+          <div class="tip" id="19">
+            <strong>Signature:</strong> win:BrowserWindow -&gt; unit<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Main.fs#L34-34" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

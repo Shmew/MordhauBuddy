@@ -1,7 +1,7 @@
-﻿namespace MordhauBuddy.App.Settings
+namespace MordhauBuddy.App.Settings
 
 module State =
-    open FSharp.Core  // To avoid shadowing Result<_,_>
+    open FSharp.Core // To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
     open RenderUtils.Validation
@@ -13,12 +13,12 @@ module State =
     open Types
 
     let init() =
-        { GameDir = 
+        { GameDir =
               { Dir = DirLoad.ConfigFiles(ConfigFile.Game)
                 Directory = ""
                 Label = "Mordhau Game.ini directory"
                 State = DirState.Init "" }
-          EngineDir = 
+          EngineDir =
               { Dir = DirLoad.ConfigFiles(ConfigFile.Engine)
                 Directory = ""
                 Label = "Mordhau Engine.ini directory"
@@ -34,9 +34,54 @@ module State =
                 Label = "Mordhau maps directory"
                 State = DirState.Init "" } }
 
-    let private iniSender = new INIBridgeSender(Caller.Settings)
-    let private mapSender = new MapBridgeSender(Caller.Settings)
-    let private mapSenderMap = new MapBridgeSender(Caller.MapInstaller)
+    [<AutoOpen>]
+    module private Helpers =
+        let iniSender = new INIBridgeSender(Caller.Settings)
+        let mapSender = new MapBridgeSender(Caller.Settings)
+        let mapSenderMap = new MapBridgeSender(Caller.MapInstaller)
+
+        type Dirs =
+            | Game
+            | Engine
+            | GameUser
+            | Maps
+
+        let setDirError s (dir: ConfigDir) = { dir with State = DirState.Error s }
+
+        let setDirSuccess s (dir: ConfigDir) = { dir with State = DirState.Success s }
+
+        let setDirInit s (dir: ConfigDir) = { dir with State = DirState.Init s }
+
+        let setDirDirectory s (dir: ConfigDir) = { dir with Directory = s }
+
+        let iFileWithDir (cFile: ConfigFile) (dir: string) =
+            { File = cFile
+              WorkingDir = dir |> Some }
+
+        let setDir (model: Model) (dirType: Dirs) (dir: ConfigDir) =
+            match dirType with
+            | Game -> { model with GameDir = dir }
+            | Engine -> { model with EngineDir = dir }
+            | GameUser -> { model with GameUserDir = dir }
+            | Maps -> { model with MapsDir = dir }
+
+        let sendParse (cFile: ConfigFile) (dir: string) =
+            match cFile with
+            | ConfigFile.Game ->
+                { File = ConfigFile.Game
+                  WorkingDir = dir |> Some }
+            | ConfigFile.Engine ->
+                { File = ConfigFile.Engine
+                  WorkingDir = dir |> Some }
+            | ConfigFile.GameUserSettings ->
+                { File = ConfigFile.GameUserSettings
+                  WorkingDir = dir |> Some }
+            |> iniSender.Parse
+            |> Cmd.bridgeSend
+
+        let sendParseIf (cFile: ConfigFile) (dir: string) (b: bool) =
+            if b then sendParse cFile dir
+            else Cmd.none
 
     let update (msg: Msg) (model: Model) =
         match msg with
@@ -47,164 +92,83 @@ module State =
                 | INIOperationResult.Parse b ->
                     match bMsg.File, b with
                     | Some(f), false ->
-                        match f.File with 
-                        | ConfigFile.Game ->
-                            { model with
-                                GameDir =
-                                    { model.GameDir with
-                                        State = DirState.Error "Error parsing Engine.ini" }}
-                            , Cmd.none
-                        | ConfigFile.Engine ->
-                            { model with
-                                EngineDir =
-                                    { model.EngineDir with
-                                        State = DirState.Error "Error parsing Engine.ini" }}
-                            , Cmd.none
-                        | ConfigFile.GameUserSettings ->
-                            { model with
-                                GameUserDir =
-                                    { model.GameUserDir with
-                                        State = DirState.Error "Error parsing GameUserSettings.ini" }}
-                            , Cmd.none
-                    | Some(f), true ->
-                        let setGameValid m =
-                            { m with GameDir = { m.GameDir with State = DirState.Success "" } }
-                        let setGameUserValid m =
-                            { m with
-                                GameUserDir =
-                                    { m.GameUserDir with
-                                        State = DirState.Success "" } }
-                        let setEngineValid m =
-                            { m with
-                                EngineDir =
-                                    { m.EngineDir with
-                                        State = DirState.Success "" } }
                         match f.File with
-                        | ConfigFile.Game  ->
-                            model |> setGameValid, Cmd.none
+                        | ConfigFile.Game -> setDir model Game <| setDirError "Error parsing Game.ini" model.GameDir
                         | ConfigFile.Engine ->
-                            model |> setEngineValid, Cmd.none
+                            setDir model Engine <| setDirError "Error parsing Engine.ini" model.EngineDir
                         | ConfigFile.GameUserSettings ->
-                            model |> setGameUserValid, Cmd.none
+                            setDir model GameUser <| setDirError "Error parsing GameUserSettings.ini" model.GameUserDir
+                        |> fun m -> m, Cmd.none
+                    | Some(f), true ->
+                        match f.File with
+                        | ConfigFile.Game -> setDir model Game <| setDirSuccess "" model.GameDir
+                        | ConfigFile.Engine -> setDir model Engine <| setDirSuccess "" model.EngineDir
+                        | ConfigFile.GameUserSettings -> setDir model GameUser <| setDirSuccess "" model.GameUserDir
+                        |> fun m -> m, Cmd.none
                     | _ -> model, Cmd.none
                 | INIOperationResult.Exists b ->
                     match bMsg.File with
-                    | Some(f) when f.File = ConfigFile.Game ->
-                        { model with
-                            GameDir =
-                                if b then
-                                    { model.GameDir with
-                                        State = DirState.Success "Game.ini located" } 
-                                else
-                                    { model.GameDir with
-                                        State = DirState.Error "Game.ini not found" } }, 
-                        if b then
-                            Cmd.bridgeSend
-                                (iniSender.Parse { File = ConfigFile.Game; WorkingDir = model.GameDir.Directory |> Some })
-                        else Cmd.none
-                    | Some(f) when f.File = ConfigFile.Engine ->
-                        { model with
-                            EngineDir =
-                                if b then
-                                    { model.EngineDir with
-                                        State = DirState.Success "Engine.ini located" } 
-                                else
-                                    { model.EngineDir with
-                                        State = DirState.Error "Engine.ini not found" } }, 
-                        if b then
-                            Cmd.bridgeSend
-                                (iniSender.Parse { File = ConfigFile.Engine; WorkingDir = model.EngineDir.Directory |> Some })
-                        else Cmd.none
-                    | Some(f) when f.File = ConfigFile.GameUserSettings ->
-                        { model with
-                            GameUserDir =
-                                if b then
-                                    { model.GameUserDir with
-                                        State = DirState.Success "GameUserSettings.ini located" } 
-                                else
-                                    { model.GameUserDir with
-                                        State = DirState.Error "GameUserSettings.ini not found" } }, 
-                        if b then
-                            Cmd.bridgeSend 
-                                (iniSender.Parse { File = ConfigFile.GameUserSettings; WorkingDir = model.GameUserDir.Directory |> Some })
-                        else Cmd.none
+                    | Some(f) ->
+                        match f.File with
+                        | ConfigFile.Game ->
+                            if b then setDirSuccess "Game.ini located" model.GameDir
+                            else setDirError "Game.ini not found" model.GameDir
+                            |> fun cDir -> setDir model Game cDir, model.GameDir.Directory
+                        | ConfigFile.Engine ->
+                            if b then setDirSuccess "Engine.ini located" model.EngineDir
+                            else setDirError "Engine.ini not found" model.EngineDir
+                            |> fun cDir -> setDir model Engine cDir, model.EngineDir.Directory
+                        | ConfigFile.GameUserSettings ->
+                            if b then setDirSuccess "GameUserSettings.ini located" model.GameUserDir
+                            else setDirError "GameUserSettings.ini not found" model.GameUserDir
+                            |> fun cDir -> setDir model GameUser cDir, model.GameUserDir.Directory
+                        |> fun (m, dir) -> m, sendParseIf f.File dir b
                     | _ -> model, Cmd.none
                 | INIOperationResult.DefaultDir dOpt ->
-                    match dOpt with 
+                    match dOpt with
                     | Some(d) ->
-                        let mapGame model =
-                            { model with
-                                GameDir =
-                                    { model.GameDir with
-                                        Directory = d
-                                        State = DirState.Init "Mordhau directory located" } }
-                        let mapEngine model =
-                            { model with
-                                EngineDir =
-                                    { model.EngineDir with
-                                        Directory = d
-                                        State = DirState.Init "Mordhau directory located" } }
-                        let mapGameUser model =
-                            { model with
-                                GameUserDir =
-                                    { model.GameUserDir with
-                                        Directory = d
-                                        State = DirState.Init "Mordhau directory located" } }
-
+                        let initMsg = "Mordhau directory located"
                         model
                         |> fun modelWait ->
                             let mList =
                                 [ {| IsEmpty = model.GameDir.Directory = ""
-                                     Func = mapGame
-                                     CmdF = fun m -> 
-                                            Cmd.bridgeSend 
-                                                (iniSender.Exists 
-                                                    { File = ConfigFile.Game
-                                                      WorkingDir = Some(m.GameDir.Directory) }) |}
+                                     Func =
+                                         fun m ->
+                                             setDirInit initMsg m.GameDir
+                                             |> setDirDirectory d
+                                             |> setDir model Game
+                                     CmdF = fun m -> sendParse ConfigFile.Game m.GameDir.Directory |}
                                   {| IsEmpty = model.EngineDir.Directory = ""
-                                     Func = mapEngine
-                                     CmdF = fun m -> 
-                                             Cmd.bridgeSend 
-                                                (iniSender.Exists 
-                                                    { File = ConfigFile.Engine
-                                                      WorkingDir = Some(m.EngineDir.Directory) }) |}
+                                     Func =
+                                         fun m ->
+                                             setDirInit initMsg m.EngineDir
+                                             |> setDirDirectory d
+                                             |> setDir model Engine
+                                     CmdF = fun m -> sendParse ConfigFile.Engine m.EngineDir.Directory |}
                                   {| IsEmpty = model.GameUserDir.Directory = ""
-                                     Func = mapGameUser
-                                     CmdF = fun m -> 
-                                            Cmd.bridgeSend 
-                                                (iniSender.Exists 
-                                                    { File = ConfigFile.GameUserSettings
-                                                      WorkingDir = Some(m.GameUserDir.Directory) }) |} ]
+                                     Func =
+                                         fun m ->
+                                             setDirInit initMsg m.GameUserDir
+                                             |> setDirDirectory d
+                                             |> setDir model GameUser
+                                     CmdF = fun m -> sendParse ConfigFile.GameUserSettings m.GameUserDir.Directory |} ]
                                 |> List.filter (fun o -> o.IsEmpty)
+
                             let m = mList |> List.fold (fun acc o -> acc |> o.Func) modelWait
                             m, Cmd.batch (mList |> List.map (fun o -> m |> o.CmdF))
                     | None ->
-                        let mapGame model =
-                            { model with
-                                GameDir =
-                                    { model.GameDir with 
-                                        State = DirState.Error "Unable to automatically detect Mordhau directory" } }
-                        let mapEngine model =
-                            { model with
-                                EngineDir =
-                                    { model.EngineDir with
-                                        State = DirState.Error "Unable to automatically detect Mordhau directory" } }
-                        let mapGameUser model =
-                            { model with
-                                GameUserDir =
-                                    { model.GameUserDir with
-                                        State = DirState.Error "Unable to automatically detect Mordhau directoryd" } }
-
+                        let errMsg = "Unable to automatically detect Mordhau directory"
                         model
                         |> fun modelWait ->
                             let mList =
                                 [ {| IsEmpty = model.GameDir.Directory = ""
-                                     Func = mapGame |}
+                                     Func = fun m -> setDirError errMsg m.GameDir |> setDir model Game |}
                                   {| IsEmpty = model.GameDir.Directory = ""
-                                     Func = mapEngine |}
+                                     Func = fun m -> setDirError errMsg m.EngineDir |> setDir model Engine |}
                                   {| IsEmpty = model.GameDir.Directory = ""
-                                     Func = mapGameUser |} ]
+                                     Func = fun m -> setDirError errMsg m.GameUserDir |> setDir model GameUser |} ]
                                 |> List.filter (fun o -> o.IsEmpty)
+
                             let m = mList |> List.fold (fun acc o -> acc |> o.Func) modelWait
                             m, Cmd.none
                 | _ -> model, Cmd.none
@@ -213,123 +177,84 @@ module State =
                 | MapOperationResult.DefaultDir dOpt ->
                     match dOpt with
                     | Some(d) ->
-                        { model with 
-                            MapsDir =
-                                {model.MapsDir with
-                                    Directory = d
-                                    State = DirState.Init "Mordhau map directory located" } }
-                        |> fun m -> m, Cmd.bridgeSend (mapSender.DirExists(m.MapsDir.Directory))
+                        setDirInit "Mordhau map directory located" model.MapsDir
+                        |> setDirDirectory d
+                        |> setDir model Maps
+                        |> fun m ->
+                            m,
+                            m.MapsDir.Directory
+                            |> mapSender.DirExists
+                            |> Cmd.bridgeSend
                     | None ->
-                        { model with
-                            MapsDir =
-                                { model.MapsDir with
-                                    State = DirState.Error "Unable to automatically detect Mordhau map directory" } }
-                        , Cmd.none
+                        setDirError "Unable to automatically detect Mordhau map directory" model.MapsDir
+                        |> setDir model Maps
+                        |> fun m -> m, Cmd.none
                 | MapOperationResult.DirExists b ->
                     if b then
-                        { model with
-                            MapsDir =
-                                { model.MapsDir with
-                                    State = DirState.Success "Maps directory located" } }
-                        , Cmd.bridgeSend (mapSenderMap.GetInstalled(model.MapsDir.Directory))
+                        setDirSuccess "Maps directory located" model.MapsDir
+                        |> setDir model Maps
+                        |> fun m ->
+                            m,
+                            model.MapsDir.Directory
+                            |> mapSenderMap.GetInstalled
+                            |> Cmd.bridgeSend
                     else
-                        { model with
-                            MapsDir =
-                                { model.MapsDir with
-                                    State = DirState.Error "Maps directory not found" } }
-                        , Cmd.none
+                        setDirSuccess "Maps directory not found" model.MapsDir
+                        |> setDir model Maps
+                        |> fun m -> m, Cmd.none
                 | _ -> model, Cmd.none
             | _ -> model, Cmd.none
-        | GetDefaultDir ->
-            model, Cmd.bridgeSend (iniSender.DefaultDir)
-        | GetMapDir ->
-            model, Cmd.bridgeSend (mapSender.DefaultDir)
-        | SetConfigDir (s,res,cFile) ->
+        | GetDefaultDir -> model, iniSender.DefaultDir |> Cmd.bridgeSend
+        | GetMapDir -> model, mapSender.DefaultDir |> Cmd.bridgeSend
+        | SetConfigDir(s, res, cFile) ->
+            let setConfigDir (res: Result<string, string list>) (cDir: ConfigDir) (dirType: Dirs) =
+                match res with
+                | Ok s ->
+                    setDirInit "" cDir
+                    |> setDirDirectory s
+                    |> setDir model dirType
+                    |> fun m ->
+                        m,
+                        iFileWithDir cFile s
+                        |> iniSender.Exists
+                        |> Cmd.bridgeSend
+                | Error _ ->
+                    res
+                    |> errorStrings
+                    |> setDirError
+                    <| cDir
+                    |> setDirDirectory s
+                    |> setDir model dirType
+                    |> fun m -> m, Cmd.none
             match cFile with
-            | ConfigFile.Game ->
-                match res with
-                | Ok s ->
-                    { model with
-                        GameDir =
-                            { model.GameDir with
-                                Directory = s
-                                State = DirState.Init "" } }
-                    , Cmd.bridgeSend (iniSender.Exists <|
-                        { File = cFile
-                          WorkingDir = Some(s) })
-                | Error _ ->
-                    { model with
-                        GameDir =
-                            { model.GameDir with
-                                Directory = s
-                                State = DirState.Error <| errorStrings res } }
-                    , Cmd.none
-            | ConfigFile.Engine ->
-                match res with
-                | Ok s ->
-                    { model with
-                        EngineDir =
-                            { model.EngineDir with
-                                Directory = s
-                                State = DirState.Init "" } }
-                    , Cmd.bridgeSend (iniSender.Exists <|
-                        { File = cFile
-                          WorkingDir = Some(s) })
-                | Error _ ->
-                    { model with
-                        EngineDir =
-                            { model.EngineDir with
-                                Directory = s
-                                State = DirState.Error <| errorStrings res } }
-                    , Cmd.none
-            | ConfigFile.GameUserSettings ->
-                match res with
-                | Ok s ->
-                    { model with
-                        GameUserDir =
-                            { model.GameUserDir with
-                                Directory = s
-                                State = DirState.Init "" } }
-                    , Cmd.bridgeSend (iniSender.Exists <|
-                        { File = cFile
-                          WorkingDir = Some(s) })
-                | Error _ ->
-                    { model with
-                        GameUserDir =
-                            { model.GameUserDir with
-                                Directory = s
-                                State = DirState.Error <| errorStrings res } }
-                    , Cmd.none
-        | SetMapDir (s,res) ->
+            | ConfigFile.Game -> Game, model.GameDir
+            | ConfigFile.Engine -> Engine, model.EngineDir
+            | ConfigFile.GameUserSettings -> GameUser, model.GameUserDir
+            |> fun (d, c) -> setConfigDir res c d
+        | SetMapDir(s, res) ->
             match res with
             | Ok s ->
-                { model with
-                    MapsDir =
-                        { model.MapsDir with
-                            Directory = s
-                            State = DirState.Init "" } }
-                , Cmd.bridgeSend (mapSender.DirExists s)
+                setDirInit "" model.MapsDir
+                |> setDirDirectory s
+                |> setDir model Maps
+                |> fun m -> m, Cmd.bridgeSend (mapSender.DirExists s)
             | Error _ ->
-                { model with
-                    GameUserDir =
-                        { model.GameUserDir with
-                            Directory = s
-                            State = DirState.Error <| errorStrings res } }
-                , Cmd.none
+                errorStrings res
+                |> setDirError
+                <| model.MapsDir
+                |> setDirDirectory s
+                |> setDir model Maps
+                |> fun m -> m, Cmd.none
         | RequestLoad dirLoad ->
             let handleLoaded =
                 match dirLoad with
                 | ConfigFiles(cFile) ->
                     function
-                    | DirSelect.Selected s ->
-                        (s, validateDir s, cFile)
-                        |> SetConfigDir
+                    | DirSelect.Selected s -> (s, validateDir s, cFile) |> SetConfigDir
                     | DirSelect.Canceled -> LoadCanceled
                 | MapDir ->
                     function
-                    | DirSelect.Selected s ->
-                        (s, validateDir s)
-                        |> SetMapDir
+                    | DirSelect.Selected s -> (s, validateDir s) |> SetMapDir
                     | DirSelect.Canceled -> LoadCanceled
             model, Cmd.OfPromise.perform selectDir () handleLoaded
         | LoadCanceled -> model, Cmd.none

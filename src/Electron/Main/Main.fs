@@ -143,6 +143,10 @@ module Main =
 
 
 
+
+
+
+
         win.onceReadyToShow (fun _ ->
             win.setTitle <| sprintf "%s - %s" Info.name Info.version
             win.show()

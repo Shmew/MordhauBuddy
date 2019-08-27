@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.Snackbar
+namespace MordhauBuddy.App.Snackbar
 
 module State =
     open Elmish
@@ -17,8 +17,9 @@ module State =
     /// Adds an action to the snack that hides the snack and causes the specified
     /// message to be dispatched in the command returned by the update function.
     let withCustomAction actionTxt actionMsg snack =
-        { snack with ActionTxt = Some actionTxt
-                     ActionMsg = Some actionMsg }
+        { snack with
+              ActionTxt = Some actionTxt
+              ActionMsg = Some actionMsg }
 
     /// Sets the specified timeout for the snack.
     let withTimeout timeoutMs snack = { snack with TimeoutMs = timeoutMs }
@@ -53,9 +54,10 @@ module State =
             match m.Queue with
             | [] -> m, Cmd.none, Cmd.none
             | head :: tail ->
-                { m with State = Active head
-                         Queue = tail
-                         CurrentSnackId = m.CurrentSnackId + 1 },
+                { m with
+                      State = Active head
+                      Queue = tail
+                      CurrentSnackId = m.CurrentSnackId + 1 },
                 delayedMsg head.TimeoutMs (NextState <| m.CurrentSnackId + 1), Cmd.none
         | Active x, NextState _ ->
             { m with State = Waiting x }, delayedMsg m.IntervalMs (NextState m.CurrentSnackId), Cmd.none
@@ -63,9 +65,10 @@ module State =
             match m.Queue with
             | [] -> { m with State = Inert }, Cmd.none, Cmd.none
             | head :: tail ->
-                { m with State = Active head
-                         Queue = tail
-                         CurrentSnackId = m.CurrentSnackId + 1 },
+                { m with
+                      State = Active head
+                      Queue = tail
+                      CurrentSnackId = m.CurrentSnackId + 1 },
                 delayedMsg head.TimeoutMs (NextState <| m.CurrentSnackId + 1), Cmd.none
         | _, Click actionMsg ->
             m, Cmd.ofMsg (NextState m.CurrentSnackId),

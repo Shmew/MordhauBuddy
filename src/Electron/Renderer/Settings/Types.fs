@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.Settings
+namespace MordhauBuddy.App.Settings
 
 module Types =
     open System
@@ -7,7 +7,7 @@ module Types =
     open Fable.React.Props
     open Fable.MaterialUI
     open Fable.MaterialUI.Core
-    open FSharp.Core  /// To avoid shadowing Result<_,_>
+    open FSharp.Core /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
     open RenderUtils.Directory
@@ -18,13 +18,13 @@ module Types =
         | ClientMsg of BridgeMsg
         | GetDefaultDir
         | GetMapDir
-        | SetConfigDir of string * Result<string,string list> * ConfigFile
-        | SetMapDir of string * Result<string,string list>
+        | SetConfigDir of string * Result<string, string list> * ConfigFile
+        | SetMapDir of string * Result<string, string list>
         | RequestLoad of DirLoad
         | LoadCanceled
 
-    type Model = 
-        { EngineDir : ConfigDir
-          GameDir : ConfigDir
-          GameUserDir : ConfigDir 
-          MapsDir : ConfigDir }
+    type Model =
+        { EngineDir: ConfigDir
+          GameDir: ConfigDir
+          GameUserDir: ConfigDir
+          MapsDir: ConfigDir }
