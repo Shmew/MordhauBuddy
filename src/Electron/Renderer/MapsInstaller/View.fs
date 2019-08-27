@@ -32,7 +32,20 @@ module View =
         ] [ elem ]
 
     let private tableMenu (classes: IClasses) model dispatch (map : CommunityMapWithState) =
+        let circularProg =
+            circularProgress [ 
+                CircularProgressProp.Size (CircularProgressSize.Case1(20))
+                Style [ 
+                    CSSProp.MaxHeight "2.6em"
+                    CSSProp.PaddingRight "2em"
+                ] 
+            ]
+
         div [] [
+            match model.ActiveUninstalling, model.Uninstalling with
+            | Some(uMap), _ when map.Map.Folder = uMap -> yield circularProg
+            | _, uList when uList.IsEmpty |> not -> yield circularProg
+            | _ ->
             yield
                 iconButton [
                     DOMAttr.OnClick <| fun _ -> dispatch (ToggleMenu(model.TabSelected, map.Map.Folder)) 
@@ -54,7 +67,7 @@ module View =
                                 | Installed -> 
                                     [ menuItem [
                                         HTMLAttr.Disabled (model.Available |> List.exists (fun m -> m.Map.Folder = map.Map.Folder) |> not)
-                                        DOMAttr.OnClick <| fun _ -> dispatch (Install(map.Map.GetName(), map.Map.Folder))
+                                        DOMAttr.OnClick <| fun _ -> dispatch (Install(map.Map.Folder))
                                       ] [ str "Update" ]
                                       menuItem [
                                           DOMAttr.OnClick <| fun _ -> dispatch (Uninstall(map.Map.Folder))
@@ -97,7 +110,7 @@ module View =
                             fab [
                                 MaterialProp.Color ComponentColor.Secondary
                                 FabProp.Size FabSize.Medium
-                                DOMAttr.OnClick <| fun _ -> dispatch (Install(map.Map.GetName(), map.Map.Folder))
+                                DOMAttr.OnClick <| fun _ -> dispatch (Install(map.Map.Folder))
                             ] [ addIcon [] ]
                     ] []
                     cardMedia [

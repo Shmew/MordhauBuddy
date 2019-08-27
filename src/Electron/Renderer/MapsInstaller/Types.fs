@@ -49,7 +49,7 @@ module rec Types =
         | ClientMsg of BridgeMsg
         | TabSelected of Tab
         | ImgSkeleton
-        | Install of string * string
+        | Install of string
         | InstallAll
         | Uninstall of string
         | UninstallAll
@@ -101,5 +101,8 @@ module rec Types =
           Available : CommunityMapWithState list
           Installed : CommunityMapWithState list
           Installing : CommunityMapWithState list
+          Uninstalling : string list
+          ActiveInstalling : string list
+          ActiveUninstalling : string option
           TabSelected : Tab
           Refreshing : bool }

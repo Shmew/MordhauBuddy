@@ -23,6 +23,9 @@ module State =
           Available = []
           Installed = []
           Installing = []
+          Uninstalling = []
+          ActiveInstalling = []
+          ActiveUninstalling = None
           TabSelected = Available
           Refreshing = false }
 
@@ -37,7 +40,37 @@ module State =
             |> not)
 
     let private partitionComMaps (cList : CommunityMapWithState list) map =
-        cList |> List.partition (fun m -> m.Map.GetName() = map)
+        cList |> List.partition (fun m -> m.Map.Folder = map)
+
+    let private removeFromActive (map : string) (activeList : string list) =
+        activeList |> List.filter (fun f -> f <> map)
+
+    let private createMTarget model (cMap : CommunityMapWithState) =
+        { MapTarget.Folder = cMap.Map.Folder
+          MapTarget.Directory = model.MapsDir.Directory
+          MapTarget.GDrive = 
+          match cMap.Map.GoogleDriveID, cMap.Map.FileSize with
+          | Some(gId), Some(size) ->
+              { GoogleDrive.ID = gId; GoogleDrive.Size = size }
+              |> Some
+          | _ -> None }
+
+    let private addNextActive model =
+        if model.ActiveInstalling.Length <= 2 then
+            model.Installing 
+            |> List.filter (fun m -> 
+                model.ActiveInstalling 
+                |> List.contains m.Map.Folder 
+                |> not)
+            |> List.tryHead
+        else None
+        |> function
+        | Some m -> 
+            { model with ActiveInstalling = m.Map.Folder::model.ActiveInstalling }
+            , Cmd.bridgeSend (sender.Install(createMTarget model m)) 
+        | _ when model.ActiveInstalling.IsEmpty && model.Installing.IsEmpty ->
+            model, Cmd.batch [ Cmd.ofMsg GetAvailable; Cmd.ofMsg GetInstalled ]
+        | _ -> model, Cmd.none
 
     let private autoRefresh (availMsg : Msg) (installedMsg : Msg) dispatch =
         async {
@@ -72,19 +105,33 @@ module State =
                                     State = DirState.Error "Maps directory not found" } }
                         , Cmd.none
                 | MapOperationResult.Delete (map, res) ->
+                    if model.Uninstalling.IsEmpty then
+                        { model with ActiveUninstalling = None }
+                    else 
+                        let next = model.Uninstalling.Head
+                        { model with 
+                            Uninstalling = model.Uninstalling.Tail
+                            ActiveUninstalling = Some(next) }
+                    |> fun m ->
                     match res with
                     | Ok(_) ->
-                        { model with 
-                            Installed = (model.Installed |> List.filter (fun m -> m.Map.Folder <> map)) }
-                        , Cmd.ofMsg GetAvailable
+                        { m with 
+                            Installed = (m.Installed |> List.filter (fun m -> m.Map.Folder <> map)) }
+                        , Cmd.batch 
+                            [ yield 
+                                if m.Uninstalling.IsEmpty |> not || m.ActiveUninstalling.IsSome then Cmd.none 
+                                else Cmd.ofMsg GetAvailable
+                              match m.ActiveUninstalling with
+                              | Some(s) -> yield Cmd.bridgeSend (sender.Uninstall model.MapsDir.Directory s)
+                              | _ -> () ]
                     | Error(e) ->
-                        { model with 
+                        { m with 
                             Installed = 
-                                (model.Installed 
-                                 |> List.map (fun m -> 
-                                    if m.Map.Folder = map then 
-                                        { m with State = ComMapState.Error e } 
-                                    else m)) }, Cmd.none
+                                (m.Installed 
+                                 |> List.map (fun comMap -> 
+                                    if comMap.Map.Folder = map then 
+                                        { comMap with State = ComMapState.Error e } 
+                                    else comMap)) }, Cmd.none
                 | _ -> model, Cmd.none
             | BridgeResult.Maps mRes ->
                 match mRes with
@@ -113,8 +160,10 @@ module State =
                 | MapResult.InstallMapCancelled (map, b) -> 
                     if b then
                         { model with
-                            Installing = (model.Installing |> List.filter (fun m -> m.Map.Folder <> map))}
-                        , Cmd.ofMsg GetAvailable
+                            Installing = (model.Installing |> List.filter (fun m -> m.Map.Folder <> map))
+                            ActiveInstalling = removeFromActive map model.ActiveInstalling }
+                        |> addNextActive
+                        |> fun (m, cmd) -> m, Cmd.batch [ Cmd.ofMsg GetAvailable; cmd ]
                     else
                         { model with
                             Installing = 
@@ -137,7 +186,10 @@ module State =
                     let finished,inProcess = model.Installing |> List.partition (fun m -> m.Map.Folder = map)
                     { model with 
                         Installed = finished |> List.append model.Installed |> List.sortBy (fun k -> k.Map.GetName())
-                        Installing = inProcess }, Cmd.bridgeSend (sender.ConfirmInstall map)
+                        Installing = inProcess
+                        ActiveInstalling = removeFromActive map model.ActiveInstalling}
+                    |> addNextActive
+                    |> fun (m,cmd) -> m, Cmd.batch [ Cmd.bridgeSend (sender.ConfirmInstall map); cmd ]
                 | MapResult.InstallMapError (map, err) -> 
                     { model with
                         Installing = 
@@ -146,36 +198,36 @@ module State =
                                 if m.Map.Folder = map then 
                                     { m with 
                                         State = ComMapState.Error err } 
-                                else m))}
+                                else m))
+                        ActiveInstalling = removeFromActive map model.ActiveInstalling }
                     , Cmd.none
             | _ -> model, Cmd.none
         | TabSelected tab -> 
             { model with TabSelected = tab }, Cmd.none
         | ImgSkeleton -> model, Cmd.none
-        | Install (name,fName) -> 
+        | Install fName -> 
+            let startNow = model.ActiveInstalling.Length <= 2
             let newInstalling,newAvailable =
-                partitionComMaps model.Available name
-            let mCmd =
-                { MapTarget.Folder = fName
-                  MapTarget.Directory = model.MapsDir.Directory
-                  MapTarget.GDrive = 
-                    let map = newInstalling.Head.Map
-                    match map.GoogleDriveID, map.FileSize with
-                    | Some(gId), Some(size) ->
-                        { GoogleDrive.ID = gId; GoogleDrive.Size = size }
-                        |> Some
-                    | _ -> None }
-            { model with
-                Available = newAvailable
-                Installed = (model.Installed |> List.filter (fun m -> m.Map.Folder <> fName))
-                Installing = (List.append model.Installing newInstalling) }
-            , Cmd.bridgeSend (sender.Install(mCmd))
+                partitionComMaps model.Available fName
+            let m =
+                { model with
+                    Available = newAvailable
+                    Installed = (model.Installed |> List.filter (fun m -> m.Map.Folder <> fName))
+                    Installing = (List.append model.Installing newInstalling)
+                    ActiveInstalling = (if startNow then fName::model.ActiveInstalling else model.ActiveInstalling) }
+            match startNow, newInstalling |> List.tryHead with
+            | true, Some(h) ->
+                m, Cmd.bridgeSend (sender.Install(createMTarget m h)) 
+            | _ -> m, Cmd.none
         | InstallAll -> 
             model, Cmd.batch 
                 (model.Available 
                 |> List.map (fun m -> 
-                    Install(m.Map.GetName(),m.Map.Folder) |> Cmd.ofMsg))
-        | Uninstall s -> model, Cmd.bridgeSend (sender.Uninstall model.MapsDir.Directory s)
+                    Install(m.Map.Folder) |> Cmd.ofMsg))
+        | Uninstall s -> 
+            if model.ActiveUninstalling.IsNone then
+                { model with ActiveUninstalling = Some(s) }, Cmd.bridgeSend (sender.Uninstall model.MapsDir.Directory s)
+            else { model with Uninstalling = List.append model.Uninstalling [s] }, Cmd.none
         | UninstallAll -> 
             model, Cmd.batch 
                 (model.Installed 
@@ -192,7 +244,11 @@ module State =
                 |> List.map (fun m -> 
                     CancelInstall(m.Map.Folder) |> Cmd.ofMsg))
         | GetInstalled -> model, Cmd.bridgeSend (sender.GetInstalled(model.MapsDir.Directory))
-        | GetAvailable -> model, Cmd.bridgeSend (sender.GetAvailable)
+        | GetAvailable -> 
+            model,
+            if model.Uninstalling.IsEmpty && model.ActiveUninstalling.IsNone then
+                Cmd.bridgeSend (sender.GetAvailable)
+            else Cmd.none
         | ToggleMenu (tab, fName) -> 
             match tab with
             | Available -> model, Cmd.none
