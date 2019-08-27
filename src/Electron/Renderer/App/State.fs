@@ -59,24 +59,63 @@ module State =
         m, Cmd.none
 
     [<AutoOpen>]
-    module private Helpers =
-        //let setDir (model: Model) (dirType: Dirs) (dir: ConfigDir) =
-        //    match dirType with
-        //    | Game -> {  with GameDir = dir }
-        //    | Engine -> { model with EngineDir = dir }
-        //    | GameUser -> { model with GameUserDir = dir }
-        //    | Maps -> { model with MapsDir = dir }
-        
-        //let setResource  (res: Loaded) (resType: Dirs) (dir: ) =
-        //    match resType with
-        //    | Game -> { res.GameConfig with GameConfig = dir }
-        //    | Engine -> { res.GameConfig with GameConfig = dir }
-        //    | GameUser -> { res.GameConfig with GameConfig = dir }
-        //    | Maps -> { res.GameConfig with GameConfig = dir }
-        
-        //let setCDir 
-        
+    module Helpers =
+        type CMDir =
+            | CDir of ConfigDir
+            | MDir of MapDir
+            static member ($) (_, x: ConfigDir) = CDir(x)
+            static member ($) (_, x: MapDir) = MDir(x)
+            static member ($) (_, x: CMDir) = x
+
+        type CMFile =
+            | CFile of ConfigFile
+            | MFile
+            static member ($) (_, x: ConfigFile) = CFile(x)
+            static member ($) (_, ()) = MFile
+            static member ($) (_, x: CMDir) = x
+
+        let inline (|CMDir|) x = Unchecked.defaultof<CMDir> $ x
+        let inline (|CMFile|) x = Unchecked.defaultof<CMFile> $ x
+
+        let inline setPath s (CMDir inp) =
+            match inp with
+            | CDir(cDir) -> { cDir with Path = s } |> CDir
+            | MDir(mDir) -> { mDir with Path = s } |> MDir
+
+        let inline setParsed b (CMDir inp) =
+            match inp with
+            | CDir cDir -> { cDir with Parsed = b } |> CDir
+            | _ -> inp
+
+        let inline setExists b (CMDir inp) =
+            match inp with
+            | CDir(cDir) -> { cDir with Exists = b } |> CDir
+            | MDir(mDir) -> { mDir with Exists = b } |> MDir
+
+        let inline setAttemptedLoad b (CMDir inp) =
+            match inp with
+            | CDir(cDir) -> { cDir with AttemptedLoad = b } |> CDir
+            | MDir(mDir) -> { mDir with AttemptedLoad = b } |> MDir
+
+        let inline setLoading b (CMDir inp) =
+            match inp with
+            | CDir(cDir) -> { cDir with Loading = b } |> CDir
+            | MDir(mDir) -> { mDir with Loading = b } |> MDir
+
+        let inline setResLoaded (CMFile cmFile) (res: Loaded) (CMDir inp) =
+            match cmFile, inp with
+            | CFile ConfigFile.Game, CDir cDir -> { res with GameConfig = cDir }
+            | CFile ConfigFile.Engine, CDir cDir -> { res with EngineConfig = cDir }
+            | CFile ConfigFile.GameUserSettings, CDir cDir -> { res with GameUserConfig = cDir }
+            | MFile, MDir mDir -> { res with Maps = mDir }
+            | _ -> res
+
         let setResource (model: Model) (res: Loaded) = { model with Resources = res }
+        let setSettings (model: Model) (set: Settings.Types.Model) = { model with Settings = set }
+        let setMapInstaller (model: Model) (mInstall: MapsInstaller.Types.Model) =
+            { model with MapsInstaller = mInstall }
+        let setFaceTools (model: Model) (fTool: FaceTools.Types.Model) = { model with FaceTools = fTool }
+        let setMordConfig (model: Model) (mConf: MordhauConfig.Types.Model) = { model with MordhauConfig = mConf }
 
     let update msg m =
         match msg with
@@ -86,84 +125,65 @@ module State =
             match msg' with
             | LoadConfig(cFile) ->
                 match cFile with
-                | ConfigFile.Game ->
-                    { m with Resources =
-                          { m.Resources with GameConfig = { m.Resources.GameConfig with Loading = true } } }
-                | ConfigFile.Engine ->
-                    { m with Resources =
-                          { m.Resources with EngineConfig = { m.Resources.EngineConfig with Loading = true } } }
-                | ConfigFile.GameUserSettings ->
-                    { m with
-                          Resources =
-                              { m.Resources with GameUserConfig = { m.Resources.GameUserConfig with Loading = true } } }
+                | ConfigFile.Game -> setLoading true m.Resources.GameConfig
+                | ConfigFile.Engine -> setLoading true m.Resources.EngineConfig
+                | ConfigFile.GameUserSettings -> setLoading true m.Resources.GameUserConfig
+                |> setResLoaded cFile m.Resources
+                |> setResource m
                 |> fun m' -> m', Cmd.ofMsg <| LoadConfig(cFile)
             | LoadMap ->
-                { m with Resources = { m.Resources with Maps = { m.Resources.Maps with Loading = true } } },
-                Cmd.ofMsg LoadMap
+                setLoading true m.Resources.Maps
+                |> setResLoaded () m.Resources
+                |> setResource m
+                |> fun m' -> m', Cmd.ofMsg LoadMap
             | _ -> m, Cmd.none
         | LoadConfig cFile ->
-            let resource, error, setPath =
+            let resource, error, setResPath =
                 match cFile with
                 | ConfigFile.Game ->
                     m.Resources.GameConfig, m.Settings.GameDir.State.IsDirError,
-                    (fun (sModel: Settings.Types.Model) ->
-                    { m.Resources with
-                          GameConfig =
-                              { m.Resources.GameConfig with
-                                    Path = sModel.GameDir.Directory
-                                    AttemptedLoad = true } })
+                    (fun (sModel: Settings.Types.Model) -> setPath sModel.GameDir.Directory m.Resources.GameConfig)
                 | ConfigFile.Engine ->
                     m.Resources.EngineConfig, m.Settings.EngineDir.State.IsDirError,
-                    (fun (sModel: Settings.Types.Model) ->
-                    { m.Resources with
-                          EngineConfig =
-                              { m.Resources.EngineConfig with
-                                    Path = sModel.EngineDir.Directory
-                                    AttemptedLoad = true } })
+                    (fun (sModel: Settings.Types.Model) -> setPath sModel.EngineDir.Directory m.Resources.EngineConfig)
                 | ConfigFile.GameUserSettings ->
                     m.Resources.GameUserConfig, m.Settings.GameUserDir.State.IsDirError,
                     (fun (sModel: Settings.Types.Model) ->
-                    { m.Resources with
-                          GameUserConfig =
-                              { m.Resources.GameUserConfig with
-                                    Path = sModel.GameUserDir.Directory
-                                    AttemptedLoad = true } })
+                    setPath sModel.GameUserDir.Directory m.Resources.GameUserConfig)
+
+            let loadConfig m (m', cmd) =
+                setResPath m'
+                |> setAttemptedLoad true
+                |> setResLoaded cFile m.Resources
+                |> setResource m
+                |> setSettings
+                <| m'
+                |> fun m -> m, Cmd.map SettingsMsg cmd
+
             match resource.Path with
             | "" when resource.AttemptedLoad |> not ->
-                let m', cmd = Settings.State.update (Settings.Types.GetDefaultDir) m.Settings
-                { m with
-                      Resources = setPath m'
-                      Settings = m' }, Cmd.map SettingsMsg cmd
+                Settings.State.update (Settings.Types.GetDefaultDir) m.Settings |> loadConfig m
             | s when error |> not ->
-                let m', cmd = Settings.State.update (Settings.Types.SetConfigDir(s, Ok s, cFile)) m.Settings
-                { m with
-                      Resources = setPath m'
-                      Settings = m' }, Cmd.map SettingsMsg cmd
+                Settings.State.update (Settings.Types.SetConfigDir(s, Ok s, cFile)) m.Settings |> loadConfig m
             | _ -> m, Cmd.none
         | LoadMap ->
+            let loadMap m' cmd (cmDir: CMDir) =
+                cmDir
+                |> setAttemptedLoad true
+                |> setResLoaded () m.Resources
+                |> setResource m
+                |> setSettings
+                <| m'
+                |> fun m -> m, Cmd.map SettingsMsg cmd
             match m.Resources.Maps.Path with
             | "" when m.Resources.Maps.AttemptedLoad |> not ->
                 let m', cmd = Settings.State.update (Settings.Types.GetMapDir) m.Settings
-                { m with
-                      Resources =
-                          { m.Resources with
-                                Maps =
-                                    { m.Resources.Maps with
-                                          Path = m'.MapsDir.Directory
-                                          AttemptedLoad = true } }
-                      Settings = m' }, Cmd.map SettingsMsg cmd
+                setPath m'.MapsDir.Directory m.Resources.Maps |> loadMap m' cmd
             | s when m.Resources.Maps.Exists
                      |> not
                      && m.Settings.MapsDir.State.IsDirError |> not ->
                 let m', cmd = Settings.State.update (Settings.Types.SetMapDir(s, Ok s)) m.Settings
-                { m with
-                      Resources =
-                          { m.Resources with
-                                Maps =
-                                    { m.Resources.Maps with
-                                          Path = m'.MapsDir.Directory
-                                          AttemptedLoad = true } }
-                      Settings = m' }, Cmd.map SettingsMsg cmd
+                setPath m'.MapsDir.Directory m.Resources.Maps |> loadMap m' cmd
             | _ -> m, Cmd.none
         | StoreMsg msg' ->
             let m', cmd = Store.update msg' m.Store, Cmd.none
@@ -187,100 +207,44 @@ module State =
             let m', cmd = About.State.update msg' m.About
             { m with About = m' }, Cmd.map AboutMsg cmd
         | ServerMsg msg' ->
-            let setResource bMsg (cFile: ConfigFile) =
+            let setResource' bMsg (cFile: ConfigFile) =
                 let br = bMsg.BridgeResult
+
+                let setResource (model: Model) (cDir: ConfigDir) =
+                    cDir
+                    |> fun res ->
+                        match br with
+                        | BridgeResult.INIOperation iOp ->
+                            match iOp with
+                            | INIOperationResult.DefaultDir(dOpt) -> setPath (defaultArg dOpt "") res
+                            | INIOperationResult.Exists b -> setExists b res |> setLoading b
+                            | INIOperationResult.Parse b -> setParsed b res |> setLoading false
+                            | _ -> CDir res
+                        | _ -> CDir res
+                        |> setResLoaded cFile model.Resources
+                        |> setResource model
+
                 match cFile with
                 | ConfigFile.Game ->
-                    (fun (model: Model) ->
-                    { model with
-                          Resources =
-                              { model.Resources with
-                                    GameConfig =
-                                        match br with
-                                        | BridgeResult.INIOperation iOp ->
-                                            match iOp with
-                                            | INIOperationResult.DefaultDir(dOpt) ->
-                                                { model.Resources.GameConfig with Path = defaultArg dOpt "" }
-                                            | INIOperationResult.Exists b ->
-                                                { model.Resources.GameConfig with
-                                                      Exists = b
-                                                      Loading =
-                                                          if b |> not then false
-                                                          else true }
-                                            | INIOperationResult.Parse b ->
-                                                { model.Resources.GameConfig with
-                                                      Parsed = b
-                                                      Loading = false }
-                                            | _ -> model.Resources.GameConfig
-                                        | _ -> model.Resources.GameConfig } })
+                    (fun (model: Model) -> model.Resources.GameConfig |> setResource model)
                     >> (fun model ->
-                    { model with
-                          FaceTools =
-                              { model.FaceTools with
-                                    GameDir =
-                                        { model.FaceTools.GameDir with Directory = model.Resources.GameConfig.Path } } })
+                    { model.FaceTools with
+                          GameDir = { model.FaceTools.GameDir with Directory = model.Resources.GameConfig.Path } }
+                    |> setFaceTools model)
                 | ConfigFile.Engine ->
-                    (fun (model: Model) ->
-                    { model with
-                          Resources =
-                              { model.Resources with
-                                    EngineConfig =
-                                        match br with
-                                        | BridgeResult.INIOperation iOp ->
-                                            match iOp with
-                                            | INIOperationResult.DefaultDir(dOpt) ->
-                                                { model.Resources.EngineConfig with Path = defaultArg dOpt "" }
-                                            | INIOperationResult.Exists b ->
-                                                { model.Resources.EngineConfig with
-                                                      Exists = b
-                                                      Loading =
-                                                          if b |> not then false
-                                                          else true }
-                                            | INIOperationResult.Parse b ->
-                                                { model.Resources.EngineConfig with
-                                                      Path = bMsg.File.Value.WorkingDir.Value
-                                                      Parsed = b
-                                                      Loading = false }
-                                            | _ -> model.Resources.EngineConfig
-                                        | _ -> model.Resources.EngineConfig } })
+                    (fun (model: Model) -> model.Resources.EngineConfig |> setResource model)
                     >> (fun model ->
-                    { model with
-                          MordhauConfig =
-                              { model.MordhauConfig with
-                                    EngineDir =
-                                        { model.MordhauConfig.EngineDir with Directory =
-                                              model.Resources.EngineConfig.Path } } })
+                    { model.MordhauConfig with
+                          EngineDir =
+                              { model.MordhauConfig.EngineDir with Directory = model.Resources.EngineConfig.Path } }
+                    |> setMordConfig model)
                 | ConfigFile.GameUserSettings ->
-                    (fun (model: Model) ->
-                    { model with
-                          Resources =
-                              { model.Resources with
-                                    GameUserConfig =
-                                        match br with
-                                        | BridgeResult.INIOperation iOp ->
-                                            match iOp with
-                                            | INIOperationResult.DefaultDir(dOpt) ->
-                                                { model.Resources.GameUserConfig with Path = defaultArg dOpt "" }
-                                            | INIOperationResult.Exists b ->
-                                                { model.Resources.GameUserConfig with
-                                                      Exists = b
-                                                      Loading =
-                                                          if b |> not then false
-                                                          else true }
-                                            | INIOperationResult.Parse b ->
-                                                { model.Resources.GameUserConfig with
-                                                      Path = bMsg.File.Value.WorkingDir.Value
-                                                      Parsed = b
-                                                      Loading = false }
-                                            | _ -> model.Resources.GameUserConfig
-                                        | _ -> model.Resources.GameUserConfig } })
+                    (fun (model: Model) -> model.Resources.GameUserConfig |> setResource model)
                     >> (fun model ->
-                    { model with
-                          MordhauConfig =
-                              { model.MordhauConfig with
-                                    GameUserDir =
-                                        { model.MordhauConfig.GameUserDir with Directory =
-                                              model.Resources.GameUserConfig.Path } } })
+                    { model.MordhauConfig with
+                          GameUserDir =
+                              { model.MordhauConfig.GameUserDir with Directory = model.Resources.GameUserConfig.Path } }
+                    |> setMordConfig model)
             match msg' with
             | Resp(bMsg) ->
                 match bMsg.Caller with
@@ -296,41 +260,41 @@ module State =
                 | Caller.Settings ->
                     let m', cmd = Settings.State.update (Settings.Types.ClientMsg bMsg) m.Settings
                     match bMsg.File, bMsg.BridgeResult with
-                    | Some(iFile), _ -> { m with Settings = m' } |> setResource bMsg (iFile.File)
+                    | Some(iFile), _ -> { m with Settings = m' } |> setResource' bMsg (iFile.File)
                     | None, BridgeResult.MapOperation(mResult) ->
                         match mResult with
                         | MapOperationResult.DirExists b ->
-                            { m with
-                                  Resources =
-                                      { m.Resources with
-                                            Maps =
-                                                { m.Resources.Maps with
-                                                      Exists = b
-                                                      Loading = false } }
-                                  MapsInstaller =
-                                      { m.MapsInstaller with
-                                            MapsDir =
-                                                { m.MapsInstaller.MapsDir with
-                                                      Directory =
-                                                          if b then m'.MapsDir.Directory
-                                                          else ""
-                                                      State = Directory.DirState.Success "Maps directory located" } }
-                                  Settings = m' }
+                            setExists b m.Resources.Maps
+                            |> setLoading false
+                            |> setResLoaded () m.Resources
+                            |> setResource m
+                            |> setSettings
+                            <| m'
+                            |> (fun model ->
+                            { model.MapsInstaller with
+                                  MapsDir =
+                                      { model.MapsInstaller.MapsDir with
+                                            Directory =
+                                                if b then m'.MapsDir.Directory
+                                                else ""
+                                            State = Directory.DirState.Success "Maps directory located" } }
+                            |> setMapInstaller model)
                         | MapOperationResult.DefaultDir _ ->
-                            { m with
-                                  Resources =
-                                      { m.Resources with Maps = { m.Resources.Maps with Path = m'.MapsDir.Directory } }
-                                  Settings = m' }
-                        | _ -> { m with Settings = m' }
+                            setPath m'.MapsDir.Directory m.Resources.Maps
+                            |> setResLoaded () m.Resources
+                            |> setResource m
+                            |> setSettings
+                            <| m'
+                        | _ -> setSettings m m'
                     | None, BridgeResult.INIOperation(INIOperationResult.DefaultDir _) ->
                         [ (m.Resources.GameConfig.Loading, ConfigFile.Game)
                           (m.Resources.EngineConfig.Loading, ConfigFile.Engine)
                           (m.Resources.GameUserConfig.Loading, ConfigFile.GameUserSettings) ]
                         |> List.tryFind (fst)
                         |> function
-                        | Some(res) -> { m with Settings = m' } |> setResource bMsg (res |> snd)
-                        | _ -> { m with Settings = m' }
-                    | _ -> { m with Settings = m' }
+                        | Some(res) -> setSettings m m' |> setResource' bMsg (res |> snd)
+                        | _ -> setSettings m m'
+                    | _ -> setSettings m m'
                     |> fun newM -> newM, Cmd.map SettingsMsg cmd
                 | _ -> m, Cmd.none
             | Connected -> { m with IsBridgeConnected = true }, Cmd.none

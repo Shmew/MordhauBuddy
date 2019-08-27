@@ -29,60 +29,63 @@ module State =
           TabSelected = Available
           Refreshing = false }
 
-    let private sender = new MapBridgeSender(Caller.MapInstaller)
+    [<AutoOpen>]
+    module private Helpers =
 
-    let private calcAvailableMaps (model: Model) =
-        model.Available
-        |> List.filter (fun map ->
-            (List.append model.Installed model.Installing)
-            |> List.exists (fun m -> m.Map.Name = map.Map.Name && m.Map.Version = map.Map.Version)
-            |> not)
+        let sender = new MapBridgeSender(Caller.MapInstaller)
 
-    let private partitionComMaps (cList: CommunityMapWithState list) map =
-        cList |> List.partition (fun m -> m.Map.Folder = map)
-
-    let private removeFromActive (map: string) (activeList: string list) = activeList |> List.filter (fun f -> f <> map)
-
-    let private createMTarget model (cMap: CommunityMapWithState) =
-        { MapTarget.Folder = cMap.Map.Folder
-          MapTarget.Directory = model.MapsDir.Directory
-          MapTarget.GDrive =
-              match cMap.Map.GoogleDriveID, cMap.Map.FileSize with
-              | Some(gId), Some(size) ->
-                  { GoogleDrive.ID = gId
-                    GoogleDrive.Size = size }
-                  |> Some
-              | _ -> None }
-
-    let private addNextActive model =
-        if model.ActiveInstalling.Length <= 2 then
-            model.Installing
-            |> List.filter (fun m ->
-                model.ActiveInstalling
-                |> List.contains m.Map.Folder
+        let calcAvailableMaps (model: Model) =
+            model.Available
+            |> List.filter (fun map ->
+                (List.append model.Installed model.Installing)
+                |> List.exists (fun m -> m.Map.Name = map.Map.Name && m.Map.Version = map.Map.Version)
                 |> not)
-            |> List.tryHead
-        else None
-        |> function
-        | Some m ->
-            { model with ActiveInstalling = m.Map.Folder :: model.ActiveInstalling },
-            Cmd.bridgeSend (sender.Install(createMTarget model m))
-        | _ when model.ActiveInstalling.IsEmpty && model.Installing.IsEmpty ->
-            model,
-            Cmd.batch
-                [ Cmd.ofMsg GetAvailable
-                  Cmd.ofMsg GetInstalled ]
-        | _ -> model, Cmd.none
 
-    let private autoRefresh (availMsg: Msg) (installedMsg: Msg) dispatch =
-        async {
-            while true do
-                do! Async.Sleep 1800000
-                dispatch availMsg
-                do! Async.Sleep 600000
-                dispatch installedMsg
-        }
-        |> Async.StartImmediate
+        let partitionComMaps (cList: CommunityMapWithState list) map =
+            cList |> List.partition (fun m -> m.Map.Folder = map)
+
+        let removeFromActive (map: string) (activeList: string list) = activeList |> List.filter (fun f -> f <> map)
+
+        let createMTarget model (cMap: CommunityMapWithState) =
+            { MapTarget.Folder = cMap.Map.Folder
+              MapTarget.Directory = model.MapsDir.Directory
+              MapTarget.GDrive =
+                  match cMap.Map.GoogleDriveID, cMap.Map.FileSize with
+                  | Some(gId), Some(size) ->
+                      { GoogleDrive.ID = gId
+                        GoogleDrive.Size = size }
+                      |> Some
+                  | _ -> None }
+
+        let addNextActive model =
+            if model.ActiveInstalling.Length <= 2 then
+                model.Installing
+                |> List.filter (fun m ->
+                    model.ActiveInstalling
+                    |> List.contains m.Map.Folder
+                    |> not)
+                |> List.tryHead
+            else None
+            |> function
+            | Some m ->
+                { model with ActiveInstalling = m.Map.Folder :: model.ActiveInstalling },
+                Cmd.bridgeSend (sender.Install(createMTarget model m))
+            | _ when model.ActiveInstalling.IsEmpty && model.Installing.IsEmpty ->
+                model,
+                Cmd.batch
+                    [ Cmd.ofMsg GetAvailable
+                      Cmd.ofMsg GetInstalled ]
+            | _ -> model, Cmd.none
+
+        let autoRefresh (availMsg: Msg) (installedMsg: Msg) dispatch =
+            async {
+                while true do
+                    do! Async.Sleep 1800000
+                    dispatch availMsg
+                    do! Async.Sleep 600000
+                    dispatch installedMsg
+            }
+            |> Async.StartImmediate
 
     let update (msg: Msg) (model: Model) =
         match msg with
