@@ -84,7 +84,7 @@ module View =
                 [ typography
                     [ TypographyProp.Variant TypographyVariant.H6
                       TypographyProp.Align TypographyAlign.Center
-                      Style [ CSSProp.PaddingBottom "10em" ] ] [ str "Preparing for battle..." ]
+                      Style [ CSSProp.PaddingBottom "5em" ] ] [ str "Preparing for battle..." ]
                   circularProgress
                       [ CircularProgressProp.Size <| CircularProgressSize.Case2 "5em"
                         Style [ CSSProp.MarginLeft "45%" ] ] ]
