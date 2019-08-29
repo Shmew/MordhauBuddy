@@ -229,17 +229,6 @@ module Bridge =
                             toCancel |> List.iter (fun (_, cSource) -> cSource.Cancel())
                             { model with InstallingMaps = installing }, None
 
-
-
-
-
-
-
-
-
-
-
-
             match remoteCMsg with
             | Some(rMsg) -> Resp(rMsg) |> clientDispatch
             | _ -> ()

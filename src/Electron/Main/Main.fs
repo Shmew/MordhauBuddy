@@ -77,8 +77,6 @@ module Main =
         bridgeProc
 
     let bridge = startBridge()
-
-
     let createMainWindow() =
         let mainWinState =
             WindowState.getState
@@ -102,17 +100,6 @@ module Main =
                     o.frame <- false
                     o.backgroundColor <- "#FFF"
                     o.show <- false))
-
-
-
-
-
-
-
-
-
-
-
         win.onceReadyToShow (fun _ ->
             win.setTitle <| sprintf "%s - %s" Info.name Info.version
             win.show()

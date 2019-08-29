@@ -15,6 +15,9 @@ open Fake.IO
 open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 open Fake.Tools
+open Fantomas
+open Fantomas.FakeHelpers
+open Fantomas.FormatConfig
 open Tools.Linting
 open Tools.Electron
 open System
@@ -108,9 +111,6 @@ module dotnet =
     let tool optionConfig command args =
         DotNet.exec (fun p -> { p with WorkingDirectory = tools} |> optionConfig ) (sprintf "%s" command) args
         |> failOnBadExitAndPrint
-
-    let fantomas optionConfig args =
-        tool optionConfig "fantomas" args
 
     let femto optionConfig args =
         tool optionConfig (!!(__SOURCE_DIRECTORY__ @@ "packages/tooling/Femto/tools/**/**/Femto.dll") |> Seq.head) args
@@ -417,10 +417,14 @@ Target.create "PublishDotNet" <| fun _ ->
 // Lint and format source code to ensure consistency
 
 Target.create "Format" <| fun _ ->
-    fsSrcAndTest 
-    |> Seq.iter (fun file ->
-        dotnet.fantomas id
-            (sprintf "%s --pageWidth 120" file))
+    let config =
+        { FormatConfig.Default with
+            PageWidth = 120 }
+            
+    fsSrcAndTest
+    |> formatCode config
+    |> Async.Ignore
+    |> Async.RunSynchronously
 
 Target.create "Lint" <| fun _ ->
     fsSrcAndTest
@@ -686,7 +690,7 @@ Target.create "All" ignore
   ==> "GitPush"
   ?=> "GitTag"
 
-"All" <== ["Format"; "Lint"; "RunTests"; "GenerateDocs"; "CleanElectronBin"]
+"All" <== ["Lint"; "RunTests"; "GenerateDocs"; "CleanElectronBin"]
 
 "All" 
   ?=> "RewriteWin32" 

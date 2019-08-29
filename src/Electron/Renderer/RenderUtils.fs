@@ -46,17 +46,6 @@ module RenderUtils =
 
     let getRemoteWin() = renderer.remote.getCurrentWindow()
 
-
-
-
-
-
-
-
-
-
-
-
     [<Emit("$0.persist()")>]
     let eventPersist (e: Event): unit = jsNative
 
@@ -148,17 +137,6 @@ module RenderUtils =
                 match this.Name with
                 | Some(name) -> name
                 | None -> this.Folder
-
-
-
-
-
-
-
-
-
-
-
 
             member this.GetPlayers() =
                 match this.Players with

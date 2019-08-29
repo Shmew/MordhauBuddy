@@ -48,7 +48,6 @@ module rec Types =
             |> Option.map (fun uc -> uc.Name |> Tab.Instantiate)
             |> Option.get
 
-
     type Msg =
         | ClientMsg of BridgeResult
         | StepperSubmit

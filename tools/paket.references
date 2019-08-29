@@ -3,7 +3,5 @@ group Tooling
 	FSharp.Core
 	FSharp.Json
 	FSharpLint.Core
-
 	dotnet-fable
 	dotnet-fake
-	dotnet-fantomas
