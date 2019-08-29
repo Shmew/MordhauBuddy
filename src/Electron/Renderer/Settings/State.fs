@@ -128,49 +128,47 @@ module State =
                     match dOpt with
                     | Some(d) ->
                         let initMsg = "Mordhau directory located"
-                        model
-                        |> fun modelWait ->
-                            let mList =
-                                [ {| IsEmpty = model.GameDir.Directory = ""
-                                     Func =
-                                         fun m ->
-                                             setDirInit initMsg m.GameDir
-                                             |> setDirDirectory d
-                                             |> setDir model Game
-                                     CmdF = fun m -> sendParse ConfigFile.Game m.GameDir.Directory |}
-                                  {| IsEmpty = model.EngineDir.Directory = ""
-                                     Func =
-                                         fun m ->
-                                             setDirInit initMsg m.EngineDir
-                                             |> setDirDirectory d
-                                             |> setDir model Engine
-                                     CmdF = fun m -> sendParse ConfigFile.Engine m.EngineDir.Directory |}
-                                  {| IsEmpty = model.GameUserDir.Directory = ""
-                                     Func =
-                                         fun m ->
-                                             setDirInit initMsg m.GameUserDir
-                                             |> setDirDirectory d
-                                             |> setDir model GameUser
-                                     CmdF = fun m -> sendParse ConfigFile.GameUserSettings m.GameUserDir.Directory |} ]
-                                |> List.filter (fun o -> o.IsEmpty)
 
-                            let m = mList |> List.fold (fun acc o -> acc |> o.Func) modelWait
-                            m, Cmd.batch (mList |> List.map (fun o -> m |> o.CmdF))
+                        let mList =
+                            [ {| IsEmpty = model.GameDir.Directory = ""
+                                 Func =
+                                     fun m ->
+                                         setDirInit initMsg m.GameDir
+                                         |> setDirDirectory d
+                                         |> setDir m Game
+                                 CmdF = fun m -> sendParse ConfigFile.Game m.GameDir.Directory |}
+                              {| IsEmpty = model.EngineDir.Directory = ""
+                                 Func =
+                                     fun m ->
+                                         setDirInit initMsg m.EngineDir
+                                         |> setDirDirectory d
+                                         |> setDir m Engine
+                                 CmdF = fun m -> sendParse ConfigFile.Engine m.EngineDir.Directory |}
+                              {| IsEmpty = model.GameUserDir.Directory = ""
+                                 Func =
+                                     fun m ->
+                                         setDirInit initMsg m.GameUserDir
+                                         |> setDirDirectory d
+                                         |> setDir m GameUser
+                                 CmdF = fun m -> sendParse ConfigFile.GameUserSettings m.GameUserDir.Directory |} ]
+                            |> List.filter (fun o -> o.IsEmpty)
+
+                        let m = mList |> List.fold (fun acc o -> acc |> o.Func) model
+                        m, Cmd.batch (mList |> List.map (fun o -> m |> o.CmdF))
                     | None ->
                         let errMsg = "Unable to automatically detect Mordhau directory"
-                        model
-                        |> fun modelWait ->
-                            let mList =
-                                [ {| IsEmpty = model.GameDir.Directory = ""
-                                     Func = fun m -> setDirError errMsg m.GameDir |> setDir model Game |}
-                                  {| IsEmpty = model.GameDir.Directory = ""
-                                     Func = fun m -> setDirError errMsg m.EngineDir |> setDir model Engine |}
-                                  {| IsEmpty = model.GameDir.Directory = ""
-                                     Func = fun m -> setDirError errMsg m.GameUserDir |> setDir model GameUser |} ]
-                                |> List.filter (fun o -> o.IsEmpty)
 
-                            let m = mList |> List.fold (fun acc o -> acc |> o.Func) modelWait
-                            m, Cmd.none
+                        let mList =
+                            [ {| IsEmpty = model.GameDir.Directory = ""
+                                 Func = fun m -> setDirError errMsg m.GameDir |> setDir m Game |}
+                              {| IsEmpty = model.GameDir.Directory = ""
+                                 Func = fun m -> setDirError errMsg m.EngineDir |> setDir m Engine |}
+                              {| IsEmpty = model.GameDir.Directory = ""
+                                 Func = fun m -> setDirError errMsg m.GameUserDir |> setDir m GameUser |} ]
+                            |> List.filter (fun o -> o.IsEmpty)
+
+                        let m = mList |> List.fold (fun acc o -> acc |> o.Func) model
+                        m, Cmd.none
                 | _ -> model, Cmd.none
             | BridgeResult.MapOperation mOp ->
                 match mOp with
