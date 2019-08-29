@@ -68,6 +68,8 @@ module RenderUtils =
 #endif
     [<AutoOpen>]
     module RenderTypes =
+        open FSharp.Reflection
+        
         [<RequireQualifiedAccess>]
         type Submit =
             | Waiting
@@ -94,6 +96,47 @@ module RenderUtils =
                 match this with
                 | Submit.Success _ -> true
                 | _ -> false
+
+        type UpdateSettings =
+            | InstalledAndNew
+            | OnlyInstalled
+            | NotifyOnly
+            | NoActions
+            
+            member this.Text =
+                match this with
+                | InstalledAndNew -> "Update installed and new maps"
+                | OnlyInstalled -> "Update only installed maps"
+                | NotifyOnly -> "Only notify me"
+                | NoActions -> "Do nothing"
+
+            static member private Cases = FSharpType.GetUnionCases typeof<UpdateSettings>
+            
+            static member private Instantiate name =
+                UpdateSettings.Cases
+                |> Array.tryFind (fun uc -> uc.Name = name)
+                |> Option.map (fun uc -> Reflection.FSharpValue.MakeUnion(uc, [||]) :?> UpdateSettings)
+                |> Option.get
+            
+            static member GetSettings = UpdateSettings.Cases |> Array.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
+            
+            member this.GetTag =
+                UpdateSettings.Cases
+                |> Seq.tryFind (fun uc -> uc.Name = this.ToString())
+                |> Option.map (fun uc -> uc.Tag)
+                |> Option.get
+            
+            static member GetSettingFromTag(tag: int) =
+                UpdateSettings.Cases
+                |> Seq.tryFind (fun t -> t.Tag = tag)
+                |> Option.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
+                |> Option.get
+
+            static member TryGetCaseFromText (s: string) =
+                UpdateSettings.GetSettings
+                |> Array.filter (fun setting -> setting.Text = s)
+                |> Array.tryHead
+                
 
     module MapTypes =
         open System

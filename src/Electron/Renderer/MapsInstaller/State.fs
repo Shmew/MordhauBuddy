@@ -20,6 +20,7 @@ module State =
                 Directory = ""
                 Label = ""
                 State = DirState.Init "" }
+          UpdateSettings = NoActions
           Available = []
           Installed = []
           Installing = []
@@ -77,13 +78,18 @@ module State =
                       Cmd.ofMsg GetInstalled ]
             | _ -> model, Cmd.none
 
-        let autoRefresh (availMsg: Msg) (installedMsg: Msg) dispatch =
+        let autoRefresh (availMsg: Msg) (installedMsg: Msg) (updateMsg : Msg option) dispatch =
             async {
                 while true do
                     do! Async.Sleep 1800000
                     dispatch availMsg
                     do! Async.Sleep 600000
                     dispatch installedMsg
+                    match updateMsg with
+                    | Some(uMsg) ->
+                        do! Async.Sleep 30000
+                        dispatch uMsg
+                    | _ -> ()
             }
             |> Async.StartImmediate
 
@@ -100,7 +106,7 @@ module State =
                               Refreshing = true },
                         Cmd.batch
                             [ yield Cmd.ofMsg GetAvailable
-                              if model.Refreshing |> not then yield Cmd.ofSub <| autoRefresh GetAvailable GetInstalled ]
+                              if model.Refreshing |> not then yield Cmd.ofSub <| autoRefresh GetAvailable GetInstalled None ]
                     else
                         { model with MapsDir = { model.MapsDir with State = DirState.Error "Maps directory not found" } },
                         Cmd.none
@@ -222,6 +228,7 @@ module State =
             | true, Some(h) -> m, Cmd.bridgeSend (sender.Install(createMTarget m h))
             | _ -> m, Cmd.none
         | InstallAll -> model, Cmd.batch (model.Available |> List.map (fun m -> Install(m.Map.Folder) |> Cmd.ofMsg))
+        | Update -> model, Cmd.none
         | Uninstall s ->
             if model.ActiveUninstalling.IsNone then
                 { model with ActiveUninstalling = Some(s) }, Cmd.bridgeSend (sender.Uninstall model.MapsDir.Directory s)

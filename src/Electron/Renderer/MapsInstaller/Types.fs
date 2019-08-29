@@ -44,6 +44,7 @@ module rec Types =
         | ImgSkeleton
         | Install of string
         | InstallAll
+        | Update
         | Uninstall of string
         | UninstallAll
         | CancelInstall of string
@@ -95,6 +96,7 @@ module rec Types =
 
     type Model =
         { MapsDir: ConfigDir
+          UpdateSettings: UpdateSettings
           Available: CommunityMapWithState list
           Installed: CommunityMapWithState list
           Installing: CommunityMapWithState list

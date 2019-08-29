@@ -32,7 +32,8 @@ module State =
               { Dir = DirLoad.MapDir
                 Directory = ""
                 Label = "Mordhau maps directory"
-                State = DirState.Init "" } }
+                State = DirState.Init "" }
+          MapUpdateSettings = NoActions }
 
     [<AutoOpen>]
     module private Helpers =
@@ -256,3 +257,4 @@ module State =
                     | DirSelect.Canceled -> LoadCanceled
             model, Cmd.OfPromise.perform selectDir () handleLoaded
         | LoadCanceled -> model, Cmd.none
+        | MapUpdateSetting newSets -> { model with MapUpdateSettings = newSets }, Cmd.none

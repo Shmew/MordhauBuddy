@@ -22,9 +22,11 @@ module Types =
         | SetMapDir of string * Result<string, string list>
         | RequestLoad of DirLoad
         | LoadCanceled
+        | MapUpdateSetting of UpdateSettings option
 
     type Model =
         { EngineDir: ConfigDir
           GameDir: ConfigDir
           GameUserDir: ConfigDir
-          MapsDir: ConfigDir }
+          MapsDir: ConfigDir
+          MapUpdateSettings: UpdateSettings }

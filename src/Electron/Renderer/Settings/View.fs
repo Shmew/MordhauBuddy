@@ -47,6 +47,25 @@ module View =
                         [ CSSProp.MarginLeft "1em"
                           CSSProp.MaxHeight "4em" ] ] [ str "Select" ] ]
 
+    let private selectMenuItems opt =
+        menuItem 
+            [ HTMLAttr.Value opt
+              Prop.Key opt ]
+            [ div 
+                []
+                [ typography [] [ str opt ] ] ]
+
+    let private selectUpdate (classes: IClasses) model dispatch =
+        form 
+            [ DOMAttr.OnSubmit <| fun ev -> ev.preventDefault() ]
+            [ formControl
+                []
+                [ inputLabel [] [ str "Map update settings" ] 
+                  select
+                    [ HTMLAttr.Value model.MapUpdateSettings.Text
+                      DOMAttr.OnChange <| fun ev -> ev.Value |> UpdateSettings.TryGetCaseFromText |> MapUpdateSetting |> dispatch  ]
+                    (UpdateSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text)) ] ]
+
     let private view' (classes: IClasses) model dispatch =
         let dConf (dir: ConfigDir) = dirConfig classes model dispatch dir
         div
