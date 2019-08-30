@@ -257,4 +257,7 @@ module State =
                     | DirSelect.Canceled -> LoadCanceled
             model, Cmd.OfPromise.perform selectDir () handleLoaded
         | LoadCanceled -> model, Cmd.none
-        | MapUpdateSetting newSets -> { model with MapUpdateSettings = newSets }, Cmd.none
+        | MapUpdateSetting newSets -> 
+            match newSets with
+            | Some(s) -> { model with MapUpdateSettings = s }, Cmd.none
+            | _ -> model, Cmd.none

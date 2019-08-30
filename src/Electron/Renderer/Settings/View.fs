@@ -56,15 +56,26 @@ module View =
                 [ typography [] [ str opt ] ] ]
 
     let private selectUpdate (classes: IClasses) model dispatch =
-        form 
-            [ DOMAttr.OnSubmit <| fun ev -> ev.preventDefault() ]
-            [ formControl
-                []
-                [ inputLabel [] [ str "Map update settings" ] 
-                  select
-                    [ HTMLAttr.Value model.MapUpdateSettings.Text
-                      DOMAttr.OnChange <| fun ev -> ev.Value |> UpdateSettings.TryGetCaseFromText |> MapUpdateSetting |> dispatch  ]
-                    (UpdateSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text)) ] ]
+        div
+            [ Style
+                [ CSSProp.Padding "2em"
+                  CSSProp.Display DisplayOptions.Flex
+                  CSSProp.MinHeight "8em" ] ]
+            [
+            form 
+                [ DOMAttr.OnSubmit <| fun ev -> ev.preventDefault() ]
+                [ formControl
+                    [ MaterialProp.FullWidth true
+                      FormControlProp.Variant FormControlVariant.Outlined
+                      Style
+                        [ CSSProp.MinWidth "30em" ]]
+                    [ inputLabel [] [ str "Map update settings" ] 
+                      select
+                        [ HTMLAttr.Value model.MapUpdateSettings.Text
+                          DOMAttr.OnChange <| fun ev -> ev.Value |> UpdateSettings.TryGetCaseFromText |> MapUpdateSetting |> dispatch 
+                          SelectProp.Variant SelectVariant.Outlined 
+                          SelectProp.Input <| outlinedInput [] [] ]
+                        (UpdateSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text)) ] ] ]
 
     let private view' (classes: IClasses) model dispatch =
         let dConf (dir: ConfigDir) = dirConfig classes model dispatch dir
@@ -78,7 +89,8 @@ module View =
                   [ dConf model.GameDir
                     dConf model.EngineDir
                     dConf model.GameUserDir
-                    dConf model.MapsDir ] ]
+                    dConf model.MapsDir 
+                    selectUpdate classes model dispatch ] ]
 
     /// Workaround for using JSS with Elmish
     /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471
