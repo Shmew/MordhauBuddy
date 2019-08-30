@@ -33,7 +33,8 @@ module State =
                 Directory = ""
                 Label = "Mordhau maps directory"
                 State = DirState.Init "" }
-          MapUpdateSettings = NoActions }
+          MapUpdateSettings = OnlyInstalled
+          BackupSettings = KeepLast10 }
 
     [<AutoOpen>]
     module private Helpers =
@@ -260,4 +261,8 @@ module State =
         | MapUpdateSetting newSets -> 
             match newSets with
             | Some(s) -> { model with MapUpdateSettings = s }, Cmd.none
+            | _ -> model, Cmd.none
+        | BackupSetting newSets ->
+            match newSets with
+            | Some(s) -> { model with BackupSettings = s }, Cmd.none
             | _ -> model, Cmd.none

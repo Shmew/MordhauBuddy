@@ -105,7 +105,7 @@ module RenderUtils =
             
             member this.Text =
                 match this with
-                | InstalledAndNew -> "Update installed and new maps"
+                | InstalledAndNew -> "Update installed and get new maps"
                 | OnlyInstalled -> "Update only installed maps"
                 | NotifyOnly -> "Only notify me"
                 | NoActions -> "Do nothing"
@@ -136,7 +136,44 @@ module RenderUtils =
                 UpdateSettings.GetSettings
                 |> Array.filter (fun setting -> setting.Text = s)
                 |> Array.tryHead
-                
+
+        type BackupSettings =
+            | KeepAll
+            | KeepLast10
+            | NoBackups
+            
+            member this.Text =
+                match this with
+                | KeepAll -> "Do not remove any backups"
+                | KeepLast10 -> "Keep 10 latest backups"
+                | NoBackups -> "No backups - not recommended"
+
+            static member private Cases = FSharpType.GetUnionCases typeof<BackupSettings>
+            
+            static member private Instantiate name =
+                BackupSettings.Cases
+                |> Array.tryFind (fun uc -> uc.Name = name)
+                |> Option.map (fun uc -> Reflection.FSharpValue.MakeUnion(uc, [||]) :?> BackupSettings)
+                |> Option.get
+            
+            static member GetSettings = BackupSettings.Cases |> Array.map (fun uc -> uc.Name |> BackupSettings.Instantiate)
+            
+            member this.GetTag =
+                BackupSettings.Cases
+                |> Seq.tryFind (fun uc -> uc.Name = this.ToString())
+                |> Option.map (fun uc -> uc.Tag)
+                |> Option.get
+            
+            static member GetSettingFromTag(tag: int) =
+                BackupSettings.Cases
+                |> Seq.tryFind (fun t -> t.Tag = tag)
+                |> Option.map (fun uc -> uc.Name |> BackupSettings.Instantiate)
+                |> Option.get
+
+            static member TryGetCaseFromText (s: string) =
+                BackupSettings.GetSettings
+                |> Array.filter (fun setting -> setting.Text = s)
+                |> Array.tryHead
 
     module MapTypes =
         open System

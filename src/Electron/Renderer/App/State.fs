@@ -202,7 +202,13 @@ module State =
             { m with MordhauConfig = m' }, Cmd.map MordhauConfigMsg cmd
         | SettingsMsg msg' ->
             let m', cmd = Settings.State.update msg' m.Settings
-            { m with Settings = m' }, Cmd.map SettingsMsg cmd
+            let newM, cmd = { m with Settings = m' }, Cmd.map SettingsMsg cmd
+            if m.Settings.MapUpdateSettings <> m'.MapUpdateSettings then
+                { newM with 
+                    MapsInstaller =
+                        { newM.MapsInstaller with UpdateSettings = m'.MapUpdateSettings } }
+                |> fun newM -> newM, cmd
+            else newM, cmd
         | AboutMsg msg' ->
             let m', cmd = About.State.update msg' m.About
             { m with About = m' }, Cmd.map AboutMsg cmd

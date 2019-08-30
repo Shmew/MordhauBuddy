@@ -23,10 +23,12 @@ module Types =
         | RequestLoad of DirLoad
         | LoadCanceled
         | MapUpdateSetting of UpdateSettings option
+        | BackupSetting of BackupSettings option
 
     type Model =
         { EngineDir: ConfigDir
           GameDir: ConfigDir
           GameUserDir: ConfigDir
           MapsDir: ConfigDir
-          MapUpdateSettings: UpdateSettings }
+          MapUpdateSettings: UpdateSettings
+          BackupSettings: BackupSettings }

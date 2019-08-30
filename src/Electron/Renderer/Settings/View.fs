@@ -55,7 +55,7 @@ module View =
                 []
                 [ typography [] [ str opt ] ] ]
 
-    let private selectUpdate (classes: IClasses) model dispatch =
+    let private selectForm (classes: IClasses) model dispatch (inputL: ReactElement) (selects: ReactElement) =
         div
             [ Style
                 [ CSSProp.Padding "2em"
@@ -69,13 +69,27 @@ module View =
                       FormControlProp.Variant FormControlVariant.Outlined
                       Style
                         [ CSSProp.MinWidth "30em" ]]
-                    [ inputLabel [] [ str "Map update settings" ] 
-                      select
-                        [ HTMLAttr.Value model.MapUpdateSettings.Text
-                          DOMAttr.OnChange <| fun ev -> ev.Value |> UpdateSettings.TryGetCaseFromText |> MapUpdateSetting |> dispatch 
-                          SelectProp.Variant SelectVariant.Outlined 
-                          SelectProp.Input <| outlinedInput [] [] ]
-                        (UpdateSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text)) ] ] ]
+                    [ inputL; selects ] ] ]
+
+    let private selectUpdate (classes: IClasses) model dispatch =
+        let inputL = inputLabel [] [ str "Map update settings" ] 
+        select
+            [ HTMLAttr.Value model.MapUpdateSettings.Text
+              DOMAttr.OnChange <| fun ev -> ev.Value |> UpdateSettings.TryGetCaseFromText |> MapUpdateSetting |> dispatch 
+              SelectProp.Variant SelectVariant.Outlined 
+              SelectProp.Input <| outlinedInput [ OutlinedInputProp.LabelWidth 150 ] [] ]
+            (UpdateSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text))
+        |> selectForm classes model dispatch inputL
+
+    let private selectBackup (classes: IClasses) model dispatch =
+        let inputL = inputLabel [] [ str "Backup settings" ] 
+        select
+            [ HTMLAttr.Value model.BackupSettings.Text
+              DOMAttr.OnChange <| fun ev -> ev.Value |> BackupSettings.TryGetCaseFromText |> BackupSetting |> dispatch 
+              SelectProp.Variant SelectVariant.Outlined 
+              SelectProp.Input <| outlinedInput [ OutlinedInputProp.LabelWidth 150 ] [] ]
+            (UpdateSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text))
+        |> selectForm classes model dispatch inputL
 
     let private view' (classes: IClasses) model dispatch =
         let dConf (dir: ConfigDir) = dirConfig classes model dispatch dir
