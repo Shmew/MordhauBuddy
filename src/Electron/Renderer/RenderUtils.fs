@@ -681,6 +681,17 @@ module RenderUtils =
                 File = ConfigFile.Engine
                 Enabled = false
                 Expanded = false }
+              { Title = "Enable matchmaking debug"
+                Caption = "Enables a utility that will matchmaking debug text \
+                  allowing you to see raw MMR."
+                Settings =
+                    [ { Key = @"m.ShowMatchmakingDebug "
+                        Default = KeyValues.Values.Int(1)
+                        Value = None
+                        Mutable = None } ]
+                File = ConfigFile.Engine
+                Enabled = false
+                Expanded = false }
               { Title = "Skip intro cut scenes"
                 Caption = "This will disable the intro videos from playing."
                 Settings =
