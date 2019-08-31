@@ -244,15 +244,9 @@ module State =
             | _ -> m, Cmd.none
         | InstallAll -> model, Cmd.batch (model.Available |> List.map (fun m -> Install(m.Map.Folder) |> Cmd.ofMsg))
         | Update up -> 
-            //match model.Updating with
-            //| Active cSource -> 
-            //    cSource.Cancel()
-            //| Inactive -> ()
-            //let newCSource = new CancellationTokenSource()
-            //{ model with 
-            //    UpdateSettings = up
-            //    Updating = Active(newCSource) }, Cmd.ofSub (autoUpdate newCSource.Token)
-            { model with UpdateSettings = up}, Cmd.none
+            { model with 
+                UpdateSettings = up
+                Updating = Active }, Cmd.ofSub autoUpdate
         | UpdateMaps ->
             match model.UpdateSettings with
             | InstalledAndNew -> model, Cmd.ofMsg InstallAll

@@ -54,7 +54,7 @@ module State =
               MapsInstaller = MapsInstaller.State.init(store.UpdateSettings)
               FaceTools = FaceTools.State.init()
               MordhauConfig = MordhauConfig.State.init()
-              Settings = Settings.State.init()
+              Settings = Settings.State.init(store.UpdateSettings)
               About = About.State.init() }
         m, Cmd.none
 

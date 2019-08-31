@@ -12,7 +12,7 @@ module State =
     open RenderUtils.Directory
     open Types
 
-    let init() =
+    let init(uSet: UpdateSettings) =
         { GameDir =
               { Dir = DirLoad.ConfigFiles(ConfigFile.Game)
                 Directory = ""
@@ -33,7 +33,7 @@ module State =
                 Directory = ""
                 Label = "Mordhau maps directory"
                 State = DirState.Init "" }
-          MapUpdateSettings = OnlyInstalled
+          MapUpdateSettings = uSet
           BackupSettings = KeepLast10 }
 
     [<AutoOpen>]
