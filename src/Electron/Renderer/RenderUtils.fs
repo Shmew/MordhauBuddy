@@ -685,7 +685,7 @@ module RenderUtils =
                 Caption = "Enables a utility that will matchmaking debug text \
                   allowing you to see raw MMR."
                 Settings =
-                    [ { Key = @"m.ShowMatchmakingDebug "
+                    [ { Key = @"m.ShowMatchmakingDebug"
                         Default = KeyValues.Values.Int(1)
                         Value = None
                         Mutable = None } ]

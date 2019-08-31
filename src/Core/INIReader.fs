@@ -86,8 +86,7 @@ module rec INIReader =
         let anyText =
             many1Satisfy
                 (fun ch ->
-                (not <| Char.IsWhiteSpace(ch))
-                && not (ch = ')' || ch = '(' || ch = ']' || ch = '[' || ch = ',' || ch = ';' || ch = '=' || ch = '\n'))
+                not (ch = ')' || ch = '(' || ch = ']' || ch = '[' || ch = ',' || ch = ';' || ch = '=' || ch = '\n'))
 
         /// Determines if it is a kv pair
         let hasKey = previousCharSatisfiesNot (fun ch -> ch = '=') >>. anyText .>>? wstr "="
