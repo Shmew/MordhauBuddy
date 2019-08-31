@@ -9,7 +9,6 @@ module rec Types =
     open RenderUtils.MapTypes
     open MordhauBuddy.Shared.ElectronBridge
     open Microsoft.FSharp.Reflection
-    open System.Threading
 
     type Tab =
         | Available
@@ -97,7 +96,7 @@ module rec Types =
               MenuState = MenuState.Closed }
 
     type Updating =
-        | Active of CancellationTokenSource
+        | Active
         | Inactive
 
     type Model =

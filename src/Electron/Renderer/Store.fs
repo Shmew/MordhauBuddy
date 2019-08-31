@@ -96,7 +96,7 @@ module Store =
               EngineLocation = None
               GameUserLocation = None
               MapsLocation = None
-              UpdateSettings = NotifyOnly }
+              UpdateSettings = OnlyInstalled }
             |> toPlainJsObj
 
         let store = getStore.Create(jsOptions<Options> (fun o -> o.defaults <- defaults))
