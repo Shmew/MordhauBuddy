@@ -51,7 +51,7 @@ module State =
                           AttemptedLoad = false
                           Loading = false } }
               ContextMenu = ContextMenu.State.init()
-              MapsInstaller = MapsInstaller.State.init()
+              MapsInstaller = MapsInstaller.State.init(store.UpdateSettings)
               FaceTools = FaceTools.State.init()
               MordhauConfig = MordhauConfig.State.init()
               Settings = Settings.State.init()
@@ -201,14 +201,16 @@ module State =
             let m', cmd = MordhauConfig.State.update msg' m.MordhauConfig
             { m with MordhauConfig = m' }, Cmd.map MordhauConfigMsg cmd
         | SettingsMsg msg' ->
-            let m', cmd = Settings.State.update msg' m.Settings
-            let newM, cmd = { m with Settings = m' }, Cmd.map SettingsMsg cmd
-            if m.Settings.MapUpdateSettings <> m'.MapUpdateSettings then
-                { newM with 
-                    MapsInstaller =
-                        { newM.MapsInstaller with UpdateSettings = m'.MapUpdateSettings } }
-                |> fun newM -> newM, cmd
-            else newM, cmd
+            Settings.State.update msg' m.Settings
+            |> fun (newM,cmd) -> 
+                if m.Settings.MapUpdateSettings <> newM.MapUpdateSettings then
+                    let newMsg =
+                        newM.MapUpdateSettings
+                        |> MapsInstaller.Types.Msg.Update
+                        |> MapsInstallerMsg
+                    Cmd.batch [ Cmd.map SettingsMsg cmd; Cmd.ofMsg newMsg; newM.MapUpdateSettings |> Store.Msg.SetUpdateSettings |> StoreMsg |> Cmd.ofMsg ]
+                else Cmd.map SettingsMsg cmd
+                |> fun cmd' -> setSettings m newM, cmd'
         | AboutMsg msg' ->
             let m', cmd = About.State.update msg' m.About
             { m with About = m' }, Cmd.map AboutMsg cmd

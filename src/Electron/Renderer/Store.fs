@@ -4,13 +4,15 @@ module Store =
     open Fable.Core
     open Fable.Core.JsInterop
     open Elmish
+    open RenderUtils
 
     type Model =
         { DarkTheme: bool
           GameLocation: string option
           EngineLocation: string option
           GameUserLocation: string option
-          MapsLocation: string option }
+          MapsLocation: string option
+          UpdateSettings: UpdateSettings }
 
     type Msg =
         | ToggleDarkTheme
@@ -18,6 +20,7 @@ module Store =
         | SetEngineLocation of string
         | SetGameUserLocation of string
         | SetMapsLocation of string
+        | SetUpdateSettings of UpdateSettings
 
     /// Bindings for electron-store
     ///
@@ -92,7 +95,8 @@ module Store =
               GameLocation = None
               EngineLocation = None
               GameUserLocation = None
-              MapsLocation = None }
+              MapsLocation = None
+              UpdateSettings = NotifyOnly }
             |> toPlainJsObj
 
         let store = getStore.Create(jsOptions<Options> (fun o -> o.defaults <- defaults))
@@ -107,11 +111,13 @@ module Store =
     let setEngineLocation s = Cmd.ofMsg (SetEngineLocation s)
     let setGameUserLocation s = Cmd.ofMsg (SetGameUserLocation s)
     let setMapsLocation s = Cmd.ofMsg (SetMapsLocation s)
+    let setUpdateSettings uSet = Cmd.ofMsg (SetUpdateSettings uSet)
 
     let update msg m =
         match msg with
         | ToggleDarkTheme -> set { m with DarkTheme = (m.DarkTheme |> not) }
-        | SetGameLocation(s) -> set { m with GameLocation = Some(s) }
-        | SetEngineLocation(s) -> set { m with EngineLocation = Some(s) }
-        | SetGameUserLocation(s) -> set { m with GameUserLocation = Some(s) }
-        | SetMapsLocation(s) -> set { m with MapsLocation = Some(s) }
+        | SetGameLocation s -> set { m with GameLocation = Some(s) }
+        | SetEngineLocation s -> set { m with EngineLocation = Some(s) }
+        | SetGameUserLocation s -> set { m with GameUserLocation = Some(s) }
+        | SetMapsLocation s -> set { m with MapsLocation = Some(s) }
+        | SetUpdateSettings uSet -> set { m with UpdateSettings = uSet }

@@ -13,6 +13,7 @@ module View =
     open FSharp.Core /// To avoid shadowing Result<_,_>
     open Types
     open State
+    open RenderUtils
     open RenderUtils.MaterialUI
     open RenderUtils.MaterialUI.Core
     open RenderUtils.MaterialUI.Themes
@@ -70,9 +71,17 @@ module View =
               Key(pageTitle page)
               DOMAttr.OnClick(fun _ -> Navigate page |> dispatch) ]
             [ listItemText []
-                  [ page
-                    |> pageTitle
-                    |> str ] ]
+                  [ page |> pageTitle |> str
+                    badge
+                        [ BadgeProp.Color BadgeColor.Primary
+                          BadgeProp.Max 20
+                          BadgeProp.Invisible <|
+                            (model.MapsInstaller.UpdatesAvailable = 0 ||
+                                match model.MapsInstaller.UpdateSettings with
+                                | UpdateSettings.NotifyOnly -> false
+                                | _ -> true)
+                          BadgeProp.BadgeContent <| ofInt (model.MapsInstaller.UpdatesAvailable) ]
+                        [] ] ]
 
     let private pageView model dispatch =
         let allResourcesAttempted =

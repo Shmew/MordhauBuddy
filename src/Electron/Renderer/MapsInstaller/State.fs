@@ -14,21 +14,23 @@ module State =
     open Types
     open Electron
 
-    let init() =
+    let init(uSet: UpdateSettings) =
         { MapsDir =
               { Dir = DirLoad.MapDir
                 Directory = ""
                 Label = ""
                 State = DirState.Init "" }
-          UpdateSettings = NoActions
+          UpdateSettings = uSet
           Available = []
           Installed = []
           Installing = []
+          UpdatesAvailable = 0
           Uninstalling = []
           ActiveInstalling = []
           ActiveUninstalling = None
           TabSelected = Available
-          Refreshing = false }
+          Refreshing = false
+          Updating = Inactive }
 
     [<AutoOpen>]
     module private Helpers =
@@ -78,20 +80,33 @@ module State =
                       Cmd.ofMsg GetInstalled ]
             | _ -> model, Cmd.none
 
-        let autoRefresh (availMsg: Msg) (installedMsg: Msg) (updateMsg : Msg option) dispatch =
+        let autoRefresh (availMsg: Msg) (installedMsg: Msg) dispatch =
             async {
                 while true do
                     do! Async.Sleep 1800000
                     dispatch availMsg
                     do! Async.Sleep 600000
                     dispatch installedMsg
-                    match updateMsg with
-                    | Some(uMsg) ->
-                        do! Async.Sleep 30000
-                        dispatch uMsg
-                    | _ -> ()
             }
             |> Async.StartImmediate
+
+        let autoUpdate dispatch =
+            async {
+                while true do
+                    do! Async.Sleep 60000
+                    dispatch UpdateMaps
+            }
+            |> Async.StartImmediate
+
+        let getInstalledAvailable model =
+            model.Available
+            |> List.choose (fun aMap ->
+                if model.Installed |> List.exists (fun iMap -> iMap.Map.Folder = aMap.Map.Folder) then
+                    aMap.Map.Folder 
+                    |> Install 
+                    |> Cmd.ofMsg 
+                    |> Some
+                else None)
 
     let update (msg: Msg) (model: Model) =
         match msg with
@@ -106,7 +121,7 @@ module State =
                               Refreshing = true },
                         Cmd.batch
                             [ yield Cmd.ofMsg GetAvailable
-                              if model.Refreshing |> not then yield Cmd.ofSub <| autoRefresh GetAvailable GetInstalled None ]
+                              if model.Refreshing |> not then yield Cmd.ofSub <| autoRefresh GetAvailable GetInstalled ]
                     else
                         { model with MapsDir = { model.MapsDir with State = DirState.Error "Maps directory not found" } },
                         Cmd.none
@@ -228,7 +243,18 @@ module State =
             | true, Some(h) -> m, Cmd.bridgeSend (sender.Install(createMTarget m h))
             | _ -> m, Cmd.none
         | InstallAll -> model, Cmd.batch (model.Available |> List.map (fun m -> Install(m.Map.Folder) |> Cmd.ofMsg))
-        | Update -> model, Cmd.none
+        | Update up -> 
+            match model.Updating with
+            | Active cSource -> 
+                cSource.Cancel()
+            | Inactive -> ()
+            { model with UpdateSettings = up }, Cmd.ofSub autoUpdate 
+        | UpdateMaps ->
+            match model.UpdateSettings with
+            | InstalledAndNew -> model, Cmd.ofMsg InstallAll
+            | OnlyInstalled -> model, Cmd.batch <| getInstalledAvailable model
+            | NotifyOnly -> { model with UpdatesAvailable = (getInstalledAvailable model).Length } , Cmd.none
+            | NoActions -> model, Cmd.none
         | Uninstall s ->
             if model.ActiveUninstalling.IsNone then
                 { model with ActiveUninstalling = Some(s) }, Cmd.bridgeSend (sender.Uninstall model.MapsDir.Directory s)

@@ -9,6 +9,7 @@ module rec Types =
     open RenderUtils.MapTypes
     open MordhauBuddy.Shared.ElectronBridge
     open Microsoft.FSharp.Reflection
+    open System.Threading
 
     type Tab =
         | Available
@@ -44,7 +45,8 @@ module rec Types =
         | ImgSkeleton
         | Install of string
         | InstallAll
-        | Update
+        | Update of UpdateSettings
+        | UpdateMaps
         | Uninstall of string
         | UninstallAll
         | CancelInstall of string
@@ -94,14 +96,20 @@ module rec Types =
               State = ComMapState.Success 0
               MenuState = MenuState.Closed }
 
+    type Updating =
+        | Active of CancellationTokenSource
+        | Inactive
+
     type Model =
         { MapsDir: ConfigDir
           UpdateSettings: UpdateSettings
           Available: CommunityMapWithState list
           Installed: CommunityMapWithState list
           Installing: CommunityMapWithState list
+          UpdatesAvailable: int
           Uninstalling: string list
           ActiveInstalling: string list
           ActiveUninstalling: string option
           TabSelected: Tab
-          Refreshing: bool }
+          Refreshing: bool
+          Updating: Updating }
