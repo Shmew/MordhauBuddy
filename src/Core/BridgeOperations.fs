@@ -43,6 +43,12 @@ module BridgeOperations =
             | Some(b) when b -> b
             | _ -> false
 
+        /// Clean backup files based on given policy
+        let cleanBackups (bSet: BackupSettings) (iFile: INIFile) =
+            FileOps.INI.tryGetFile iFile.File.Name iFile.WorkingDir
+            |> Option.map (FileOps.INI.cleanBackups bSet)
+            |> ignore
+
         /// Ranomize the profiles if they are within the given `INIValue`
         let random (profiles: string list) (iVal: INIValue) = tryApplyChanges profiles iVal FaceActions.Random
 

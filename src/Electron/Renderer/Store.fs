@@ -5,6 +5,7 @@ module Store =
     open Fable.Core.JsInterop
     open Elmish
     open RenderUtils
+    open MordhauBuddy.Shared.ElectronBridge
 
     type Model =
         { DarkTheme: bool
@@ -12,7 +13,8 @@ module Store =
           EngineLocation: string option
           GameUserLocation: string option
           MapsLocation: string option
-          UpdateSettings: UpdateSettings }
+          UpdateSettings: string
+          BackupSettings: string }
 
     type Msg =
         | ToggleDarkTheme
@@ -21,6 +23,7 @@ module Store =
         | SetGameUserLocation of string
         | SetMapsLocation of string
         | SetUpdateSettings of UpdateSettings
+        | SetBackupSettings of BackupSettings
 
     /// Bindings for electron-store
     ///
@@ -67,7 +70,7 @@ module Store =
             /// Delete an item.
             abstract delete: string -> unit
             /// Delete all items.
-            abstract clear: unit
+            abstract clear: unit -> unit
             /// Watches the given key, calling callback on any changes.
             abstract onDidChange: string * (obj * obj -> unit) -> unit
             /// Watches the whole config object, calling callback on any changes.
@@ -79,7 +82,7 @@ module Store =
             /// Get the path to the storage file.
             abstract path: string
             /// Open the storage file in the user's editor.
-            abstract openInEditor: unit
+            abstract openInEditor: unit -> unit
 
         type StoreStatic =
             [<EmitConstructor>]
@@ -96,13 +99,18 @@ module Store =
               EngineLocation = None
               GameUserLocation = None
               MapsLocation = None
-              UpdateSettings = OnlyInstalled }
+              UpdateSettings = "OnlyInstalled"
+              BackupSettings = "KeepLast10" }
             |> toPlainJsObj
 
         let store = getStore.Create(jsOptions<Options> (fun o -> o.defaults <- defaults))
 
-    let init() = ElectronStore.store.store
-
+    let init() = 
+#if DEBUG
+        ElectronStore.store.openInEditor()
+#endif
+        ElectronStore.store.store
+        
     let private set m =
         ElectronStore.store.set (m |> toPlainJsObj)
         m
@@ -111,7 +119,6 @@ module Store =
     let setEngineLocation s = Cmd.ofMsg (SetEngineLocation s)
     let setGameUserLocation s = Cmd.ofMsg (SetGameUserLocation s)
     let setMapsLocation s = Cmd.ofMsg (SetMapsLocation s)
-    let setUpdateSettings uSet = Cmd.ofMsg (SetUpdateSettings uSet)
 
     let update msg m =
         match msg with
@@ -120,4 +127,5 @@ module Store =
         | SetEngineLocation s -> set { m with EngineLocation = Some(s) }
         | SetGameUserLocation s -> set { m with GameUserLocation = Some(s) }
         | SetMapsLocation s -> set { m with MapsLocation = Some(s) }
-        | SetUpdateSettings uSet -> set { m with UpdateSettings = uSet }
+        | SetUpdateSettings uSet -> set { m with UpdateSettings = uSet.ToString() }
+        | SetBackupSettings bSet -> set { m with BackupSettings = bSet.ToString() }

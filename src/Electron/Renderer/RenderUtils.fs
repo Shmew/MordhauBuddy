@@ -12,6 +12,7 @@ module BridgeUtils =
         member this.Exists iFile = INIFileOperation.Exists(iFile) |> wrapOps
         member this.Parse iFile = INIFileOperation.Parse(iFile) |> wrapOps
         member this.Backup iList = INIFileOperation.Backup(iList) |> wrapOps
+        member this.BackupPolicy bSet = INIFileOperation.BackupPolicy(bSet) |> wrapOps
         member this.DefaultDir = INIFileOperation.DefaultDir |> wrapOps
         member this.Commit iList = INIFileOperation.Commit(iList) |> wrapOps
         member this.SetRandom profile = Random(profile) |> wrapFace
@@ -137,43 +138,10 @@ module RenderUtils =
                 |> Array.filter (fun setting -> setting.Text = s)
                 |> Array.tryHead
 
-        type BackupSettings =
-            | KeepAll
-            | KeepLast10
-            | NoBackups
-            
-            member this.Text =
-                match this with
-                | KeepAll -> "Do not remove any backups"
-                | KeepLast10 -> "Keep 10 latest backups"
-                | NoBackups -> "No backups - not recommended"
-
-            static member private Cases = FSharpType.GetUnionCases typeof<BackupSettings>
-            
-            static member private Instantiate name =
-                BackupSettings.Cases
-                |> Array.tryFind (fun uc -> uc.Name = name)
-                |> Option.map (fun uc -> Reflection.FSharpValue.MakeUnion(uc, [||]) :?> BackupSettings)
-                |> Option.get
-            
-            static member GetSettings = BackupSettings.Cases |> Array.map (fun uc -> uc.Name |> BackupSettings.Instantiate)
-            
-            member this.GetTag =
-                BackupSettings.Cases
-                |> Seq.tryFind (fun uc -> uc.Name = this.ToString())
-                |> Option.map (fun uc -> uc.Tag)
-                |> Option.get
-            
-            static member GetSettingFromTag(tag: int) =
-                BackupSettings.Cases
-                |> Seq.tryFind (fun t -> t.Tag = tag)
-                |> Option.map (fun uc -> uc.Name |> BackupSettings.Instantiate)
-                |> Option.get
-
-            static member TryGetCaseFromText (s: string) =
-                BackupSettings.GetSettings
-                |> Array.filter (fun setting -> setting.Text = s)
-                |> Array.tryHead
+            static member TryGetSettingFromText(s: string) =
+                UpdateSettings.Cases
+                |> Seq.tryFind (fun t -> t.Name = s)
+                |> Option.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
 
     module MapTypes =
         open System

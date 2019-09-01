@@ -9,6 +9,8 @@ open System
 /// Module for doing file operations
 module FileOps =
     module INI =
+        open MordhauBuddy.Shared.ElectronBridge
+
         /// Try to find the configuration directory
         let defaultDir =
             let bindDirectory (dir: string) =
@@ -52,6 +54,40 @@ module FileOps =
                 Shell.copyFile (backups @@ newName) file
                 File.exists (backups @@ newName)
             | false -> false
+
+        /// Clean backups directory based on given backup settings
+        let cleanBackups (bSet: BackupSettings) (file: string) =
+            try
+                match bSet with
+                | KeepAll -> ()
+                | KeepLast10 ->
+                    FileInfo.ofPath(file).Directory.GetDirectories("*MordhauBuddy_backups*")
+                    |> Array.iter (fun dir ->
+                        dir.GetFiles() 
+                        |> Array.groupBy (fun f ->
+                            match f with
+                            | f when f.Name.StartsWith("GameUserSettings") -> "GameUserSettings"
+                            | f when f.Name.StartsWith("Engine") -> "Engine"
+                            | f when f.Name.StartsWith("Game") -> "Game"
+                            | _ -> "")
+                        |> Array.iter (fun (k, fArr) ->
+                            if k = "" then ()
+                            else 
+                                fArr 
+                                |> Array.sortBy (fun f -> f.CreationTime) 
+                                |> Array.rev
+                                |> Array.indexed 
+                                |> Array.iter (fun (i,f) -> if i > 9 then Shell.rm f.FullName)))
+                | NoBackups ->
+                    FileInfo.ofPath(file).Directory.GetDirectories("*MordhauBuddy_backups*")
+                    |> Array.map (fun d -> d.FullName)
+                    |> Shell.cleanDirs
+            with
+            | e ->
+#if DEBUG
+                failwith e.Message
+#endif
+                ()
 
         /// Write `INIValue` to file path
         let writeINI (iVal: INIValue) (outFile: string) =

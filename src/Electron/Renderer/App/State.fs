@@ -20,6 +20,14 @@ module State =
 
     let init() =
         let store = Store.init()
+        let updateSettings =
+            UpdateSettings.TryGetSettingFromText store.UpdateSettings 
+            |> defaultArg 
+            <| NoActions
+        let backupSettings =
+            BackupSettings.TryGetSettingFromText store.BackupSettings
+            |> defaultArg 
+            <| KeepLast10
 
         let m =
             { Page = Home
@@ -51,10 +59,10 @@ module State =
                           AttemptedLoad = false
                           Loading = false } }
               ContextMenu = ContextMenu.State.init()
-              MapsInstaller = MapsInstaller.State.init(store.UpdateSettings)
+              MapsInstaller = MapsInstaller.State.init(updateSettings)
               FaceTools = FaceTools.State.init()
               MordhauConfig = MordhauConfig.State.init()
-              Settings = Settings.State.init(store.UpdateSettings)
+              Settings = Settings.State.init(updateSettings, backupSettings)
               About = About.State.init() }
         m, Cmd.none
 
@@ -203,13 +211,25 @@ module State =
         | SettingsMsg msg' ->
             Settings.State.update msg' m.Settings
             |> fun (newM,cmd) -> 
-                if m.Settings.MapUpdateSettings <> newM.MapUpdateSettings then
-                    let newMsg =
-                        newM.MapUpdateSettings
-                        |> MapsInstaller.Types.Msg.Update
-                        |> MapsInstallerMsg
-                    Cmd.batch [ Cmd.map SettingsMsg cmd; Cmd.ofMsg newMsg; newM.MapUpdateSettings |> Store.Msg.SetUpdateSettings |> StoreMsg |> Cmd.ofMsg ]
-                else Cmd.map SettingsMsg cmd
+                let appendMapUpdate (cList: Cmd<Msg> list) =
+                    if m.Settings.MapUpdateSettings <> newM.MapUpdateSettings then
+                        let newMsg =
+                            newM.MapUpdateSettings
+                            |> MapsInstaller.Types.Msg.Update
+                            |> MapsInstallerMsg
+                        [ Cmd.ofMsg newMsg; newM.MapUpdateSettings |> Store.Msg.SetUpdateSettings |> StoreMsg |> Cmd.ofMsg ] 
+                        |> List.append cList
+                    else cList
+                let appendBackup (cList: Cmd<Msg> list) =
+                    if m.Settings.BackupSettings <> newM.BackupSettings then
+                       newM.BackupSettings |> Store.Msg.SetBackupSettings |> StoreMsg |> Cmd.ofMsg 
+                       |> fun newCmd -> newCmd::cList
+                    else cList
+
+                [ Cmd.map SettingsMsg cmd ]
+                |> appendMapUpdate
+                |> appendBackup
+                |> Cmd.batch
                 |> fun cmd' -> setSettings m newM, cmd'
         | AboutMsg msg' ->
             let m', cmd = About.State.update msg' m.About

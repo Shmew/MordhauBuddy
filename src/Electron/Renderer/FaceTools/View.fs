@@ -35,7 +35,7 @@ module View =
                   Style [ CSSProp.Padding "0 2em" ] ]
                 [ card
                     [ CardProp.Raised true
-                      Style [ CSSProp.MinWidth "20em" ] ]
+                      Style [ CSSProp.MinWidth "22em" ] ]
                       [ cardHeader
                           [ checkbox
                               [ DOMAttr.OnClick <| fun _ ->

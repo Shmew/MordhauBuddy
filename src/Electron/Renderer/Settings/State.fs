@@ -12,7 +12,7 @@ module State =
     open RenderUtils.Directory
     open Types
 
-    let init(uSet: UpdateSettings) =
+    let init(uSet: UpdateSettings, bSet: BackupSettings) =
         { GameDir =
               { Dir = DirLoad.ConfigFiles(ConfigFile.Game)
                 Directory = ""
@@ -34,7 +34,7 @@ module State =
                 Label = "Mordhau maps directory"
                 State = DirState.Init "" }
           MapUpdateSettings = uSet
-          BackupSettings = KeepLast10 }
+          BackupSettings = bSet }
 
     [<AutoOpen>]
     module private Helpers =
@@ -264,5 +264,5 @@ module State =
             | _ -> model, Cmd.none
         | BackupSetting newSets ->
             match newSets with
-            | Some(s) -> { model with BackupSettings = s }, Cmd.none
+            | Some(s) -> { model with BackupSettings = s }, Cmd.bridgeSend (iniSender.BackupPolicy(s))
             | _ -> model, Cmd.none

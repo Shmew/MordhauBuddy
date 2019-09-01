@@ -53,9 +53,16 @@ module View =
                  CSSProp.PaddingLeft "2em"
                  CSSProp.PaddingRight "2em"
                  CSSProp.PaddingBottom "2em" ])
-          Styles.Custom'("toolbar", theme.mixins.toolbar) ]
+          Styles.Custom'("toolbar", theme.mixins.toolbar)
+          Styles.Custom
+              ("navBadge", 
+               [ CSSProp.Float "right"
+                 CSSProp.Padding "1em"
+                 CSSProp.MaxHeight "0em"
+                 CSSProp.MarginBottom "-1em"
+                 CSSProp.MarginTop "-0.25em" ])]
 
-    let private pageListItem model dispatch page =
+    let private pageListItem (classes: IClasses) model dispatch page =
         listItem
             [ ListItemProp.Button true
               ListItemProp.Divider(page = Home)
@@ -71,19 +78,23 @@ module View =
               Key(pageTitle page)
               DOMAttr.OnClick(fun _ -> Navigate page |> dispatch) ]
             [ listItemText []
-                  [ page |> pageTitle |> str
-                    badge
-                        [ BadgeProp.Color BadgeColor.Primary
-                          BadgeProp.Max 20
-                          BadgeProp.Invisible <|
-                            (model.MapsInstaller.UpdatesAvailable = 0 ||
-                                match model.MapsInstaller.UpdateSettings with
-                                | UpdateSettings.NotifyOnly -> false
-                                | _ -> true)
-                          BadgeProp.BadgeContent <| ofInt (model.MapsInstaller.UpdatesAvailable) ]
-                        [] ] ]
+                  [ yield page |> pageTitle |> str
+                    if page = MapsInstaller then
+                        yield
+                            badge
+                                [ Class classes?navBadge
+                                  BadgeProp.Color BadgeColor.Primary
+                                  BadgeProp.Max 20
+                                  BadgeProp.Invisible <|
+                                    (model.MapsInstaller.UpdatesAvailable = 0 ||
+                                        match model.MapsInstaller.UpdateSettings with
+                                        | UpdateSettings.NotifyOnly -> false
+                                        | _ -> true)
+                                  BadgeProp.BadgeContent <| ofInt (model.MapsInstaller.UpdatesAvailable) ]
+                                [] ] 
+                    ]
 
-    let private pageView model dispatch =
+    let private pageView (classes: IClasses) model dispatch =
         let allResourcesAttempted =
             model.Resources.GameConfig.AttemptedLoad && model.Resources.EngineConfig.AttemptedLoad
             && model.Resources.GameUserConfig.AttemptedLoad && model.Resources.Maps.AttemptedLoad
@@ -124,7 +135,8 @@ module View =
         | Settings -> lazyView2 Settings.View.view model.Settings (SettingsMsg >> dispatch)
         | About -> lazyView2 About.View.view model.About (AboutMsg >> dispatch)
 
-    let private menuView model dispatch = lazyView2 ContextMenu.View.view model.ContextMenu (ContextMenuMsg >> dispatch)
+    let private menuView (classes: IClasses) model dispatch = 
+        lazyView2 ContextMenu.View.view model.ContextMenu (ContextMenuMsg >> dispatch)
 
     let private getTheme (m: Model) =
         let dark =
@@ -338,11 +350,11 @@ module View =
                             [ Component(ReactElementType.ofHtmlElement "nav")
                               Style [ CSSProp.PaddingTop "108px" ] ]
                               [ Page.All
-                                |> List.map (pageListItem model dispatch)
+                                |> List.map (pageListItem classes model dispatch)
                                 |> ofList ] ]
                     main [ Class classes?content ]
-                        [ pageView model dispatch
-                          menuView model dispatch ] ] ]
+                        [ pageView classes model dispatch
+                          menuView classes model dispatch ] ] ]
 
     /// Workaround for using JSS with Elmish
     /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-423477900

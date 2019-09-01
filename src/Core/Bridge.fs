@@ -15,7 +15,8 @@ module Bridge =
             { Game: INIValue option
               Engine: INIValue option
               GameUserSettings: INIValue option
-              InstallingMaps: (string * CancellationTokenSource) list }
+              InstallingMaps: (string * CancellationTokenSource) list 
+              BackupSettings: BackupSettings }
             member this.GetIVal(file: ConfigFile) =
                 match file with
                 | ConfigFile.Game -> this.Game
@@ -29,13 +30,21 @@ module Bridge =
             { Game = None
               GameUserSettings = None
               Engine = None
-              InstallingMaps = [] }, Cmd.none
+              InstallingMaps = []
+              BackupSettings = KeepAll }, Cmd.none
 
         let createClientResp (caller: Caller) (file: INIFile option) (br: BridgeResult) =
             { Caller = caller
               File = file
               BridgeResult = br }
             |> Some
+
+        let private cleanBackupsAsync (bSet: BackupSettings) (fList: INIFile list) =
+            async {
+                do! Async.Sleep 10000
+                fList
+                |> List.iter (BridgeOperations.INI.cleanBackups bSet)
+            } |> Async.Start
 
         let update (clientDispatch: Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model: Model) =
             let updateModel (file: ConfigFile) (iOpt: INIValue option) model =
@@ -106,6 +115,7 @@ module Bridge =
                             | _ -> ()
                             m, cmd
                         | INIFileOperation.Backup(fList) ->
+                            cleanBackupsAsync model.BackupSettings fList
                             model,
                             fList
                             |> List.map INI.backup
@@ -113,6 +123,8 @@ module Bridge =
                             |> INIOperationResult.Backup
                             |> BridgeResult.INIOperation
                             |> createClientResp caller None
+                        | INIFileOperation.BackupPolicy(bSet) ->
+                            { model with BackupSettings = bSet }, None
                         | INIFileOperation.Commit(fList) ->
                             model,
                             fList

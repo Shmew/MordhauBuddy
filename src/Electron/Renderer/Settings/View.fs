@@ -87,8 +87,8 @@ module View =
             [ HTMLAttr.Value model.BackupSettings.Text
               DOMAttr.OnChange <| fun ev -> ev.Value |> BackupSettings.TryGetCaseFromText |> BackupSetting |> dispatch 
               SelectProp.Variant SelectVariant.Outlined 
-              SelectProp.Input <| outlinedInput [ OutlinedInputProp.LabelWidth 150 ] [] ]
-            (UpdateSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text))
+              SelectProp.Input <| outlinedInput [ OutlinedInputProp.LabelWidth 120 ] [] ]
+            (BackupSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text))
         |> selectForm classes model dispatch inputL
 
     let private view' (classes: IClasses) model dispatch =
@@ -104,7 +104,8 @@ module View =
                     dConf model.EngineDir
                     dConf model.GameUserDir
                     dConf model.MapsDir 
-                    selectUpdate classes model dispatch ] ]
+                    selectUpdate classes model dispatch
+                    selectBackup classes model dispatch ] ]
 
     /// Workaround for using JSS with Elmish
     /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471

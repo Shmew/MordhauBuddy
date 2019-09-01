@@ -30,7 +30,7 @@ module State =
           ActiveUninstalling = None
           TabSelected = Available
           Refreshing = false
-          Updating = Inactive }
+          Updating = false }
 
     [<AutoOpen>]
     module private Helpers =
@@ -76,17 +76,17 @@ module State =
             | _ when model.ActiveInstalling.IsEmpty && model.Installing.IsEmpty ->
                 model,
                 Cmd.batch
-                    [ Cmd.ofMsg GetAvailable
-                      Cmd.ofMsg GetInstalled ]
+                    [ Cmd.ofMsg GetInstalled
+                      Cmd.ofMsg GetAvailable ]
             | _ -> model, Cmd.none
 
         let autoRefresh (availMsg: Msg) (installedMsg: Msg) dispatch =
             async {
                 while true do
                     do! Async.Sleep 1800000
-                    dispatch availMsg
-                    do! Async.Sleep 600000
                     dispatch installedMsg
+                    do! Async.Sleep 600000
+                    dispatch availMsg
             }
             |> Async.StartImmediate
 
@@ -155,12 +155,22 @@ module State =
             | BridgeResult.Maps mRes ->
                 match mRes with
                 | MapResult.AvailableMaps cList ->
-                    { model with
-                          Available =
-                              cList
-                              |> List.map (getComMap >> CommunityMapWithState.Init)
-                              |> List.sortBy (fun k -> k.Map.GetName()) }
-                    |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
+                    let m =
+                        { model with
+                              Available =
+                                  cList
+                                  |> List.map (getComMap >> CommunityMapWithState.Init)
+                                  |> List.sortBy (fun k -> k.Map.GetName()) }
+                        |> fun newM -> 
+                            { newM with 
+                                Available = calcAvailableMaps newM
+                                UpdatesAvailable = (getInstalledAvailable model).Length }
+                    match model.UpdateSettings with
+                    | InstalledAndNew
+                    | OnlyInstalled
+                        -> Cmd.ofMsg UpdateMaps
+                    | _ -> Cmd.none
+                    |> fun cmd -> m, cmd
                 | MapResult.InstalledMaps cList ->
                     { model with Installed = (cList |> List.map (getComMap >> CommunityMapWithState.Init)) }
                     |> fun newM -> { newM with Available = calcAvailableMaps newM }, Cmd.none
@@ -244,15 +254,20 @@ module State =
             | _ -> m, Cmd.none
         | InstallAll -> model, Cmd.batch (model.Available |> List.map (fun m -> Install(m.Map.Folder) |> Cmd.ofMsg))
         | Update up -> 
-            { model with 
-                UpdateSettings = up
-                Updating = Active }, Cmd.ofSub autoUpdate
+            match up with
+            | InstalledAndNew
+            | OnlyInstalled
+                ->
+                { model with 
+                    UpdateSettings = up
+                    Updating = true }
+            | _ -> { model with UpdateSettings = up }
+            |> fun m -> m, if model.Updating then Cmd.none else Cmd.ofSub autoUpdate
         | UpdateMaps ->
             match model.UpdateSettings with
             | InstalledAndNew -> model, Cmd.ofMsg InstallAll
             | OnlyInstalled -> model, Cmd.batch <| getInstalledAvailable model
-            | NotifyOnly -> { model with UpdatesAvailable = (getInstalledAvailable model).Length } , Cmd.none
-            | NoActions -> model, Cmd.none
+            | _ -> model, Cmd.none
         | Uninstall s ->
             if model.ActiveUninstalling.IsNone then
                 { model with ActiveUninstalling = Some(s) }, Cmd.bridgeSend (sender.Uninstall model.MapsDir.Directory s)

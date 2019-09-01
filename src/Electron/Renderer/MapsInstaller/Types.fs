@@ -95,10 +95,6 @@ module rec Types =
               State = ComMapState.Success 0
               MenuState = MenuState.Closed }
 
-    type Updating =
-        | Active
-        | Inactive
-
     type Model =
         { MapsDir: ConfigDir
           UpdateSettings: UpdateSettings
@@ -111,4 +107,4 @@ module rec Types =
           ActiveUninstalling: string option
           TabSelected: Tab
           Refreshing: bool
-          Updating: Updating }
+          Updating: bool }
