@@ -62,7 +62,7 @@ module State =
               MapsInstaller = MapsInstaller.State.init(updateSettings)
               FaceTools = FaceTools.State.init()
               MordhauConfig = MordhauConfig.State.init()
-              Settings = Settings.State.init(updateSettings, backupSettings)
+              Settings = Settings.State.init(updateSettings, backupSettings, store.AutoLaunch)
               About = About.State.init() }
         m, Cmd.none
 
@@ -225,10 +225,16 @@ module State =
                        newM.BackupSettings |> Store.Msg.SetBackupSettings |> StoreMsg |> Cmd.ofMsg 
                        |> fun newCmd -> newCmd::cList
                     else cList
+                let appendAutoLaunch (cList: Cmd<Msg> list) =
+                    if m.Settings.AutoLaunch <> newM.AutoLaunch then
+                       Store.Msg.ToggleAutoLaunch |> StoreMsg |> Cmd.ofMsg 
+                       |> fun newCmd -> newCmd::cList
+                    else cList
 
                 [ Cmd.map SettingsMsg cmd ]
                 |> appendMapUpdate
                 |> appendBackup
+                |> appendAutoLaunch
                 |> Cmd.batch
                 |> fun cmd' -> setSettings m newM, cmd'
         | AboutMsg msg' ->

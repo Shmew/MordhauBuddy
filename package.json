@@ -78,7 +78,6 @@
     "@material-ui/lab": "^4.0.0-alpha.23",
     "autosuggest-highlight": "^3.1.1",
     "downshift": "^3.2.10",
-    "electron-dl": "^1.14.0",
     "electron-store": "^4.0.0",
     "electron-updater": "^4.1.2",
     "match-sorter": "^4.0.1",

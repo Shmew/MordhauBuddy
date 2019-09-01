@@ -322,7 +322,7 @@ module View =
                                       Class classes?titleButton
                                       Style [ hideIfMax false ] ] [ windowRestoreIcon [] ]
                                 iconButton
-                                    [ DOMAttr.OnClick(fun _ -> window.close())
+                                    [ DOMAttr.OnClick(fun _ -> window.hide())
                                       Class classes?titleButton ] [ windowCloseIcon [] ] ]
                           toolbar [ Style [ CSSProp.PaddingRight "0" ] ]
                               [ typography

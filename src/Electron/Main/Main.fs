@@ -10,6 +10,8 @@ module Main =
 
     /// A global reference to the window object is required in order to prevent garbage collection
     let mutable mainWindow: BrowserWindow option = Option.None
+    /// A global reference to the tray object is required in order to prevent garbage collection
+    let mutable tray: Tray option = Option.None
 #if DEBUG
 
     module DevTools =
@@ -76,7 +78,53 @@ module Main =
 
         bridgeProc
 
+    /// Create instance lock, focus and/or restore window if 
+    /// a second is launched.
+    if main.app.requestSingleInstanceLock() |> not then 
+        main.app.quit()
+    else 
+        main.app.onSecondInstance(fun _ _ _ -> 
+            match mainWindow with
+            | Some(win) ->
+                if win.isMinimized() then win.restore()
+                win.focus()
+            | None -> () )
+        |> ignore
+
+    /// Create the websocket bridge.
     let bridge = startBridge()
+    
+    let createTray() =
+        let quit =
+            main.MenuItem.Create
+                (jsOptions<MenuItemOptions> (fun o ->
+                    o.label <- "Quit MordhauBuddy"
+                    o.role <- MenuItemRole.Quit))
+            |> U2.Case2
+
+        /// Create the sytem tray
+        let appTray = 
+            let iconPath = 
+#if DEBUG
+                "icon.png"
+#else
+                path.resolve (__dirname, "..", "..", "static", "icon.png")
+#endif
+            main.Tray.Create(iconPath)
+
+        main.Menu.buildFromTemplate [| quit |]
+        |> Some
+        |> appTray.setContextMenu
+
+        appTray.onClick(fun _ _ _ ->
+                match mainWindow with
+                | Some(win) -> win.show()
+                | _ -> ())
+        |> ignore
+        appTray.setToolTip "MordhauBuddy"
+        tray <- Some appTray
+
+    /// Create the main window.
     let createMainWindow() =
         let mainWinState =
             WindowState.getState
@@ -126,13 +174,16 @@ module Main =
         /// corresponding element here.
         win.onClosed (fun _ ->
             bridge.kill()
-            mainWindow <- None)
+            mainWindow <- None
+            tray <- None)
         |> ignore
         mainWindow <- Some win
 
     /// This method will be called when Electron has finished
     /// initialization and is ready to create browser windows.
-    main.app.onReady (fun _ _ -> createMainWindow()) |> ignore
+    main.app.onReady (fun _ _ -> 
+        createMainWindow()
+        createTray()) |> ignore
     /// Quit when all windows are closed.
     main.app.onWindowAllClosed (fun _ ->
         /// On OS X it's common for applications and their menu bar
@@ -142,5 +193,6 @@ module Main =
     main.app.onActivate (fun _ _ ->
         /// On OS X it's common to re-create a window in the app when the
         /// dock icon is clicked and there are no other windows open.
-        if mainWindow.IsNone then createMainWindow())
+        if mainWindow.IsNone then createMainWindow()
+        if tray.IsNone then createTray())
     |> ignore

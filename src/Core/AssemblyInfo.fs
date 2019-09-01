@@ -8,7 +8,7 @@ open System.Runtime.CompilerServices
 [<assembly: AssemblyDescriptionAttribute("Compilation of Mordhau Tools")>]
 [<assembly: AssemblyVersionAttribute("0.0.1")>]
 [<assembly: AssemblyFileVersionAttribute("0.0.1")>]
-[<assembly: AssemblyConfigurationAttribute("Debug")>]
+[<assembly: AssemblyConfigurationAttribute("Release")>]
 [<assembly: InternalsVisibleToAttribute("Core.Tests")>]
 do ()
 
@@ -18,5 +18,5 @@ module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyDescription = "Compilation of Mordhau Tools"
     let [<Literal>] AssemblyVersion = "0.0.1"
     let [<Literal>] AssemblyFileVersion = "0.0.1"
-    let [<Literal>] AssemblyConfiguration = "Debug"
+    let [<Literal>] AssemblyConfiguration = "Release"
     let [<Literal>] InternalsVisibleTo = "Core.Tests"

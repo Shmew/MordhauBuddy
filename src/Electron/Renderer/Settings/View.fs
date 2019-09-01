@@ -91,6 +91,18 @@ module View =
             (BackupSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text))
         |> selectForm classes model dispatch inputL
 
+    let private toggleAutoLaunch (classes: IClasses) model dispatch =
+        formGroup [] [
+            formControlLabel [
+                FormControlLabelProp.Control <|
+                    checkbox
+                        [ DOMAttr.OnClick <| fun _ -> (dispatch ToggleAutoLaunch)
+                          HTMLAttr.Checked(model.AutoLaunch) ]
+                FormControlLabelProp.LabelPlacement FormControlLabelPlacement.Top
+                HTMLAttr.Label "Launch application on startup"
+            ] []
+        ]
+
     let private view' (classes: IClasses) model dispatch =
         let dConf (dir: ConfigDir) = dirConfig classes model dispatch dir
         div
@@ -105,7 +117,8 @@ module View =
                     dConf model.GameUserDir
                     dConf model.MapsDir 
                     selectUpdate classes model dispatch
-                    selectBackup classes model dispatch ] ]
+                    selectBackup classes model dispatch
+                    toggleAutoLaunch classes model dispatch] ]
 
     /// Workaround for using JSS with Elmish
     /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471

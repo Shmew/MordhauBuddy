@@ -24,6 +24,7 @@ module Types =
         | LoadCanceled
         | MapUpdateSetting of UpdateSettings option
         | BackupSetting of BackupSettings option
+        | ToggleAutoLaunch
 
     type Model =
         { EngineDir: ConfigDir
@@ -31,4 +32,5 @@ module Types =
           GameUserDir: ConfigDir
           MapsDir: ConfigDir
           MapUpdateSettings: UpdateSettings
-          BackupSettings: BackupSettings }
+          BackupSettings: BackupSettings
+          AutoLaunch: bool}

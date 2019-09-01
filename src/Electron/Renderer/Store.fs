@@ -8,7 +8,8 @@ module Store =
     open MordhauBuddy.Shared.ElectronBridge
 
     type Model =
-        { DarkTheme: bool
+        { AutoLaunch: bool
+          DarkTheme: bool
           GameLocation: string option
           EngineLocation: string option
           GameUserLocation: string option
@@ -17,6 +18,7 @@ module Store =
           BackupSettings: string }
 
     type Msg =
+        | ToggleAutoLaunch
         | ToggleDarkTheme
         | SetGameLocation of string
         | SetEngineLocation of string
@@ -94,7 +96,8 @@ module Store =
         let private getStore: StoreStatic = importDefault "electron-store"
 
         let private defaults =
-            { DarkTheme = true
+            { AutoLaunch = true
+              DarkTheme = true
               GameLocation = None
               EngineLocation = None
               GameUserLocation = None
@@ -122,6 +125,7 @@ module Store =
 
     let update msg m =
         match msg with
+        | ToggleAutoLaunch -> set { m with AutoLaunch = (m.AutoLaunch |> not) }
         | ToggleDarkTheme -> set { m with DarkTheme = (m.DarkTheme |> not) }
         | SetGameLocation s -> set { m with GameLocation = Some(s) }
         | SetEngineLocation s -> set { m with EngineLocation = Some(s) }
