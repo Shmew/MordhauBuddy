@@ -42,6 +42,7 @@ module State =
         let iniSender = new INIBridgeSender(Caller.Settings)
         let mapSender = new MapBridgeSender(Caller.Settings)
         let mapSenderMap = new MapBridgeSender(Caller.MapInstaller)
+        let settingsSender = new SettingBridgeSender(Caller.Settings)
 
         type Dirs =
             | Game
@@ -265,7 +266,7 @@ module State =
             | _ -> model, Cmd.none
         | BackupSetting newSets ->
             match newSets with
-            | Some(s) -> { model with BackupSettings = s }, Cmd.bridgeSend (iniSender.BackupPolicy(s))
+            | Some(s) -> { model with BackupSettings = s }, Cmd.bridgeSend (settingsSender.BackupPolicy(s))
             | _ -> model, Cmd.none
         | ToggleAutoLaunch ->
-            { model with AutoLaunch = model.AutoLaunch |> not}, Cmd.none
+            { model with AutoLaunch = model.AutoLaunch |> not}, Cmd.none //Connect this to bridge sender and handle outputs

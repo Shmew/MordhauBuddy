@@ -9,16 +9,19 @@ group Core
 	source https://nuget.org/api/v2
 	source https://api.nuget.org/v3/index.json
 
-	nuget Fake.Core.Environment ~> 5.15.4
-	nuget Fake.IO.FileSystem ~> 5.15.4
-	nuget FParsec ~> 1.0.3
-	nuget FSharp.Core ~> 4.6.2 redirects:force
-	nuget FSharp.Data ~> 3.1.1
-	nuget Microsoft.NETCore.Platforms ~> 3.0.0-preview8.19405.3
 	nuget Elmish.Bridge.Giraffe ~> 3.0.3
-	nuget Saturn ~> 0.9.0
 	nuget Fable.Elmish ~> 3.0
+	nuget Fake.Core.Environment ~> 5.16.1
+	nuget Fake.IO.FileSystem ~> 5.16.1
+	nuget Fake.Windows.Registry ~> 5.16.1
+	nuget FParsec ~> 1.0.3
+	nuget FSharp.Core ~> 4.7 redirects:force
+	nuget FSharp.Data ~> 3.1.1
 	nuget FSharp.Json ~> 0.3.7
+	nuget Microsoft.NETCore.Platforms ~> 3.0.0-preview8.19405.3
+	nuget Saturn ~> 0.9.0
+	
+	
 
 group Electron
 	source https://nuget.org/api/v2
@@ -40,7 +43,7 @@ group Electron
 	nuget Fable.Promise ~> 2.0
 	nuget Fable.React ~> 5.2
 	nuget Fable.Validation ~> 0.2.1
-	nuget FSharp.Core ~> 4.6.2 redirects:force
+	nuget FSharp.Core ~> 4.7 redirects:force
 	nuget Fable.SimpleJson ~> 3.3.0
 	nuget Elmish.Bridge.Client ~> 3.1.1
 
@@ -53,7 +56,7 @@ group Testing
 	nuget Expecto.FsCheck ~> 8.11.0
 	nuget Expecto.TestResults ~> 8.10.1
 	nuget Foq ~> 1.8.0
-	nuget FSharp.Core ~> 4.6.2 redirects:force
+	nuget FSharp.Core ~> 4.7redirects:force
 	nuget FSharp.Data ~> 3.1.1
 	nuget Microsoft.NETCore.Platforms ~> 3.0.0-preview8.19405.3
 
@@ -61,8 +64,8 @@ group Tooling
 	source https://nuget.org/api/v2
 	source https://api.nuget.org/v3/index.json
 
-	nuget Fake.IO.FileSystem ~> 5.15.4
-	nuget FSharp.Core ~> 4.6.2 redirects:force
+	nuget Fake.IO.FileSystem ~> 5.16.1
+	nuget FSharp.Core ~> 4.7 redirects:force
 	nuget FSharp.Json ~> 0.3.7
 	nuget FSharpLint.Core ~> 0.12.2
 	nuget Yarnpkg.Yarn ~> 1.15.2
@@ -84,18 +87,18 @@ group FakeBuild
 
 	storage: none
 
-	nuget Fake.Core.Target ~> 5.15.4
-	nuget Fake.IO.FileSystem ~> 5.15.4
-	nuget Fake.DotNet.Cli ~> 5.15.4
-	nuget Fake.Tools.Git ~> 5.15.4
-	nuget Fake.DotNet.MSBuild ~> 5.15.4
-	nuget Fake.Core.ReleaseNotes  ~> 5.15.4
-	nuget Fake.DotNet.AssemblyInfoFile ~> 5.15.4
-	nuget Fake.DotNet.Paket ~> 5.15.4
-	nuget Fake.DotNet.FSFormatting  ~> 5.15.4
-	nuget Fake.JavaScript.Yarn ~> 5.15.4
-	nuget Fake.JavaScript.Npm ~> 5.15.4
-	nuget Fantomas ~> 3.0.0-beta-001
+	nuget Fake.Core.Target ~> 5.16.1
+	nuget Fake.IO.FileSystem ~> 5.16.1
+	nuget Fake.DotNet.Cli ~> 5.16.1
+	nuget Fake.Tools.Git ~> 5.16.1
+	nuget Fake.DotNet.MSBuild ~> 5.16.1
+	nuget Fake.Core.ReleaseNotes  ~> 5.16.1
+	nuget Fake.DotNet.AssemblyInfoFile ~> 5.16.1
+	nuget Fake.DotNet.Paket ~> 5.16.1
+	nuget Fake.DotNet.FSFormatting  ~> 5.16.1
+	nuget Fake.JavaScript.Yarn ~> 5.16.1
+	nuget Fake.JavaScript.Npm ~> 5.16.1
+	nuget Fantomas ~> 3.0.0-beta-002
 	nuget FSharp.Json ~> 0.3.7
 	nuget FSharpLint.Core ~> 0.12.2
 	

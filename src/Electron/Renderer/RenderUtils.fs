@@ -12,7 +12,6 @@ module BridgeUtils =
         member this.Exists iFile = INIFileOperation.Exists(iFile) |> wrapOps
         member this.Parse iFile = INIFileOperation.Parse(iFile) |> wrapOps
         member this.Backup iList = INIFileOperation.Backup(iList) |> wrapOps
-        member this.BackupPolicy bSet = INIFileOperation.BackupPolicy(bSet) |> wrapOps
         member this.DefaultDir = INIFileOperation.DefaultDir |> wrapOps
         member this.Commit iList = INIFileOperation.Commit(iList) |> wrapOps
         member this.SetRandom profile = Random(profile) |> wrapFace
@@ -33,6 +32,12 @@ module BridgeUtils =
         member this.ConfirmInstall s = Maps.ConfirmInstalled s |> wrapMaps
         member this.Uninstall dir fName = MapFileOperation.Delete(dir, fName) |> wrapOps
         member this.Cancel fName = Maps.CancelMap fName |> wrapMaps
+
+    type SettingBridgeSender(caller: Caller) =
+        let wrapSetting sCmd = BridgeOps(SettingsOperation(sCmd),caller)
+        member this.EnableAutoLaunch s = SettingsOperation.EnableAutoLaunch(s) |> wrapSetting
+        member this.DisableAutoLaunch lEnv = SettingsOperation.DisableAutoLaunch(lEnv) |> wrapSetting
+        member this.BackupPolicy bSet = SettingsOperation.BackupPolicy(bSet) |> wrapSetting
 
 module RenderUtils =
     open Electron

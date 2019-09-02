@@ -1,6 +1,7 @@
 ﻿group Core
 	Fake.Core.Environment
 	Fake.IO.FileSystem
+	Fake.Windows.Registry
 	FParsec
 	FSharp.Core
 	FSharp.Data

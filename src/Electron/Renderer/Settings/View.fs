@@ -118,7 +118,7 @@ module View =
                     dConf model.MapsDir 
                     selectUpdate classes model dispatch
                     selectBackup classes model dispatch
-                    toggleAutoLaunch classes model dispatch] ]
+                    toggleAutoLaunch classes model dispatch ] ]
 
     /// Workaround for using JSS with Elmish
     /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471

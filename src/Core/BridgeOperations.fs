@@ -153,3 +153,14 @@ module BridgeOperations =
 
         /// Remove a map
         let uninstallMap (dir: string) (fName: string) = FileOps.Maps.tryUninstall dir fName
+
+    /// Settings related bridge commands
+    [<RequireQualifiedAccess>]
+    module Settings =
+        open FileOps.AutoLaunch
+
+        /// Try to enable the auto launch
+        let enableAutoLaunch appPath = enableAutoLaunch appPath
+
+        /// Try to disable the auto launch
+        let disableAutoLaunch launchEnv = disableAutoLaunch launchEnv

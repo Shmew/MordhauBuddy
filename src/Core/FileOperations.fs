@@ -8,6 +8,7 @@ open System
 
 /// Module for doing file operations
 module FileOps =
+    /// File operations for INI files
     module INI =
         open MordhauBuddy.Shared.ElectronBridge
 
@@ -104,6 +105,7 @@ module FileOps =
                 with _ -> None
             else None
 
+    /// File operations for maps
     module Maps =
         open Fake.IO.Globbing.Operators
 
@@ -175,3 +177,143 @@ module FileOps =
         /// Write an info
         let writeFile (dir: string) (fName: string) (data: string) =
             File.writeString false (dir @@ fName @@ (fName + ".info.txt")) data
+
+    /// File operations for enabling auto launching
+    module AutoLaunch =
+        open Fake.Windows
+        open System.Reflection
+        open MordhauBuddy.Shared.ElectronBridge.AutoLaunch
+
+        /// Linux DesktopFile
+        type private DesktopFile =
+            { Name : string
+              Comment : string
+              Version : string
+              Type : string
+              Terminal : bool
+              Exec : string
+              Icon : string
+              Categories : string list
+              Keywords : string list }
+            /// Create the desktop file string
+            member this.ToDesktopString() =
+                let nL = Environment.NewLine
+                let reduceNL sList =
+                    sList |> List.reduce (fun acc elem -> acc + nL + elem)
+                [ this.Name
+                  this.Comment
+                  this.Version
+                  this.Type
+                  this.Terminal |> string
+                  this.Exec
+                  this.Icon
+                  this.Categories |> reduceNL
+                  this.Keywords |> reduceNL ]
+                |> reduceNL
+                |> fun dFile -> "[Desktop Entry]" + nL + dFile
+
+        /// Try to get an env variable with increasing scope
+        let private tryGetEnvVar (s: string) =
+            let envOpt (envVar: string) =
+                if String.isNullOrEmpty envVar then None
+                else Some(envVar)
+        
+            let procVar = Environment.GetEnvironmentVariable(s) |> envOpt
+            let userVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.User) |> envOpt
+            let machVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.Machine) |> envOpt
+
+            match procVar,userVar,machVar with
+            | Some(v), _, _
+            | _, Some(v), _
+            | _, _, Some(v)
+                -> Some(v)
+            | _ -> None
+
+        let private regBase = Registry.RegistryBaseKey.HKEYCurrentUser
+        let private regKey = "Software/Microsoft/Windows/CurrentVersion/Run"
+        let private regSubValue = "MordhauBuddy"
+
+        /// Try to enable auto launch
+        let enableAutoLaunch (appPath: string) =
+            let applyDesktopFile dir =
+                async {
+                    try
+                        let autoStart = (dir @@ "autostart")
+                        let desktopFilePath = autoStart @@ "mordhau-buddy.desktop"
+                        let desktopFile =
+                            { Name = "MordhauBuddy"
+                              Comment = "Compilation of Mordhau Tools"
+                              Version = Assembly.GetExecutingAssembly().GetName().Version |> string
+                              Type = "Application"
+                              Terminal = false
+                              Exec = appPath
+                              Icon = (DirectoryInfo.ofPath appPath).FullName @@ "static/icon.png"
+                              Categories = [ "Games" ]
+                              Keywords = [ "Mordhau"; "Buddy"; "MordhauBuddy" ] }
+                            |> fun dFile -> dFile.ToDesktopString()
+                        Directory.ensure autoStart
+                        do! Async.Sleep 1000
+                        File.writeString false desktopFilePath desktopFile
+                        do! Async.Sleep 1000
+                        return File.exists desktopFilePath
+                    with
+                    | _ -> return false
+                } |> Async.RunSynchronously
+            let badRes = Error("Unable to set auto launch")
+
+            if Environment.isLinux then
+                async {
+                    return 
+                        try
+                            match tryGetEnvVar "XDG_CONFIG_HOME",tryGetEnvVar "XDG_CONFIG_DIRS" with
+                            | Some(cHome), _ -> Some(cHome @@ "autostart")
+                            | _ ,Some(cDirs) when cDirs.Split(':').Length > 0 ->
+                                cDirs.Split(':')
+                                |> Array.tryFind (fun s -> s = "/etc/xdg")
+                                |> function
+                                | Some(path) -> Some(path)
+                                | None -> cDirs.Split(':') |> Array.head |> Some
+                            | _ -> 
+                                if DirectoryInfo.ofPath("/etc/xdg").Exists then
+                                    Some("/etc/xdg")
+                                else None
+                            |> function
+                            | Some(path) -> 
+                                if applyDesktopFile path then Ok(path |> LaunchEnvironment.Linux)
+                                else badRes
+                            | None -> badRes
+                        with
+                        | _ -> badRes
+                } |> Async.RunSynchronously
+            else
+                async {
+                    return
+                        try
+                            use registryKey = Registry.getRegistryKey regBase regKey true
+                            registryKey.SetValue(regSubValue, appPath, Microsoft.Win32.RegistryValueKind.String)
+                            registryKey.Flush()
+                            registryKey.Dispose()
+                            Async.Sleep 1000 |> Async.RunSynchronously
+                            Registry.valueExistsForKey regBase regKey regSubValue
+                        with
+                        | _ -> false
+                        |> fun b -> if b then Ok(LaunchEnvironment.Windows) else badRes
+                } |> Async.RunSynchronously
+            |> Result.map LaunchSetting.Enabled
+             
+        /// Try to disable auto launch
+        let disableAutoLaunch (autoL: LaunchEnvironment) =
+            async {
+                return
+                    try
+                        match autoL with
+                        | LaunchEnvironment.Linux(path) -> 
+                            File.delete path
+                            File.exists path
+                        | LaunchEnvironment.Windows -> 
+                            Registry.deleteRegistryValue regBase regKey regSubValue
+                            Registry.valueExistsForKey regBase regKey regSubValue
+                        |> not
+                    with
+                    | _ -> false
+            } |> Async.RunSynchronously

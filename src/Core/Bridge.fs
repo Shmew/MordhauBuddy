@@ -123,8 +123,6 @@ module Bridge =
                             |> INIOperationResult.Backup
                             |> BridgeResult.INIOperation
                             |> createClientResp caller None
-                        | INIFileOperation.BackupPolicy(bSet) ->
-                            { model with BackupSettings = bSet }, None
                         | INIFileOperation.Commit(fList) ->
                             model,
                             fList
@@ -240,6 +238,28 @@ module Bridge =
                                 model.InstallingMaps |> List.partition (fun (name, _) -> fName = name)
                             toCancel |> List.iter (fun (_, cSource) -> cSource.Cancel())
                             { model with InstallingMaps = installing }, None
+                    | SettingsOperation sCmd ->
+                        let cResp br = createClientResp caller None br
+                        match sCmd with
+                        | EnableAutoLaunch appPath -> 
+                            model,
+                            match Settings.enableAutoLaunch appPath with
+                            | Ok lSet -> lSet
+                            | Error _ -> AutoLaunch.LaunchSetting.Disabled
+                            |> SettingResult.EnabledAutoLaunch
+                            |> BridgeResult.Settings
+                            |> cResp
+                        | DisableAutoLaunch lEnv -> 
+                            model,
+                            if Settings.disableAutoLaunch lEnv then
+                                AutoLaunch.LaunchSetting.Disabled
+                            else
+                                lEnv |> AutoLaunch.LaunchSetting.Enabled
+                            |> SettingResult.DisabledAutoLaunch
+                            |> BridgeResult.Settings
+                            |> cResp
+                        | BackupPolicy(bSet) ->
+                            { model with BackupSettings = bSet }, None
 
             match remoteCMsg with
             | Some(rMsg) -> Resp(rMsg) |> clientDispatch

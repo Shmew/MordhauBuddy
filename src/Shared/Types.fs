@@ -3,6 +3,17 @@ namespace MordhauBuddy.Shared
 module ElectronBridge =
     open FSharp.Reflection
 
+    module AutoLaunch =
+        [<RequireQualifiedAccess>]
+        type LaunchEnvironment =
+            | Linux of string
+            | Windows
+
+        [<RequireQualifiedAccess>]
+        type LaunchSetting =
+            | Enabled of LaunchEnvironment
+            | Disabled
+
     [<AutoOpen>]
     module UnitsOfMeasure =
         [<Measure>]
@@ -133,12 +144,18 @@ module ElectronBridge =
         | InstallMapError of string * string
 
     [<RequireQualifiedAccess>]
+    type SettingResult =
+        | EnabledAutoLaunch of AutoLaunch.LaunchSetting
+        | DisabledAutoLaunch of AutoLaunch.LaunchSetting
+
+    [<RequireQualifiedAccess>]
     type BridgeResult =
         | INIOperation of INIOperationResult
         | MapOperation of MapOperationResult
         | Faces of FaceResult
         | Config of ConfigResult
         | Maps of MapResult
+        | Settings of SettingResult
 
     [<RequireQualifiedAccess>]
     type Caller =
@@ -206,7 +223,6 @@ module ElectronBridge =
         | Exists of INIFile
         | Parse of INIFile
         | Backup of INIFile list
-        | BackupPolicy of BackupSettings
         | Commit of INIFile list
 
     [<RequireQualifiedAccess>]
@@ -224,6 +240,11 @@ module ElectronBridge =
     type Configs =
         | GetConfigs of OptionGroup list
         | MapConfigs of OptionGroup list
+
+    type SettingsOperation =
+        | EnableAutoLaunch of string
+        | DisableAutoLaunch of AutoLaunch.LaunchEnvironment
+        | BackupPolicy of BackupSettings
 
     [<RequireQualifiedAccess>]
     type GoogleDrive =
@@ -249,6 +270,7 @@ module ElectronBridge =
         | Faces of Faces
         | Configs of Configs
         | Maps of Maps
+        | SettingsOperation of SettingsOperation
         static member Endpoint = "/ws"
 
     type BridgeMsg =
