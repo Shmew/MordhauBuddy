@@ -68,7 +68,7 @@ module View =
                     [ MaterialProp.FullWidth true
                       FormControlProp.Variant FormControlVariant.Outlined
                       Style
-                        [ CSSProp.MinWidth "30em" ]]
+                        [ CSSProp.MinWidth "25em" ]]
                     [ inputL; selects ] ] ]
 
     let private selectUpdate (classes: IClasses) model dispatch =
@@ -92,15 +92,17 @@ module View =
         |> selectForm classes model dispatch inputL
 
     let private toggleAutoLaunch (classes: IClasses) model dispatch =
-        formGroup [] [
-            formControlLabel [
-                FormControlLabelProp.Control <|
-                    checkbox
-                        [ DOMAttr.OnClick <| fun _ -> (dispatch ToggleAutoLaunch)
-                          HTMLAttr.Checked(model.AutoLaunch) ]
-                FormControlLabelProp.LabelPlacement FormControlLabelPlacement.Top
-                HTMLAttr.Label "Launch application on startup"
-            ] []
+        formControl [ Style [ CSSProp.Padding "0em 1em" ] ] [
+            formGroup [] [
+                formControlLabel [
+                    FormControlLabelProp.Control 
+                    <| switch
+                            [ HTMLAttr.Checked(model.AutoLaunch) 
+                              DOMAttr.OnClick <| fun _ -> (dispatch ToggleAutoLaunch) ]
+                    FormControlLabelProp.LabelPlacement FormControlLabelPlacement.Top
+                    HTMLAttr.Label "Launch application on startup"
+                ] []
+            ]
         ]
 
     let private view' (classes: IClasses) model dispatch =
@@ -116,8 +118,9 @@ module View =
                     dConf model.EngineDir
                     dConf model.GameUserDir
                     dConf model.MapsDir 
-                    selectUpdate classes model dispatch
-                    selectBackup classes model dispatch
+                    div [ Style [ CSSProp.Display DisplayOptions.InlineFlex ] ] 
+                        [ selectUpdate classes model dispatch
+                          selectBackup classes model dispatch ]
                     toggleAutoLaunch classes model dispatch ] ]
 
     /// Workaround for using JSS with Elmish

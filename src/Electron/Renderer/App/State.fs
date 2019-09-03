@@ -17,9 +17,9 @@ module State =
         | About -> "About"
 
     let window = getRemoteWin()
+    let private store = Store.init()
 
     let init() =
-        let store = Store.init()
         let updateSettings =
             UpdateSettings.TryGetSettingFromText store.UpdateSettings 
             |> defaultArg 
@@ -124,6 +124,8 @@ module State =
             { model with MapsInstaller = mInstall }
         let setFaceTools (model: Model) (fTool: FaceTools.Types.Model) = { model with FaceTools = fTool }
         let setMordConfig (model: Model) (mConf: MordhauConfig.Types.Model) = { model with MordhauConfig = mConf }
+
+        let settingsSender = BridgeUtils.SettingBridgeSender(Caller.Settings)
 
     let update msg m =
         match msg with
@@ -294,7 +296,7 @@ module State =
                 | Caller.Settings ->
                     let m', cmd = Settings.State.update (Settings.Types.ClientMsg bMsg) m.Settings
                     match bMsg.File, bMsg.BridgeResult with
-                    | Some(iFile), _ -> { m with Settings = m' } |> setResource' bMsg (iFile.File)
+                    | Some(iFile), _ -> { m with Settings = m' } |> setResource' bMsg (iFile.File), []
                     | None, BridgeResult.MapOperation(mResult) ->
                         match mResult with
                         | MapOperationResult.DirExists b ->
@@ -312,24 +314,32 @@ module State =
                                                 if b then m'.MapsDir.Directory
                                                 else ""
                                             State = Directory.DirState.Success "Maps directory located" } }
-                            |> setMapInstaller model)
+                            |> setMapInstaller model), []
                         | MapOperationResult.DefaultDir _ ->
                             setPath m'.MapsDir.Directory m.Resources.Maps
                             |> setResLoaded () m.Resources
                             |> setResource m
                             |> setSettings
-                            <| m'
-                        | _ -> setSettings m m'
+                            <| m', []
+                        | _ -> setSettings m m', []
                     | None, BridgeResult.INIOperation(INIOperationResult.DefaultDir _) ->
                         [ (m.Resources.GameConfig.Loading, ConfigFile.Game)
                           (m.Resources.EngineConfig.Loading, ConfigFile.Engine)
                           (m.Resources.GameUserConfig.Loading, ConfigFile.GameUserSettings) ]
                         |> List.tryFind (fst)
                         |> function
-                        | Some(res) -> setSettings m m' |> setResource' bMsg (res |> snd)
-                        | _ -> setSettings m m'
-                    | _ -> setSettings m m'
-                    |> fun newM -> newM, Cmd.map SettingsMsg cmd
+                        | Some(res) -> setSettings m m' |> setResource' bMsg (res |> snd), []
+                        | _ -> setSettings m m', []
+                    | None, BridgeResult.Settings(SettingResult.DisabledAutoLaunch true) ->
+                        setSettings m m', [Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet false))]
+                    | None, BridgeResult.Settings(SettingResult.EnabledAutoLaunch true) ->
+                        setSettings m m', [Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet true))]
+                    | _ -> setSettings m m', []
+                    |> fun (newM, cmds) -> newM, Cmd.batch ([Cmd.map SettingsMsg cmd] |> List.append cmds)
                 | _ -> m, Cmd.none
-            | Connected -> { m with IsBridgeConnected = true }, Cmd.none
+            | Connected -> 
+                { m with IsBridgeConnected = true }, 
+                if m.Settings.AutoLaunch && (store.AutoLaunchSet |> not) then 
+                    Cmd.bridgeSend <| settingsSender.EnableAutoLaunch 
+                else Cmd.none
             | Disconnected -> { m with IsBridgeConnected = false }, Cmd.none

@@ -56,7 +56,7 @@ group Testing
 	nuget Expecto.FsCheck ~> 8.11.0
 	nuget Expecto.TestResults ~> 8.10.1
 	nuget Foq ~> 1.8.0
-	nuget FSharp.Core ~> 4.7redirects:force
+	nuget FSharp.Core ~> 4.7 redirects:force
 	nuget FSharp.Data ~> 3.1.1
 	nuget Microsoft.NETCore.Platforms ~> 3.0.0-preview8.19405.3
 

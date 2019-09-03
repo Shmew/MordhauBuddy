@@ -9,6 +9,7 @@ module Store =
 
     type Model =
         { AutoLaunch: bool
+          AutoLaunchSet: bool
           DarkTheme: bool
           GameLocation: string option
           EngineLocation: string option
@@ -19,6 +20,7 @@ module Store =
 
     type Msg =
         | ToggleAutoLaunch
+        | AutoLaunchSet of bool
         | ToggleDarkTheme
         | SetGameLocation of string
         | SetEngineLocation of string
@@ -97,6 +99,7 @@ module Store =
 
         let private defaults =
             { AutoLaunch = true
+              AutoLaunchSet = false
               DarkTheme = true
               GameLocation = None
               EngineLocation = None
@@ -126,6 +129,7 @@ module Store =
     let update msg m =
         match msg with
         | ToggleAutoLaunch -> set { m with AutoLaunch = (m.AutoLaunch |> not) }
+        | AutoLaunchSet b -> set { m with AutoLaunchSet = b }
         | ToggleDarkTheme -> set { m with DarkTheme = (m.DarkTheme |> not) }
         | SetGameLocation s -> set { m with GameLocation = Some(s) }
         | SetEngineLocation s -> set { m with EngineLocation = Some(s) }

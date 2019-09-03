@@ -182,10 +182,10 @@ module FileOps =
     module AutoLaunch =
         open Fake.Windows
         open System.Reflection
-        open MordhauBuddy.Shared.ElectronBridge.AutoLaunch
+        open Microsoft.Win32
 
         /// Linux DesktopFile
-        type private DesktopFile =
+        type DesktopFile =
             { Name : string
               Comment : string
               Version : string
@@ -213,7 +213,7 @@ module FileOps =
                 |> fun dFile -> "[Desktop Entry]" + nL + dFile
 
         /// Try to get an env variable with increasing scope
-        let private tryGetEnvVar (s: string) =
+        let tryGetEnvVar (s: string) =
             let envOpt (envVar: string) =
                 if String.isNullOrEmpty envVar then None
                 else Some(envVar)
@@ -229,12 +229,21 @@ module FileOps =
                 -> Some(v)
             | _ -> None
 
-        let private regBase = Registry.RegistryBaseKey.HKEYCurrentUser
-        let private regKey = "Software/Microsoft/Windows/CurrentVersion/Run"
-        let private regSubValue = "MordhauBuddy"
+        let regBase = Registry.RegistryBaseKey.HKEYCurrentUser
+        let regKey = @"Software\Microsoft\Windows\CurrentVersion\Run"
+        let regSubValue = "MordhauBuddy"
+
+        let appPath =
+            if Environment.isLinux then
+                __SOURCE_DIRECTORY__
+            else
+                Environment.SpecialFolder.LocalApplicationData
+                |> Environment.GetFolderPath
+                |> fun d -> (new IO.DirectoryInfo(d)).FullName
+                |> fun d -> (d @@ "mordhau-buddy-updater" @@ "installer.exe")
 
         /// Try to enable auto launch
-        let enableAutoLaunch (appPath: string) =
+        let enableAutoLaunch () =
             let applyDesktopFile dir =
                 async {
                     try
@@ -259,7 +268,6 @@ module FileOps =
                     with
                     | _ -> return false
                 } |> Async.RunSynchronously
-            let badRes = Error("Unable to set auto launch")
 
             if Environment.isLinux then
                 async {
@@ -279,11 +287,10 @@ module FileOps =
                                 else None
                             |> function
                             | Some(path) -> 
-                                if applyDesktopFile path then Ok(path |> LaunchEnvironment.Linux)
-                                else badRes
-                            | None -> badRes
+                                applyDesktopFile path
+                            | None -> false
                         with
-                        | _ -> badRes
+                        | _ -> false
                 } |> Async.RunSynchronously
             else
                 async {
@@ -297,20 +304,17 @@ module FileOps =
                             Registry.valueExistsForKey regBase regKey regSubValue
                         with
                         | _ -> false
-                        |> fun b -> if b then Ok(LaunchEnvironment.Windows) else badRes
                 } |> Async.RunSynchronously
-            |> Result.map LaunchSetting.Enabled
              
         /// Try to disable auto launch
-        let disableAutoLaunch (autoL: LaunchEnvironment) =
+        let disableAutoLaunch () =
             async {
                 return
                     try
-                        match autoL with
-                        | LaunchEnvironment.Linux(path) -> 
-                            File.delete path
-                            File.exists path
-                        | LaunchEnvironment.Windows -> 
+                        if Environment.isLinux then
+                            File.delete appPath
+                            File.exists appPath
+                        else
                             Registry.deleteRegistryValue regBase regKey regSubValue
                             Registry.valueExistsForKey regBase regKey regSubValue
                         |> not

@@ -3,17 +3,6 @@ namespace MordhauBuddy.Shared
 module ElectronBridge =
     open FSharp.Reflection
 
-    module AutoLaunch =
-        [<RequireQualifiedAccess>]
-        type LaunchEnvironment =
-            | Linux of string
-            | Windows
-
-        [<RequireQualifiedAccess>]
-        type LaunchSetting =
-            | Enabled of LaunchEnvironment
-            | Disabled
-
     [<AutoOpen>]
     module UnitsOfMeasure =
         [<Measure>]
@@ -145,8 +134,8 @@ module ElectronBridge =
 
     [<RequireQualifiedAccess>]
     type SettingResult =
-        | EnabledAutoLaunch of AutoLaunch.LaunchSetting
-        | DisabledAutoLaunch of AutoLaunch.LaunchSetting
+        | EnabledAutoLaunch of bool
+        | DisabledAutoLaunch of bool
 
     [<RequireQualifiedAccess>]
     type BridgeResult =
@@ -242,8 +231,8 @@ module ElectronBridge =
         | MapConfigs of OptionGroup list
 
     type SettingsOperation =
-        | EnableAutoLaunch of string
-        | DisableAutoLaunch of AutoLaunch.LaunchEnvironment
+        | EnableAutoLaunch
+        | DisableAutoLaunch
         | BackupPolicy of BackupSettings
 
     [<RequireQualifiedAccess>]

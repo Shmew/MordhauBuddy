@@ -205,6 +205,12 @@ module State =
                         |> setDir model Maps
                         |> fun m -> m, Cmd.none
                 | _ -> model, Cmd.none
+            | BridgeResult.Settings sOp ->
+                match sOp with
+                | SettingResult.EnabledAutoLaunch b ->
+                    { model with AutoLaunch = b }, Cmd.none
+                | SettingResult.DisabledAutoLaunch b ->
+                    { model with AutoLaunch = b |> not }, Cmd.none
             | _ -> model, Cmd.none
         | GetDefaultDir -> model, iniSender.DefaultDir |> Cmd.bridgeSend
         | GetMapDir -> model, mapSender.DefaultDir |> Cmd.bridgeSend
@@ -269,4 +275,7 @@ module State =
             | Some(s) -> { model with BackupSettings = s }, Cmd.bridgeSend (settingsSender.BackupPolicy(s))
             | _ -> model, Cmd.none
         | ToggleAutoLaunch ->
-            { model with AutoLaunch = model.AutoLaunch |> not}, Cmd.none //Connect this to bridge sender and handle outputs
+            { model with AutoLaunch = model.AutoLaunch |> not }, 
+                if model.AutoLaunch then
+                    Cmd.bridgeSend (settingsSender.DisableAutoLaunch)
+                else Cmd.bridgeSend (settingsSender.EnableAutoLaunch)

@@ -35,8 +35,8 @@ module BridgeUtils =
 
     type SettingBridgeSender(caller: Caller) =
         let wrapSetting sCmd = BridgeOps(SettingsOperation(sCmd),caller)
-        member this.EnableAutoLaunch s = SettingsOperation.EnableAutoLaunch(s) |> wrapSetting
-        member this.DisableAutoLaunch lEnv = SettingsOperation.DisableAutoLaunch(lEnv) |> wrapSetting
+        member this.EnableAutoLaunch = SettingsOperation.EnableAutoLaunch |> wrapSetting
+        member this.DisableAutoLaunch = SettingsOperation.DisableAutoLaunch |> wrapSetting
         member this.BackupPolicy bSet = SettingsOperation.BackupPolicy(bSet) |> wrapSetting
 
 module RenderUtils =

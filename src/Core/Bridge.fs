@@ -241,20 +241,15 @@ module Bridge =
                     | SettingsOperation sCmd ->
                         let cResp br = createClientResp caller None br
                         match sCmd with
-                        | EnableAutoLaunch appPath -> 
+                        | EnableAutoLaunch -> 
                             model,
-                            match Settings.enableAutoLaunch appPath with
-                            | Ok lSet -> lSet
-                            | Error _ -> AutoLaunch.LaunchSetting.Disabled
+                            Settings.enableAutoLaunch()
                             |> SettingResult.EnabledAutoLaunch
                             |> BridgeResult.Settings
                             |> cResp
-                        | DisableAutoLaunch lEnv -> 
+                        | DisableAutoLaunch -> 
                             model,
-                            if Settings.disableAutoLaunch lEnv then
-                                AutoLaunch.LaunchSetting.Disabled
-                            else
-                                lEnv |> AutoLaunch.LaunchSetting.Enabled
+                            Settings.disableAutoLaunch()
                             |> SettingResult.DisabledAutoLaunch
                             |> BridgeResult.Settings
                             |> cResp
