@@ -13,7 +13,9 @@ module Types =
     open MordhauBuddy.Shared.ElectronBridge
     open Microsoft.FSharp.Reflection
 
-    type Msg = OpenLink of string
+    type Msg = 
+        | OpenLink of string
+        | ImgSkeleton
 
     type Model =
-        { Waiting: bool }
+        { ImgLoaded: bool }

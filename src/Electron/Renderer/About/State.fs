@@ -13,10 +13,11 @@ module State =
     open Types
     open Electron
 
-    let init() = { Waiting = true }
+    let init() = { ImgLoaded = false }
 
     let update (msg: Msg) (model: Model) =
         match msg with
         | OpenLink(url) ->
             renderer.shell.openExternal (url) |> Promise.start
             model, Cmd.none
+        | ImgSkeleton -> { model with ImgLoaded = true }, Cmd.none

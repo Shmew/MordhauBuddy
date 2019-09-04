@@ -106,3 +106,101 @@ module Bindings =
             abstract fullScreen: bool with get, set
 
         let getState: Options -> State = importDefault "electron-window-state"
+
+    module ElectronUpdater =
+        
+        type ILogger =
+            abstract debug: message:string -> unit
+            abstract error: message:obj -> unit
+            abstract info: message:obj -> unit
+            abstract warn: message:obj -> unit
+
+        type UpdateInfo =
+            abstract version: string
+            /// `UpdateFileInfo []`
+            abstract files: obj []
+            abstract releaseName: string
+            /// `ReleaseNoteInfo []` if `fullChangelog` is set to `true`, 
+            /// `string` otherwise
+            abstract releaseNotes: U2<string,obj []>
+            abstract releaseDate: string
+            /// The staged rollout percentage, 0-100.
+            abstract stagingPercentage: float
+
+        type UpdateCheckResult =
+            /// Emitted when an authenticating proxy is asking for user credentials.
+            abstract updateInfo: UpdateInfo
+            abstract downloadPromise: JS.Promise<string []>
+            abstract cancellationToken: obj
+
+        type UpdaterSignal =
+            abstract login: username:string * password:string -> unit
+            abstract progress: unit -> unit
+            abstract updateCancelled: unit -> unit
+            abstract updateDownloaded: unit -> unit
+
+        type AutoUpdater =
+            inherit EventEmitter<AutoUpdater>
+            /// Default: `true` 
+            ///
+            /// Whether to automatically download an update when it is found.
+            abstract autoDownload: bool with get, set
+            /// Default: `true`
+            ///
+            /// Whether to automatically install a downloaded update on app 
+            /// quit (if `quitAndInstall` was not called before).
+            abstract autoInstallOnAppQuit: bool with get, set
+            /// Default: `false`
+            ///
+            /// *GitHub provider only.*
+            /// Whether to allow update to pre-release versions. 
+            /// Defaults to `true` if application version contains 
+            /// prerelease components 
+            abstract allowPrerelease: bool with get, set
+            /// Default: `false`
+            ///
+            /// *GitHub provider only.*
+            /// Get all release notes (from current version to latest), 
+            /// not just the latest.
+            abstract fullChangelog: bool with get, set
+            /// Default: `false`
+            ///
+            /// Whether to allow version downgrade (when a user from 
+            /// the beta channel wants to go back to the stable channel).
+            ///
+            /// Taken in account only if channel differs (pre-release version 
+            /// component in terms of semantic versioning).
+            abstract allowDowngrade: bool with get, set
+            /// The current application version.
+            abstract currentVersion: string
+            /// Get the update channel. Not applicable for GitHub. Doesn’t 
+            /// return channel from the update configuration, only if was previously set.
+            abstract channel: string
+            /// The request headers
+            abstract requestHeaders: string * string with get, set
+            /// Logging interface
+            abstract logger: ILogger option with get, set
+            /// For type safety you can use signals, e.g. `autoUpdater.signals.updateDownloaded(() => {})`
+            /// instead of `autoUpdater.on('update-available', () => {})`
+            abstract signals: obj with get, set
+            /// Asks the server whether there is an update.
+            abstract checkForUpdates: unit -> JS.Promise<UpdateCheckResult>
+            /// Asks the server whether there is an update, download and notify if update available.
+            abstract checkForUpdatesAndNotify: unit -> JS.Promise<unit>
+            /// Start downloading update manually. You can use this method if `autoDownload` 
+            /// option is set to `false`. Returns the path to the downloaded file
+            abstract downloadUpdate: cancellationToken:obj -> JS.Promise<'t>
+            /// Restarts the app and installs the update after it has been downloaded. 
+            /// It should only be called after update-downloaded has been emitted.
+            ///
+            /// *Note:* autoUpdater.quitAndInstall() will close all application windows 
+            /// first and only emit before-quit event on app after that. This is different 
+            /// from the normal quit event sequence.
+            ///
+            /// - isSilent - *windows-only* Runs the installer in silent mode. Defaults to `false`.
+            /// - isForceRunAfter - Run the app after finish even on silent install. *Not applicable for macOS*. 
+            /// Ignored if isSilent is set to `false`.
+            abstract quitAndInstall: isSilent:bool * isForceRunAfter:bool -> unit
+
+        [<Emit("require('electron-updater')")>]
+        let autoUpdater: AutoUpdater = jsNative

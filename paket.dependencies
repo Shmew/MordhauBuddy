@@ -20,8 +20,6 @@ group Core
 	nuget FSharp.Json ~> 0.3.7
 	nuget Microsoft.NETCore.Platforms ~> 3.0.0-preview8.19405.3
 	nuget Saturn ~> 0.9.0
-	
-	
 
 group Electron
 	source https://nuget.org/api/v2
@@ -33,9 +31,6 @@ group Electron
 	nuget Fable.Elmish.Debugger ~> 3.0
 	nuget Fable.Elmish.HMR ~> 4.0
 	nuget Fable.Elmish.React ~> 3.0
-	nuget Fable.Import.AutosuggestHighlight ~> 1.1
-	nuget Fable.Import.Downshift ~> 1.1
-	nuget Fable.Import.MatchSorter ~> 1.1
 	nuget Fable.Import.Node ~> 0.4.0
 	nuget Fable.MaterialUI ~> 4.0
 	nuget Fable.MaterialUI.Icons ~> 1.1

@@ -129,7 +129,16 @@ module State =
 
     let update msg m =
         match msg with
-        | Navigate msg' -> { m with Page = msg' }, Cmd.none
+        | Navigate msg' -> 
+            if msg' <> FaceTools then
+                { m with FaceTools = { m.FaceTools with ImgLoaded = false } }
+            else m
+            |> fun m ->
+                if msg' <> About then
+                    { m with About = { m.About with ImgLoaded = false } }
+                else m
+            |> fun m -> { m with Page = msg' }
+            , Cmd.none
         | MinMaxMsg msg' -> { m with IsMax = msg' }, Cmd.none
         | LoadResources msg' ->
             match msg' with

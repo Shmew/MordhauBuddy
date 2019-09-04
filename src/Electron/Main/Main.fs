@@ -138,7 +138,7 @@ module Main =
                     o.width <- mainWinState.width
                     o.height <- mainWinState.height
                     o.minHeight <- 925
-                    o.minWidth <- 1200
+                    o.minWidth <- 1250
                     o.autoHideMenuBar <- true
                     o.webPreferences <-
                         jsOptions<WebPreferences> (fun w ->
@@ -183,7 +183,11 @@ module Main =
     /// initialization and is ready to create browser windows.
     main.app.onReady (fun _ _ -> 
         createMainWindow()
-        createTray()) |> ignore
+        createTray()
+        if main.app.isPackaged then
+            ElectronUpdater.autoUpdater.checkForUpdatesAndNotify()
+            |> Promise.start
+        ) |> ignore
     /// Quit when all windows are closed.
     main.app.onWindowAllClosed (fun _ ->
         /// On OS X it's common for applications and their menu bar
