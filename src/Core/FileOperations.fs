@@ -15,8 +15,6 @@ module FileOps =
         /// Try to find the configuration directory
         let defaultDir =
             let bindDirectory (dir: string) =
-                Console.WriteLine("Binding directory")
-                Console.WriteLine(dir)
                 IO.DirectoryInfo dir
                 |> DirectoryInfo.exists
                 |> function
@@ -31,9 +29,6 @@ module FileOps =
             | false ->
                 [ ".steam/steam"; ".local/share/Steam" ]
                 |> List.map (fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
-                |> List.map (fun s -> 
-                    Console.WriteLine(s) 
-                    s)
                 |> List.tryFind (bindDirectory >> Option.isSome)
                 |> Option.bind
                     (fun dir ->
