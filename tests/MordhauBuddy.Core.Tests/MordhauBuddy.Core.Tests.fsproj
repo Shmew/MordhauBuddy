@@ -8,7 +8,7 @@
     <None Include="App.config" />
     <Compile Include="INIValue.fs" />
     <Compile Include="INIConfiguration.fs" />
-    <Compile Include="Maps.fs" />
+    <Compile Include="Http.fs" />
     <Compile Include="RunTests.fs" />
     <None Include="paket.references" />
   </ItemGroup>

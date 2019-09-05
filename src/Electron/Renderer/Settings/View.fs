@@ -18,8 +18,7 @@ module View =
     open Electron
     open Types
 
-    let private styles (theme: ITheme): IStyles list =
-        [ Styles.Custom("darkList", [ CSSProp.BackgroundColor theme.palette.background.``default`` ]) ]
+    let private styles (theme: ITheme): IStyles list = []
 
     let private dirConfig (classes: IClasses) model dispatch (dir: ConfigDir) =
         div

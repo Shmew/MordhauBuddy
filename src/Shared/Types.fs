@@ -95,16 +95,8 @@ module ElectronBridge =
           Expanded: bool }
 
     [<RequireQualifiedAccess>]
-    type FaceResult =
-        | Random of bool
-        | Frankenstein of bool
-        | Custom of bool
-        | ProfileList of (string * string) list
-
-    [<RequireQualifiedAccess>]
-    type ConfigResult =
-        | GetConfigs of OptionGroup list
-        | MapConfigs of bool
+    type CommunityResult =
+        | SteamAnnouncements of (string * string) list
 
     [<RequireQualifiedAccess>]
     type INIOperationResult =
@@ -123,6 +115,18 @@ module ElectronBridge =
         | Delete of string * Result<bool, string>
 
     [<RequireQualifiedAccess>]
+    type FaceResult =
+        | Random of bool
+        | Frankenstein of bool
+        | Custom of bool
+        | ProfileList of (string * string) list
+
+    [<RequireQualifiedAccess>]
+    type ConfigResult =
+        | GetConfigs of OptionGroup list
+        | MapConfigs of bool
+
+    [<RequireQualifiedAccess>]
     type MapResult =
         | AvailableMaps of string list
         | InstalledMaps of string list
@@ -139,6 +143,7 @@ module ElectronBridge =
 
     [<RequireQualifiedAccess>]
     type BridgeResult =
+        | Community of CommunityResult
         | INIOperation of INIOperationResult
         | MapOperation of MapOperationResult
         | Faces of FaceResult
@@ -148,6 +153,7 @@ module ElectronBridge =
 
     [<RequireQualifiedAccess>]
     type Caller =
+        | Community
         | MapInstaller
         | FaceTools
         | MordhauConfig
@@ -204,6 +210,9 @@ module ElectronBridge =
             |> Seq.tryFind (fun t -> t.Name = s)
             |> Option.map (fun uc -> uc.Name |> BackupSettings.Instantiate)
 
+    type CommunityOperation =
+        | GetSteamAnnouncements
+
     [<RequireQualifiedAccess>]
     type INIFileOperation =
         | DefaultDir
@@ -254,6 +263,7 @@ module ElectronBridge =
         | CancelMap of string
 
     type BridgeOperations =
+        | CommunityOperation of CommunityOperation
         | INIOperation of INIFileOperation
         | MapOperation of MapFileOperation
         | Faces of Faces

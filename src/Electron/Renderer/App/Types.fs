@@ -5,22 +5,25 @@ module Types =
     open FSharp.Core /// To avoid shadowing Result<_,_>
 
     type Page =
-        | Home
+        | Community
         | MapsInstaller
         | FaceTools
         | MordhauConfig
         | Settings
         | About
-        static member All = [ Home; MapsInstaller; FaceTools; MordhauConfig; Settings; About ]
+        static member All = [ Community; MapsInstaller; FaceTools; MordhauConfig; Settings; About ]
 
     type Msg =
         | Navigate of Page
         | MinMaxMsg of bool
         | LoadResources of Msg
+        | ResourcesLoaded
+        | LoadCom
         | LoadConfig of ConfigFile
         | LoadMap
         | StoreMsg of Store.Msg
         | ContextMenuMsg of ContextMenu.Types.Msg
+        | CommunityMsg of Community.Types.Msg
         | MapsInstallerMsg of MapsInstaller.Types.Msg
         | FaceToolsMsg of FaceTools.Types.Msg
         | MordhauConfigMsg of MordhauConfig.Types.Msg
@@ -41,8 +44,12 @@ module Types =
           AttemptedLoad: bool
           Loading: bool }
 
+    type ComResources =
+        { AttemptedLoad: bool }
+
     type Loaded =
-        { GameConfig: ConfigDir
+        { Community: ComResources
+          GameConfig: ConfigDir
           EngineConfig: ConfigDir
           GameUserConfig: ConfigDir
           Maps: MapDir }
@@ -54,6 +61,7 @@ module Types =
           IsBridgeConnected: bool
           Resources: Loaded
           ContextMenu: ContextMenu.Types.Model
+          Community: Community.Types.Model
           MapsInstaller: MapsInstaller.Types.Model
           FaceTools: FaceTools.Types.Model
           MordhauConfig: MordhauConfig.Types.Model

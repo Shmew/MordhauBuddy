@@ -65,7 +65,7 @@ module View =
     let private pageListItem (classes: IClasses) model dispatch page =
         listItem
             [ ListItemProp.Button true
-              ListItemProp.Divider(page = Home)
+              ListItemProp.Divider(page = Community)
               HTMLAttr.Selected(model.Page = page)
               HTMLAttr.Disabled <| //Display tool tip here when disabled to explain why
               (match page with
@@ -98,37 +98,27 @@ module View =
         let allResourcesAttempted =
             model.Resources.GameConfig.AttemptedLoad && model.Resources.EngineConfig.AttemptedLoad
             && model.Resources.GameUserConfig.AttemptedLoad && model.Resources.Maps.AttemptedLoad
-
-        let loading =
-            div [ Style [ CSSProp.Padding "10em" ] ]
-                [ typography
-                    [ TypographyProp.Variant TypographyVariant.H6
-                      TypographyProp.Align TypographyAlign.Center
-                      Style [ CSSProp.PaddingBottom "5em" ] ] [ str "Preparing for battle..." ]
-                  circularProgress
-                      [ CircularProgressProp.Size <| CircularProgressSize.Case2 "5em"
-                        Style [ CSSProp.MarginLeft "45%" ] ] ]
+            && model.Resources.Community.AttemptedLoad
 
         match model.Page with
-        | Home ->
+        | Community ->
             let isAnyLoading =
                 model.Resources.GameConfig.Loading || model.Resources.EngineConfig.Loading
                 || model.Resources.GameUserConfig.Loading || model.Resources.Maps.Loading
             match model.IsBridgeConnected, allResourcesAttempted, isAnyLoading with
             | true, true, false ->
-                typography []
-                    [ str
-                        "This app contains simple demos showing how certain Material-UI components can be used with Elmish." ]
+                 if model.Community.LoadingElem then dispatch ResourcesLoaded
             | true, false, false ->
                 match model.Resources with
+                | r when r.Community.AttemptedLoad |> not -> dispatch <| LoadResources(LoadCom)
                 | r when r.GameConfig.AttemptedLoad |> not -> dispatch <| LoadResources(LoadConfig(ConfigFile.Game))
                 | r when r.EngineConfig.AttemptedLoad |> not -> dispatch <| LoadResources(LoadConfig(ConfigFile.Engine))
                 | r when r.GameUserConfig.AttemptedLoad |> not ->
                     dispatch <| LoadResources(LoadConfig(ConfigFile.GameUserSettings))
                 | r when r.Maps.AttemptedLoad |> not -> dispatch <| LoadResources(LoadMap)
                 | _ -> ()
-                loading
-            | _ -> loading
+            | _ -> ()
+            lazyView2 Community.View.view model.Community (CommunityMsg >> dispatch)
         | MapsInstaller -> lazyView2 MapsInstaller.View.view model.MapsInstaller (MapsInstallerMsg >> dispatch)
         | FaceTools -> lazyView2 FaceTools.View.view model.FaceTools (FaceToolsMsg >> dispatch)
         | MordhauConfig -> lazyView2 MordhauConfig.View.view model.MordhauConfig (MordhauConfigMsg >> dispatch)

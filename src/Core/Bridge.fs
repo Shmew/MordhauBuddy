@@ -10,6 +10,7 @@ module Bridge =
     open System.Threading
 
     /// Websocket bridge
+    [<AutoOpen>]
     module Bridge =
         type Model =
             { Game: INIValue option
@@ -57,6 +58,14 @@ module Bridge =
                 match clientMsg with
                 | BridgeOps(ops, caller) ->
                     match ops with
+                    | CommunityOperation cCmd ->
+                        match cCmd with
+                        | GetSteamAnnouncements ->
+                            model,
+                            Community.getSteamAnn()
+                            |> CommunityResult.SteamAnnouncements
+                            |> BridgeResult.Community
+                            |> createClientResp caller None
                     | INIOperation iCmd ->
                         match iCmd with
                         | INIFileOperation.DefaultDir ->
@@ -266,7 +275,7 @@ module Bridge =
             |> Bridge.withConsoleTrace
             |> Bridge.run Giraffe.server
 
-    let server = router { get BridgeOperations.Endpoint Bridge.bridge }
+    let server = router { get BridgeOperations.Endpoint bridge }
 
     let app =
         application {

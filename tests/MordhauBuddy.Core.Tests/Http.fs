@@ -1,10 +1,10 @@
 namespace MordhauBuddy.Core.Tests
 
-module Maps =
+module Http =
     open Expecto
     open MordhauBuddy.Core
     open MordhauBuddy.Shared.ElectronBridge
-    open Maps
+    open MordhauBuddy.Core.Http
     open Helpers
     open System
     open FSharp.Data

@@ -9,7 +9,7 @@ module State =
 
     let pageTitle =
         function
-        | Home -> "Home"
+        | Community -> "Community"
         | MapsInstaller -> "Map Installer"
         | FaceTools -> "Face Tools"
         | MordhauConfig -> "Mordhau Configuration"
@@ -30,12 +30,14 @@ module State =
             <| KeepLast10
 
         let m =
-            { Page = Home
+            { Page = Community
               IsMax = window.isMaximized()
               Store = store
               IsBridgeConnected = false
               Resources =
-                  { GameConfig =
+                  { Community =
+                        { AttemptedLoad = false }
+                    GameConfig =
                         { Path = defaultArg store.GameLocation ""
                           Exists = false
                           Parsed = false
@@ -59,6 +61,7 @@ module State =
                           AttemptedLoad = false
                           Loading = false } }
               ContextMenu = ContextMenu.State.init()
+              Community = Community.State.init()
               MapsInstaller = MapsInstaller.State.init(updateSettings)
               FaceTools = FaceTools.State.init()
               MordhauConfig = MordhauConfig.State.init()
@@ -126,22 +129,34 @@ module State =
         let setMordConfig (model: Model) (mConf: MordhauConfig.Types.Model) = { model with MordhauConfig = mConf }
 
         let settingsSender = BridgeUtils.SettingBridgeSender(Caller.Settings)
+        let comSender = BridgeUtils.CommunityBridgeSender(Caller.Community)
 
     let update msg m =
         match msg with
         | Navigate msg' -> 
-            if msg' <> FaceTools then
-                { m with FaceTools = { m.FaceTools with ImgLoaded = false } }
-            else m
-            |> fun m ->
+            let navFT (m: Model) =
+                if msg' <> FaceTools then
+                    { m with FaceTools = { m.FaceTools with ImgLoaded = false } }
+                else m
+            let navAbout (m: Model) =
                 if msg' <> About then
                     { m with About = { m.About with ImgLoaded = false } }
                 else m
+
+            navFT m
+            |> navAbout
             |> fun m -> { m with Page = msg' }
             , Cmd.none
         | MinMaxMsg msg' -> { m with IsMax = msg' }, Cmd.none
         | LoadResources msg' ->
             match msg' with
+            | LoadCom ->
+                { m.Resources with 
+                    Community = 
+                        { m.Resources.Community with 
+                            AttemptedLoad = true } }
+                |> setResource m            
+                , Cmd.ofMsg LoadCom
             | LoadConfig(cFile) ->
                 match cFile with
                 | ConfigFile.Game -> setLoading true m.Resources.GameConfig
@@ -156,6 +171,8 @@ module State =
                 |> setResource m
                 |> fun m' -> m', Cmd.ofMsg LoadMap
             | _ -> m, Cmd.none
+        | ResourcesLoaded -> { m with Community = { m.Community with LoadingElem = false } }, Cmd.none
+        | LoadCom -> m, Cmd.bridgeSend <| comSender.GetSteamAnnouncements()
         | LoadConfig cFile ->
             let resource, error, setResPath =
                 match cFile with
@@ -210,6 +227,9 @@ module State =
         | ContextMenuMsg msg' ->
             let m', cmd = ContextMenu.State.update msg' m.ContextMenu
             { m with ContextMenu = m' }, Cmd.map ContextMenuMsg cmd
+        | CommunityMsg msg' ->
+            let m', cmd = Community.State.update msg' m.Community
+            { m with Community = m' }, Cmd.map CommunityMsg cmd
         | MapsInstallerMsg msg' ->
             let m', cmd = MapsInstaller.State.update msg' m.MapsInstaller
             { m with MapsInstaller = m' }, Cmd.map MapsInstallerMsg cmd
@@ -293,6 +313,9 @@ module State =
             match msg' with
             | Resp(bMsg) ->
                 match bMsg.Caller with
+                | Caller.Community ->
+                    let m', cmd = Community.State.update (Community.Types.ClientMsg bMsg) m.Community
+                    { m with Community = m' }, Cmd.map CommunityMsg cmd
                 | Caller.MapInstaller ->
                     let m', cmd = MapsInstaller.State.update (MapsInstaller.Types.ClientMsg bMsg) m.MapsInstaller
                     { m with MapsInstaller = m' }, Cmd.map MapsInstallerMsg cmd

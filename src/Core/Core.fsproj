@@ -12,7 +12,8 @@
     <Compile Include="INIReader.fs" />
     <Compile Include="INIConfiguration.fs" />
     <Compile Include="FileOperations.fs" />
-    <Compile Include="Maps.fs" />
+    <Compile Include="ComOperations.fs" />
+    <Compile Include="Http.fs" />
     <Compile Include="BridgeOperations.fs" />
     <Compile Include="Bridge.fs" />
     <None Include="paket.references" />

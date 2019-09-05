@@ -6,8 +6,8 @@ open FSharp.Data
 open FSharp.Json
 open MordhauBuddy.Shared.ElectronBridge
 
-/// Module for map related tasks
-module Maps =
+/// Module for http related tasks
+module Http =
     /// Record for download requests
     type DownloadFile =
         { Url: string
@@ -222,13 +222,13 @@ module Maps =
             { Size: string }
 
         /// Github base uri
-        let private baseUri = @"https://api.github.com"
+        let private ghBaseUri = @"https://api.github.com"
 
         /// Header options for requests
         [<RequireQualifiedAccess>]
-        type internal ReqHeaders =
+        type private ReqHeaders =
             | Github
-            | GoogleDrive
+            | Generic
             member this.Headers =
                 match this with
                 | Github ->
@@ -238,49 +238,42 @@ module Maps =
                       HttpRequestHeaders.ContentType HttpContentTypes.Json
                       HttpRequestHeaders.ContentEncoding "UTF8"
                       HttpRequestHeaders.UserAgent "MordhauBuddy" ]
-                | GoogleDrive ->
+                | Generic ->
                     [ HttpRequestHeaders.Accept @"*/*"
                       HttpRequestHeaders.UserAgent "MordhauBuddy" ]
 
         /// Wrapper function to make http requests
-        let internal makeRequest (req: unit -> HttpResponse) =
+        let private makeRequest (req: unit -> HttpResponse) =
             try
                 req()
-            with e -> sprintf "Error making HTTP request via %s%c%s" baseUri '\n' e.Message |> failwith
+            with e -> sprintf "Error making HTTP request: %s" e.Message |> failwith
             |> Http.httpOk
 
-        let internal makeRequestStream (req: unit -> HttpResponseWithStream) =
+        let private makeRequestStream (req: unit -> HttpResponseWithStream) =
             try
                 req()
-            with e -> sprintf "Error making HTTP request via %s%c%s" baseUri '\n' e.Message |> failwith
+            with e -> sprintf "Error making HTTP request: %s" e.Message |> failwith
             |> Http.httpStreamOk
 
-        let internal get (path: string, parameters: string option, headers: ReqHeaders) =
+        let private get (path: string, parameters: string option, headers: ReqHeaders) =
             let req() =
                 Http.Request
-                    (baseUri + path + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
+                    (path + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
                      timeout = 100000)
             makeRequest req
 
-        let internal getDirect (fullPath: string, parameters: string option, headers: ReqHeaders) =
-            let req() =
-                Http.Request
-                    (fullPath + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
-                     timeout = 100000)
-            makeRequest req
-
-        let internal getDirectAsync (fullPath: string, parameters: string option, headers: ReqHeaders) =
+        let private getStringAsync (path: string, parameters: string option, headers: ReqHeaders) =
             Http.AsyncRequestString
-                (fullPath + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers, timeout = 100000)
+                (path + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers, timeout = 100000)
 
-        let internal getStream (downloadUrl: string, parameters: string option, headers: ReqHeaders) =
+        let private getStream (downloadUrl: string, parameters: string option, headers: ReqHeaders) =
             let req() =
                 Http.RequestStream
                     (downloadUrl + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
                      timeout = 100000)
             makeRequestStream req
 
-        let internal getGDStream (downloadUrl: string, parameters: string option, headers: ReqHeaders) =
+        let private getGDStream (downloadUrl: string, parameters: string option, headers: ReqHeaders) =
             let req() =
                 Http.RequestStream
                     (downloadUrl + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
@@ -294,20 +287,20 @@ module Maps =
                 |> List.map (fun c ->
                     async {
                         try
-                            let! result = getDirectAsync (c.DownloadUrl, None, ReqHeaders.Github)
+                            let! result = getStringAsync (c.DownloadUrl, None, ReqHeaders.Github)
                             return result |> Some
                         with _ -> return None
                     })
                 |> Async.Parallel
                 |> Async.RunSynchronously
                 |> List.ofArray
-            get ("/repos/MordhauMappingModding/InfoFiles/contents", None, ReqHeaders.Github)
+            get (ghBaseUri + "/repos/MordhauMappingModding/InfoFiles/contents", None, ReqHeaders.Github)
             |> Result.map (Json.deserializeEx<GHContents list> Json.config)
             |> Result.map downloadInfoFiles
 
         /// Get map zip list
         let getMapFiles() =
-            get ("/repos/MordhauMappingModding/MapsFiles/contents", None, ReqHeaders.Github)
+            get (ghBaseUri + "/repos/MordhauMappingModding/MapsFiles/contents", None, ReqHeaders.Github)
             |> Result.map (Json.deserializeEx<GHContents list> Json.config)
 
         /// Download a file to the given directory with continuations
@@ -323,12 +316,12 @@ module Maps =
                     [ Param(("key", gdKey.Key))
                       Param(("fields", Some("size"))) ]
                     |> Http.paramBuilder
-                    |> fun s -> getDirect (download.Url, Some(s), ReqHeaders.GoogleDrive)
+                    |> fun s -> get (download.Url, Some(s), ReqHeaders.Generic)
                     |> Result.map ((Json.deserializeEx<GDSize> Json.config) >> (fun gdSize -> gdSize.Size))
                 [ Param(("key", gdKey.Key))
                   Param(("alt", Some("media"))) ]
                 |> Http.paramBuilder
-                |> (fun s -> async { return getGDStream (download.Url, Some(s), ReqHeaders.GoogleDrive) })
+                |> (fun s -> async { return getGDStream (download.Url, Some(s), ReqHeaders.Generic) })
                 |> fun s -> Streaming.downloadFile download s size cToken
                 getInfoFiles()
                 |> function
@@ -344,3 +337,14 @@ module Maps =
                     | _ -> ()
                 | _ -> ()
             | _ -> download.ErrorFun "Failed to get Google Drive key"
+
+        let tryGetSteamAnnRSS() =
+            async {
+                try
+                    let! result = getStringAsync(@"https://steamcommunity.com/games/629760/rss/", None, ReqHeaders.Generic)
+                    return result |> Some
+                with _ -> return None
+            }
+            |> Async.RunSynchronously
+            |> Option.map ComOperations.getAnnouncements
+            |> Option.flatten

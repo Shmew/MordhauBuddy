@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>GHTypes - MordhauBuddy</title>
+    <title>Streaming - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,37 +34,46 @@
 
 
 
-<h1>GHTypes</h1>
+<h1>Streaming</h1>
 <p>
   <span>Namespace: MordhauBuddy.Core</span><br />
-  <span>Parent Module: <a href="mordhaubuddy-core-maps.html">Maps</a></span>
+  <span>Parent Module: <a href="mordhaubuddy-core-http-helpers.html">Helpers</a></span>
   </p>
 <div class="xmldoc">
+<p>Helper module for streams</p>
+
 </div>
 
 <!-- Render nested types and modules, if there are any -->
-  <h2>Nested types and modules</h2>
-  <div>
-      <table class="table table-bordered type-list">
+
+  <h3>Functions and values</h3>
+  <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Type</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
-        <tr>
-          <td class="type-name">
-            <a href="mordhaubuddy-core-maps-ghtypes-ghcontents.html">GHContents</a>
-          </td>
-          <td class="xmldoc">
-          <p>Record to represent GH content api response</p>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '211', 211)" onmouseover="showTip(event, '211', 211)">
+            downloadFile(...)
+          </code>
+          <div class="tip" id="211">
+            <strong>Signature:</strong> downloadFile:DownloadFile -&gt; stream:Async&lt;Result&lt;Stream,string&gt;&gt; -&gt; size:Result&lt;string,string&gt; -&gt; cToken:CancellationToken -&gt; unit<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L134-134" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Download and extract a file with continuations and progress updates</p>
 
 
-          </td>
-        </tr>
+        </td>
+      </tr>
     </tbody>
   </table>
-
-  </div>
-
 
         </div>
         <div class="span3">

@@ -3,6 +3,10 @@ namespace MordhauBuddy.App
 module BridgeUtils =
     open MordhauBuddy.Shared.ElectronBridge
 
+    type CommunityBridgeSender(caller: Caller) =
+        let wrapComs cCmd = BridgeOps(CommunityOperation(cCmd), caller)
+        member this.GetSteamAnnouncements() = CommunityOperation.GetSteamAnnouncements |> wrapComs
+
     type INIBridgeSender(caller: Caller) =
         let wrapOps iCmd = BridgeOps(INIOperation(iCmd), caller)
         let wrapFace fCmd = BridgeOps(Faces(fCmd), caller)
@@ -571,6 +575,40 @@ module RenderUtils =
               Players = validateInfo 7 validatePlayers
               Image = validateInfo 8 validateUri
               GoogleDriveID = validateInfo 9 validateGDrive }
+
+    module HtmlParsing =
+        open System.Text.RegularExpressions
+        let htmlClass = "(class=\".*?\")"
+        let htmlImg = "<img "
+        let htmlA = "<a "
+        let steamLinkFilter = "https:\/\/steamcommunity.com\/linkfilter\/\?url="
+
+        let stripClasses (s: string) =
+            Regex(htmlClass, RegexOptions.IgnoreCase).Replace(s, "")
+
+        let private addImgClasses (newClass: string) (s: string) =
+            Regex(htmlImg, RegexOptions.IgnoreCase).Replace(s, sprintf "$& class=\"%s\"" (newClass + "Img"))
+
+        let private addAClasses (newClass: string) (s: string) =
+            Regex(htmlA, RegexOptions.IgnoreCase).Replace(s, sprintf "$& class=\"%s\"" (newClass + "A"))
+
+        let private stripSteamRedirects (s: string) =
+            Regex(steamLinkFilter, RegexOptions.IgnoreCase).Replace(s, "")
+
+        let rec private trimEndBr (s: string) =
+            if s.EndsWith(@"<br>") then trimEndBr (s.Substring(0,s.Length - 4))
+            else s
+
+        let formatRawHtml (newClass: string) (sList: (string * string) list) =
+            sList
+            |> List.map (fun (title, body) ->
+                title,
+                body.Trim() 
+                |> trimEndBr
+                |> stripClasses
+                |> addImgClasses newClass
+                |> addAClasses newClass
+                |> stripSteamRedirects)
 
     module rec EngineMods =
         let cosmetics =

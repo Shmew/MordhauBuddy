@@ -17,6 +17,9 @@
     <Compile Include="Snackbar\Types.fs" />
     <Compile Include="Snackbar\State.fs" />
     <Compile Include="Snackbar\View.fs" />
+    <Compile Include="Community\Types.fs" />
+    <Compile Include="Community\State.fs" />
+    <Compile Include="Community\View.fs" />
     <Compile Include="Settings\Types.fs" />
     <Compile Include="Settings\State.fs" />
     <Compile Include="Settings\View.fs" />

@@ -4,6 +4,17 @@ open MordhauBuddy.Shared.ElectronBridge
 
 /// Mapping of internal functions to client requests
 module BridgeOperations =
+    /// Community related bridge commands
+    [<RequireQualifiedAccess>]
+    module Community =
+        open Http.WebRequests
+
+        /// Try to get a list of stream announcements for Mordhau
+        let getSteamAnn() =
+            match tryGetSteamAnnRSS() with
+            | Some(sList) -> sList
+            | _ -> []
+
     /// INI related bridge commands
     [<RequireQualifiedAccess>]
     module INI =
@@ -74,8 +85,8 @@ module BridgeOperations =
     /// Map related bridge commands
     [<RequireQualifiedAccess>]
     module Maps =
-        open Maps
-        open Maps.WebRequests
+        open Http
+        open Http.WebRequests
         open System
         open System.Threading
 
