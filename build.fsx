@@ -316,9 +316,12 @@ Target.create "Restore" <| fun _ ->
 // Add task to make Node.js cli ready
 Target.create "YarnInstall" <| fun _ ->
     let setParams (defaults:Yarn.YarnParams) =
-        { defaults with
-            Yarn.YarnParams.YarnFilePath = (__SOURCE_DIRECTORY__ @@ "packages/tooling/Yarnpkg.Yarn/content/bin/yarn.cmd")
-        }
+        if Environment.isLinux then
+            defaults
+        else
+            { defaults with
+                Yarn.YarnParams.YarnFilePath = (__SOURCE_DIRECTORY__ @@ "packages/tooling/Yarnpkg.Yarn/content/bin/yarn.cmd")
+            }
     Yarn.install setParams
 
 // --------------------------------------------------------------------------------------
@@ -707,7 +710,7 @@ Target.create "All" ignore
 
 "Dist" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigRelease"]
 
-"DistDir" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigRelease"]
+"DistDir" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigDebug"]
 
 "Publish" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigRelease"]
 

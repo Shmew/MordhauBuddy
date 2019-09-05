@@ -15,6 +15,8 @@ module FileOps =
         /// Try to find the configuration directory
         let defaultDir =
             let bindDirectory (dir: string) =
+                Console.WriteLine("Binding directory")
+                Console.WriteLine(dir)
                 IO.DirectoryInfo dir
                 |> DirectoryInfo.exists
                 |> function
@@ -27,12 +29,16 @@ module FileOps =
                 |> (fun fol -> fol @@ @"Mordhau\Saved\Config\WindowsClient")
                 |> bindDirectory
             | false ->
-                [ "~/.steam/steam"; "~/.local/share/Steam" ]
+                [ ".steam/steam"; ".local/share/Steam" ]
+                |> List.map (fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
+                |> List.map (fun s -> 
+                    Console.WriteLine(s) 
+                    s)
                 |> List.tryFind (bindDirectory >> Option.isSome)
                 |> Option.bind
                     (fun dir ->
                     dir
-                    @@ "steamapps/compatdata/629760/pfx/drive_c/Users/steamuser/AppData/Local"
+                    @@ "steamapps/compatdata/629760/pfx/drive_c/users/steamuser/AppData/Local"
                        @@ "Mordhau/Saved/Config/WindowsClient" |> Some)
                 |> Option.bind bindDirectory
 
@@ -117,8 +123,9 @@ module FileOps =
                     [ @"C:\Program Files (x86)"; @"C:\Program Files" ]
                     |> List.map (fun fol -> fol @@ @"Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps")
                 | false ->
-                    [ "~/.steam/steam"; "~/.local/share/Steam" ]
-                    |> List.map (fun fol -> fol @@ @"Steam/steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps")
+                    [ ".steam/steam"; ".local/share/Steam" ]
+                    |> List.map (fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
+                    |> List.map (fun fol -> fol @@ @"steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps")
 
             let bindDirectory (dir: string) =
                 IO.DirectoryInfo dir
