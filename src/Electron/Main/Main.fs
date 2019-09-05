@@ -185,8 +185,8 @@ module Main =
         createMainWindow()
         createTray()
         if main.app.isPackaged then
-            ElectronUpdater.autoUpdater.checkForUpdatesAndNotify()
-            |> Promise.start
+            let autoUpdater: ElectronUpdater.AutoUpdater = importMember "electron-updater"
+            autoUpdater.checkForUpdatesAndNotify()
         ) |> ignore
     /// Quit when all windows are closed.
     main.app.onWindowAllClosed (fun _ ->

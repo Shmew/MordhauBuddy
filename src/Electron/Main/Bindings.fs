@@ -130,7 +130,7 @@ module Bindings =
         type UpdateCheckResult =
             /// Emitted when an authenticating proxy is asking for user credentials.
             abstract updateInfo: UpdateInfo
-            abstract downloadPromise: JS.Promise<string []>
+            abstract downloadPromise: string []
             abstract cancellationToken: obj
 
         type UpdaterSignal =
@@ -184,12 +184,12 @@ module Bindings =
             /// instead of `autoUpdater.on('update-available', () => {})`
             abstract signals: obj with get, set
             /// Asks the server whether there is an update.
-            abstract checkForUpdates: unit -> JS.Promise<UpdateCheckResult>
+            abstract checkForUpdates: unit -> UpdateCheckResult
             /// Asks the server whether there is an update, download and notify if update available.
-            abstract checkForUpdatesAndNotify: unit -> JS.Promise<unit>
+            abstract checkForUpdatesAndNotify: unit -> unit
             /// Start downloading update manually. You can use this method if `autoDownload` 
             /// option is set to `false`. Returns the path to the downloaded file
-            abstract downloadUpdate: cancellationToken:obj -> JS.Promise<'t>
+            abstract downloadUpdate: cancellationToken:obj -> 't
             /// Restarts the app and installs the update after it has been downloaded. 
             /// It should only be called after update-downloaded has been emitted.
             ///
@@ -201,6 +201,3 @@ module Bindings =
             /// - isForceRunAfter - Run the app after finish even on silent install. *Not applicable for macOS*. 
             /// Ignored if isSilent is set to `false`.
             abstract quitAndInstall: isSilent:bool * isForceRunAfter:bool -> unit
-
-        [<Emit("require('electron-updater')")>]
-        let autoUpdater: AutoUpdater = jsNative

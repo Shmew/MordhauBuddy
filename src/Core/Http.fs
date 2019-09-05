@@ -203,6 +203,7 @@ module Http =
         /// Json helpers
         module Json =
             /// Set FSharp.Json configuration
+            [<System.Diagnostics.CodeAnalysis.SuppressMessage("*", "*")>]
             let config =
                 JsonConfig.create
                     (jsonFieldNaming = Json.lowerCamelCase, allowUntyped = true, serializeNone = SerializeNone.Omit)

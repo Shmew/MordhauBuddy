@@ -112,9 +112,9 @@ module Store =
         let store = getStore.Create(jsOptions<Options> (fun o -> o.defaults <- defaults))
 
     let init() = 
-#if DEBUG
-        ElectronStore.store.openInEditor()
-#endif
+//#if DEBUG
+//        ElectronStore.store.openInEditor()
+//#endif
         ElectronStore.store.store
         
     let private set m =
