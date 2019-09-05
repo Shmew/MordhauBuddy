@@ -33,4 +33,4 @@ module Types =
           MapsDir: ConfigDir
           MapUpdateSettings: UpdateSettings
           BackupSettings: BackupSettings
-          AutoLaunch: bool}
+          AutoLaunch: bool }

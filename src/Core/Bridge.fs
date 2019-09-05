@@ -16,7 +16,7 @@ module Bridge =
             { Game: INIValue option
               Engine: INIValue option
               GameUserSettings: INIValue option
-              InstallingMaps: (string * CancellationTokenSource) list 
+              InstallingMaps: (string * CancellationTokenSource) list
               BackupSettings: BackupSettings }
             member this.GetIVal(file: ConfigFile) =
                 match file with
@@ -43,9 +43,9 @@ module Bridge =
         let private cleanBackupsAsync (bSet: BackupSettings) (fList: INIFile list) =
             async {
                 do! Async.Sleep 10000
-                fList
-                |> List.iter (BridgeOperations.INI.cleanBackups bSet)
-            } |> Async.Start
+                fList |> List.iter (BridgeOperations.INI.cleanBackups bSet)
+            }
+            |> Async.Start
 
         let update (clientDispatch: Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model: Model) =
             let updateModel (file: ConfigFile) (iOpt: INIValue option) model =
@@ -250,20 +250,20 @@ module Bridge =
                     | SettingsOperation sCmd ->
                         let cResp br = createClientResp caller None br
                         match sCmd with
-                        | EnableAutoLaunch -> 
+                        | EnableAutoLaunch ->
                             model,
                             Settings.enableAutoLaunch()
                             |> SettingResult.EnabledAutoLaunch
                             |> BridgeResult.Settings
                             |> cResp
-                        | DisableAutoLaunch -> 
+                        | DisableAutoLaunch ->
                             model,
                             Settings.disableAutoLaunch()
                             |> SettingResult.DisabledAutoLaunch
                             |> BridgeResult.Settings
                             |> cResp
-                        | BackupPolicy(bSet) ->
-                            { model with BackupSettings = bSet }, None
+                        | BackupPolicy(bSet) -> { model with BackupSettings = bSet }, None
+
 
             match remoteCMsg with
             | Some(rMsg) -> Resp(rMsg) |> clientDispatch

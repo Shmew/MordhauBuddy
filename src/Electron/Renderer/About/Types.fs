@@ -13,7 +13,7 @@ module Types =
     open MordhauBuddy.Shared.ElectronBridge
     open Microsoft.FSharp.Reflection
 
-    type Msg = 
+    type Msg =
         | OpenLink of string
         | ImgSkeleton
 

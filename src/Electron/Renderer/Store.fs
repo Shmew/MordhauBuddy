@@ -89,8 +89,10 @@ module Store =
             abstract openInEditor: unit -> unit
 
         type StoreStatic =
+
             [<EmitConstructor>]
             abstract Create: unit -> Store
+
 
             [<EmitConstructor>]
             abstract Create: Options -> Store
@@ -109,14 +111,15 @@ module Store =
               BackupSettings = "KeepLast10" }
             |> toPlainJsObj
 
+        /// Create store object
         let store = getStore.Create(jsOptions<Options> (fun o -> o.defaults <- defaults))
 
-    let init() = 
-//#if DEBUG
-//        ElectronStore.store.openInEditor()
-//#endif
+    let init() =
+        //#if DEBUG
+        //        ElectronStore.store.openInEditor()
+        //#endif
         ElectronStore.store.store
-        
+
     let private set m =
         ElectronStore.store.set (m |> toPlainJsObj)
         m

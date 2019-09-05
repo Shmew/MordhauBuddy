@@ -47,12 +47,9 @@ module View =
                           CSSProp.MaxHeight "4em" ] ] [ str "Select" ] ]
 
     let private selectMenuItems opt =
-        menuItem 
+        menuItem
             [ HTMLAttr.Value opt
-              Prop.Key opt ]
-            [ div 
-                []
-                [ typography [] [ str opt ] ] ]
+              Prop.Key opt ] [ div [] [ typography [] [ str opt ] ] ]
 
     let private selectForm (classes: IClasses) model dispatch (inputL: ReactElement) (selects: ReactElement) =
         div
@@ -60,49 +57,49 @@ module View =
                 [ CSSProp.Padding "2em"
                   CSSProp.Display DisplayOptions.Flex
                   CSSProp.MinHeight "8em" ] ]
-            [
-            form 
-                [ DOMAttr.OnSubmit <| fun ev -> ev.preventDefault() ]
-                [ formControl
-                    [ MaterialProp.FullWidth true
-                      FormControlProp.Variant FormControlVariant.Outlined
-                      Style
-                        [ CSSProp.MinWidth "25em" ]]
-                    [ inputL; selects ] ] ]
+            [ form [ DOMAttr.OnSubmit <| fun ev -> ev.preventDefault() ]
+                  [ formControl
+                      [ MaterialProp.FullWidth true
+                        FormControlProp.Variant FormControlVariant.Outlined
+                        Style [ CSSProp.MinWidth "25em" ] ] [ inputL; selects ] ] ]
 
     let private selectUpdate (classes: IClasses) model dispatch =
-        let inputL = inputLabel [] [ str "Map update settings" ] 
+        let inputL = inputLabel [] [ str "Map update settings" ]
         select
             [ HTMLAttr.Value model.MapUpdateSettings.Text
-              DOMAttr.OnChange <| fun ev -> ev.Value |> UpdateSettings.TryGetCaseFromText |> MapUpdateSetting |> dispatch 
-              SelectProp.Variant SelectVariant.Outlined 
+              DOMAttr.OnChange <| fun ev ->
+                  ev.Value
+                  |> UpdateSettings.TryGetCaseFromText
+                  |> MapUpdateSetting
+                  |> dispatch
+              SelectProp.Variant SelectVariant.Outlined
               SelectProp.Input <| outlinedInput [ OutlinedInputProp.LabelWidth 150 ] [] ]
             (UpdateSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text))
         |> selectForm classes model dispatch inputL
 
     let private selectBackup (classes: IClasses) model dispatch =
-        let inputL = inputLabel [] [ str "Backup settings" ] 
+        let inputL = inputLabel [] [ str "Backup settings" ]
         select
             [ HTMLAttr.Value model.BackupSettings.Text
-              DOMAttr.OnChange <| fun ev -> ev.Value |> BackupSettings.TryGetCaseFromText |> BackupSetting |> dispatch 
-              SelectProp.Variant SelectVariant.Outlined 
+              DOMAttr.OnChange <| fun ev ->
+                  ev.Value
+                  |> BackupSettings.TryGetCaseFromText
+                  |> BackupSetting
+                  |> dispatch
+              SelectProp.Variant SelectVariant.Outlined
               SelectProp.Input <| outlinedInput [ OutlinedInputProp.LabelWidth 120 ] [] ]
             (BackupSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text))
         |> selectForm classes model dispatch inputL
 
     let private toggleAutoLaunch (classes: IClasses) model dispatch =
-        formControl [ Style [ CSSProp.Padding "0em 1em" ] ] [
-            formGroup [] [
-                formControlLabel [
-                    FormControlLabelProp.Control 
-                    <| switch
-                            [ HTMLAttr.Checked(model.AutoLaunch) 
-                              DOMAttr.OnClick <| fun _ -> (dispatch ToggleAutoLaunch) ]
-                    FormControlLabelProp.LabelPlacement FormControlLabelPlacement.Top
-                    HTMLAttr.Label "Launch application on startup"
-                ] []
-            ]
-        ]
+        formControl [ Style [ CSSProp.Padding "0em 1em" ] ]
+            [ formGroup []
+                  [ formControlLabel
+                      [ FormControlLabelProp.Control <| switch
+                                                            [ HTMLAttr.Checked(model.AutoLaunch)
+                                                              DOMAttr.OnClick <| fun _ -> (dispatch ToggleAutoLaunch) ]
+                        FormControlLabelProp.LabelPlacement FormControlLabelPlacement.Top
+                        HTMLAttr.Label "Launch application on startup" ] [] ] ]
 
     let private view' (classes: IClasses) model dispatch =
         let dConf (dir: ConfigDir) = dirConfig classes model dispatch dir
@@ -116,8 +113,8 @@ module View =
                   [ dConf model.GameDir
                     dConf model.EngineDir
                     dConf model.GameUserDir
-                    dConf model.MapsDir 
-                    div [ Style [ CSSProp.Display DisplayOptions.InlineFlex ] ] 
+                    dConf model.MapsDir
+                    div [ Style [ CSSProp.Display DisplayOptions.InlineFlex ] ]
                         [ selectUpdate classes model dispatch
                           selectBackup classes model dispatch ]
                     toggleAutoLaunch classes model dispatch ] ]

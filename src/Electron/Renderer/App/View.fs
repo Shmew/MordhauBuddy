@@ -55,44 +55,42 @@ module View =
                  CSSProp.PaddingBottom "2em" ])
           Styles.Custom'("toolbar", theme.mixins.toolbar)
           Styles.Custom
-              ("navBadge", 
+              ("navBadge",
                [ CSSProp.Float "right"
                  CSSProp.Padding "1em"
                  CSSProp.MaxHeight "0em"
                  CSSProp.MarginBottom "-1em"
-                 CSSProp.MarginTop "-0.25em" ])]
+                 CSSProp.MarginTop "-0.25em" ]) ]
 
     let private pageListItem (classes: IClasses) model dispatch page =
         listItem
             [ ListItemProp.Button true
               ListItemProp.Divider(page = Community)
               HTMLAttr.Selected(model.Page = page)
-              HTMLAttr.Disabled <|
-              (match page with
-               | MapsInstaller -> model.MapsInstaller.MapsDir.Directory = ""
-               | FaceTools -> model.FaceTools.GameDir.Directory = ""
-               | MordhauConfig ->
-                   model.MordhauConfig.EngineDir.Directory = "" || model.MordhauConfig.GameUserDir.Directory = ""
-               | _ -> false
-               |> fun b -> b || (not model.IsBridgeConnected))
+              HTMLAttr.Disabled <| (match page with
+                                    | MapsInstaller -> model.MapsInstaller.MapsDir.Directory = ""
+                                    | FaceTools -> model.FaceTools.GameDir.Directory = ""
+                                    | MordhauConfig ->
+                                        model.MordhauConfig.EngineDir.Directory = ""
+                                        || model.MordhauConfig.GameUserDir.Directory = ""
+                                    | _ -> false
+                                    |> fun b -> b || (not model.IsBridgeConnected))
               Key(pageTitle page)
               DOMAttr.OnClick(fun _ -> Navigate page |> dispatch) ]
             [ listItemText []
-                  [ yield page |> pageTitle |> str
+                  [ yield page
+                          |> pageTitle
+                          |> str
                     if page = MapsInstaller then
-                        yield
-                            badge
-                                [ Class classes?navBadge
-                                  BadgeProp.Color BadgeColor.Primary
-                                  BadgeProp.Max 20
-                                  BadgeProp.Invisible <|
-                                    (model.MapsInstaller.UpdatesAvailable = 0 ||
-                                        match model.MapsInstaller.UpdateSettings with
-                                        | UpdateSettings.NotifyOnly -> false
-                                        | _ -> true)
-                                  BadgeProp.BadgeContent <| ofInt (model.MapsInstaller.UpdatesAvailable) ]
-                                [] ] 
-                    ]
+                        yield badge
+                                  [ Class classes?navBadge
+                                    BadgeProp.Color BadgeColor.Primary
+                                    BadgeProp.Max 20
+                                    BadgeProp.Invisible <| (model.MapsInstaller.UpdatesAvailable = 0 || match model.MapsInstaller.UpdateSettings with
+                                                                                                        | UpdateSettings.NotifyOnly ->
+                                                                                                            false
+                                                                                                        | _ -> true)
+                                    BadgeProp.BadgeContent <| ofInt (model.MapsInstaller.UpdatesAvailable) ] [] ] ]
 
     let private pageView (classes: IClasses) model dispatch =
         let allResourcesAttempted =
@@ -107,7 +105,7 @@ module View =
                 || model.Resources.GameUserConfig.Loading || model.Resources.Maps.Loading
             match model.IsBridgeConnected, allResourcesAttempted, isAnyLoading with
             | true, true, false ->
-                 if model.Community.LoadingElem then dispatch ResourcesLoaded
+                if model.Community.LoadingElem then dispatch ResourcesLoaded
             | true, false, false ->
                 match model.Resources with
                 | r when r.Community.AttemptedLoad |> not -> dispatch <| LoadResources(LoadCom)
@@ -125,7 +123,7 @@ module View =
         | Settings -> lazyView2 Settings.View.view model.Settings (SettingsMsg >> dispatch)
         | About -> lazyView2 About.View.view model.About (AboutMsg >> dispatch)
 
-    let private menuView (classes: IClasses) model dispatch = 
+    let private menuView (classes: IClasses) model dispatch =
         lazyView2 ContextMenu.View.view model.ContextMenu (ContextMenuMsg >> dispatch)
 
     let private getTheme (m: Model) =
@@ -285,26 +283,25 @@ module View =
                                        else "#3700B3")
                                   CSSProp.MinHeight "0px"
                                   CSSProp.Custom("WebkitAppRegion", "drag") ] ]
-                              [ div [
-                                    Style
+                              [ div
+                                  [ Style
                                       [ CSSProp.Width "93%"
                                         CSSProp.Padding "5px"
-                                        CSSProp.Display DisplayOptions.InlineFlex ]
-                                ] [
-                                    img
+                                        CSSProp.Display DisplayOptions.InlineFlex ] ]
+                                    [ img
                                         [ HTMLAttr.Src(stat "MB_SquareFullRes.png")
                                           HTMLAttr.Width "25px"
                                           HTMLAttr.Height "25px"
-                                          Style [ 
-                                            CSSProp.BorderRadius "4px"
-                                            CSSProp.MarginRight "1em"] ]
-                                    typography
-                                      [ TypographyProp.Variant TypographyVariant.Subtitle2
-                                        Style
-                                            [ CSSProp.Width "93%"
-                                              CSSProp.PaddingTop "2px"
-                                              CSSProp.Color "#ffffff" ] ]
-                                        [ sprintf "%s - %s" Info.name Info.version |> str ] ]
+                                          Style
+                                              [ CSSProp.BorderRadius "4px"
+                                                CSSProp.MarginRight "1em" ] ]
+                                      typography
+                                          [ TypographyProp.Variant TypographyVariant.Subtitle2
+                                            Style
+                                                [ CSSProp.Width "93%"
+                                                  CSSProp.PaddingTop "2px"
+                                                  CSSProp.Color "#ffffff" ] ]
+                                          [ sprintf "%s - %s" Info.name Info.version |> str ] ]
                                 iconButton
                                     [ DOMAttr.OnClick(fun _ -> window.minimize())
                                       Class classes?titleButton ] [ windowMinimizeIcon [] ]
@@ -328,17 +325,15 @@ module View =
                                     [ DOMAttr.OnClick(fun _ -> window.hide())
                                       Class classes?titleButton ] [ windowCloseIcon [] ] ]
                           toolbar [ Style [ CSSProp.PaddingRight "0" ] ]
-                              [ div [
-                                    Style [ CSSProp.Width "100%" ]
-                                ] [
-                                    img
-                                      [ HTMLAttr.Src(stat "MB_HorizFullRes.png")
-                                        HTMLAttr.Width "auto"
-                                        HTMLAttr.Height "70px"
-                                        Style [ 
-                                          CSSProp.BorderRadius "4px"
-                                          CSSProp.Display DisplayOptions.Block 
-                                          CSSProp.Padding "0.2em 2em"] ] ]
+                              [ div [ Style [ CSSProp.Width "100%" ] ]
+                                    [ img
+                                        [ HTMLAttr.Src(stat "MB_HorizFullRes.png")
+                                          HTMLAttr.Width "auto"
+                                          HTMLAttr.Height "70px"
+                                          Style
+                                              [ CSSProp.BorderRadius "4px"
+                                                CSSProp.Display DisplayOptions.Block
+                                                CSSProp.Padding "0.2em 2em" ] ] ]
                                 iconButton
                                     [ DOMAttr.OnClick(fun _ ->
                                         Store.Msg.ToggleDarkTheme

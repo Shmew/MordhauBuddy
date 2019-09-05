@@ -259,8 +259,7 @@ module Http =
         let private get (path: string, parameters: string option, headers: ReqHeaders) =
             let req() =
                 Http.Request
-                    (path + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
-                     timeout = 100000)
+                    (path + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers, timeout = 100000)
             makeRequest req
 
         let private getStringAsync (path: string, parameters: string option, headers: ReqHeaders) =
@@ -342,7 +341,8 @@ module Http =
         let tryGetSteamAnnRSS() =
             async {
                 try
-                    let! result = getStringAsync(@"https://steamcommunity.com/games/629760/rss/", None, ReqHeaders.Generic)
+                    let! result = getStringAsync
+                                      (@"https://steamcommunity.com/games/629760/rss/", None, ReqHeaders.Generic)
                     return result |> Some
                 with _ -> return None
             }

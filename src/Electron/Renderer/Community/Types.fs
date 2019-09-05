@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.Community
+namespace MordhauBuddy.App.Community
 
 module Types =
     open System

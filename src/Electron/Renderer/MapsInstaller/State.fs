@@ -14,7 +14,7 @@ module State =
     open Types
     open Electron
 
-    let init(uSet: UpdateSettings) =
+    let init (uSet: UpdateSettings) =
         { MapsDir =
               { Dir = DirLoad.MapDir
                 Directory = ""
@@ -102,9 +102,9 @@ module State =
             model.Available
             |> List.choose (fun aMap ->
                 if model.Installed |> List.exists (fun iMap -> iMap.Map.Folder = aMap.Map.Folder) then
-                    aMap.Map.Folder 
-                    |> Install 
-                    |> Cmd.ofMsg 
+                    aMap.Map.Folder
+                    |> Install
+                    |> Cmd.ofMsg
                     |> Some
                 else None)
 
@@ -161,14 +161,13 @@ module State =
                                   cList
                                   |> List.map (getComMap >> CommunityMapWithState.Init)
                                   |> List.sortBy (fun k -> k.Map.GetName()) }
-                        |> fun newM -> 
-                            { newM with 
-                                Available = calcAvailableMaps newM
-                                UpdatesAvailable = (getInstalledAvailable model).Length }
+                        |> fun newM ->
+                            { newM with
+                                  Available = calcAvailableMaps newM
+                                  UpdatesAvailable = (getInstalledAvailable model).Length }
                     match model.UpdateSettings with
                     | InstalledAndNew
-                    | OnlyInstalled
-                        -> Cmd.ofMsg UpdateMaps
+                    | OnlyInstalled -> Cmd.ofMsg UpdateMaps
                     | _ -> Cmd.none
                     |> fun cmd -> m, cmd
                 | MapResult.InstalledMaps cList ->
@@ -253,16 +252,18 @@ module State =
             | true, Some(h) -> m, Cmd.bridgeSend (sender.Install(createMTarget m h))
             | _ -> m, Cmd.none
         | InstallAll -> model, Cmd.batch (model.Available |> List.map (fun m -> Install(m.Map.Folder) |> Cmd.ofMsg))
-        | Update up -> 
+        | Update up ->
             match up with
             | InstalledAndNew
-            | OnlyInstalled
-                ->
-                { model with 
-                    UpdateSettings = up
-                    Updating = true }
+            | OnlyInstalled ->
+                { model with
+                      UpdateSettings = up
+                      Updating = true }
             | _ -> { model with UpdateSettings = up }
-            |> fun m -> m, if model.Updating then Cmd.none else Cmd.ofSub autoUpdate
+            |> fun m ->
+                m, (
+                if model.Updating then Cmd.none
+                else Cmd.ofSub autoUpdate)
         | UpdateMaps ->
             match model.UpdateSettings with
             | InstalledAndNew -> model, Cmd.ofMsg InstallAll

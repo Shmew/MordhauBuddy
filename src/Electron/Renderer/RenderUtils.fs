@@ -1,48 +1,78 @@
 namespace MordhauBuddy.App
 
+/// Helper types for sending bridge messages
 module BridgeUtils =
     open MordhauBuddy.Shared.ElectronBridge
 
+    /// Send community operations
     type CommunityBridgeSender(caller: Caller) =
         let wrapComs cCmd = BridgeOps(CommunityOperation(cCmd), caller)
         member this.GetSteamAnnouncements() = CommunityOperation.GetSteamAnnouncements |> wrapComs
 
+    /// Send INI operations
     type INIBridgeSender(caller: Caller) =
         let wrapOps iCmd = BridgeOps(INIOperation(iCmd), caller)
         let wrapFace fCmd = BridgeOps(Faces(fCmd), caller)
         let wrapConf cCmd = BridgeOps(Configs(cCmd), caller)
-        member this.Replace s sels iFile = INIFileOperation.Replace(s, sels, iFile) |> wrapOps
-        member this.Delete sels = INIFileOperation.Delete(sels) |> wrapOps
-        member this.Exists iFile = INIFileOperation.Exists(iFile) |> wrapOps
-        member this.Parse iFile = INIFileOperation.Parse(iFile) |> wrapOps
-        member this.Backup iList = INIFileOperation.Backup(iList) |> wrapOps
+        /// Try to locate the default Mordhau configuration directory
         member this.DefaultDir = INIFileOperation.DefaultDir |> wrapOps
+        /// Replace the original value with new value based on selectors
+        member this.Replace s sels iFile = INIFileOperation.Replace(s, sels, iFile) |> wrapOps
+        /// Delete contents that match selectors
+        member this.Delete sels = INIFileOperation.Delete(sels) |> wrapOps
+        /// Determine if a file exists
+        member this.Exists iFile = INIFileOperation.Exists(iFile) |> wrapOps
+        /// Try to open and parse a ini file
+        member this.Parse iFile = INIFileOperation.Parse(iFile) |> wrapOps
+        /// Create a backup of a file by putting it into a subdirectory
+        member this.Backup iList = INIFileOperation.Backup(iList) |> wrapOps
+        /// Push changes to the configuration file(s)
         member this.Commit iList = INIFileOperation.Commit(iList) |> wrapOps
-        member this.SetRandom profile = Random(profile) |> wrapFace
-        member this.SetFrankenstein profile = Frankenstein(profile) |> wrapFace
-        member this.SetCustom profile fVal = Custom(profile, fVal) |> wrapFace
+        /// Set random face values to given profiles
+        member this.SetRandom profiles = Random(profiles) |> wrapFace
+        /// Set max and min face values to given profiles
+        member this.SetFrankenstein profiles = Frankenstein(profiles) |> wrapFace
+        /// Set face values to given profiles
+        member this.SetCustom profiles fVal = Custom(profiles, fVal) |> wrapFace
+        /// Get the current profiles
         member this.GetProfileList = ProfileList |> wrapFace
+        /// Get the current configurations
         member this.GetConfigs oList = GetConfigs(oList) |> wrapConf
+        /// Modify the configurations based on changes
         member this.MapConfigs oList = MapConfigs(oList) |> wrapConf
 
+    /// Send map operations
     type MapBridgeSender(caller: Caller) =
         let wrapOps mCmd = BridgeOps(MapOperation(mCmd), caller)
         let wrapMaps mCmd = BridgeOps(Maps(mCmd), caller)
+        /// Try to locate the default Mordhau maps directory
         member this.DefaultDir = MapFileOperation.DefaultDir |> wrapOps
+        /// See if a directory exists
         member this.DirExists s = MapFileOperation.DirExists(s) |> wrapOps
+        /// Get available maps
         member this.GetAvailable = Maps.GetAvailableMaps |> wrapMaps
+        /// Get installed maps
         member this.GetInstalled s = Maps.GetInstalledMaps s |> wrapMaps
+        /// Install a map
         member this.Install mt = Maps.InstallMap mt |> wrapMaps
+        /// Acknowledge that a map has been installed
         member this.ConfirmInstall s = Maps.ConfirmInstalled s |> wrapMaps
+        /// Uninstall a map
         member this.Uninstall dir fName = MapFileOperation.Delete(dir, fName) |> wrapOps
+        /// Cancel a map installation
         member this.Cancel fName = Maps.CancelMap fName |> wrapMaps
 
+    /// Send setting operations
     type SettingBridgeSender(caller: Caller) =
-        let wrapSetting sCmd = BridgeOps(SettingsOperation(sCmd),caller)
+        let wrapSetting sCmd = BridgeOps(SettingsOperation(sCmd), caller)
+        /// Enable launch at startup
         member this.EnableAutoLaunch = SettingsOperation.EnableAutoLaunch |> wrapSetting
+        /// Disable launch at startup
         member this.DisableAutoLaunch = SettingsOperation.DisableAutoLaunch |> wrapSetting
+        /// Modify the backup policy
         member this.BackupPolicy bSet = SettingsOperation.BackupPolicy(bSet) |> wrapSetting
 
+/// Helper modules and functions for renderer processes
 module RenderUtils =
     open Electron
     open Fable.Core
@@ -52,16 +82,21 @@ module RenderUtils =
     open Node.Api
     open MordhauBuddy.Shared.ElectronBridge
 
+    /// Returns `true` if the environment is Windows
     let isWindows = Node.Api.``process``.platform = Node.Base.Platform.Win32
 
+    /// Get the current window from the `main` process
     let getRemoteWin() = renderer.remote.getCurrentWindow()
 
+    /// Persist an event
     [<Emit("$0.persist()")>]
     let eventPersist (e: Event): unit = jsNative
 
+    /// Get the closest element at given position
     [<Emit("try{document.elementFromPoint($0, $1)}catch(e){}")>]
     let getElementAtPos (x: int) (y: int): HTMLElement option = jsNative
 
+    /// Get the current mouse position
     let getMousePositions() =
         let absMouse = renderer.remote.screen.getCursorScreenPoint()
         let absWindow = renderer.remote.getCurrentWindow().getBounds()
@@ -79,7 +114,7 @@ module RenderUtils =
     [<AutoOpen>]
     module RenderTypes =
         open FSharp.Reflection
-        
+
         [<RequireQualifiedAccess>]
         type Submit =
             | Waiting
@@ -112,7 +147,7 @@ module RenderUtils =
             | OnlyInstalled
             | NotifyOnly
             | NoActions
-            
+
             member this.Text =
                 match this with
                 | InstalledAndNew -> "Update installed and get new maps"
@@ -121,28 +156,29 @@ module RenderUtils =
                 | NoActions -> "Do nothing"
 
             static member private Cases = FSharpType.GetUnionCases typeof<UpdateSettings>
-            
+
             static member private Instantiate name =
                 UpdateSettings.Cases
                 |> Array.tryFind (fun uc -> uc.Name = name)
                 |> Option.map (fun uc -> Reflection.FSharpValue.MakeUnion(uc, [||]) :?> UpdateSettings)
                 |> Option.get
-            
-            static member GetSettings = UpdateSettings.Cases |> Array.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
-            
+
+            static member GetSettings =
+                UpdateSettings.Cases |> Array.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
+
             member this.GetTag =
                 UpdateSettings.Cases
                 |> Seq.tryFind (fun uc -> uc.Name = this.ToString())
                 |> Option.map (fun uc -> uc.Tag)
                 |> Option.get
-            
+
             static member GetSettingFromTag(tag: int) =
                 UpdateSettings.Cases
                 |> Seq.tryFind (fun t -> t.Tag = tag)
                 |> Option.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
                 |> Option.get
 
-            static member TryGetCaseFromText (s: string) =
+            static member TryGetCaseFromText(s: string) =
                 UpdateSettings.GetSettings
                 |> Array.filter (fun setting -> setting.Text = s)
                 |> Array.tryHead
@@ -195,6 +231,7 @@ module RenderUtils =
                 | Some(name) -> name
                 | None -> this.Folder
 
+
             member this.GetPlayers() =
                 match this.Players with
                 | Some(p) ->
@@ -223,15 +260,18 @@ module RenderUtils =
     module String =
         open System.Text.RegularExpressions
 
+        /// Ensures that the string ends with a given suffix
         let ensureEndsWith (suffix: string) (str: string) =
             if str.EndsWith suffix then str
             else str + suffix
 
+        /// Converts a disciminated union string to a title
         let duToTitle (s: string) =
             MatchEvaluator(fun m -> " " + m.Value)
             |> (fun m -> Regex.Replace(s.Substring(1), "[A-Z]", m))
             |> (+) (s.Substring(0, 1))
 
+        /// Default value for string option into `str`
         let defStr (sOpt: string option) = Fable.React.Helpers.str (defaultArg sOpt "")
 
     [<AutoOpen>]
@@ -258,9 +298,11 @@ module RenderUtils =
             | Ok(s: string) -> s
             | Error(err: string list) -> err |> List.reduce (fun acc elem -> acc + " " + elem)
 
+    /// Input validation
     module Validation =
         open System.Text.RegularExpressions
 
+        /// Regular expression constants
         module RegPatterns =
             let translate = @"^\(Translate=\((\d*,?){49}\),Rotate=\((\d*,?){49}\),Scale=\((\d*,?){49}\)\)"
             let fileSize = @"^(\d+[,.]\d+|\d+)\s*(kb|mb|gb)"
@@ -279,6 +321,7 @@ module RenderUtils =
             open System
             open MapTypes
 
+            /// Remove all whitespace
             let removeAllWs (s: string) =
                 s.Trim().ToCharArray()
                 |> Array.choose (fun c ->
@@ -286,6 +329,7 @@ module RenderUtils =
                     else Some(string c))
                 |> Array.reduce (+)
 
+            /// Apply a pattern and if there is a match apply f
             let applyRPattern (pattern: string) (input: string) f =
                 try
                     Regex(pattern, RegexOptions.IgnoreCase).Match(input)
@@ -301,6 +345,7 @@ module RenderUtils =
                     |> List.map (fun g -> g.Value |> f)
                 with _ -> []
 
+            /// Map input string to file size
             let getFileSize (s: string) =
                 let matchSize = applyRPattern RegPatterns.fileSize (removeAllWs s) (fun s -> s.Replace(",", "."))
 
@@ -335,6 +380,7 @@ module RenderUtils =
                 | (true, i) -> i |> Some
                 | _ -> None
 
+            /// Map string to `MapVersion`
             let getVer (vStr: string) =
                 applyRPattern RegPatterns.semVersion vStr getInt
                 |> fun iList ->
@@ -351,6 +397,7 @@ module RenderUtils =
                     | (true, dt) -> dt |> Some
                     | _ -> None
 
+            /// Try to get player count
             let getPlayers (s: string) =
                 applyRPattern RegPatterns.playersStatic s id
                 |> List.tryHead
@@ -375,18 +422,23 @@ module RenderUtils =
                 |> List.filter (fun s -> s <> "")
                 |> List.tryHead
 
+            /// Fix imgur links that lack fully qualified paths
             let fixImgur (s: string) =
-                Regex(RegPatterns.imgur, RegexOptions.IgnoreCase).Replace(s,@"https://i.imgur.com")
+                Regex(RegPatterns.imgur, RegexOptions.IgnoreCase).Replace(s, @"https://i.imgur.com")
                 |> fun s -> Regex(RegPatterns.imgurExt, RegexOptions.IgnoreCase).Replace(s, @"$&.png")
 
+            /// Fix Google Drive links that don't properly export images
             let fixGDImg (s: string) =
                 if Regex(RegPatterns.gdImgBad, RegexOptions.IgnoreCase).IsMatch(s) then
                     applyRPattern RegPatterns.gdImgId s id
                     |> List.tryHead
-                    |> Option.map (fun s -> sprintf "%s%s%s" @"https://drive.google.com/uc?authuser=0&" s @"&export=download")
-                    |> defaultArg <| s
+                    |> Option.map
+                        (fun s -> sprintf "%s%s%s" @"https://drive.google.com/uc?authuser=0&" s @"&export=download")
+                    |> defaultArg
+                    <| s
                 else s
 
+        /// Validate a directory
         let validateDir (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
@@ -402,6 +454,7 @@ module RenderUtils =
                 |> t.NotBlank "Directory cannot be blank"
                 |> t.End
 
+        /// Validate profile import string
         let validateImport (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
@@ -410,6 +463,7 @@ module RenderUtils =
                 |> t.Match (Regex RegPatterns.translate) "Invalid import string"
                 |> t.End
 
+        /// Validate image
         let validateImg (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
@@ -420,6 +474,7 @@ module RenderUtils =
                 |> t.Map fixGDImg
                 |> t.End
 
+        /// Validate Google Drive link
         let validateGDrive (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
@@ -430,6 +485,7 @@ module RenderUtils =
                 |> t.IsSome ""
                 |> t.End
 
+        /// Validate version
         let validateVer (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
@@ -437,6 +493,7 @@ module RenderUtils =
                 |> t.Map getVer
                 |> t.End
 
+        /// Validate file size
         let validateFileSize (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
@@ -446,6 +503,7 @@ module RenderUtils =
                 |> t.IsSome ""
                 |> t.End
 
+        /// Validate date
         let validateDate (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
@@ -455,6 +513,7 @@ module RenderUtils =
                 |> t.IsSome ""
                 |> t.End
 
+        /// Validate players
         let validatePlayers (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
@@ -464,6 +523,7 @@ module RenderUtils =
                 |> t.IsSome ""
                 |> t.End
 
+        /// Validate any string by trimming, and ensure is not empty
         let validateGeneric (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
@@ -471,11 +531,13 @@ module RenderUtils =
                 |> t.NotBlank ""
                 |> t.End
 
+    /// Directory helper functions
     module Directory =
         type DirLoad =
             | ConfigFiles of ConfigFile
             | MapDir
 
+        /// A type to represent the current directory state
         [<RequireQualifiedAccess>]
         type DirState =
             | Waiting
@@ -514,6 +576,7 @@ module RenderUtils =
             | Selected of string
             | Canceled
 
+        /// Create file browser
         let selectDir() =
             promise {
                 let opts =
@@ -550,6 +613,7 @@ module RenderUtils =
                 { File = cFile
                   WorkingDir = dir |> Some }
 
+    /// Sample data
     module Samples =
         let faceImport = "(Translate=(65535,31072,875,704,0,734,65535,0,0,65535,31565,0,0,65535,0,29632,29662,30686,\
             65535,65535,0,30720,65535,0,0,918,31560,0,65535,31709,31680,544,574,30749,30720,256,286,65535,\
@@ -559,6 +623,7 @@ module RenderUtils =
             4139,30749,65535,30749,0,65535,65535,0,0,0,0,65535,31709,0,0,190,0,0,0,589,0,0,0,30749,31166,989,\
             65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
 
+    /// Module to deal with parsing external data sources
     module WebParsing =
         open System
         open Validation
@@ -596,15 +661,16 @@ module RenderUtils =
               Image = validateInfo 8 validateImg
               GoogleDriveID = validateInfo 9 validateGDrive }
 
+    /// Parsing rss feeds that return html
     module HtmlParsing =
         open System.Text.RegularExpressions
+
         let htmlClass = "(class=\".*?\")"
         let htmlImg = "<img "
         let htmlA = "<a "
         let steamLinkFilter = @"https://steamcommunity.com/linkfilter/?url="
 
-        let stripClasses (s: string) =
-            Regex(htmlClass, RegexOptions.IgnoreCase).Replace(s, "")
+        let stripClasses (s: string) = Regex(htmlClass, RegexOptions.IgnoreCase).Replace(s, "")
 
         let private addImgClasses (newClass: string) (s: string) =
             Regex(htmlImg, RegexOptions.IgnoreCase).Replace(s, sprintf "$& class=\"%s\"" (newClass + "Img"))
@@ -612,24 +678,25 @@ module RenderUtils =
         let private addAClasses (newClass: string) (s: string) =
             Regex(htmlA, RegexOptions.IgnoreCase).Replace(s, sprintf "$& class=\"%s\"" (newClass + "A"))
 
-        let private stripSteamRedirects (s: string) =
-            Regex(steamLinkFilter, RegexOptions.IgnoreCase).Replace(s, "")
+        let private stripSteamRedirects (s: string) = Regex(steamLinkFilter, RegexOptions.IgnoreCase).Replace(s, "")
 
         let rec private trimEndBr (s: string) =
-            if s.EndsWith(@"<br>") then trimEndBr (s.Substring(0,s.Length - 4))
+            if s.EndsWith(@"<br>") then trimEndBr (s.Substring(0, s.Length - 4))
             else s
 
+        /// Formats an rss feed by stripping classes and adding new ones
         let formatRawHtml (newClass: string) (sList: (string * string) list) =
             sList
             |> List.map (fun (title, body) ->
                 title,
-                body.Trim() 
+                body.Trim()
                 |> trimEndBr
                 |> stripClasses
                 |> addImgClasses newClass
                 |> addAClasses newClass
                 |> stripSteamRedirects)
 
+    /// Module to hold all the engine.ini modification operations
     module rec EngineMods =
         let cosmetics =
             [ { Title = "Sharpen picture"
@@ -791,6 +858,7 @@ module RenderUtils =
                 Enabled = false
                 Expanded = false } ]
 
+    /// Toastr bindings
     module Toastr =
         open Elmish
 
@@ -835,6 +903,7 @@ module RenderUtils =
                 if System.String.IsNullOrEmpty(msg.Title) then warningToast msg.Message
                 else warningToastWithTitle msg.Message msg.Title ]
 
+    /// MaterialUI library extensions
     module MaterialUI =
         open Fable.React
         open Fable.React.Props

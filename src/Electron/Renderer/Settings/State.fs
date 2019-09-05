@@ -12,7 +12,7 @@ module State =
     open RenderUtils.Directory
     open Types
 
-    let init(uSet: UpdateSettings, bSet: BackupSettings, autoL: bool) =
+    let init (uSet: UpdateSettings, bSet: BackupSettings, autoL: bool) =
         { GameDir =
               { Dir = DirLoad.ConfigFiles(ConfigFile.Game)
                 Directory = ""
@@ -207,10 +207,8 @@ module State =
                 | _ -> model, Cmd.none
             | BridgeResult.Settings sOp ->
                 match sOp with
-                | SettingResult.EnabledAutoLaunch b ->
-                    { model with AutoLaunch = b }, Cmd.none
-                | SettingResult.DisabledAutoLaunch b ->
-                    { model with AutoLaunch = b |> not }, Cmd.none
+                | SettingResult.EnabledAutoLaunch b -> { model with AutoLaunch = b }, Cmd.none
+                | SettingResult.DisabledAutoLaunch b -> { model with AutoLaunch = b |> not }, Cmd.none
             | _ -> model, Cmd.none
         | GetDefaultDir -> model, iniSender.DefaultDir |> Cmd.bridgeSend
         | GetMapDir -> model, mapSender.DefaultDir |> Cmd.bridgeSend
@@ -266,7 +264,7 @@ module State =
                     | DirSelect.Canceled -> LoadCanceled
             model, Cmd.OfPromise.perform selectDir () handleLoaded
         | LoadCanceled -> model, Cmd.none
-        | MapUpdateSetting newSets -> 
+        | MapUpdateSetting newSets ->
             match newSets with
             | Some(s) -> { model with MapUpdateSettings = s }, Cmd.none
             | _ -> model, Cmd.none
@@ -275,7 +273,6 @@ module State =
             | Some(s) -> { model with BackupSettings = s }, Cmd.bridgeSend (settingsSender.BackupPolicy(s))
             | _ -> model, Cmd.none
         | ToggleAutoLaunch ->
-            { model with AutoLaunch = model.AutoLaunch |> not }, 
-                if model.AutoLaunch then
-                    Cmd.bridgeSend (settingsSender.DisableAutoLaunch)
-                else Cmd.bridgeSend (settingsSender.EnableAutoLaunch)
+            { model with AutoLaunch = model.AutoLaunch |> not }, (
+            if model.AutoLaunch then Cmd.bridgeSend (settingsSender.DisableAutoLaunch)
+            else Cmd.bridgeSend (settingsSender.EnableAutoLaunch))

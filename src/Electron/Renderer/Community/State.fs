@@ -1,4 +1,4 @@
-﻿namespace MordhauBuddy.App.Community
+namespace MordhauBuddy.App.Community
 
 module State =
     open FSharp.Core // To avoid shadowing Result<_,_>
@@ -36,8 +36,9 @@ module State =
             match bMsg.BridgeResult with
             | BridgeResult.Community cMsg ->
                 match cMsg with
-                | CommunityResult.SteamAnnouncements sList -> 
-                    { model with SteamAnnouncements = sList |> formatRawHtml "steamAnnouncements" }, Cmd.ofMsg StartRefresh
+                | CommunityResult.SteamAnnouncements sList ->
+                    { model with SteamAnnouncements = sList |> formatRawHtml "steamAnnouncements" },
+                    Cmd.ofMsg StartRefresh
             | _ -> model, Cmd.none
         | TabSelected tab -> { model with TabSelected = tab }, Cmd.ofMsg Refresh
         | StartRefresh ->

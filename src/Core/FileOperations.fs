@@ -65,7 +65,7 @@ module FileOps =
                 | KeepLast10 ->
                     FileInfo.ofPath(file).Directory.GetDirectories("*MordhauBuddy_backups*")
                     |> Array.iter (fun dir ->
-                        dir.GetFiles() 
+                        dir.GetFiles()
                         |> Array.groupBy (fun f ->
                             match f with
                             | f when f.Name.StartsWith("GameUserSettings") -> "GameUserSettings"
@@ -74,18 +74,18 @@ module FileOps =
                             | _ -> "")
                         |> Array.iter (fun (k, fArr) ->
                             if k = "" then ()
-                            else 
-                                fArr 
-                                |> Array.sortBy (fun f -> f.CreationTime) 
+                            else
+                                fArr
+                                |> Array.sortBy (fun f -> f.CreationTime)
                                 |> Array.rev
-                                |> Array.indexed 
-                                |> Array.iter (fun (i,f) -> if i > 9 then Shell.rm f.FullName)))
+                                |> Array.indexed
+                                |> Array.iter (fun (i, f) ->
+                                    if i > 9 then Shell.rm f.FullName)))
                 | NoBackups ->
                     FileInfo.ofPath(file).Directory.GetDirectories("*MordhauBuddy_backups*")
                     |> Array.map (fun d -> d.FullName)
                     |> Shell.cleanDirs
-            with
-            | e ->
+            with e ->
 #if DEBUG
                 failwith e.Message
 #endif
@@ -188,20 +188,19 @@ module FileOps =
 
         /// Linux DesktopFile
         type DesktopFile =
-            { Name : string
-              Comment : string
-              Version : string
-              Type : string
-              Terminal : bool
-              Exec : string
-              Icon : string
-              Categories : string list
-              Keywords : string list }
+            { Name: string
+              Comment: string
+              Version: string
+              Type: string
+              Terminal: bool
+              Exec: string
+              Icon: string
+              Categories: string list
+              Keywords: string list }
             /// Create the desktop file string
             member this.ToDesktopString() =
                 let nL = Environment.NewLine
-                let reduceNL sList =
-                    sList |> List.reduce (fun acc elem -> acc + nL + elem)
+                let reduceNL sList = sList |> List.reduce (fun acc elem -> acc + nL + elem)
                 [ this.Name
                   this.Comment
                   this.Version
@@ -219,16 +218,15 @@ module FileOps =
             let envOpt (envVar: string) =
                 if String.isNullOrEmpty envVar then None
                 else Some(envVar)
-        
+
             let procVar = Environment.GetEnvironmentVariable(s) |> envOpt
             let userVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.User) |> envOpt
             let machVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.Machine) |> envOpt
 
-            match procVar,userVar,machVar with
+            match procVar, userVar, machVar with
             | Some(v), _, _
             | _, Some(v), _
-            | _, _, Some(v)
-                -> Some(v)
+            | _, _, Some(v) -> Some(v)
             | _ -> None
 
         let regBase = Registry.RegistryBaseKey.HKEYCurrentUser
@@ -236,8 +234,7 @@ module FileOps =
         let regSubValue = "MordhauBuddy"
 
         let appPath =
-            if Environment.isLinux then
-                __SOURCE_DIRECTORY__
+            if Environment.isLinux then __SOURCE_DIRECTORY__
             else
                 Environment.SpecialFolder.LocalApplicationData
                 |> Environment.GetFolderPath
@@ -245,12 +242,13 @@ module FileOps =
                 |> fun d -> (d @@ "mordhau-buddy-updater" @@ "installer.exe")
 
         /// Try to enable auto launch
-        let enableAutoLaunch () =
+        let enableAutoLaunch() =
             let applyDesktopFile dir =
                 async {
                     try
                         let autoStart = (dir @@ "autostart")
                         let desktopFilePath = autoStart @@ "mordhau-buddy.desktop"
+
                         let desktopFile =
                             { Name = "MordhauBuddy"
                               Comment = "Compilation of Mordhau Tools"
@@ -267,59 +265,57 @@ module FileOps =
                         File.writeString false desktopFilePath desktopFile
                         do! Async.Sleep 1000
                         return File.exists desktopFilePath
-                    with
-                    | _ -> return false
-                } |> Async.RunSynchronously
+                    with _ -> return false
+                }
+                |> Async.RunSynchronously
 
             if Environment.isLinux then
                 async {
-                    return 
-                        try
-                            match tryGetEnvVar "XDG_CONFIG_HOME",tryGetEnvVar "XDG_CONFIG_DIRS" with
-                            | Some(cHome), _ -> Some(cHome @@ "autostart")
-                            | _ ,Some(cDirs) when cDirs.Split(':').Length > 0 ->
-                                cDirs.Split(':')
-                                |> Array.tryFind (fun s -> s = "/etc/xdg")
-                                |> function
-                                | Some(path) -> Some(path)
-                                | None -> cDirs.Split(':') |> Array.head |> Some
-                            | _ -> 
-                                if DirectoryInfo.ofPath("/etc/xdg").Exists then
-                                    Some("/etc/xdg")
-                                else None
-                            |> function
-                            | Some(path) -> 
-                                applyDesktopFile path
-                            | None -> false
-                        with
-                        | _ -> false
-                } |> Async.RunSynchronously
+                    return try
+                               match tryGetEnvVar "XDG_CONFIG_HOME", tryGetEnvVar "XDG_CONFIG_DIRS" with
+                               | Some(cHome), _ -> Some(cHome @@ "autostart")
+                               | _, Some(cDirs) when cDirs.Split(':').Length > 0 ->
+                                   cDirs.Split(':')
+                                   |> Array.tryFind (fun s -> s = "/etc/xdg")
+                                   |> function
+                                   | Some(path) -> Some(path)
+                                   | None ->
+                                       cDirs.Split(':')
+                                       |> Array.head
+                                       |> Some
+                               | _ ->
+                                   if DirectoryInfo.ofPath("/etc/xdg").Exists then Some("/etc/xdg")
+                                   else None
+                               |> function
+                               | Some(path) -> applyDesktopFile path
+                               | None -> false
+                           with _ -> false
+                }
+                |> Async.RunSynchronously
             else
                 async {
-                    return
-                        try
-                            use registryKey = Registry.getRegistryKey regBase regKey true
-                            registryKey.SetValue(regSubValue, appPath, Microsoft.Win32.RegistryValueKind.String)
-                            registryKey.Flush()
-                            registryKey.Dispose()
-                            Async.Sleep 1000 |> Async.RunSynchronously
-                            Registry.valueExistsForKey regBase regKey regSubValue
-                        with
-                        | _ -> false
-                } |> Async.RunSynchronously
-             
+                    return try
+                               use registryKey = Registry.getRegistryKey regBase regKey true
+                               registryKey.SetValue(regSubValue, appPath, Microsoft.Win32.RegistryValueKind.String)
+                               registryKey.Flush()
+                               registryKey.Dispose()
+                               Async.Sleep 1000 |> Async.RunSynchronously
+                               Registry.valueExistsForKey regBase regKey regSubValue
+                           with _ -> false
+                }
+                |> Async.RunSynchronously
+
         /// Try to disable auto launch
-        let disableAutoLaunch () =
+        let disableAutoLaunch() =
             async {
-                return
-                    try
-                        if Environment.isLinux then
-                            File.delete appPath
-                            File.exists appPath
-                        else
-                            Registry.deleteRegistryValue regBase regKey regSubValue
-                            Registry.valueExistsForKey regBase regKey regSubValue
-                        |> not
-                    with
-                    | _ -> false
-            } |> Async.RunSynchronously
+                return try
+                           if Environment.isLinux then
+                               File.delete appPath
+                               File.exists appPath
+                           else
+                               Registry.deleteRegistryValue regBase regKey regSubValue
+                               Registry.valueExistsForKey regBase regKey regSubValue
+                           |> not
+                       with _ -> false
+            }
+            |> Async.RunSynchronously

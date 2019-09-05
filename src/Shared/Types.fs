@@ -95,8 +95,7 @@ module ElectronBridge =
           Expanded: bool }
 
     [<RequireQualifiedAccess>]
-    type CommunityResult =
-        | SteamAnnouncements of (string * string) list
+    type CommunityResult = SteamAnnouncements of (string * string) list
 
     [<RequireQualifiedAccess>]
     type INIOperationResult =
@@ -171,7 +170,7 @@ module ElectronBridge =
         | KeepAll
         | KeepLast10
         | NoBackups
-        
+
         member this.Text =
             match this with
             | KeepAll -> "Do not remove any backups"
@@ -179,28 +178,28 @@ module ElectronBridge =
             | NoBackups -> "No backups - not recommended"
 
         static member private Cases = FSharpType.GetUnionCases typeof<BackupSettings>
-        
+
         static member private Instantiate name =
             BackupSettings.Cases
             |> Array.tryFind (fun uc -> uc.Name = name)
             |> Option.map (fun uc -> Reflection.FSharpValue.MakeUnion(uc, [||]) :?> BackupSettings)
             |> Option.get
-        
+
         static member GetSettings = BackupSettings.Cases |> Array.map (fun uc -> uc.Name |> BackupSettings.Instantiate)
-        
+
         member this.GetTag =
             BackupSettings.Cases
             |> Seq.tryFind (fun uc -> uc.Name = this.ToString())
             |> Option.map (fun uc -> uc.Tag)
             |> Option.get
-        
+
         static member GetSettingFromTag(tag: int) =
             BackupSettings.Cases
             |> Seq.tryFind (fun t -> t.Tag = tag)
             |> Option.map (fun uc -> uc.Name |> BackupSettings.Instantiate)
             |> Option.get
 
-        static member TryGetCaseFromText (s: string) =
+        static member TryGetCaseFromText(s: string) =
             BackupSettings.GetSettings
             |> Array.filter (fun setting -> setting.Text = s)
             |> Array.tryHead
@@ -210,8 +209,7 @@ module ElectronBridge =
             |> Seq.tryFind (fun t -> t.Name = s)
             |> Option.map (fun uc -> uc.Name |> BackupSettings.Instantiate)
 
-    type CommunityOperation =
-        | GetSteamAnnouncements
+    type CommunityOperation = GetSteamAnnouncements
 
     [<RequireQualifiedAccess>]
     type INIFileOperation =

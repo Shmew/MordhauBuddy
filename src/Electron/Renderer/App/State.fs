@@ -21,12 +21,12 @@ module State =
 
     let init() =
         let updateSettings =
-            UpdateSettings.TryGetSettingFromText store.UpdateSettings 
-            |> defaultArg 
+            UpdateSettings.TryGetSettingFromText store.UpdateSettings
+            |> defaultArg
             <| NoActions
         let backupSettings =
             BackupSettings.TryGetSettingFromText store.BackupSettings
-            |> defaultArg 
+            |> defaultArg
             <| KeepLast10
 
         let m =
@@ -35,8 +35,7 @@ module State =
               Store = store
               IsBridgeConnected = false
               Resources =
-                  { Community =
-                        { AttemptedLoad = false }
+                  { Community = { AttemptedLoad = false }
                     GameConfig =
                         { Path = defaultArg store.GameLocation ""
                           Exists = false
@@ -62,15 +61,17 @@ module State =
                           Loading = false } }
               ContextMenu = ContextMenu.State.init()
               Community = Community.State.init()
-              MapsInstaller = MapsInstaller.State.init(updateSettings)
+              MapsInstaller = MapsInstaller.State.init (updateSettings)
               FaceTools = FaceTools.State.init()
               MordhauConfig = MordhauConfig.State.init()
-              Settings = Settings.State.init(updateSettings, backupSettings, store.AutoLaunch)
+              Settings = Settings.State.init (updateSettings, backupSettings, store.AutoLaunch)
               About = About.State.init() }
         m, Cmd.none
 
     [<AutoOpen>]
     module Helpers =
+
+        /// Discriminated union to allow function reuse when working with map and config directories
         type CMDir =
             | CDir of ConfigDir
             | MDir of MapDir
@@ -78,6 +79,7 @@ module State =
             static member ($) (_, x: MapDir) = MDir(x)
             static member ($) (_, x: CMDir) = x
 
+        /// Discriminated union to allow function reuse when working with map and config files
         type CMFile =
             | CFile of ConfigFile
             | MFile
@@ -133,18 +135,13 @@ module State =
 
     let update msg m =
         match msg with
-        | Navigate msg' -> 
-            { m with Page = msg' }, Cmd.none
+        | Navigate msg' -> { m with Page = msg' }, Cmd.none
         | MinMaxMsg msg' -> { m with IsMax = msg' }, Cmd.none
         | LoadResources msg' ->
             match msg' with
             | LoadCom ->
-                { m.Resources with 
-                    Community = 
-                        { m.Resources.Community with 
-                            AttemptedLoad = true } }
-                |> setResource m            
-                , Cmd.ofMsg LoadCom
+                { m.Resources with Community = { m.Resources.Community with AttemptedLoad = true } } |> setResource m,
+                Cmd.ofMsg LoadCom
             | LoadConfig(cFile) ->
                 match cFile with
                 | ConfigFile.Game -> setLoading true m.Resources.GameConfig
@@ -229,25 +226,36 @@ module State =
             { m with MordhauConfig = m' }, Cmd.map MordhauConfigMsg cmd
         | SettingsMsg msg' ->
             Settings.State.update msg' m.Settings
-            |> fun (newM,cmd) -> 
+            |> fun (newM, cmd) ->
                 let appendMapUpdate (cList: Cmd<Msg> list) =
                     if m.Settings.MapUpdateSettings <> newM.MapUpdateSettings then
                         let newMsg =
                             newM.MapUpdateSettings
                             |> MapsInstaller.Types.Msg.Update
                             |> MapsInstallerMsg
-                        [ Cmd.ofMsg newMsg; newM.MapUpdateSettings |> Store.Msg.SetUpdateSettings |> StoreMsg |> Cmd.ofMsg ] 
+                        [ Cmd.ofMsg newMsg
+                          newM.MapUpdateSettings
+                          |> Store.Msg.SetUpdateSettings
+                          |> StoreMsg
+                          |> Cmd.ofMsg ]
                         |> List.append cList
                     else cList
+
                 let appendBackup (cList: Cmd<Msg> list) =
                     if m.Settings.BackupSettings <> newM.BackupSettings then
-                       newM.BackupSettings |> Store.Msg.SetBackupSettings |> StoreMsg |> Cmd.ofMsg 
-                       |> fun newCmd -> newCmd::cList
+                        newM.BackupSettings
+                        |> Store.Msg.SetBackupSettings
+                        |> StoreMsg
+                        |> Cmd.ofMsg
+                        |> fun newCmd -> newCmd :: cList
                     else cList
+
                 let appendAutoLaunch (cList: Cmd<Msg> list) =
                     if m.Settings.AutoLaunch <> newM.AutoLaunch then
-                       Store.Msg.ToggleAutoLaunch |> StoreMsg |> Cmd.ofMsg 
-                       |> fun newCmd -> newCmd::cList
+                        Store.Msg.ToggleAutoLaunch
+                        |> StoreMsg
+                        |> Cmd.ofMsg
+                        |> fun newCmd -> newCmd :: cList
                     else cList
 
                 [ Cmd.map SettingsMsg cmd ]
@@ -269,7 +277,10 @@ module State =
                         match br with
                         | BridgeResult.INIOperation iOp ->
                             match iOp with
-                            | INIOperationResult.DefaultDir(dOpt) -> setPath (defaultArg dOpt "") res
+                            | INIOperationResult.DefaultDir(dOpt) ->
+                                match dOpt with
+                                | Some(p) -> setPath p res
+                                | _ -> setPath "" res |> setLoading false
                             | INIOperationResult.Exists b -> setExists b res |> setLoading b
                             | INIOperationResult.Parse b -> setParsed b res |> setLoading false
                             | _ -> CDir res
@@ -351,15 +362,15 @@ module State =
                         | Some(res) -> setSettings m m' |> setResource' bMsg (res |> snd), []
                         | _ -> setSettings m m', []
                     | None, BridgeResult.Settings(SettingResult.DisabledAutoLaunch true) ->
-                        setSettings m m', [Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet false))]
+                        setSettings m m', [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet false)) ]
                     | None, BridgeResult.Settings(SettingResult.EnabledAutoLaunch true) ->
-                        setSettings m m', [Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet true))]
+                        setSettings m m', [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet true)) ]
                     | _ -> setSettings m m', []
-                    |> fun (newM, cmds) -> newM, Cmd.batch ([Cmd.map SettingsMsg cmd] |> List.append cmds)
+                    |> fun (newM, cmds) -> newM, Cmd.batch ([ Cmd.map SettingsMsg cmd ] |> List.append cmds)
                 | _ -> m, Cmd.none
-            | Connected -> 
-                { m with IsBridgeConnected = true }, 
-                if m.Settings.AutoLaunch && (store.AutoLaunchSet |> not) then 
-                    Cmd.bridgeSend <| settingsSender.EnableAutoLaunch 
-                else Cmd.none
+            | Connected ->
+                { m with IsBridgeConnected = true }, (
+                if m.Settings.AutoLaunch && (store.AutoLaunchSet |> not) then
+                    Cmd.bridgeSend <| settingsSender.EnableAutoLaunch
+                else Cmd.none)
             | Disconnected -> { m with IsBridgeConnected = false }, Cmd.none
