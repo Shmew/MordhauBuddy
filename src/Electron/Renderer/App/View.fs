@@ -67,7 +67,7 @@ module View =
             [ ListItemProp.Button true
               ListItemProp.Divider(page = Community)
               HTMLAttr.Selected(model.Page = page)
-              HTMLAttr.Disabled <| //Display tool tip here when disabled to explain why
+              HTMLAttr.Disabled <|
               (match page with
                | MapsInstaller -> model.MapsInstaller.MapsDir.Directory = ""
                | FaceTools -> model.FaceTools.GameDir.Directory = ""
@@ -285,13 +285,26 @@ module View =
                                        else "#3700B3")
                                   CSSProp.MinHeight "0px"
                                   CSSProp.Custom("WebkitAppRegion", "drag") ] ]
-                              [ typography
-                                  [ TypographyProp.Variant TypographyVariant.Subtitle2
+                              [ div [
                                     Style
-                                        [ CSSProp.Width "93%"
-                                          CSSProp.Padding "5px"
-                                          CSSProp.Color "#ffffff" ] ]
-                                    [ sprintf "%s - %s" Info.name Info.version |> str ]
+                                      [ CSSProp.Width "93%"
+                                        CSSProp.Padding "5px"
+                                        CSSProp.Display DisplayOptions.InlineFlex ]
+                                ] [
+                                    img
+                                        [ HTMLAttr.Src(stat "MB_SquareFullRes.png")
+                                          HTMLAttr.Width "25px"
+                                          HTMLAttr.Height "25px"
+                                          Style [ 
+                                            CSSProp.BorderRadius "4px"
+                                            CSSProp.MarginRight "1em"] ]
+                                    typography
+                                      [ TypographyProp.Variant TypographyVariant.Subtitle2
+                                        Style
+                                            [ CSSProp.Width "93%"
+                                              CSSProp.PaddingTop "2px"
+                                              CSSProp.Color "#ffffff" ] ]
+                                        [ sprintf "%s - %s" Info.name Info.version |> str ] ]
                                 iconButton
                                     [ DOMAttr.OnClick(fun _ -> window.minimize())
                                       Class classes?titleButton ] [ windowMinimizeIcon [] ]
@@ -315,14 +328,17 @@ module View =
                                     [ DOMAttr.OnClick(fun _ -> window.hide())
                                       Class classes?titleButton ] [ windowCloseIcon [] ] ]
                           toolbar [ Style [ CSSProp.PaddingRight "0" ] ]
-                              [ typography
-                                  [ TypographyProp.Variant TypographyVariant.H6
-                                    Style
-                                        [ CSSProp.Width "100%"
-                                          CSSProp.Color "#ffffff" ] ]
-                                    [ model.Page
-                                      |> pageTitle
-                                      |> str ]
+                              [ div [
+                                    Style [ CSSProp.Width "100%" ]
+                                ] [
+                                    img
+                                      [ HTMLAttr.Src(stat "MB_HorizFullRes.png")
+                                        HTMLAttr.Width "auto"
+                                        HTMLAttr.Height "70px"
+                                        Style [ 
+                                          CSSProp.BorderRadius "4px"
+                                          CSSProp.Display DisplayOptions.Block 
+                                          CSSProp.Padding "0.2em 2em"] ] ]
                                 iconButton
                                     [ DOMAttr.OnClick(fun _ ->
                                         Store.Msg.ToggleDarkTheme

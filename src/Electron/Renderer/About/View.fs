@@ -43,7 +43,7 @@ module View =
                       [ img
                             [ HTMLAttr.Hidden(model.ImgLoaded |> not)
                               DOMAttr.OnLoad(fun _ -> dispatch ImgSkeleton)
-                              HTMLAttr.Src(stat "icon.png")
+                              HTMLAttr.Src(stat "MB_SquareFullRes.png")
                               HTMLAttr.Width "200px"
                               HTMLAttr.Height "250px"
                               Style [ 
@@ -51,16 +51,16 @@ module View =
                                 CSSProp.PaddingBottom "2em" ] ]
                         skeleton
                             [ HTMLAttr.Hidden <| model.ImgLoaded
-                              HTMLAttr.Width "200px"
-                              HTMLAttr.Height "250px"
+                              HTMLAttr.Width "256px"
+                              HTMLAttr.Height "256px"
                               SkeletonProp.DisableAnimate true
                               Style [ CSSProp.PaddingBottom "2em" ] ]
-                        typography [ Class classes?padBottom ] [ str "Mordhau Buddy" ]
                         typography [ Class classes?padBottom ] [ str (sprintf "Version: %s" (Bindings.Info.version))]
                         typography [ Class classes?padBottom ] [ str (sprintf "Electron: %s" (Bindings.Info.electronVersion)) ]
                         typography [ Class classes?padBottom ] [ str (sprintf "Chrome: %s" (Bindings.Info.chromeVersion)) ]
                         typography [ Class classes?padBottom ] [ str (sprintf "Node: %s" (Bindings.Info.nodeVersion)) ]
                         typography [ Class classes?padBottom ] [ str (sprintf "V8: %s" (Bindings.Info.v8Version)) ]
+                        typography [ Class classes?padBottom ] [ str ".NET Core: 3.0" ]
                         typography [ Class classes?padBottom ] [ str (sprintf "License: %s" (Bindings.Info.license)) ]
                         typography [ Class classes?padBottom ] [ str (sprintf "Author: %s" (Bindings.Info.author)) ]
                         link [

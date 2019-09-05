@@ -134,19 +134,7 @@ module State =
     let update msg m =
         match msg with
         | Navigate msg' -> 
-            let navFT (m: Model) =
-                if msg' <> FaceTools then
-                    { m with FaceTools = { m.FaceTools with ImgLoaded = false } }
-                else m
-            let navAbout (m: Model) =
-                if msg' <> About then
-                    { m with About = { m.About with ImgLoaded = false } }
-                else m
-
-            navFT m
-            |> navAbout
-            |> fun m -> { m with Page = msg' }
-            , Cmd.none
+            { m with Page = msg' }, Cmd.none
         | MinMaxMsg msg' -> { m with IsMax = msg' }, Cmd.none
         | LoadResources msg' ->
             match msg' with

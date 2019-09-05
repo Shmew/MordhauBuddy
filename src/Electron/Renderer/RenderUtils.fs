@@ -269,9 +269,13 @@ module RenderUtils =
             let playersRange = @"^(\d+).*?(\d+)"
             let gDrive =
                 @"^.*drive.google.com\/open\?id=(.*)$|^.*drive.google.com\/file\/d\/(.*)\/view$|^.*drive.google.com\/uc\?id=(.*)&export=download$"
+            let imgur = @"https://imgur.com"
+            let imgurExt = @"https://i.imgur.com/\w+$"
+            let gdImgBad = @"(https://drive.google.com/open\?id=.+$)"
+            let gdImgId = @"id=.+$"
 
         [<AutoOpen>]
-        module internal Helpers =
+        module private Helpers =
             open System
             open MapTypes
 
@@ -291,7 +295,9 @@ module RenderUtils =
                                 yield items
                         }
                     |> List.ofSeq
-                    |> List.tail
+                    |> function
+                    | sList when sList.Length = 1 -> sList
+                    | sList -> sList |> List.tail
                     |> List.map (fun g -> g.Value |> f)
                 with _ -> []
 
@@ -369,6 +375,18 @@ module RenderUtils =
                 |> List.filter (fun s -> s <> "")
                 |> List.tryHead
 
+            let fixImgur (s: string) =
+                Regex(RegPatterns.imgur, RegexOptions.IgnoreCase).Replace(s,@"https://i.imgur.com")
+                |> fun s -> Regex(RegPatterns.imgurExt, RegexOptions.IgnoreCase).Replace(s, @"$&.png")
+
+            let fixGDImg (s: string) =
+                if Regex(RegPatterns.gdImgBad, RegexOptions.IgnoreCase).IsMatch(s) then
+                    applyRPattern RegPatterns.gdImgId s id
+                    |> List.tryHead
+                    |> Option.map (fun s -> sprintf "%s%s%s" @"https://drive.google.com/uc?authuser=0&" s @"&export=download")
+                    |> defaultArg <| s
+                else s
+
         let validateDir (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
@@ -392,12 +410,14 @@ module RenderUtils =
                 |> t.Match (Regex RegPatterns.translate) "Invalid import string"
                 |> t.End
 
-        let validateUri (s: string) =
+        let validateImg (s: string) =
             Fable.Validation.Core.single <| fun t ->
                 t.TestOne s
                 |> t.Trim
                 |> t.NotBlank ""
                 |> t.IsUrl s
+                |> t.Map fixImgur
+                |> t.Map fixGDImg
                 |> t.End
 
         let validateGDrive (s: string) =
@@ -573,7 +593,7 @@ module RenderUtils =
               ReleaseDate = validateInfo 5 validateDate
               FileSize = validateInfo 6 validateFileSize
               Players = validateInfo 7 validatePlayers
-              Image = validateInfo 8 validateUri
+              Image = validateInfo 8 validateImg
               GoogleDriveID = validateInfo 9 validateGDrive }
 
     module HtmlParsing =
@@ -581,7 +601,7 @@ module RenderUtils =
         let htmlClass = "(class=\".*?\")"
         let htmlImg = "<img "
         let htmlA = "<a "
-        let steamLinkFilter = "https:\/\/steamcommunity.com\/linkfilter\/\?url="
+        let steamLinkFilter = @"https://steamcommunity.com/linkfilter/?url="
 
         let stripClasses (s: string) =
             Regex(htmlClass, RegexOptions.IgnoreCase).Replace(s, "")

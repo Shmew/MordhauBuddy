@@ -25,7 +25,7 @@ module State =
         let autoRefresh dispatch =
             async {
                 while true do
-                    do! Async.Sleep 100000
+                    do! Async.Sleep 1800000
                     dispatch Refresh
             }
             |> Async.StartImmediate
