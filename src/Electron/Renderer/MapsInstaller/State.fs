@@ -261,9 +261,9 @@ module State =
                       Updating = true }
             | _ -> { model with UpdateSettings = up }
             |> fun m ->
-                m, (
                 if model.Updating then Cmd.none
-                else Cmd.ofSub autoUpdate)
+                else Cmd.ofSub autoUpdate
+                |> fun cmd -> m, cmd
         | UpdateMaps ->
             match model.UpdateSettings with
             | InstalledAndNew -> model, Cmd.ofMsg InstallAll

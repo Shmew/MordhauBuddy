@@ -52,7 +52,7 @@ module View =
                         list
                             [ MaterialProp.Dense true
                               Style
-                                  [ CSSProp.OverflowY "auto"
+                                  [ CSSProp.OverflowY OverflowOptions.Auto
                                     CSSProp.Height "22em" ] ]
                             [ for pItem in profiles do
                                 yield listItem
@@ -165,7 +165,7 @@ module View =
                                                 dispatch CopiedClipboard
                                               Style
                                                   [ CSSProp.MaxHeight "3em"
-                                                    CSSProp.Float "right"
+                                                    CSSProp.Float FloatOptions.Right
                                                     CSSProp.MarginRight "-0.5em" ] ] [ clipboardTextIcon [] ] ] ] ] ]
             | Tab.Export ->
                 let profileInd =
@@ -182,7 +182,7 @@ module View =
                                 Style
                                     [ CSSProp.FlexGrow 1
                                       CSSProp.MaxHeight "20em"
-                                      CSSProp.OverflowY "auto"
+                                      CSSProp.OverflowY OverflowOptions.Auto
                                       CSSProp.BorderRadius "4px" ] ]
                                 [ for (index, profile) in profileInd do
                                     yield div []
@@ -196,7 +196,7 @@ module View =
                                                                 Style
                                                                     [ CSSProp.MaxHeight "4em"
                                                                       CSSProp.MaxWidth "2em"
-                                                                      CSSProp.Float "right"
+                                                                      CSSProp.Float FloatOptions.Right
                                                                       CSSProp.MarginRight "0em" ] ]
                                                                 [ clipboardTextIcon [] ] ] ]
                                                 divider

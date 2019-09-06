@@ -323,7 +323,7 @@ module View =
                                   [ CSSProp.Padding "2em"
                                     CSSProp.MinHeight "5em"
                                     CSSProp.MaxHeight "73vh"
-                                    CSSProp.OverflowY "auto" ] ] [ tabContent classes model dispatch ] ]
+                                    CSSProp.OverflowY OverflowOptions.Auto ] ] [ tabContent classes model dispatch ] ]
               yield div
                         [ Style
                             [ CSSProp.MarginTop "auto"

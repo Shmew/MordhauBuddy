@@ -1,6 +1,0 @@
-(**
-# MordhauBuddy Settings #
-
-##  ##
-  
-*)

@@ -119,8 +119,10 @@ module FileOps =
                     |> List.map (fun fol -> fol @@ @"Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps")
                 | false ->
                     [ ".steam/steam"; ".local/share/Steam" ]
-                    |> List.map (fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
-                    |> List.map (fun fol -> fol @@ @"steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps")
+                    |> List.map (
+                        (fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
+                        >>
+                        (fun fol -> fol @@ @"steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps"))
 
             let bindDirectory (dir: string) =
                 IO.DirectoryInfo dir

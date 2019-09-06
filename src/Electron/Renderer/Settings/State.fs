@@ -273,6 +273,7 @@ module State =
             | Some(s) -> { model with BackupSettings = s }, Cmd.bridgeSend (settingsSender.BackupPolicy(s))
             | _ -> model, Cmd.none
         | ToggleAutoLaunch ->
-            { model with AutoLaunch = model.AutoLaunch |> not }, (
-            if model.AutoLaunch then Cmd.bridgeSend (settingsSender.DisableAutoLaunch)
-            else Cmd.bridgeSend (settingsSender.EnableAutoLaunch))
+            if model.AutoLaunch then 
+                settingsSender.DisableAutoLaunch
+            else settingsSender.EnableAutoLaunch
+            |> fun sender -> { model with AutoLaunch = model.AutoLaunch |> not }, Cmd.bridgeSend sender

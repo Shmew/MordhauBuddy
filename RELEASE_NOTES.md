@@ -1,2 +1,2 @@
-#### 0.0.1 - Sunday, July 7, 2019
+#### 1.0.0 - Thursday, September 5, 2019
 * Initial build

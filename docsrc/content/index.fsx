@@ -34,9 +34,11 @@ With Windows:
  - You can download a zip and run it yourself, but you will not get automatic updates, or auto launch functionality.
  - The installer is easy to install, a single click in fact.
 
+ <img src="img/mapInstallerAvailable.png"/>
+
 ## Documentation ##
 
- - Tutorials - Some example use cases for the application.
+ - Functionality - Some example use cases for the application.
  - [API Reference](reference/index.html) contains automatically generated documentation for all types, modules
    and functions in the library. This includes additional brief samples on using most of the functions.
    This is only helpful if you plan on contributing.

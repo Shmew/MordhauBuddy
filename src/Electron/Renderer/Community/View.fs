@@ -95,7 +95,7 @@ module View =
                     CSSProp.MinHeight "5em"
                     CSSProp.MaxHeight "77vh"
                     CSSProp.MarginBottom "1vh"
-                    CSSProp.OverflowY "auto" ] ] [ tabContent classes model dispatch ] ]
+                    CSSProp.OverflowY OverflowOptions.Auto ] ] [ tabContent classes model dispatch ] ]
 
     let private view' (classes: IClasses) model dispatch =
         card
@@ -104,7 +104,7 @@ module View =
                   [ CSSProp.FlexDirection "column"
                     CSSProp.Display DisplayOptions.Flex
                     CSSProp.Height "inherit"
-                    CSSProp.OverflowX "hidden" ] ]
+                    CSSProp.OverflowX OverflowOptions.Hidden ] ]
         <| if model.LoadingElem then [ loading classes model dispatch ]
            else tabs classes model dispatch
 

@@ -369,8 +369,8 @@ module State =
                     |> fun (newM, cmds) -> newM, Cmd.batch ([ Cmd.map SettingsMsg cmd ] |> List.append cmds)
                 | _ -> m, Cmd.none
             | Connected ->
-                { m with IsBridgeConnected = true }, (
                 if m.Settings.AutoLaunch && (store.AutoLaunchSet |> not) then
                     Cmd.bridgeSend <| settingsSender.EnableAutoLaunch
-                else Cmd.none)
+                else Cmd.none
+                |> fun cmd -> { m with IsBridgeConnected = true }, cmd
             | Disconnected -> { m with IsBridgeConnected = false }, Cmd.none

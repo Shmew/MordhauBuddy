@@ -56,7 +56,7 @@ module View =
           Styles.Custom'("toolbar", theme.mixins.toolbar)
           Styles.Custom
               ("navBadge",
-               [ CSSProp.Float "right"
+               [ CSSProp.Float FloatOptions.Right
                  CSSProp.Padding "1em"
                  CSSProp.MaxHeight "0em"
                  CSSProp.MarginBottom "-1em"
@@ -203,7 +203,7 @@ module View =
                                                  [ CSSProp.Color themeType.MuiButtonCPHover.Value ]
                                                  |> keyValueList CaseRules.LowerFirst) ]
                                         Styles.ContainedSecondary [ CSSProp.Color themeType.MuiButtonCSecondary.Value ] ]
-                        yield OverridesProp.MuiCard [ Styles.Root [ CSSProp.Overflow "visible" ] ]
+                        yield OverridesProp.MuiCard [ Styles.Root [ CSSProp.Overflow OverflowOptions.Visible ] ]
                         yield OverridesProp.MuiStepper [ Styles.Root [ CSSProp.BorderRadius "4px" ] ]
                         yield OverridesProp.MuiExpansionPanel
                                   [ Styles.Root
