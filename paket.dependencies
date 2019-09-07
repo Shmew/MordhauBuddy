@@ -9,9 +9,11 @@ group Core
 	source https://nuget.org/api/v2
 	source https://api.nuget.org/v3/index.json
 
+	nuget BlackFox.CommandLine ~> 1.0.0
 	nuget Elmish.Bridge.Giraffe ~> 3.0.3
 	nuget Fable.Elmish ~> 3.0
 	nuget Fake.Core.Environment ~> 5.16.1
+	nuget Fake.Core.Process ~> 5.16.1
 	nuget Fake.IO.FileSystem ~> 5.16.1
 	nuget Fake.Windows.Registry ~> 5.16.1
 	nuget FParsec ~> 1.0.3

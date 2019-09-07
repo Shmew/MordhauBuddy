@@ -90,8 +90,22 @@ module Store =
 
         type StoreStatic =
 
+
+
+
+
+
+
+
             [<EmitConstructor>]
             abstract Create: unit -> Store
+
+
+
+
+
+
+
 
 
             [<EmitConstructor>]

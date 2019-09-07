@@ -78,22 +78,22 @@ module Main =
 
         bridgeProc
 
-    /// Create instance lock, focus and/or restore window if 
+    /// Create instance lock, focus and/or restore window if
     /// a second is launched.
-    if main.app.requestSingleInstanceLock() |> not then 
+    if main.app.requestSingleInstanceLock() |> not then
         main.app.quit()
-    else 
-        main.app.onSecondInstance(fun _ _ _ -> 
+    else
+        main.app.onSecondInstance (fun _ _ _ ->
             match mainWindow with
             | Some(win) ->
                 if win.isMinimized() then win.restore()
                 win.focus()
-            | None -> () )
+            | None -> ())
         |> ignore
 
     /// Create the websocket bridge.
     let bridge = startBridge()
-    
+
     let createTray() =
         let quit =
             main.MenuItem.Create
@@ -103,24 +103,30 @@ module Main =
             |> U2.Case2
 
         /// Create the sytem tray
-        let appTray = 
-            let iconPath = 
+        let appTray =
+            let iconPath =
 #if DEBUG
                 "icon.png"
 #else
                 path.resolve (__dirname, "..", "..", "static", "icon.png")
 #endif
             main.Tray.Create(iconPath)
-
         main.Menu.buildFromTemplate [| quit |]
         |> Some
         |> appTray.setContextMenu
 
-        appTray.onClick(fun _ _ _ ->
-                match mainWindow with
-                | Some(win) -> win.show()
-                | _ -> ())
+        appTray.onClick (fun _ _ _ ->
+            match mainWindow with
+            | Some(win) -> win.show()
+            | _ -> ())
         |> ignore
+
+        appTray.onDoubleClick (fun _ _ ->
+            match mainWindow with
+            | Some(win) -> win.show()
+            | _ -> ())
+        |> ignore
+
         appTray.setToolTip "MordhauBuddy"
         tray <- Some appTray
 
@@ -150,7 +156,8 @@ module Main =
                     o.show <- false))
         win.onceReadyToShow (fun _ ->
             win.setTitle <| sprintf "%s - %s" Info.name Info.version
-            win.show()
+            if win.isMinimized() |> not then
+                win.show()
             mainWinState.manage win)
         |> ignore
 #if DEBUG
@@ -181,13 +188,13 @@ module Main =
 
     /// This method will be called when Electron has finished
     /// initialization and is ready to create browser windows.
-    main.app.onReady (fun _ _ -> 
+    main.app.onReady (fun _ _ ->
         createMainWindow()
         createTray()
         if main.app.isPackaged then
             let autoUpdater: ElectronUpdater.AutoUpdater = importMember "electron-updater"
-            autoUpdater.checkForUpdatesAndNotify()
-        ) |> ignore
+            autoUpdater.checkForUpdatesAndNotify())
+    |> ignore
     /// Quit when all windows are closed.
     main.app.onWindowAllClosed (fun _ ->
         /// On OS X it's common for applications and their menu bar

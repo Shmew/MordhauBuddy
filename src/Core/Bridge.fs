@@ -263,8 +263,9 @@ module Bridge =
                             |> BridgeResult.Settings
                             |> cResp
                         | BackupPolicy(bSet) -> { model with BackupSettings = bSet }, None
-
-
+                        | SetupLinux ->
+                            Settings.setupLinux()
+                            model, None
             match remoteCMsg with
             | Some(rMsg) -> Resp(rMsg) |> clientDispatch
             | _ -> ()

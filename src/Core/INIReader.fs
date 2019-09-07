@@ -71,8 +71,22 @@ module rec INIReader =
         let ws p = spaces >>. p .>> (skipMany (pchar ' ' <|> pchar '\t'))
 
 
+
+
+
+
+
+
+
         /// ws helper
         let wstr t = ws (pstring t)
+
+
+
+
+
+
+
 
 
         /// Returns parser that is between two characters
@@ -81,10 +95,24 @@ module rec INIReader =
                 (spaces >>. sepBy (pElement .>> spaces) ((wstr "," <|> wstr ";") .>> spaces))
 
 
+
+
+
+
+
+
+
         /// Determines if it is a section header
         let identifier =
             many1Satisfy2 (fun ch -> Char.IsLetter(ch) || ch = '/')
                 (fun ch -> Char.IsLetterOrDigit(ch) || ch = '.' || ch = '/' || ch = '_')
+
+
+
+
+
+
+
 
 
         /// Determines if the selection is text
@@ -94,8 +122,22 @@ module rec INIReader =
                 not (ch = ')' || ch = '(' || ch = ']' || ch = '[' || ch = ',' || ch = ';' || ch = '=' || ch = '\n'))
 
 
+
+
+
+
+
+
+
         /// Determines if it is a kv pair
         let hasKey = previousCharSatisfiesNot (fun ch -> ch = '=') >>. anyText .>>? wstr "="
+
+
+
+
+
+
+
 
 
         /// Determines if it is a field value
@@ -103,8 +145,22 @@ module rec INIReader =
             previousCharSatisfies (fun ch -> ch = '=') >>? anyText .>>? nextCharSatisfies (fun ch -> ch = '(')
 
 
+
+
+
+
+
+
+
         /// Parse quoted string returning without quotes
         let parseQuoted = pchar '"' >>. manySatisfy (fun c -> c <> '"') .>> pchar '"'
+
+
+
+
+
+
+
 
 
         /// Parse quoted string returning string with quotes
@@ -113,12 +169,33 @@ module rec INIReader =
             |>> (fun ((c, s), c2) -> string c + s + string c2)
 
 
+
+
+
+
+
+
+
         /// Create parser and reference cell
         let iValue, iValueRef = createParserForwardedToRef()
 
 
+
+
+
+
+
+
+
         /// Parse comment
         let comment = pstring "#" >>. skipRestOfLine true
+
+
+
+
+
+
+
 
 
         /// Determine if the line is empty
@@ -127,8 +204,22 @@ module rec INIReader =
             |>> ((fun _ -> None) >> INIValue.String)
 
 
+
+
+
+
+
+
+
         /// Parse a string
         let iniString = parseQuoted <|> anyText |>> (Some >> INIValue.String) .>> spaces
+
+
+
+
+
+
+
 
 
         /// Parse a field text value
@@ -140,12 +231,33 @@ module rec INIReader =
             |>> INIValue.FieldText
 
 
+
+
+
+
+
+
+
         /// Parse a key value pair
         let iniKV = hasKey .>>. iValue |>> INIValue.KeyValue
 
 
+
+
+
+
+
+
+
         /// Parse a tuple
         let iniTuple = listBetweenStrings "(" ")" iValue |>> INIValue.Tuple
+
+
+
+
+
+
+
 
 
         /// Parse a section
@@ -406,7 +518,8 @@ module rec INIReader =
                             match sendTail with
                             | true -> s.Tail
                             | false -> s
-                        if iList.IsEmpty && s.Head = "()" then [ mapAst (s.Tail) (INIValue.String(None)) ]
+                        if iList.IsEmpty && s.Head = "()" then
+                            [ mapAst (s.Tail) (INIValue.String(None)) ]
                         else
                             iList
                             |> List.map (fun iVal ->

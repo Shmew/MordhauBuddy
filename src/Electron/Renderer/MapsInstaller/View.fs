@@ -249,7 +249,8 @@ module View =
                    [ typography
                        [ TypographyProp.Align TypographyAlign.Center
                          TypographyProp.Variant TypographyVariant.H6 ] [ str "No maps available for download." ] ]
-               else available
+               else
+                   available
            | Installed ->
                [ grid
                    [ GridProp.Item true

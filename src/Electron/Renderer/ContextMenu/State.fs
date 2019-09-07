@@ -17,7 +17,8 @@ module State =
     let update (msg: Msg) (model: Model) =
         match msg with
         | Open e ->
-            if model.Opened then model, Cmd.ofMsg Close
+            if model.Opened then
+                model, Cmd.ofMsg Close
             else
                 let pos = getMousePositions()
                 let element = getElementAtPos pos.X pos.Y
@@ -42,7 +43,8 @@ module State =
                             Action = SelectAll } ]
                     | _ -> []
 
-                if actionList.IsEmpty then model, Cmd.none
+                if actionList.IsEmpty then
+                    model, Cmd.none
                 else
                     { model with
                           Opened = true

@@ -1,5 +1,7 @@
 ﻿group Core
+	BlackFox.CommandLine
 	Fake.Core.Environment
+	Fake.Core.Process
 	Fake.IO.FileSystem
 	Fake.Windows.Registry
 	FParsec

@@ -36,6 +36,13 @@ module rec Types =
             | Quality -> "Improve game quality"
 
 
+
+
+
+
+
+
+
         member private this.Modifications =
             match this with
             | Cosmetic -> cosmetics

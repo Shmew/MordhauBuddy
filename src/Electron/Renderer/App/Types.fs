@@ -21,6 +21,7 @@ module Types =
         | LoadCom
         | LoadConfig of ConfigFile
         | LoadMap
+        | InitSetup
         | StoreMsg of Store.Msg
         | ContextMenuMsg of ContextMenu.Types.Msg
         | CommunityMsg of Community.Types.Msg
@@ -47,8 +48,12 @@ module Types =
     type ComResources =
         { AttemptedLoad: bool }
 
+    type SetupResource =
+        { AttemptedLoad: bool }
+
     type Loaded =
-        { Community: ComResources
+        { InitSetup: SetupResource
+          Community: ComResources
           GameConfig: ConfigDir
           EngineConfig: ConfigDir
           GameUserConfig: ConfigDir

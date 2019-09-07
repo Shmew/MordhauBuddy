@@ -122,13 +122,14 @@ module INIValue =
               Expect.equal result expected ""
           testCase "Can parse document with kv pair with whitespace" <| fun () ->
               let result =
-                [ "[TestSection]"; "TestStr=Test Spaces" ]
-                |> buildINIString
-                |> INIValue.Parse
+                  [ "[TestSection]"; "TestStr=Test Spaces" ]
+                  |> buildINIString
+                  |> INIValue.Parse
+
               let expected =
-                INIValue.KeyValue("TestStr", INIValue.String(Some("Test Spaces")))
-                |> sectionOne "TestSection"
-                |> fileOne
+                  INIValue.KeyValue("TestStr", INIValue.String(Some("Test Spaces")))
+                  |> sectionOne "TestSection"
+                  |> fileOne
 
               Expect.equal result expected ""
           testCase "Can parse snippet" <| fun () ->

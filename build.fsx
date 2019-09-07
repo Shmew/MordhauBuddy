@@ -693,7 +693,7 @@ Target.create "All" ignore
   ==> "GitPush"
   ?=> "GitTag"
 
-"All" <== ["Lint"; "RunTests"; "GenerateDocs"; "CleanElectronBin"]
+"All" <== ["Format"; "Lint"; "RunTests"; "GenerateDocs"; "CleanElectronBin"]
 
 "All" 
   ?=> "RewriteWin32" 

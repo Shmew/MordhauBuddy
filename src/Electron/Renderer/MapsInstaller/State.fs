@@ -68,7 +68,8 @@ module State =
                     |> List.contains m.Map.Folder
                     |> not)
                 |> List.tryHead
-            else None
+            else
+                None
             |> function
             | Some m ->
                 { model with ActiveInstalling = m.Map.Folder :: model.ActiveInstalling },
@@ -106,7 +107,8 @@ module State =
                     |> Install
                     |> Cmd.ofMsg
                     |> Some
-                else None)
+                else
+                    None)
 
     let update (msg: Msg) (model: Model) =
         match msg with
@@ -126,7 +128,8 @@ module State =
                         { model with MapsDir = { model.MapsDir with State = DirState.Error "Maps directory not found" } },
                         Cmd.none
                 | MapOperationResult.Delete(map, res) ->
-                    if model.Uninstalling.IsEmpty then { model with ActiveUninstalling = None }
+                    if model.Uninstalling.IsEmpty then
+                        { model with ActiveUninstalling = None }
                     else
                         let next = model.Uninstalling.Head
                         { model with

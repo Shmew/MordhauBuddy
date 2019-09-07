@@ -96,7 +96,7 @@ module View =
         let allResourcesAttempted =
             model.Resources.GameConfig.AttemptedLoad && model.Resources.EngineConfig.AttemptedLoad
             && model.Resources.GameUserConfig.AttemptedLoad && model.Resources.Maps.AttemptedLoad
-            && model.Resources.Community.AttemptedLoad
+            && model.Resources.Community.AttemptedLoad && model.Resources.InitSetup.AttemptedLoad
 
         match model.Page with
         | Community ->
@@ -108,6 +108,7 @@ module View =
                 if model.Community.LoadingElem then dispatch ResourcesLoaded
             | true, false, false ->
                 match model.Resources with
+                | r when r.InitSetup.AttemptedLoad |> not -> dispatch <| LoadResources(InitSetup)
                 | r when r.Community.AttemptedLoad |> not -> dispatch <| LoadResources(LoadCom)
                 | r when r.GameConfig.AttemptedLoad |> not -> dispatch <| LoadResources(LoadConfig(ConfigFile.Game))
                 | r when r.EngineConfig.AttemptedLoad |> not -> dispatch <| LoadResources(LoadConfig(ConfigFile.Engine))

@@ -11,6 +11,7 @@ module State =
     open BridgeUtils
     open RenderUtils.Directory
     open Types
+    open Node.Api
 
     let init (uSet: UpdateSettings, bSet: BackupSettings, autoL: bool) =
         { GameDir =
@@ -273,7 +274,14 @@ module State =
             | Some(s) -> { model with BackupSettings = s }, Cmd.bridgeSend (settingsSender.BackupPolicy(s))
             | _ -> model, Cmd.none
         | ToggleAutoLaunch ->
-            if model.AutoLaunch then 
-                settingsSender.DisableAutoLaunch
+            if model.AutoLaunch then settingsSender.DisableAutoLaunch
             else settingsSender.EnableAutoLaunch
             |> fun sender -> { model with AutoLaunch = model.AutoLaunch |> not }, Cmd.bridgeSend sender
+        | RunSetup ->
+            let cmds =
+                [ yield if model.AutoLaunch then settingsSender.EnableAutoLaunch
+                        else settingsSender.DisableAutoLaunch
+                        |> Cmd.bridgeSend
+                  if ``process``.platform <> Node.Base.Platform.Win32 then
+                      yield Cmd.bridgeSend (settingsSender.SetupLinux) ]
+            model, Cmd.batch cmds

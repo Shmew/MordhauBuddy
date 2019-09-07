@@ -56,13 +56,15 @@ module State =
                         | Tab.Random -> model, Cmd.bridgeSend (sender.SetRandom profiles)
                         | Tab.Import -> model, Cmd.bridgeSend (sender.SetCustom profiles model.Import.ImportString)
                         | _ -> { model with Submit = Submit.Error "Invalid submission" }, Cmd.ofMsg SnackDismissMsg
-                    else { model with Submit = Submit.Error "Error creating backup" }, Cmd.ofMsg SnackDismissMsg
+                    else
+                        { model with Submit = Submit.Error "Error creating backup" }, Cmd.ofMsg SnackDismissMsg
                 | INIOperationResult.CommitChanges b ->
                     (if b then
                         { model with
                               StepperComplete = true
                               Submit = Submit.Success "Changes successfully completed!" }
-                     else { model with Submit = Submit.Error "Error commiting changes to the file" }),
+                     else
+                         { model with Submit = Submit.Error "Error commiting changes to the file" }),
                     Cmd.ofMsg SnackDismissMsg
                 | _ -> model, Cmd.none
             | BridgeResult.Faces fr ->

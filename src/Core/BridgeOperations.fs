@@ -174,3 +174,6 @@ module BridgeOperations =
 
         /// Try to disable the auto launch
         let disableAutoLaunch launchEnv = disableAutoLaunch launchEnv
+
+        /// Try to setup the linux application
+        let setupLinux() = registerLinuxApp()

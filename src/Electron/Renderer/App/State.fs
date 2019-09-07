@@ -35,7 +35,8 @@ module State =
               Store = store
               IsBridgeConnected = false
               Resources =
-                  { Community = { AttemptedLoad = false }
+                  { InitSetup = { AttemptedLoad = false }
+                    Community = { AttemptedLoad = false }
                     GameConfig =
                         { Path = defaultArg store.GameLocation ""
                           Exists = false
@@ -139,6 +140,9 @@ module State =
         | MinMaxMsg msg' -> { m with IsMax = msg' }, Cmd.none
         | LoadResources msg' ->
             match msg' with
+            | InitSetup ->
+                { m.Resources with InitSetup = { m.Resources.InitSetup with AttemptedLoad = true } } |> setResource m,
+                Cmd.ofMsg InitSetup
             | LoadCom ->
                 { m.Resources with Community = { m.Resources.Community with AttemptedLoad = true } } |> setResource m,
                 Cmd.ofMsg LoadCom
@@ -206,6 +210,9 @@ module State =
                 let m', cmd = Settings.State.update (Settings.Types.SetMapDir(s, Ok s)) m.Settings
                 setPath m'.MapsDir.Directory m.Resources.Maps |> loadMap m' cmd
             | _ -> m, Cmd.none
+        | InitSetup ->
+            let m', cmd = Settings.State.update (Settings.Types.RunSetup) m.Settings
+            { m with Settings = m' }, Cmd.map SettingsMsg cmd
         | StoreMsg msg' ->
             let m', cmd = Store.update msg' m.Store, Cmd.none
             { m with Store = m' }, Cmd.map StoreMsg cmd
@@ -239,7 +246,8 @@ module State =
                           |> StoreMsg
                           |> Cmd.ofMsg ]
                         |> List.append cList
-                    else cList
+                    else
+                        cList
 
                 let appendBackup (cList: Cmd<Msg> list) =
                     if m.Settings.BackupSettings <> newM.BackupSettings then
@@ -248,7 +256,8 @@ module State =
                         |> StoreMsg
                         |> Cmd.ofMsg
                         |> fun newCmd -> newCmd :: cList
-                    else cList
+                    else
+                        cList
 
                 let appendAutoLaunch (cList: Cmd<Msg> list) =
                     if m.Settings.AutoLaunch <> newM.AutoLaunch then
@@ -256,7 +265,8 @@ module State =
                         |> StoreMsg
                         |> Cmd.ofMsg
                         |> fun newCmd -> newCmd :: cList
-                    else cList
+                    else
+                        cList
 
                 [ Cmd.map SettingsMsg cmd ]
                 |> appendMapUpdate

@@ -42,7 +42,8 @@ module State =
                     if b then
                         let allPanels = model.Panels |> List.collect (fun p -> p.Items)
                         model, Cmd.bridgeSend (sender.MapConfigs allPanels)
-                    else { model with Submit = Submit.Error "Error creating backup" }, Cmd.ofMsg SnackDismissMsg
+                    else
+                        { model with Submit = Submit.Error "Error creating backup" }, Cmd.ofMsg SnackDismissMsg
                 | INIOperationResult.CommitChanges b ->
                     (if b then { model with Submit = Submit.Success "Changes successfully completed!" }
                      else { model with Submit = Submit.Error "Error commiting changes to the file" }),
@@ -78,7 +79,8 @@ module State =
                                     WorkingDir = model.EngineDir.Directory |> Some }
                                   { File = ConfigFile.GameUserSettings
                                     WorkingDir = model.GameUserDir.Directory |> Some } ])
-                    else { model with Submit = Submit.Error "Modifying INI failed" }, Cmd.ofMsg SnackDismissMsg
+                    else
+                        { model with Submit = Submit.Error "Modifying INI failed" }, Cmd.ofMsg SnackDismissMsg
             | _ -> model, Cmd.none
         | Expand(p) ->
             model.Panels

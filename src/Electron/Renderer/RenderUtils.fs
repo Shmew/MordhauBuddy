@@ -71,6 +71,8 @@ module BridgeUtils =
         member this.DisableAutoLaunch = SettingsOperation.DisableAutoLaunch |> wrapSetting
         /// Modify the backup policy
         member this.BackupPolicy bSet = SettingsOperation.BackupPolicy(bSet) |> wrapSetting
+        /// Setup initial Linux configuration
+        member this.SetupLinux = SettingsOperation.SetupLinux |> wrapSetting
 
 /// Helper modules and functions for renderer processes
 module RenderUtils =
@@ -230,6 +232,13 @@ module RenderUtils =
                 match this.Name with
                 | Some(name) -> name
                 | None -> this.Folder
+
+
+
+
+
+
+
 
 
             member this.GetPlayers() =
@@ -436,7 +445,8 @@ module RenderUtils =
                         (fun s -> sprintf "%s%s%s" @"https://drive.google.com/uc?authuser=0&" s @"&export=download")
                     |> defaultArg
                     <| s
-                else s
+                else
+                    s
 
         /// Validate a directory
         let validateDir (s: string) =
@@ -586,7 +596,8 @@ module RenderUtils =
                         o.defaultPath <- renderer.remote.app.getPath AppPathName.Home
                         o.properties <- [| DialogFeature.OpenDirectory |])
                 let! res = renderer.remote.dialog.showOpenDialog opts
-                if res.canceled then return DirSelect.Canceled
+                if res.canceled then
+                    return DirSelect.Canceled
                 else
                     return res.filePaths
                            |> Array.head
@@ -639,7 +650,8 @@ module RenderUtils =
                 | _ -> None
 
             let validateInfo (i: int) (vFun: string -> Result<'t, string list>) =
-                if infoArr.Length - 1 < i then None
+                if infoArr.Length - 1 < i then
+                    None
                 else
                     infoArr.[i]
                     |> vFun

@@ -164,7 +164,8 @@ module View =
                         yield circularProgress
                                   [ CircularProgressProp.Size(CircularProgressSize.Case1(20))
                                     Style [ CSSProp.MaxHeight "2.6em" ] ]
-                      else yield str "Submit" ] ] ]
+                      else
+                          yield str "Submit" ] ] ]
 
     let private view' (classes: IClasses) model dispatch =
         div

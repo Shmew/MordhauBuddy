@@ -25,6 +25,7 @@ module Types =
         | MapUpdateSetting of UpdateSettings option
         | BackupSetting of BackupSettings option
         | ToggleAutoLaunch
+        | RunSetup
 
     type Model =
         { EngineDir: ConfigDir

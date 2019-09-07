@@ -73,7 +73,8 @@ module FileOps =
                             | f when f.Name.StartsWith("Game") -> "Game"
                             | _ -> "")
                         |> Array.iter (fun (k, fArr) ->
-                            if k = "" then ()
+                            if k = "" then
+                                ()
                             else
                                 fArr
                                 |> Array.sortBy (fun f -> f.CreationTime)
@@ -104,7 +105,8 @@ module FileOps =
                 try
                     File.readAsString file |> INIValue.TryParse
                 with _ -> None
-            else None
+            else
+                None
 
     /// File operations for maps
     module Maps =
@@ -119,10 +121,9 @@ module FileOps =
                     |> List.map (fun fol -> fol @@ @"Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps")
                 | false ->
                     [ ".steam/steam"; ".local/share/Steam" ]
-                    |> List.map (
-                        (fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
-                        >>
-                        (fun fol -> fol @@ @"steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps"))
+                    |> List.map
+                        ((fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
+                         >> (fun fol -> fol @@ @"steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps"))
 
             let bindDirectory (dir: string) =
                 IO.DirectoryInfo dir
@@ -184,9 +185,9 @@ module FileOps =
 
     /// File operations for enabling auto launching
     module AutoLaunch =
+        open BlackFox.CommandLine
         open Fake.Windows
         open System.Reflection
-        open Microsoft.Win32
 
         /// Linux DesktopFile
         type DesktopFile =
@@ -196,27 +197,23 @@ module FileOps =
               Type: string
               Terminal: bool
               Exec: string
-              Icon: string
-              Categories: string list
-              Keywords: string list }
+              Icon: string }
             /// Create the desktop file string
             member this.ToDesktopString() =
                 let nL = Environment.NewLine
                 let reduceNL sList = sList |> List.reduce (fun acc elem -> acc + nL + elem)
-                [ this.Name
-                  this.Comment
-                  this.Version
-                  this.Type
-                  this.Terminal |> string
-                  this.Exec
-                  this.Icon
-                  this.Categories |> reduceNL
-                  this.Keywords |> reduceNL ]
+                [ "Name=" + this.Name
+                  "Comment=" + this.Comment
+                  "Version=" + this.Version
+                  "Type=" + this.Type
+                  "Terminal=" + (this.Terminal |> string)
+                  "Exec=" + this.Exec
+                  "Icon=" + this.Icon ]
                 |> reduceNL
                 |> fun dFile -> "[Desktop Entry]" + nL + dFile
 
         /// Try to get an env variable with increasing scope
-        let tryGetEnvVar (s: string) =
+        let private tryGetEnvVar (s: string) =
             let envOpt (envVar: string) =
                 if String.isNullOrEmpty envVar then None
                 else Some(envVar)
@@ -231,17 +228,80 @@ module FileOps =
             | _, _, Some(v) -> Some(v)
             | _ -> None
 
-        let regBase = Registry.RegistryBaseKey.HKEYCurrentUser
-        let regKey = @"Software\Microsoft\Windows\CurrentVersion\Run"
-        let regSubValue = "MordhauBuddy"
+        let private regBase = Registry.RegistryBaseKey.HKEYCurrentUser
+        let private regKey = @"Software\Microsoft\Windows\CurrentVersion\Run"
+        let private regSubValue = "MordhauBuddy"
 
-        let appPath =
-            if Environment.isLinux then __SOURCE_DIRECTORY__
-            else
-                Environment.SpecialFolder.LocalApplicationData
-                |> Environment.GetFolderPath
-                |> fun d -> (new IO.DirectoryInfo(d)).FullName
-                |> fun d -> (d @@ "mordhau-buddy-updater" @@ "installer.exe")
+        /// Try to locate the current executable directory
+        let private appPath = Environment.CurrentDirectory
+
+        /// Get executable path
+        let private execPath =
+            Environment.SpecialFolder.LocalApplicationData
+            |> Environment.GetFolderPath
+            |> fun d -> (new IO.DirectoryInfo(d)).FullName
+            |> fun d -> (d @@ "mordhau-buddy-updater" @@ "installer.exe")
+
+        /// Try to get linux home path
+        let private homePath =
+            if Environment.isLinux then tryGetEnvVar "HOME"
+            else None
+
+        /// Get application version
+        let private version =
+            Assembly.GetExecutingAssembly().GetName().Version |> (fun v -> sprintf "%i.%i.%i" v.Major v.Minor v.Build)
+
+        /// Get the name of the AppImage
+        let private appImageName = sprintf "MordhauBuddy-%s.AppImage" version
+
+        /// Create desktop file string
+        let private desktopFile() =
+            { Name = "MordhauBuddy"
+              Comment = "Compilation of Mordhau Tools"
+              Version = version
+              Type = "Application"
+              Terminal = false
+              Exec = (appPath @@ sprintf "MordhauBuddy-%s.AppImage" version)
+              Icon =
+                  (defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/applications/MordhauBuddy")) appPath
+                   @@ "icon.png") }
+            |> fun dFile -> dFile.ToDesktopString()
+
+        /// Registers the application on linux
+        let registerLinuxApp() =
+            async {
+                try
+                    if Environment.isLinux then
+                        System.Console.WriteLine("Starting linux reg")
+                        homePath
+                        |> Option.map (fun path -> path @@ ".local/share/applications")
+                        |> function
+                        | Some(path) ->
+                            System.Console.WriteLine(path)
+                            Directory.ensure (path @@ "MordhauBuddy")
+                            File.writeString false (path @@ "mordhau-buddy.desktop") <| desktopFile()
+                            System.Console.WriteLine("desktop file written")
+                            //CmdLine.empty
+                            //|> CmdLine.append "--appimage-extract static/icon.png"
+                            //|> CmdLine.toString
+                            //|> CreateProcess.fromRawCommandLine (appPath @@ appImageName)
+                            //|> Proc.run
+                            //|> ignore
+                            System.Console.WriteLine("appimage extracted")
+                            try
+                                try
+                                    Shell.moveFile (appPath @@ "squashfs-root/static/icon.png")
+                                        (path @@ "MordhauBuddy/icon.png")
+                                    Async.Sleep 6000 |> Async.RunSynchronously
+                                    System.Console.WriteLine("Icon moved")
+                                with _ -> ()
+                            finally
+                                Shell.deleteDir (appPath @@ "squashfs-root/static")
+                                System.Console.WriteLine("static dir removed")
+                        | None -> ()
+                with _ -> ()
+            }
+            |> Async.Start
 
         /// Try to enable auto launch
         let enableAutoLaunch() =
@@ -250,21 +310,9 @@ module FileOps =
                     try
                         let autoStart = (dir @@ "autostart")
                         let desktopFilePath = autoStart @@ "mordhau-buddy.desktop"
-
-                        let desktopFile =
-                            { Name = "MordhauBuddy"
-                              Comment = "Compilation of Mordhau Tools"
-                              Version = Assembly.GetExecutingAssembly().GetName().Version |> string
-                              Type = "Application"
-                              Terminal = false
-                              Exec = appPath
-                              Icon = (DirectoryInfo.ofPath appPath).FullName @@ "static/icon.png"
-                              Categories = [ "Games" ]
-                              Keywords = [ "Mordhau"; "Buddy"; "MordhauBuddy" ] }
-                            |> fun dFile -> dFile.ToDesktopString()
                         Directory.ensure autoStart
                         do! Async.Sleep 1000
-                        File.writeString false desktopFilePath desktopFile
+                        File.writeString false desktopFilePath <| desktopFile()
                         do! Async.Sleep 1000
                         return File.exists desktopFilePath
                     with _ -> return false
@@ -274,23 +322,9 @@ module FileOps =
             if Environment.isLinux then
                 async {
                     return try
-                               match tryGetEnvVar "XDG_CONFIG_HOME", tryGetEnvVar "XDG_CONFIG_DIRS" with
-                               | Some(cHome), _ -> Some(cHome @@ "autostart")
-                               | _, Some(cDirs) when cDirs.Split(':').Length > 0 ->
-                                   cDirs.Split(':')
-                                   |> Array.tryFind (fun s -> s = "/etc/xdg")
-                                   |> function
-                                   | Some(path) -> Some(path)
-                                   | None ->
-                                       cDirs.Split(':')
-                                       |> Array.head
-                                       |> Some
-                               | _ ->
-                                   if DirectoryInfo.ofPath("/etc/xdg").Exists then Some("/etc/xdg")
-                                   else None
-                               |> function
-                               | Some(path) -> applyDesktopFile path
-                               | None -> false
+                               homePath
+                               |> Option.map (fun path -> applyDesktopFile (path @@ ".config"))
+                               |> Option.isSome
                            with _ -> false
                 }
                 |> Async.RunSynchronously
@@ -298,7 +332,7 @@ module FileOps =
                 async {
                     return try
                                use registryKey = Registry.getRegistryKey regBase regKey true
-                               registryKey.SetValue(regSubValue, appPath, Microsoft.Win32.RegistryValueKind.String)
+                               registryKey.SetValue(regSubValue, execPath, Microsoft.Win32.RegistryValueKind.String)
                                registryKey.Flush()
                                registryKey.Dispose()
                                Async.Sleep 1000 |> Async.RunSynchronously
@@ -312,8 +346,13 @@ module FileOps =
             async {
                 return try
                            if Environment.isLinux then
-                               File.delete appPath
-                               File.exists appPath
+                               homePath
+                               |> Option.map (fun path -> path @@ ".config/autostart/mordhau-buddy.desktop")
+                               |> function
+                               | Some(path) ->
+                                   File.delete path
+                                   File.exists appPath
+                               | None -> false
                            else
                                Registry.deleteRegistryValue regBase regKey regSubValue
                                Registry.valueExistsForKey regBase regKey regSubValue

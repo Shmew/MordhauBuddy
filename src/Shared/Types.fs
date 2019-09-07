@@ -241,6 +241,7 @@ module ElectronBridge =
         | EnableAutoLaunch
         | DisableAutoLaunch
         | BackupPolicy of BackupSettings
+        | SetupLinux
 
     [<RequireQualifiedAccess>]
     type GoogleDrive =
