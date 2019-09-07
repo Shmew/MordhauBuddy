@@ -15,8 +15,6 @@
   "scripts": {
     "compile": "electron-webpack",
     "dev": "electron-webpack dev",
-    "dist:dirLinux": "yarn distLinux --dir -c.compression=store -c.mac.identity=null",
-    "dist:dirWin": "yarn distWin --dir -c.compression=store -c.mac.identity=null",
     "dist:dirWin64": "yarn distWin64 --dir -c.compression=store -c.mac.identity=null",
     "distLinux": "yarn compile && electron-builder --linux --x64",
     "distWin": "yarn compile && electron-builder --win --ia32",

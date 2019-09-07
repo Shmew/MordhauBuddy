@@ -252,7 +252,7 @@ module View =
 
     let private view' (classes: IClasses) model dispatch =
         let hideIfMax (b: bool) =
-            match window.isMaximized() = b with
+            match model.IsMax = b with
             | true -> Display DisplayOptions.None
             | false -> Display DisplayOptions.Flex
 

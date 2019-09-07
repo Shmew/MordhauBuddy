@@ -60,7 +60,7 @@ module View =
               GridProp.Wrap GridWrap.Wrap
               Style
                   [ CSSProp.Display DisplayOptions.Flex
-                    CSSProp.MaxWidth "95vh" ] ]
+                    CSSProp.FlexGrow 1 ] ]
         <| match model.TabSelected with
            | Announcements ->
                match getSteamAnnouncements classes model dispatch with

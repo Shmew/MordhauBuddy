@@ -95,6 +95,16 @@ module Main =
     let bridge = startBridge()
 
     let createTray() =
+        let show =
+            menuItemOptionsPojo
+                ({| label = "Open"
+                    click = 
+                        fun () -> 
+                            match mainWindow with
+                            | Some(win) -> win.show()
+                            | None -> () |}) 
+            |> U2.Case1
+
         let quit =
             main.MenuItem.Create
                 (jsOptions<MenuItemOptions> (fun o ->
@@ -111,17 +121,11 @@ module Main =
                 path.resolve (__dirname, "..", "..", "static", "icon.png")
 #endif
             main.Tray.Create(iconPath)
-        main.Menu.buildFromTemplate [| quit |]
+        main.Menu.buildFromTemplate [| show; quit |]
         |> Some
         |> appTray.setContextMenu
 
         appTray.onClick (fun _ _ _ ->
-            match mainWindow with
-            | Some(win) -> win.show()
-            | _ -> ())
-        |> ignore
-
-        appTray.onDoubleClick (fun _ _ ->
             match mainWindow with
             | Some(win) -> win.show()
             | _ -> ())
@@ -154,10 +158,10 @@ module Main =
                     o.frame <- false
                     o.backgroundColor <- "#FFF"
                     o.show <- false))
+
         win.onceReadyToShow (fun _ ->
             win.setTitle <| sprintf "%s - %s" Info.name Info.version
-            if win.isMinimized() |> not then
-                win.show()
+            if win.isMinimized() |> not then win.show()
             mainWinState.manage win)
         |> ignore
 #if DEBUG

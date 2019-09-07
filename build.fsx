@@ -361,9 +361,7 @@ Target.create "Dist" <| fun _ ->
 
 // Build to unpacked directory
 Target.create "DistDir" <| fun _ ->
-    Yarn.exec "dist:dirWin" id
     Yarn.exec "dist:dirWin64" id
-    Yarn.exec "dist:dirLinux" id
 
 // Build artifacts and publish
 Target.create "Publish" <| fun _ ->

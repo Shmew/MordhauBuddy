@@ -228,6 +228,10 @@ module FileOps =
             | _, _, Some(v) -> Some(v)
             | _ -> None
 
+        let private withTimeout timeout action =
+            async { let! child = Async.StartChild(action, timeout)
+                    return! child }
+
         let private regBase = Registry.RegistryBaseKey.HKEYCurrentUser
         let private regKey = @"Software\Microsoft\Windows\CurrentVersion\Run"
         let private regSubValue = "MordhauBuddy"
@@ -263,8 +267,7 @@ module FileOps =
               Terminal = false
               Exec = (appPath @@ sprintf "MordhauBuddy-%s.AppImage" version)
               Icon =
-                  (defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/applications/MordhauBuddy")) appPath
-                   @@ "icon.png") }
+                  (defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/MordhauBuddy")) appPath @@ "icon.png") }
             |> fun dFile -> dFile.ToDesktopString()
 
         /// Registers the application on linux
@@ -272,32 +275,24 @@ module FileOps =
             async {
                 try
                     if Environment.isLinux then
-                        System.Console.WriteLine("Starting linux reg")
                         homePath
-                        |> Option.map (fun path -> path @@ ".local/share/applications")
+                        |> Option.map (fun path -> path @@ ".local/share")
                         |> function
                         | Some(path) ->
-                            System.Console.WriteLine(path)
                             Directory.ensure (path @@ "MordhauBuddy")
-                            File.writeString false (path @@ "mordhau-buddy.desktop") <| desktopFile()
-                            System.Console.WriteLine("desktop file written")
-                            //CmdLine.empty
-                            //|> CmdLine.append "--appimage-extract static/icon.png"
-                            //|> CmdLine.toString
-                            //|> CreateProcess.fromRawCommandLine (appPath @@ appImageName)
-                            //|> Proc.run
-                            //|> ignore
-                            System.Console.WriteLine("appimage extracted")
+                            File.writeString false (path @@ "applications/mordhau-buddy.desktop") <| desktopFile()
+                            Shell.AsyncExec(appImageName, args = " --appimage-extract static/icon.png", dir = appPath)
+                            |> withTimeout 10000
+                            |> Async.Ignore
+                            |> Async.Start
+                            Async.Sleep 10000 |> Async.RunSynchronously
                             try
                                 try
-                                    Shell.moveFile (appPath @@ "squashfs-root/static/icon.png")
-                                        (path @@ "MordhauBuddy/icon.png")
+                                    Shell.moveFile (path @@ "MordhauBuddy") (appPath @@ "squashfs-root/static/icon.png")
                                     Async.Sleep 6000 |> Async.RunSynchronously
-                                    System.Console.WriteLine("Icon moved")
                                 with _ -> ()
                             finally
-                                Shell.deleteDir (appPath @@ "squashfs-root/static")
-                                System.Console.WriteLine("static dir removed")
+                                Shell.deleteDir (appPath @@ "squashfs-root")
                         | None -> ()
                 with _ -> ()
             }
