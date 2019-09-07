@@ -10,8 +10,9 @@
       <CustomToolNamespace>MordhauBuddy.Core</CustomToolNamespace>
     </EmbeddedResource>
     <Compile Include="INIReader.fs" />
-    <Compile Include="INIConfiguration.fs" />
+    <Compile Include="Helpers.fs" />
     <Compile Include="FileOperations.fs" />
+    <Compile Include="INIConfiguration.fs" />
     <Compile Include="ComOperations.fs" />
     <Compile Include="Http.fs" />
     <Compile Include="BridgeOperations.fs" />

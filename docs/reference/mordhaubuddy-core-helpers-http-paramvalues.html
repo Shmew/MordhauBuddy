@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Http - MordhauBuddy</title>
+    <title>ParamValues - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,96 +34,34 @@
 
 
 
-<h1>Http</h1>
+<h1>ParamValues</h1>
 <p>
-  <span>Namespace: MordhauBuddy.Core</span><br />
-  <span>Parent Module: <a href="mordhaubuddy-core-http-helpers.html">Helpers</a></span>
-  </p>
+
+    <span>Namespace: MordhauBuddy.Core</span><br />
+        <span>Parent Module: <a href="mordhaubuddy-core-helpers-http.html">Http</a></span><br />
+    </p>
 <div class="xmldoc">
-<p>Http related helper fuctions</p>
+<p>Single case DU for creating GET queries</p>
 
 </div>
-
-<!-- Render nested types and modules, if there are any -->
-
-  <h3>Functions and values</h3>
+  <h3>Union Cases</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Function or value</td><td>Description</td></tr>
+      <tr><td>Union Case</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '202', 202)" onmouseover="showTip(event, '202', 202)">
-            httpError code errors
+          <code onmouseout="hideTip(event, '785', 785)" onmouseover="showTip(event, '785', 785)">
+            Flag(string,bool)
           </code>
-          <div class="tip" id="202">
-            <strong>Signature:</strong> code:int -&gt; errors:string -&gt; string<br />
+          <div class="tip" id="785">
+            <strong>Signature:</strong> string * bool<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L107-107" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Returns error code message</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '203', 203)" onmouseover="showTip(event, '203', 203)">
-            httpErrorMsg(resp)
-          </code>
-          <div class="tip" id="203">
-            <strong>Signature:</strong> resp:HttpResponse -&gt; string<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L88-88" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Gets the error message(s) from a <code>HttpResponse</code> if present</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '204', 204)" onmouseover="showTip(event, '204', 204)">
-            httpOk(resp)
-          </code>
-          <div class="tip" id="204">
-            <strong>Signature:</strong> resp:HttpResponse -&gt; Result&lt;string,string&gt;<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L110-110" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Evaluates <code>HttpResponse</code> to <code>Ok</code> or <code>Error</code></p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '205', 205)" onmouseover="showTip(event, '205', 205)">
-            httpStreamOk(resp)
-          </code>
-          <div class="tip" id="205">
-            <strong>Signature:</strong> resp:HttpResponseWithStream -&gt; Result&lt;Stream,string&gt;<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L121-121" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L46-46" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -133,39 +71,66 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '206', 206)" onmouseover="showTip(event, '206', 206)">
-            paramBuilder(paramList)
+          <code onmouseout="hideTip(event, '786', 786)" onmouseover="showTip(event, '786', 786)">
+            Param(string,string option)
           </code>
-          <div class="tip" id="206">
-            <strong>Signature:</strong> paramList:ParamValues list -&gt; string<br />
+          <div class="tip" id="786">
+            <strong>Signature:</strong> string * string option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L65-65" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L45-45" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Maps and encodes input list to GET query format</p>
+          
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '787', 787)" onmouseover="showTip(event, '787', 787)">
+            x.IsValid
+          </code>
+          <div class="tip" id="787">
+            <strong>Signature:</strong> bool<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L55-55" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Returns boolean response as to parameter value validity</p>
 
 
+              <p>CompiledName: <code>get_IsValid</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '207', 207)" onmouseover="showTip(event, '207', 207)">
-            unwrapTextBody(body)
+          <code onmouseout="hideTip(event, '788', 788)" onmouseover="showTip(event, '788', 788)">
+            x.TryGetParamValue()
           </code>
-          <div class="tip" id="207">
-            <strong>Signature:</strong> body:HttpResponseBody -&gt; string<br />
+          <div class="tip" id="788">
+            <strong>Signature:</strong> unit -&gt; (string * string) option<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L82-82" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L49-49" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Converts a text <code>HttpResponseBody</code> to string</p>
+          <p>Returns <code>Some</code> key value pair if it exists <code>None</code> otherwise</p>
 
 
         </td>

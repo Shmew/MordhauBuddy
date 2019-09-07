@@ -15,13 +15,11 @@
   "scripts": {
     "compile": "electron-webpack",
     "dev": "electron-webpack dev",
-    "dist:dirWin64": "yarn distWin64 --dir -c.compression=store -c.mac.identity=null",
+    "dist:dir": "yarn distWin64 --dir -c.compression=store -c.mac.identity=null",
     "distLinux": "yarn compile && electron-builder --linux --x64",
-    "distWin": "yarn compile && electron-builder --win --ia32",
-    "distWin64": "yarn compile && electron-builder --win --x64",
+    "distWin": "yarn compile && electron-builder --win --x64",
     "publishLinux": "yarn distLinux && electron-builder --publish always",
-    "publishWin": "yarn distWin && electron-builder --publish always",
-    "publishWin64": "yarn distWin64 && electron-builder --publish always"
+    "publishWin": "yarn distWin64 && electron-builder --publish always"
   },
   "electronWebpack": {
     "main": {
@@ -54,20 +52,26 @@
     "linux": {
       "target": [
         "AppImage"
+      ],
+      "publish": [
+        {
+          "provider": "github",
+          "vPrefixedTagName": false
+        }
       ]
     },
     "productName": "MordhauBuddy",
-    "publish": [
-      {
-        "provider": "github",
-        "vPrefixedTagName": false
-      }
-    ],
     "win": {
       "icon": "./static/icon.ico",
       "target": [
         "nsis",
         "zip"
+      ],
+      "publish": [
+        {
+          "provider": "github",
+          "vPrefixedTagName": false
+        }
       ]
     }
   },

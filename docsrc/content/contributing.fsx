@@ -40,7 +40,13 @@ for more information.
    and commit all the changes with the given message. If you don't specify a commit message it will default to `Bump version to *.*.*` which pulls the
    version from the RELEASE_NOTES.md. Do note that this will enforce that your versioning is updated every release.
 
-<img src="img/fake.png" alt="Build process"/>
+<div class="row">
+  <div class="span6">
+    <div class="well well-small" id="nuget">
+      <img src="img/fake.png" alt="Build process"/>
+    </div>
+  </div>
+</div>
 
 ## Merging ##
 

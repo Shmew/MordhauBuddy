@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>GHContents - MordhauBuddy</title>
+    <title>DownloadFile - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,14 +34,14 @@
 
 
 
-<h1>GHContents</h1>
+<h1>DownloadFile</h1>
 <p>
 
     <span>Namespace: MordhauBuddy.Core</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-core-http-ghtypes.html">GHTypes</a></span><br />
+        <span>Parent Module: <a href="mordhaubuddy-core-helpers-http.html">Http</a></span><br />
     </p>
 <div class="xmldoc">
-<p>Record to represent GH content api response</p>
+<p>Record for download requests</p>
 
 </div>
   <h3>Record Fields</h3>
@@ -53,19 +53,69 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '769', 769)" onmouseover="showTip(event, '769', 769)">
-            DownloadUrl
+          <code onmouseout="hideTip(event, '766', 766)" onmouseover="showTip(event, '766', 766)">
+            CancelFun
           </code>
-          <div class="tip" id="769">
-            <strong>Signature:</strong> string<br />
-                                    <span>
-            <strong>Attributes:</strong><br />
-[&lt;JsonField(&quot;download_url&quot;)&gt;]<br />
-          </span>
-          </div>
+          <div class="tip" id="766">
+            <strong>Signature:</strong> OperationCanceledException -&gt; unit<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L36-36" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L24-24" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '767', 767)" onmouseover="showTip(event, '767', 767)">
+            CompleteFun
+          </code>
+          <div class="tip" id="767">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L22-22" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '768', 768)" onmouseover="showTip(event, '768', 768)">
+            Directory
+          </code>
+          <div class="tip" id="768">
+            <strong>Signature:</strong> DirectoryInfo<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L19-19" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '769', 769)" onmouseover="showTip(event, '769', 769)">
+            ErrorFun
+          </code>
+          <div class="tip" id="769">
+            <strong>Signature:</strong> string -&gt; unit<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L23-23" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -76,18 +126,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '770', 770)" onmouseover="showTip(event, '770', 770)">
-            GitUrl
+            FileName
           </code>
           <div class="tip" id="770">
             <strong>Signature:</strong> string<br />
-                                    <span>
-            <strong>Attributes:</strong><br />
-[&lt;JsonField(&quot;html_url&quot;)&gt;]<br />
-          </span>
-          </div>
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L34-34" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L17-17" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -98,18 +144,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '771', 771)" onmouseover="showTip(event, '771', 771)">
-            HtmlUrl
+            MapName
           </code>
           <div class="tip" id="771">
             <strong>Signature:</strong> string<br />
-                                    <span>
-            <strong>Attributes:</strong><br />
-[&lt;JsonField(&quot;html_url&quot;)&gt;]<br />
-          </span>
-          </div>
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L32-32" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L18-18" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -120,18 +162,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '772', 772)" onmouseover="showTip(event, '772', 772)">
-            Links
+            Size
           </code>
           <div class="tip" id="772">
-            <strong>Signature:</strong> obj<br />
-                                    <span>
-            <strong>Attributes:</strong><br />
-[&lt;JsonField(&quot;_links&quot;)&gt;]<br />
-          </span>
-          </div>
+            <strong>Signature:</strong> float&lt;MeasureProduct&lt;MB,MeasureOne&gt;&gt;<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L39-39" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L20-20" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -142,14 +180,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '773', 773)" onmouseover="showTip(event, '773', 773)">
-            Name
+            UpdateFun
           </code>
           <div class="tip" id="773">
-            <strong>Signature:</strong> string<br />
+            <strong>Signature:</strong> int -&gt; unit<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L26-26" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L21-21" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -160,86 +198,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '774', 774)" onmouseover="showTip(event, '774', 774)">
-            Path
+            Url
           </code>
           <div class="tip" id="774">
             <strong>Signature:</strong> string<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L27-27" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '775', 775)" onmouseover="showTip(event, '775', 775)">
-            Sha
-          </code>
-          <div class="tip" id="775">
-            <strong>Signature:</strong> string<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L28-28" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '776', 776)" onmouseover="showTip(event, '776', 776)">
-            Size
-          </code>
-          <div class="tip" id="776">
-            <strong>Signature:</strong> int64<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L29-29" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '777', 777)" onmouseover="showTip(event, '777', 777)">
-            Type
-          </code>
-          <div class="tip" id="777">
-            <strong>Signature:</strong> string<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L37-37" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '778', 778)" onmouseover="showTip(event, '778', 778)">
-            Url
-          </code>
-          <div class="tip" id="778">
-            <strong>Signature:</strong> string<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Http.fs#L30-30" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L16-16" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

@@ -9,6 +9,8 @@ module Bindings =
     let menuItemOptionsPojo menuItemOptions: MenuItemOptions = jsNative
 
     module Info =
+        open Node.Api
+
         let private pkgJson: obj = importDefault "../../../package.json"
 
         let private normalizeKebabCase (s: string) =
@@ -40,6 +42,8 @@ module Bindings =
         let chromeVersion = versions.chrome
         let nodeVersion = versions.node
         let v8Version = versions.v8
+
+        let appLocation = path.resolve (__dirname, "..", "..", "..")
 
     module WindowState =
         type State =

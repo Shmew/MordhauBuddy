@@ -10,7 +10,13 @@ Content that has not yet been installed, or has a newer version available (if yo
 update feature). You can simply click the plus symbol next to each map to start the installation, or 
 click the install all maps button to queue everything up for download and installation.
 
-<img src="img/mapInstallerAvailable.png"/>
+<div class="row">
+  <div class="span6">
+    <div class="well well-small" id="nuget">
+      <img src="img/mapInstallerAvailable.png"/>
+    </div>
+  </div>
+</div>
 
 ## Installed ##
 
@@ -20,7 +26,13 @@ recommended players, version number, name, map size (file sizes), and a picture 
 You can uninstall maps here by clicking the action buttons on the side of each map and clicking uninstall, or 
 if you want to remove all maps there is an uninstall all button.
 
-<img src="img/mapInstallerInstalled.png"/>
+<div class="row">
+  <div class="span6">
+    <div class="well well-small" id="nuget">
+      <img src="img/mapInstallerInstalled.png"/>
+    </div>
+  </div>
+</div>
 
 ## Installing ##
 
@@ -28,6 +40,12 @@ This section will display currently installing maps, along with a progress bar. 
 installations by clicking the action bar for the map, or cancel all installations by clicking the cancel all 
 button at the bottom of the screen.
 
-<img src="img/mapInstallerInstalling.png"/>
+<div class="row">
+  <div class="span6">
+    <div class="well well-small" id="nuget">
+      <img src="img/mapInstallerInstalling.png"/>
+    </div>
+  </div>
+</div>
 
 *)

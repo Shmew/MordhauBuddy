@@ -11,6 +11,12 @@ other options you may not be aware of, such as disabling sun glare, or in-game f
 Values that have a more subject setting will have sliders available so you can adjust them 
 to your liking.
 
-<img src="img/mordhauConfig.png"/>
+<div class="row">
+  <div class="span6">
+    <div class="well well-small" id="nuget">
+      <img src="img/mordhauConfig.png"/>
+    </div>
+  </div>
+</div>
 
 *)

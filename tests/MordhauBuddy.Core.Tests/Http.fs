@@ -6,6 +6,7 @@ module Http =
     open MordhauBuddy.Shared.ElectronBridge
     open MordhauBuddy.Core.Http
     open Helpers
+    open Helpers.Http
     open System
     open FSharp.Data
     open FSharp.Data.JsonExtensions

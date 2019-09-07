@@ -98,12 +98,11 @@ module Main =
         let show =
             menuItemOptionsPojo
                 ({| label = "Open"
-                    click = 
-                        fun () -> 
+                    click =
+                        fun () ->
                             match mainWindow with
                             | Some(win) -> win.show()
-                            | None -> () |}) 
-            |> U2.Case1
+                            | None -> () |}) |> U2.Case1
 
         let quit =
             main.MenuItem.Create
@@ -121,6 +120,12 @@ module Main =
                 path.resolve (__dirname, "..", "..", "static", "icon.png")
 #endif
             main.Tray.Create(iconPath)
+
+
+
+
+
+
         main.Menu.buildFromTemplate [| show; quit |]
         |> Some
         |> appTray.setContextMenu
@@ -158,6 +163,12 @@ module Main =
                     o.frame <- false
                     o.backgroundColor <- "#FFF"
                     o.show <- false))
+
+
+
+
+
+
 
         win.onceReadyToShow (fun _ ->
             win.setTitle <| sprintf "%s - %s" Info.name Info.version

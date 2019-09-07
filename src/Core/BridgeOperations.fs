@@ -84,6 +84,7 @@ module BridgeOperations =
     /// Map related bridge commands
     [<RequireQualifiedAccess>]
     module Maps =
+        open Helpers
         open Http
         open Http.WebRequests
         open System
@@ -112,7 +113,7 @@ module BridgeOperations =
         /// Download map if available
         let installMap (mCmd: MapTarget) (dispatchWrapper: MapResult -> unit) (cToken: CancellationToken) =
             let fName = mCmd.Folder + ".zip"
-            let getMap (mList: GHTypes.GHContents list) = mList |> List.filter (fun m -> m.Name = fName)
+            let getMap (mList: GHContents list) = mList |> List.filter (fun m -> m.Name = fName)
             let diDir = IO.DirectoryInfo(mCmd.Directory)
             match mCmd.GDrive with
             | Some(gd) ->
@@ -170,7 +171,7 @@ module BridgeOperations =
         open FileOps.AutoLaunch
 
         /// Try to enable the auto launch
-        let enableAutoLaunch appPath = enableAutoLaunch appPath
+        let enableAutoLaunch() = enableAutoLaunch()
 
         /// Try to disable the auto launch
         let disableAutoLaunch launchEnv = disableAutoLaunch launchEnv

@@ -93,13 +93,13 @@ module Bridge =
                             |> INIOperationResult.Delete
                             |> BridgeResult.INIOperation
                             |> createClientResp caller (Some(iFile))
-                        | INIFileOperation.Exists(iFile) ->
+                        | INIFileOperation.Exists iFile ->
                             model,
                             INI.exists iFile
                             |> INIOperationResult.Exists
                             |> BridgeResult.INIOperation
                             |> createClientResp caller (Some(iFile))
-                        | INIFileOperation.Parse(iFile) ->
+                        | INIFileOperation.Parse iFile ->
                             let result = INI.parse iFile
 
                             let m, cmd =
@@ -123,7 +123,7 @@ module Bridge =
                                 |> clientDispatch
                             | _ -> ()
                             m, cmd
-                        | INIFileOperation.Backup(fList) ->
+                        | INIFileOperation.Backup fList ->
                             cleanBackupsAsync model.BackupSettings fList
                             model,
                             fList
@@ -132,7 +132,7 @@ module Bridge =
                             |> INIOperationResult.Backup
                             |> BridgeResult.INIOperation
                             |> createClientResp caller None
-                        | INIFileOperation.Commit(fList) ->
+                        | INIFileOperation.Commit fList ->
                             model,
                             fList
                             |> List.map (fun iFile -> INI.write iFile (model.GetIVal(iFile.File).Value))
@@ -171,10 +171,10 @@ module Bridge =
                     | Faces fCmd ->
                         let cResp br = createClientResp caller None br
                         match fCmd with
-                        | Random(profiles) ->
+                        | Random profiles ->
                             let result = INI.random profiles (model.GetIVal(ConfigFile.Game).Value)
                             updateModel ConfigFile.Game result model, result.IsSome |> FaceResult.Random
-                        | Frankenstein(profiles) ->
+                        | Frankenstein profiles ->
                             let result = INI.frankenstein profiles (model.GetIVal(ConfigFile.Game).Value)
                             updateModel ConfigFile.Game result model, result.IsSome |> FaceResult.Frankenstein
                         | Custom(profiles, fVal) ->
@@ -192,12 +192,12 @@ module Bridge =
                         let engine = model.GetIVal(ConfigFile.Engine).Value
                         let gameUser = model.GetIVal(ConfigFile.GameUserSettings).Value
                         match cCmd with
-                        | GetConfigs(oList) ->
+                        | GetConfigs oList ->
                             model,
                             oList
                             |> INI.getConfigs engine gameUser
                             |> ConfigResult.GetConfigs
-                        | MapConfigs(oList) ->
+                        | MapConfigs oList ->
                             let newEngine, newGameUser = oList |> INI.mapConfigs engine gameUser
                             model
                             |> (updateModel ConfigFile.Engine newEngine >> updateModel ConfigFile.Game newGameUser),
@@ -262,10 +262,16 @@ module Bridge =
                             |> SettingResult.DisabledAutoLaunch
                             |> BridgeResult.Settings
                             |> cResp
-                        | BackupPolicy(bSet) -> { model with BackupSettings = bSet }, None
+                        | BackupPolicy bSet -> { model with BackupSettings = bSet }, None
                         | SetupLinux ->
                             Settings.setupLinux()
                             model, None
+
+
+
+
+
+
 
 
 

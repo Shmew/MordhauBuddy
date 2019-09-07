@@ -185,9 +185,11 @@ module FileOps =
 
     /// File operations for enabling auto launching
     module AutoLaunch =
-        open BlackFox.CommandLine
         open Fake.Windows
+        open FSharp.Json
+        open Helpers.Json
         open System.Reflection
+
 
         /// Linux DesktopFile
         type DesktopFile =
@@ -232,102 +234,36 @@ module FileOps =
             async { let! child = Async.StartChild(action, timeout)
                     return! child }
 
-        let private regBase = Registry.RegistryBaseKey.HKEYCurrentUser
-        let private regKey = @"Software\Microsoft\Windows\CurrentVersion\Run"
-        let private regSubValue = "MordhauBuddy"
-
         /// Try to locate the current executable directory
         let private appPath = Environment.CurrentDirectory
-
-        /// Get executable path
-        let private execPath =
-            Environment.SpecialFolder.LocalApplicationData
-            |> Environment.GetFolderPath
-            |> fun d -> (new IO.DirectoryInfo(d)).FullName
-            |> fun d -> (d @@ "mordhau-buddy-updater" @@ "installer.exe")
-
-        /// Try to get linux home path
-        let private homePath =
-            if Environment.isLinux then tryGetEnvVar "HOME"
-            else None
 
         /// Get application version
         let private version =
             Assembly.GetExecutingAssembly().GetName().Version |> (fun v -> sprintf "%i.%i.%i" v.Major v.Minor v.Build)
 
-        /// Get the name of the AppImage
-        let private appImageName = sprintf "MordhauBuddy-%s.AppImage" version
+        [<RequireQualifiedAccess>]
+        module Windows =
 
-        /// Create desktop file string
-        let private desktopFile() =
-            { Name = "MordhauBuddy"
-              Comment = "Compilation of Mordhau Tools"
-              Version = version
-              Type = "Application"
-              Terminal = false
-              Exec = (appPath @@ sprintf "MordhauBuddy-%s.AppImage" version)
-              Icon =
-                  (defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/MordhauBuddy")) appPath @@ "icon.png") }
-            |> fun dFile -> dFile.ToDesktopString()
+            [<AutoOpen>]
+            module private Utils =
+                let regBase = Registry.RegistryBaseKey.HKEYCurrentUser
+                let regKey = @"Software\Microsoft\Windows\CurrentVersion\Run"
+                let regSubValue = "MordhauBuddy"
 
-        /// Registers the application on linux
-        let registerLinuxApp() =
-            async {
-                try
-                    if Environment.isLinux then
-                        homePath
-                        |> Option.map (fun path -> path @@ ".local/share")
-                        |> function
-                        | Some(path) ->
-                            Directory.ensure (path @@ "MordhauBuddy")
-                            File.writeString false (path @@ "applications/mordhau-buddy.desktop") <| desktopFile()
-                            Shell.AsyncExec(appImageName, args = " --appimage-extract static/icon.png", dir = appPath)
-                            |> withTimeout 10000
-                            |> Async.Ignore
-                            |> Async.Start
-                            Async.Sleep 10000 |> Async.RunSynchronously
-                            try
-                                try
-                                    Shell.moveFile (path @@ "MordhauBuddy") (appPath @@ "squashfs-root/static/icon.png")
-                                    Async.Sleep 6000 |> Async.RunSynchronously
-                                with _ -> ()
-                            finally
-                                Shell.deleteDir (appPath @@ "squashfs-root")
-                        | None -> ()
-                with _ -> ()
-            }
-            |> Async.Start
+                /// Get Windows executable path
+                let getWinExecPath() =
+                    Environment.SpecialFolder.LocalApplicationData
+                    |> Environment.GetFolderPath
+                    |> fun d -> (new IO.DirectoryInfo(d)).FullName
+                    |> fun d -> (d @@ "mordhau-buddy-updater" @@ "installer.exe")
 
-        /// Try to enable auto launch
-        let enableAutoLaunch() =
-            let applyDesktopFile dir =
-                async {
-                    try
-                        let autoStart = (dir @@ "autostart")
-                        let desktopFilePath = autoStart @@ "mordhau-buddy.desktop"
-                        Directory.ensure autoStart
-                        do! Async.Sleep 1000
-                        File.writeString false desktopFilePath <| desktopFile()
-                        do! Async.Sleep 1000
-                        return File.exists desktopFilePath
-                    with _ -> return false
-                }
-                |> Async.RunSynchronously
-
-            if Environment.isLinux then
-                async {
-                    return try
-                               homePath
-                               |> Option.map (fun path -> applyDesktopFile (path @@ ".config"))
-                               |> Option.isSome
-                           with _ -> false
-                }
-                |> Async.RunSynchronously
-            else
+            /// Try to enable auto launch
+            let enableAutoLaunch() =
                 async {
                     return try
                                use registryKey = Registry.getRegistryKey regBase regKey true
-                               registryKey.SetValue(regSubValue, execPath, Microsoft.Win32.RegistryValueKind.String)
+                               registryKey.SetValue
+                                   (regSubValue, getWinExecPath(), Microsoft.Win32.RegistryValueKind.String)
                                registryKey.Flush()
                                registryKey.Dispose()
                                Async.Sleep 1000 |> Async.RunSynchronously
@@ -336,11 +272,121 @@ module FileOps =
                 }
                 |> Async.RunSynchronously
 
-        /// Try to disable auto launch
-        let disableAutoLaunch() =
-            async {
-                return try
-                           if Environment.isLinux then
+            /// Try to disable auto launch
+            let disableAutoLaunch() =
+                async {
+                    return try
+                               Registry.deleteRegistryValue regBase regKey regSubValue
+                               Registry.valueExistsForKey regBase regKey regSubValue |> not
+                           with _ -> false
+                }
+                |> Async.RunSynchronously
+
+        [<RequireQualifiedAccess>]
+        module Linux =
+            [<AutoOpen>]
+            module private Utils =
+                /// Try to get home path
+                let homePath = tryGetEnvVar "HOME"
+
+                /// Get the name of the AppImage
+                let appImageName = sprintf "MordhauBuddy-%s.AppImage" version
+
+                /// Gets the home share falling back to `appPath` if necessary
+                let homeShare = defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
+
+                /// Gets or sets the MordhauBuddy env var if necessary
+                let getMBEnv() =
+                    match FileInfo.ofPath (homeShare @@ "home.json") with
+                    | hShare when hShare.Exists ->
+                        File.readAsString hShare.FullName
+                        |> Json.deserializeEx<HomeFile> config
+                        |> fun hf -> hf.Path
+                    | _ ->
+                        let ePath = appPath @@ appImageName
+                        { Path = ePath }
+                        |> Json.serializeEx config
+                        |> File.writeString false (homeShare @@ "home.json")
+                        ePath
+
+                /// Create desktop file string
+                let desktopFile() =
+                    { Name = "MordhauBuddy"
+                      Comment = "Compilation of Mordhau Tools"
+                      Version = version
+                      Type = "Application"
+                      Terminal = false
+                      Exec = getMBEnv()
+                      Icon =
+                          (defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
+                           @@ "icon.png") }
+                    |> fun dFile -> dFile.ToDesktopString()
+
+                /// Extracts the icon file from the AppImage and stores it in the linux .local folder
+                let extractIcon (path: string) =
+                    Shell.AsyncExec(appImageName, args = " --appimage-extract static/icon.png", dir = appPath)
+                    |> withTimeout 5000
+                    |> Async.Ignore
+                    |> Async.RunSynchronously
+                    try
+                        try
+                            async
+                                { Shell.moveFile (path @@ "mordhau-buddy") (appPath @@ "squashfs-root/static/icon.png") }
+                            |> withTimeout 5000
+                            |> Async.RunSynchronously
+                        with _ -> ()
+                    finally
+                        async { Shell.deleteDir (appPath @@ "squashfs-root") }
+                        |> withTimeout 5000
+                        |> Async.RunSynchronously
+
+                /// Create the autostart desktop file
+                let createAutoStartDeskFile dir =
+                    async {
+                        try
+                            let autoStart = (dir @@ "autostart")
+                            let desktopFilePath = autoStart @@ "mordhau-buddy.desktop"
+                            Directory.ensure autoStart
+                            do! Async.Sleep 1000
+                            File.writeString false desktopFilePath <| desktopFile()
+                            do! Async.Sleep 1000
+                            return File.exists desktopFilePath
+                        with _ -> return false
+                    }
+                    |> Async.RunSynchronously
+
+            /// Registers the application on linux
+            let registerLinuxApp() =
+                async {
+                    try
+                        if Environment.isLinux then
+                            homePath
+                            |> Option.map (fun path -> path @@ ".local/share")
+                            |> function
+                            | Some(path) ->
+                                Directory.ensure (path @@ "mordhau-buddy")
+                                File.writeString false (path @@ "applications/mordhau-buddy.desktop") <| desktopFile()
+                                if File.exists (path @@ "mordhau-buddy" @@ "icon.png") |> not then extractIcon path
+                            | None -> ()
+                    with _ -> ()
+                }
+                |> Async.Start
+
+            /// Try to enable auto launch
+            let enableAutoLaunch() =
+                async {
+                    return try
+                               homePath
+                               |> Option.map (fun path -> createAutoStartDeskFile (path @@ ".config"))
+                               |> Option.isSome
+                           with _ -> false
+                }
+                |> Async.RunSynchronously
+
+            /// Try to disable auto launch
+            let disableAutoLaunch() =
+                async {
+                    return try
                                homePath
                                |> Option.map (fun path -> path @@ ".config/autostart/mordhau-buddy.desktop")
                                |> function
@@ -348,10 +394,22 @@ module FileOps =
                                    File.delete path
                                    File.exists appPath
                                | None -> false
-                           else
-                               Registry.deleteRegistryValue regBase regKey regSubValue
-                               Registry.valueExistsForKey regBase regKey regSubValue
-                           |> not
-                       with _ -> false
-            }
-            |> Async.RunSynchronously
+                               |> not
+                           with _ -> false
+                }
+                |> Async.RunSynchronously
+
+        /// Enable auto launch by calling OS respective function
+        let enableAutoLaunch() =
+            if Environment.isLinux then Linux.enableAutoLaunch()
+            else Windows.enableAutoLaunch()
+
+        /// Disable auto launch by calling OS respective function
+        let disableAutoLaunch() =
+            if Environment.isLinux then Linux.disableAutoLaunch()
+            else Windows.disableAutoLaunch()
+
+        /// Perform additional Linux installation steps
+        let registerLinuxApp() =
+            if Environment.isLinux then Linux.registerLinuxApp()
+            else ()

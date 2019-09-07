@@ -120,28 +120,8 @@ let setCmd f args =
     | true -> Command.RawCommand(f, Arguments.OfArgs args)
     | false -> Command.RawCommand("mono", Arguments.OfArgs (f::args))
 
-let getEnvFromAllOrNone (s: string) =
-    let envOpt (envVar: string) =
-        if String.isNullOrEmpty envVar then None
-        else Some(envVar)
-
-    let procVar = Environment.GetEnvironmentVariable(s) |> envOpt
-    let userVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.User) |> envOpt
-    let machVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.Machine) |> envOpt
-
-    match procVar,userVar,machVar with
-    | Some(v), _, _
-    | _, Some(v), _
-    | _, _, Some(v)
-        -> Some(v)
-    | _ -> None
-
 let configuration() =
     FakeVar.getOrDefault "configuration" "Release"
-
-let appendSourceDir (sList: string list) =
-    sList
-    |> List.map (fun d -> (__SOURCE_DIRECTORY__ @@ d))
 
 // --------------------------------------------------------------------------------------
 // Set configuration mode based on target
@@ -356,25 +336,15 @@ Target.create "Dev" <| fun _ ->
 // Build artifacts
 Target.create "Dist" <| fun _ ->
     Yarn.exec "distWin" id
-    Yarn.exec "distWin64" id
     Yarn.exec "distLinux" id
 
 // Build to unpacked directory
 Target.create "DistDir" <| fun _ ->
-    Yarn.exec "dist:dirWin64" id
+    Yarn.exec "dist:dir" id
 
 // Build artifacts and publish
 Target.create "Publish" <| fun _ ->
-    let ghToken = 
-        let token = getEnvFromAllOrNone("GH_TOKEN").Value
-        TraceSecrets.register "<GH TOKEN>" token
-        sprintf "GH_TOKEN=%s" token
-
-    let withToken (s: string) =
-        sprintf "%s %s" ghToken s
-
     Yarn.exec "publishWin" id
-    Yarn.exec "publishWin64" id
     Yarn.exec "publishLinux" id
 
 // --------------------------------------------------------------------------------------

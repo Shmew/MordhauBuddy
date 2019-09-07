@@ -97,8 +97,20 @@ module rec INIReader =
 
 
 
+
+
+
+
+
+
         /// ws helper
         let wstr t = ws (pstring t)
+
+
+
+
+
+
 
 
 
@@ -159,10 +171,22 @@ module rec INIReader =
 
 
 
+
+
+
+
+
+
         /// Determines if it is a section header
         let identifier =
             many1Satisfy2 (fun ch -> Char.IsLetter(ch) || ch = '/')
                 (fun ch -> Char.IsLetterOrDigit(ch) || ch = '.' || ch = '/' || ch = '_')
+
+
+
+
+
+
 
 
 
@@ -224,8 +248,20 @@ module rec INIReader =
 
 
 
+
+
+
+
+
+
         /// Determines if it is a kv pair
         let hasKey = previousCharSatisfiesNot (fun ch -> ch = '=') >>. anyText .>>? wstr "="
+
+
+
+
+
+
 
 
 
@@ -285,8 +321,20 @@ module rec INIReader =
 
 
 
+
+
+
+
+
+
         /// Parse quoted string returning without quotes
         let parseQuoted = pchar '"' >>. manySatisfy (fun c -> c <> '"') .>> pchar '"'
+
+
+
+
+
+
 
 
 
@@ -347,6 +395,12 @@ module rec INIReader =
 
 
 
+
+
+
+
+
+
         /// Create parser and reference cell
         let iValue, iValueRef = createParserForwardedToRef()
 
@@ -377,8 +431,20 @@ module rec INIReader =
 
 
 
+
+
+
+
+
+
         /// Parse comment
         let comment = pstring "#" >>. skipRestOfLine true
+
+
+
+
+
+
 
 
 
@@ -439,8 +505,20 @@ module rec INIReader =
 
 
 
+
+
+
+
+
+
         /// Parse a string
         let iniString = parseQuoted <|> anyText |>> (Some >> INIValue.String) .>> spaces
+
+
+
+
+
+
 
 
 
@@ -504,6 +582,12 @@ module rec INIReader =
 
 
 
+
+
+
+
+
+
         /// Parse a key value pair
         let iniKV = hasKey .>>. iValue |>> INIValue.KeyValue
 
@@ -534,8 +618,20 @@ module rec INIReader =
 
 
 
+
+
+
+
+
+
         /// Parse a tuple
         let iniTuple = listBetweenStrings "(" ")" iValue |>> INIValue.Tuple
+
+
+
+
+
+
 
 
 

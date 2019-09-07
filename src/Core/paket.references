@@ -1,5 +1,6 @@
 ﻿group Core
-	BlackFox.CommandLine
+	Elmish.Bridge.Giraffe
+	Fable.Elmish
 	Fake.Core.Environment
 	Fake.Core.Process
 	Fake.IO.FileSystem
@@ -7,9 +8,8 @@
 	FParsec
 	FSharp.Core
 	FSharp.Data
-	Microsoft.NETCore.Platforms
-	Giraffe
-	Saturn
-	Fable.Elmish
-	Elmish.Bridge.Giraffe
 	FSharp.Json
+	Giraffe
+	Microsoft.NETCore.Platforms
+	Saturn
+	

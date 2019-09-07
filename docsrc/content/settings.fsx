@@ -18,6 +18,12 @@ to keep no backups (not recommended), or keep all backups.
 MordhauBuddy has the ability to start when you launch your desktop, you may disable this feature 
 here.
 
-<img src="img/settings.png"/>
+<div class="row">
+  <div class="span6">
+    <div class="well well-small" id="nuget">
+      <img src="img/settings.png"/>
+    </div>
+  </div>
+</div>
 
 *)

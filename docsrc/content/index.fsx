@@ -34,7 +34,13 @@ With Windows:
  - You can download a zip and run it yourself, but you will not get automatic updates, or auto launch functionality.
  - The installer is easy to install, a single click in fact.
 
- <img src="img/mapInstallerAvailable.png"/>
+<div class="row">
+  <div class="span6">
+    <div class="well well-small" id="nuget">
+      <img src="img/mapInstallerAvailable.png"/>
+   </div>
+  </div>
+</div>
 
 ## Documentation ##
 

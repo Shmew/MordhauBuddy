@@ -20,6 +20,12 @@ MCL is the Mordhau Community League, which is a communiy run league has matches 
 This feature is not yet implemented. The plan is to keep track of the latest events and give options on reminders 
 for when a new event is about to start/in progress, as well as keep track of current tournament or league rankings.
 
-<img src="img/communityAnnouncements.png"/>
+<div class="row">
+  <div class="span6">
+    <div class="well well-small" id="nuget">
+      <img src="img/communityAnnouncements.png"/>
+    </div>
+  </div>
+</div>
 
 *)
