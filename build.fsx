@@ -558,12 +558,6 @@ Target.create "Docs" <| fun _ ->
     Shell.copyFile "docsrc/content/" "RELEASE_NOTES.md"
     Shell.rename "docsrc/content/release-notes.md" "docsrc/content/RELEASE_NOTES.md"
 
-    [ "# MordhauBuddy"
-      ""
-      sprintf "The documentation for this project can be found [here](%s/index.html)." website] 
-    |> Seq.ofList
-    |> File.writeNew "README.md" 
-
     DirectoryInfo.getSubDirectories (DirectoryInfo.ofPath templates)
     |> Seq.iter (fun d ->
                     let name = d.Name
@@ -679,7 +673,5 @@ Target.create "All" ignore
 "Dist" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigRelease"]
 
 "DistDir" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigDebug"]
-
-"Publish" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigRelease"]
 
 Target.runOrDefaultWithArguments "Dev"

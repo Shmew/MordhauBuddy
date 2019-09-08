@@ -233,39 +233,6 @@ module RenderUtils =
                 | Some(name) -> name
                 | None -> this.Folder
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             member this.GetPlayers() =
                 match this.Players with
                 | Some(p) ->

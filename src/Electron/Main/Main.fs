@@ -121,11 +121,6 @@ module Main =
 #endif
             main.Tray.Create(iconPath)
 
-
-
-
-
-
         main.Menu.buildFromTemplate [| show; quit |]
         |> Some
         |> appTray.setContextMenu
@@ -163,12 +158,6 @@ module Main =
                     o.frame <- false
                     o.backgroundColor <- "#FFF"
                     o.show <- false))
-
-
-
-
-
-
 
         win.onceReadyToShow (fun _ ->
             win.setTitle <| sprintf "%s - %s" Info.name Info.version
