@@ -79,6 +79,8 @@ module BridgeUtils =
         let wrapUpdate uCmd = BridgeOps(Updates(uCmd), caller)
         /// Begin patching new update
         member this.StartUpdate = Updates.Start |> wrapUpdate
+        /// Check for new updates
+        member this.CheckUpdate = Updates.Check |> wrapUpdate
 
 /// Helper modules and functions for renderer processes
 module RenderUtils =

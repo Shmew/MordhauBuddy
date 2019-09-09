@@ -22,6 +22,9 @@ module Types =
         | LoadConfig of ConfigFile
         | LoadMap
         | InitSetup
+        | StartCheckUpdates
+        | CheckUpdates
+        | StartPatch
         | StoreMsg of Store.Msg
         | ContextMenuMsg of ContextMenu.Types.Msg
         | CommunityMsg of Community.Types.Msg
@@ -60,7 +63,8 @@ module Types =
           Maps: MapDir }
 
     type UpdatePending =
-        { Ready: bool
+        { Refreshing: bool
+          Ready: bool
           Error: bool }
 
     type Model =

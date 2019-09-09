@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Updating - MordhauBuddy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Shmew"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="/MordhauBuddy/content/style.css" />
+    <script type="text/javascript" src="/MordhauBuddy/content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://fsharp.org">fsharp.org</a></li>
+        </ul>
+        <h3 class="muted"><a href="/MordhauBuddy/index.html">MordhauBuddy</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+
+
+<h1>Updating</h1>
+<p>
+  <span>Namespace: MordhauBuddy.Core</span><br />
+  <span>Parent Module: <a href="mordhaubuddy-core-fileops.html">FileOps</a></span>
+  </p>
+<div class="xmldoc">
+<p>Fetch and patch new updates</p>
+
+</div>
+
+<!-- Render nested types and modules, if there are any -->
+  <h2>Nested types and modules</h2>
+  <div>
+      <table class="table table-bordered type-list">
+    <thead>
+      <tr><td>Type</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="type-name">
+            <a href="mordhaubuddy-core-fileops-updating-newupdate.html">NewUpdate</a>
+          </td>
+          <td class="xmldoc">
+          
+          </td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="mordhaubuddy-core-fileops-updating-updatesbehind.html">UpdatesBehind</a>
+          </td>
+          <td class="xmldoc">
+          
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+  <h3>Functions and values</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Function or value</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '227', 227)" onmouseover="showTip(event, '227', 227)">
+            applyPatch(path)
+          </code>
+          <div class="tip" id="227">
+            <strong>Signature:</strong> path:string -&gt; Result&lt;bool,string&gt;<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L572-572" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Apply the new patch</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '228', 228)" onmouseover="showTip(event, '228', 228)">
+            cleanBaseUpdatePath()
+          </code>
+          <div class="tip" id="228">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L594-594" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Try to clean update path and dispose of errors</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '229', 229)" onmouseover="showTip(event, '229', 229)">
+            getAsset(newUp)
+          </code>
+          <div class="tip" id="229">
+            <strong>Signature:</strong> newUp:NewUpdate -&gt; Result&lt;FileInfo,string&gt;<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L507-507" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Downloads asset file to storage directory</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '230', 230)" onmouseover="showTip(event, '230', 230)">
+            getOriginal()
+          </code>
+          <div class="tip" id="230">
+            <strong>Signature:</strong> unit -&gt; FileInfo<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L528-528" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Get the file that will be patched</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '231', 231)" onmouseover="showTip(event, '231', 231)">
+            isReady(tagName)
+          </code>
+          <div class="tip" id="231">
+            <strong>Signature:</strong> tagName:string -&gt; string option<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L535-535" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>See if file is already downloaded and patched</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '232', 232)" onmouseover="showTip(event, '232', 232)">
+            tryGeneratePatch(deltaFi)
+          </code>
+          <div class="tip" id="232">
+            <strong>Signature:</strong> deltaFi:FileInfo -&gt; Result&lt;string,string&gt;<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L543-543" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Try to generate a new patch file</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '233', 233)" onmouseover="showTip(event, '233', 233)">
+            tryGetAssets(releases)
+          </code>
+          <div class="tip" id="233">
+            <strong>Signature:</strong> releases:Release list -&gt; Result&lt;UpdatesBehind,string&gt;<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L442-442" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Try to fetch a list of assets if there is a new release</p>
+
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+        </div>
+        <div class="span3">
+          <img src="/MordhauBuddy/img/logo.png" style="width:150px;margin:10px" />  
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">MordhauBuddy</li>
+            <li class="divider"></li>
+            <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
+            <li><a href="/MordhauBuddy/release-notes.html">Release Notes</a></li>
+            <li><a href="/MordhauBuddy/contributing.html">Contributing</a></li>
+            
+            <li class="nav-header">Documentation</li>
+            <li><a href="/MordhauBuddy/index.html">Introduction</a></li>
+            <li class="divider"></li>
+            <li><a href="/MordhauBuddy/community.html">Community</a></li>
+            <li><a href="/MordhauBuddy/map-installer.html">Map Installer</a></li>
+            <li><a href="/MordhauBuddy/mordhau-config.html">Mordhau Configuration</a></li>
+            <li><a href="/MordhauBuddy/face-tools.html">Face Tools</a></li>
+            <li><a href="/MordhauBuddy/settings.html">MordhauBuddy Settings</a></li>
+
+            <li class="nav-header">Reference</li>
+            <li><a href="/MordhauBuddy/reference/index.html">API Reference</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>

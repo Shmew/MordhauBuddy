@@ -20,7 +20,6 @@ open Fake.Tools
 open Fantomas
 open Fantomas.FakeHelpers
 open Fantomas.FormatConfig
-open FastRSync
 open Tools.Electron
 open Tools.Linting
 open Tools.Updating

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>UpdateInfo - MordhauBuddy</title>
+    <title>Utils - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,145 +34,185 @@
 
 
 
-<h1>UpdateInfo</h1>
+<h1>Utils</h1>
 <p>
-
-    <span>Namespace: MordhauBuddy.App</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-app-bindings-electronupdater.html">ElectronUpdater</a></span><br />
-    </p>
+  <span>Namespace: MordhauBuddy.Core</span><br />
+  <span>Parent Module: <a href="mordhaubuddy-core-fileops-autolaunch-linux.html">Linux</a></span>
+        <span>
+          Attributes:<br />
+[&lt;AutoOpen&gt;]<br />
+          
+      </span>
+</p>
 <div class="xmldoc">
 </div>
-  <h3>Instance members</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Instance member</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '301', 301)" onmouseover="showTip(event, '301', 301)">
-            x.files
+          <code onmouseout="hideTip(event, '198', 198)" onmouseover="showTip(event, '198', 198)">
+            appImageName
           </code>
-          <div class="tip" id="301">
-            <strong>Signature:</strong> obj []<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L147-147" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p><code>UpdateFileInfo []</code></p>
-
-
-              <p>CompiledName: <code>get_files</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '302', 302)" onmouseover="showTip(event, '302', 302)">
-            x.releaseDate
-          </code>
-          <div class="tip" id="302">
+          <div class="tip" id="198">
             <strong>Signature:</strong> string<br />
-              <strong>Modifiers:</strong> abstract<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L154-154" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L292-292" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
-              <p>CompiledName: <code>get_releaseDate</code></p>
+          <p>Get the name of the AppImage</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '303', 303)" onmouseover="showTip(event, '303', 303)">
-            x.releaseName
+          <code onmouseout="hideTip(event, '199', 199)" onmouseover="showTip(event, '199', 199)">
+            createAutoStartDeskFile(dir)
           </code>
-          <div class="tip" id="303">
+          <div class="tip" id="199">
+            <strong>Signature:</strong> dir:string -&gt; bool<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L349-349" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Create the autostart desktop file</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '200', 200)" onmouseover="showTip(event, '200', 200)">
+            desktopFile()
+          </code>
+          <div class="tip" id="200">
+            <strong>Signature:</strong> unit -&gt; string<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L318-318" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Create desktop file string</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '201', 201)" onmouseover="showTip(event, '201', 201)">
+            extractIcon(path)
+          </code>
+          <div class="tip" id="201">
+            <strong>Signature:</strong> path:string -&gt; unit<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L331-331" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Extracts the icon file from the AppImage and stores it in the linux .local folder</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '202', 202)" onmouseover="showTip(event, '202', 202)">
+            getMBHome()
+          </code>
+          <div class="tip" id="202">
+            <strong>Signature:</strong> unit -&gt; string<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L304-304" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Gets or sets the MordhauBuddy home json if necessary</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '203', 203)" onmouseover="showTip(event, '203', 203)">
+            homePath
+          </code>
+          <div class="tip" id="203">
+            <strong>Signature:</strong> string option<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L289-289" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Try to get home path</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '204', 204)" onmouseover="showTip(event, '204', 204)">
+            homeShare
+          </code>
+          <div class="tip" id="204">
             <strong>Signature:</strong> string<br />
-              <strong>Modifiers:</strong> abstract<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L149-149" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L295-295" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
-              <p>CompiledName: <code>get_releaseName</code></p>
+          <p>Gets the home share falling back to <code>appPath</code> if necessary</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '304', 304)" onmouseover="showTip(event, '304', 304)">
-            x.releaseNotes
+          <code onmouseout="hideTip(event, '205', 205)" onmouseover="showTip(event, '205', 205)">
+            setMBHome(newFile)
           </code>
-          <div class="tip" id="304">
-            <strong>Signature:</strong> U2&lt;string,obj []&gt;<br />
-              <strong>Modifiers:</strong> abstract<br />
+          <div class="tip" id="205">
+            <strong>Signature:</strong> newFile:string -&gt; unit<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L152-152" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L298-298" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p><code>ReleaseNoteInfo []</code> if <code>fullChangelog</code> is set to <code>true</code>,
-<code>string</code> otherwise</p>
+          <p>Set the new MBHome path</p>
 
 
-              <p>CompiledName: <code>get_releaseNotes</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '305', 305)" onmouseover="showTip(event, '305', 305)">
-            x.stagingPercentage
-          </code>
-          <div class="tip" id="305">
-            <strong>Signature:</strong> float<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L156-156" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>The staged rollout percentage, 0-100.</p>
-
-
-              <p>CompiledName: <code>get_stagingPercentage</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '306', 306)" onmouseover="showTip(event, '306', 306)">
-            x.version
-          </code>
-          <div class="tip" id="306">
-            <strong>Signature:</strong> string<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L145-145" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>get_version</code></p>
         </td>
       </tr>
     </tbody>

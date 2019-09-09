@@ -304,27 +304,27 @@ module View =
                                                   CSSProp.Color "#ffffff" ] ]
                                           [ sprintf "%s - %s" Info.name Info.version |> str ] ]
                                 iconButton
-                                    [ DOMAttr.OnClick(fun _ -> window.minimize())
-                                      Class classes?titleButton ] [ windowMinimizeIcon [] ]
+                                    [ Class classes?titleButton
+                                      DOMAttr.OnClick <| fun _ -> window.minimize() ] [ windowMinimizeIcon [] ]
                                 iconButton
-                                    [ DOMAttr.OnClick(fun _ ->
+                                    [ Class classes?titleButton
+                                      DOMAttr.OnClick <| fun _ ->
                                         window.maximize()
                                         true
                                         |> MinMaxMsg
-                                        |> dispatch)
-                                      Class classes?titleButton
+                                        |> dispatch
                                       Style [ hideIfMax true ] ] [ windowMaximizeIcon [] ]
                                 iconButton
-                                    [ DOMAttr.OnClick(fun _ ->
+                                    [ Class classes?titleButton
+                                      DOMAttr.OnClick <| fun _ ->
                                         window.unmaximize()
                                         false
                                         |> MinMaxMsg
-                                        |> dispatch)
-                                      Class classes?titleButton
+                                        |> dispatch
                                       Style [ hideIfMax false ] ] [ windowRestoreIcon [] ]
                                 iconButton
-                                    [ DOMAttr.OnClick(fun _ -> window.hide())
-                                      Class classes?titleButton ] [ windowCloseIcon [] ] ]
+                                    [ Class classes?titleButton
+                                      DOMAttr.OnClick <| fun _ -> window.hide() ] [ windowCloseIcon [] ] ]
                           toolbar [ Style [ CSSProp.PaddingRight "0" ] ]
                               [ div [ Style [ CSSProp.Width "100%" ] ]
                                     [ img
@@ -336,11 +336,21 @@ module View =
                                                 CSSProp.Display DisplayOptions.Block
                                                 CSSProp.Padding "0.2em 2em" ] ] ]
                                 iconButton
-                                    [ DOMAttr.OnClick(fun _ ->
+                                    [ Class classes?titleButton
+                                      DOMAttr.OnClick <| fun _ -> dispatch StartPatch
+                                      Style
+                                          [ CSSProp.Display <|
+                                                if model.UpdatePending.Ready then
+                                                    DisplayOptions.Inherit
+                                                else DisplayOptions.None
+                                            CSSProp.Color "#ffffff"
+                                            CSSProp.BorderRadius "20%" ] ] [ downloadIcon [] ]
+                                iconButton
+                                    [ Class classes?titleButton
+                                      DOMAttr.OnClick <| fun _ ->
                                         Store.Msg.ToggleDarkTheme
                                         |> StoreMsg
-                                        |> dispatch)
-                                      Class classes?titleButton
+                                        |> dispatch
                                       Style
                                           [ CSSProp.Color "#ffffff"
                                             CSSProp.BorderRadius "20%" ] ] [ themeLightDarkIcon [] ] ] ]

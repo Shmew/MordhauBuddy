@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>ElectronLog - MordhauBuddy</title>
+    <title>Utils - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,37 +34,43 @@
 
 
 
-<h1>ElectronLog</h1>
+<h1>Utils</h1>
 <p>
-
-    <span>Namespace: MordhauBuddy.App</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-app-bindings-electronlog.html">ElectronLog</a></span><br />
-    </p>
+  <span>Namespace: MordhauBuddy.Core</span><br />
+  <span>Parent Module: <a href="mordhaubuddy-core-fileops-autolaunch-windows.html">Windows</a></span>
+        <span>
+          Attributes:<br />
+[&lt;AutoOpen&gt;]<br />
+          
+      </span>
+</p>
 <div class="xmldoc">
 </div>
-  <h3>Instance members</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Instance member</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '265', 265)" onmouseover="showTip(event, '265', 265)">
-            x.catchErrors(options)
+          <code onmouseout="hideTip(event, '208', 208)" onmouseover="showTip(event, '208', 208)">
+            getWinExecDir()
           </code>
-          <div class="tip" id="265">
-            <strong>Signature:</strong> options:ElectronLogErrorOptions -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
+          <div class="tip" id="208">
+            <strong>Signature:</strong> unit -&gt; string<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L141-141" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L251-251" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>electron-log can catch and log unhandled errors/rejected promises.</p>
+          <p>Get Windows executable directory</p>
 
 
         </td>
@@ -72,54 +78,35 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '266', 266)" onmouseover="showTip(event, '266', 266)">
-            x.debug(message)
+          <code onmouseout="hideTip(event, '209', 209)" onmouseover="showTip(event, '209', 209)">
+            getWinExecPath()
           </code>
-          <div class="tip" id="266">
-            <strong>Signature:</strong> message:string -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
+          <div class="tip" id="209">
+            <strong>Signature:</strong> unit -&gt; string<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L138-138" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L257-257" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Get Windows executable path</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '267', 267)" onmouseover="showTip(event, '267', 267)">
-            x.error(message)
+          <code onmouseout="hideTip(event, '210', 210)" onmouseover="showTip(event, '210', 210)">
+            regBase
           </code>
-          <div class="tip" id="267">
-            <strong>Signature:</strong> message:string -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
+          <div class="tip" id="210">
+            <strong>Signature:</strong> RegistryBaseKey<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L134-134" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '268', 268)" onmouseover="showTip(event, '268', 268)">
-            x.info(message)
-          </code>
-          <div class="tip" id="268">
-            <strong>Signature:</strong> message:string -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L136-136" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L246-246" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -129,16 +116,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '269', 269)" onmouseover="showTip(event, '269', 269)">
-            x.silly(message)
+          <code onmouseout="hideTip(event, '211', 211)" onmouseover="showTip(event, '211', 211)">
+            regKey
           </code>
-          <div class="tip" id="269">
-            <strong>Signature:</strong> message:string -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
+          <div class="tip" id="211">
+            <strong>Signature:</strong> string<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L139-139" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L247-247" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -148,35 +134,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '270', 270)" onmouseover="showTip(event, '270', 270)">
-            x.verbose(message)
+          <code onmouseout="hideTip(event, '212', 212)" onmouseover="showTip(event, '212', 212)">
+            regSubValue
           </code>
-          <div class="tip" id="270">
-            <strong>Signature:</strong> message:string -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
+          <div class="tip" id="212">
+            <strong>Signature:</strong> string<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L137-137" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '271', 271)" onmouseover="showTip(event, '271', 271)">
-            x.warn(message)
-          </code>
-          <div class="tip" id="271">
-            <strong>Signature:</strong> message:string -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L135-135" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/FileOperations.fs#L248-248" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

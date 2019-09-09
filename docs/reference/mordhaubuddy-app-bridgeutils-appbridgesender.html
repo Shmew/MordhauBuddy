@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>ElectronLogErrorOptions - MordhauBuddy</title>
+    <title>AppBridgeSender - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,14 +34,43 @@
 
 
 
-<h1>ElectronLogErrorOptions</h1>
+<h1>AppBridgeSender</h1>
 <p>
 
     <span>Namespace: MordhauBuddy.App</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-app-bindings-electronlog.html">ElectronLog</a></span><br />
+        <span>Parent Module: <a href="mordhaubuddy-app-bridgeutils.html">BridgeUtils</a></span><br />
     </p>
 <div class="xmldoc">
+<p>Send app operations</p>
+
 </div>
+  <h3>Constructors</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Constructor</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '315', 315)" onmouseover="showTip(event, '315', 315)">
+            new(caller)
+          </code>
+          <div class="tip" id="315">
+            <strong>Signature:</strong> caller:Caller -&gt; AppBridgeSender<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L78-78" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>.ctor</code></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
   <h3>Instance members</h3>
   <table class="table table-bordered member-list">
     <thead>
@@ -51,93 +80,43 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '272', 272)" onmouseover="showTip(event, '272', 272)">
-            x.onError()
+          <code onmouseout="hideTip(event, '316', 316)" onmouseover="showTip(event, '316', 316)">
+            x.CheckUpdate
           </code>
-          <div class="tip" id="272">
-            <strong>Signature:</strong> unit -&gt; (obj -&gt; unit) option<br />
-              <strong>Modifiers:</strong> abstract<br />
+          <div class="tip" id="316">
+            <strong>Signature:</strong> RemoteServerMsg<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L131-131" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L83-83" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>default null - attach a custom error handler.
-If the handler returns false, this error will not be processed.</p>
+          <p>Check for new updates</p>
 
 
-              <p>CompiledName: <code>set_onError</code></p>
+              <p>CompiledName: <code>get_CheckUpdate</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '273', 273)" onmouseover="showTip(event, '273', 273)">
-            x.onError()
+          <code onmouseout="hideTip(event, '317', 317)" onmouseover="showTip(event, '317', 317)">
+            x.StartUpdate
           </code>
-          <div class="tip" id="273">
-            <strong>Signature:</strong> unit -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
+          <div class="tip" id="317">
+            <strong>Signature:</strong> RemoteServerMsg<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L131-131" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L81-81" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>default null - attach a custom error handler.
-If the handler returns false, this error will not be processed.</p>
+          <p>Begin patching new update</p>
 
 
-              <p>CompiledName: <code>get_onError</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '274', 274)" onmouseover="showTip(event, '274', 274)">
-            x.showDialog()
-          </code>
-          <div class="tip" id="274">
-            <strong>Signature:</strong> unit -&gt; bool<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L128-128" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>default <code>true</code> for the main process.
-Set it to <code>false</code> to prevent showing a default electron error dialog</p>
-
-
-              <p>CompiledName: <code>set_showDialog</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '275', 275)" onmouseover="showTip(event, '275', 275)">
-            x.showDialog()
-          </code>
-          <div class="tip" id="275">
-            <strong>Signature:</strong> unit -&gt; unit<br />
-              <strong>Modifiers:</strong> abstract<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L128-128" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>default <code>true</code> for the main process.
-Set it to <code>false</code> to prevent showing a default electron error dialog</p>
-
-
-              <p>CompiledName: <code>get_showDialog</code></p>
+              <p>CompiledName: <code>get_StartUpdate</code></p>
         </td>
       </tr>
     </tbody>

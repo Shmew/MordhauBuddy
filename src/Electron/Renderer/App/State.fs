@@ -35,7 +35,8 @@ module State =
               Store = store
               IsBridgeConnected = false
               UpdatePending =
-                { Ready = false
+                { Refreshing = false
+                  Ready = false
                   Error = false }
               Resources =
                   { InitSetup = { AttemptedLoad = false }
@@ -127,6 +128,7 @@ module State =
             | MFile, MDir mDir -> { res with Maps = mDir }
             | _ -> res
 
+        let inline setUpdateRefreshing (b: bool) (up: UpdatePending) = { up with Refreshing = b }
         let inline setUpdateReady (b: bool) (up: UpdatePending) = { up with Ready = b }
         let inline setUpdateError (b: bool) (up: UpdatePending) = { up with Error = b }
 
@@ -140,6 +142,14 @@ module State =
 
         let settingsSender = BridgeUtils.SettingBridgeSender(Caller.Settings)
         let comSender = BridgeUtils.CommunityBridgeSender(Caller.Community)
+        let appSender = BridgeUtils.AppBridgeSender(Caller.App)
+
+    let private checkForUpdates dispatch =
+        async {
+            while true do
+                dispatch CheckUpdates
+                do! Async.Sleep 10800000
+        } |> Async.StartImmediate
 
     let update msg m =
         match msg with
@@ -167,7 +177,7 @@ module State =
                 |> setResource m
                 |> fun m' -> m', Cmd.ofMsg LoadMap
             | _ -> m, Cmd.none
-        | ResourcesLoaded -> { m with Community = { m.Community with LoadingElem = false } }, Cmd.none
+        | ResourcesLoaded -> { m with Community = { m.Community with LoadingElem = false } }, Cmd.ofMsg StartCheckUpdates
         | LoadCom -> m, Cmd.bridgeSend <| comSender.GetSteamAnnouncements()
         | LoadConfig cFile ->
             let resource, error, setResPath =
@@ -220,6 +230,15 @@ module State =
         | InitSetup ->
             let m', cmd = Settings.State.update (Settings.Types.RunSetup) m.Settings
             { m with Settings = m' }, Cmd.map SettingsMsg cmd
+        | StartCheckUpdates -> 
+            setUpdateRefreshing true m.UpdatePending
+            |> setUpdate m, 
+            if m.UpdatePending.Refreshing then Cmd.none
+            else Cmd.ofSub checkForUpdates
+        | CheckUpdates ->
+            m, Cmd.bridgeSend (appSender.CheckUpdate)
+        | StartPatch ->
+            m, Cmd.bridgeSend (appSender.StartUpdate)
         | StoreMsg msg' ->
             let m', cmd = Store.update msg' m.Store, Cmd.none
             { m with Store = m' }, Cmd.map StoreMsg cmd
