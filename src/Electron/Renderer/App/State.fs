@@ -34,6 +34,9 @@ module State =
               IsMax = window.isMaximized()
               Store = store
               IsBridgeConnected = false
+              UpdatePending =
+                { Ready = false
+                  Error = false }
               Resources =
                   { InitSetup = { AttemptedLoad = false }
                     Community = { AttemptedLoad = false }
@@ -124,6 +127,10 @@ module State =
             | MFile, MDir mDir -> { res with Maps = mDir }
             | _ -> res
 
+        let inline setUpdateReady (b: bool) (up: UpdatePending) = { up with Ready = b }
+        let inline setUpdateError (b: bool) (up: UpdatePending) = { up with Error = b }
+
+        let setUpdate (model: Model) (up: UpdatePending) = { model with UpdatePending = up }
         let setResource (model: Model) (res: Loaded) = { model with Resources = res }
         let setSettings (model: Model) (set: Settings.Types.Model) = { model with Settings = set }
         let setMapInstaller (model: Model) (mInstall: MapsInstaller.Types.Model) =
@@ -377,7 +384,22 @@ module State =
                         setSettings m m', [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet true)) ]
                     | _ -> setSettings m m', []
                     |> fun (newM, cmds) -> newM, Cmd.batch ([ Cmd.map SettingsMsg cmd ] |> List.append cmds)
-                | _ -> m, Cmd.none
+                | Caller.App ->
+                    match bMsg.BridgeResult with
+                    | BridgeResult.Updates uMsg ->
+                        match uMsg with
+                        | UpdateResult.Ready -> 
+                            setUpdateReady true m.UpdatePending
+                            |> setUpdate m, Cmd.none
+                        | UpdateResult.Complete -> 
+                            setUpdateReady false m.UpdatePending
+                            |> setUpdateError false
+                            |> setUpdate m, Cmd.none
+                        | UpdateResult.Failed -> 
+                            setUpdateReady false m.UpdatePending
+                            |> setUpdateError true
+                            |> setUpdate m, Cmd.none
+                    | _ -> m, Cmd.none
             | Connected ->
                 if m.Settings.AutoLaunch && (store.AutoLaunchSet |> not) then
                     Cmd.bridgeSend <| settingsSender.EnableAutoLaunch

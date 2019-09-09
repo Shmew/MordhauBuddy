@@ -59,11 +59,16 @@ module Types =
           GameUserConfig: ConfigDir
           Maps: MapDir }
 
+    type UpdatePending =
+        { Ready: bool
+          Error: bool }
+
     type Model =
         { Page: Page
           IsMax: bool
           Store: Store.Model
           IsBridgeConnected: bool
+          UpdatePending: UpdatePending
           Resources: Loaded
           ContextMenu: ContextMenu.Types.Model
           Community: Community.Types.Model

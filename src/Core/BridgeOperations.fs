@@ -10,7 +10,7 @@ module BridgeOperations =
         open Http.WebRequests
 
         /// Try to get a list of stream announcements for Mordhau
-        let getSteamAnn() =
+        let getSteamAnn () =
             match tryGetSteamAnnRSS() with
             | Some(sList) -> sList
             | _ -> []
@@ -25,7 +25,7 @@ module BridgeOperations =
         open MordhauConfig
 
         /// Try to locate the default Mordhau configuration directory
-        let defDir() = FileOps.INI.defaultDir
+        let defDir () = FileOps.INI.defaultDir
         /// Replace the oVal with iVal based on selectors
         let replace (oVal: INIValue) (iVal: INIValue) (selectors: string list) = oVal.Map(selectors, iVal)
 
@@ -91,13 +91,13 @@ module BridgeOperations =
         open System.Threading
 
         /// Try to locate the default Mordhau maps directory
-        let defDir() = FileOps.Maps.defaultDir
+        let defDir () = FileOps.Maps.defaultDir
 
         /// Determine if input is valid maps directory
         let dirExists (dir: string) = FileOps.Maps.tryFindMaps dir
 
         /// Get the list of valid community maps based on info files
-        let getAvailableMaps() =
+        let getAvailableMaps () =
             let infoArr (s: string) = s.Split([| "\r\n"; "\r"; "\n" |], StringSplitOptions.None)
             match getInfoFiles() with
             | Ok(resList) ->
@@ -171,13 +171,13 @@ module BridgeOperations =
         open FileOps.AutoLaunch
 
         /// Try to enable the auto launch
-        let enableAutoLaunch() = enableAutoLaunch()
+        let enableAutoLaunch () = enableAutoLaunch()
 
         /// Try to disable the auto launch
         let disableAutoLaunch launchEnv = disableAutoLaunch launchEnv
 
         /// Try to setup the linux application
-        let setupLinux() = registerLinuxApp()
+        let setupLinux () = registerLinuxApp()
 
     [<RequireQualifiedAccess>]
     module Updating =
@@ -185,7 +185,7 @@ module BridgeOperations =
         open Http.WebRequests
 
         /// Downloads and prepares for update
-        let getUpdates() =
+        let getUpdates () =
             async {
                 return
                     getReleases()
@@ -218,14 +218,14 @@ module BridgeOperations =
             |> Async.RunSynchronously
             
         /// Install the new update
-        let installUpdates(newFile: string) =
+        let installUpdates (newFile: string) =
             async {
                 return
                     applyPatch newFile
             }
             |> Async.RunSynchronously
 
-        let cleanUpdatingDir() =
+        let cleanUpdatingDir () =
             async {
                 cleanBaseUpdatePath()
             }

@@ -27,7 +27,7 @@ module Bridge =
 
         type ServerMsg = ClientMsg of RemoteServerMsg
 
-        let init (clientDispatch: Dispatch<RemoteClientMsg>) () =
+        let private init (clientDispatch: Dispatch<RemoteClientMsg>) () =
             Connected |> clientDispatch
             { Game = None
               GameUserSettings = None
@@ -36,7 +36,7 @@ module Bridge =
               BackupSettings = KeepAll
               UpdatePending = None }, Cmd.none
 
-        let createClientResp (caller: Caller) (file: INIFile option) (br: BridgeResult) =
+        let private createClientResp (caller: Caller) (file: INIFile option) (br: BridgeResult) =
             { Caller = caller
               File = file
               BridgeResult = br }
@@ -292,7 +292,21 @@ module Bridge =
                                 System.Console.WriteLine e
 #endif
                                 model, None
-
+                        | Updates.Check ->
+                            match Updating.getUpdates() with
+                            | Ok res -> 
+                                { model with UpdatePending = res }, 
+                                match res with
+                                | Some(_) ->
+                                    UpdateResult.Ready
+                                    |> BridgeResult.Updates
+                                    |> cResp
+                                | _ -> None
+                            | Error e ->
+#if DEBUG
+                                System.Console.WriteLine e
+#endif
+                                model, None
             match remoteCMsg with
             | Some(rMsg) -> Resp(rMsg) |> clientDispatch
             | _ -> ()

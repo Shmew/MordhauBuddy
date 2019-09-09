@@ -271,6 +271,7 @@ module ElectronBridge =
     [<RequireQualifiedAccess>]
     type Updates =
         | Start
+        | Check
 
     type BridgeOperations =
         | CommunityOperation of CommunityOperation

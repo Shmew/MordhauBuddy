@@ -74,6 +74,12 @@ module BridgeUtils =
         /// Setup initial Linux configuration
         member this.SetupLinux = SettingsOperation.SetupLinux |> wrapSetting
 
+    /// Send app operations
+    type AppBridgeSender(caller: Caller) =
+        let wrapUpdate uCmd = BridgeOps(Updates(uCmd), caller)
+        /// Begin patching new update
+        member this.StartUpdate = Updates.Start |> wrapUpdate
+
 /// Helper modules and functions for renderer processes
 module RenderUtils =
     open Electron
