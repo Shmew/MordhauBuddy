@@ -3,3 +3,6 @@
 
 #### 1.0.1 - Saturday, September 7, 2019
 * Validate auto updating
+
+### 1.0.2 - Monday, September 9, 2019
+* Attempting implementation of auto updating

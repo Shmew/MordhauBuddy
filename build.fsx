@@ -339,23 +339,22 @@ Target.create "DistDir" <| fun _ ->
 // Create differentials for updating
 
 Target.create "CreateDiffs" <| fun _ ->
+    let latestTag = (Git.CommandHelper.runSimpleGitCommand __SOURCE_DIRECTORY__ "describe --tag").Split('-').[0]
     let latestRelease =
-        let latestTag = Git.Information.getLastTag()
-
-        if release.NugetVersion = latestTag.Substring(1) then 
-            failwith "Cannot create diff of same version"
+        if Version(release.NugetVersion) <= Version(latestTag.Substring(1)) then 
+            failwith "Cannot create diff of older version"
         else
-            sprintf "https://github.com/Shmew/MordhauBuddy/releases/tag/%s" latestTag
+            sprintf "https://github.com/Shmew/MordhauBuddy/releases/download/%s" latestTag
 
     let downloadSignature (fi: FileInfo) =
         let file =
             match fi.Extension with
-            | ext when ext = ".exe" -> sprintf "MordhauBuddy.Setup.%s%s.sig" (latestRelease.Substring(1)) ext
-            | ext when ext = ".AppImage" -> sprintf "MordhauBuddy-%s%s.sig" (latestRelease.Substring(1)) ext
+            | ext when ext = ".exe" -> sprintf "MordhauBuddy.Setup.%s%s.sig" (latestTag.Substring(1)) ext
+            | ext when ext = ".AppImage" -> sprintf "MordhauBuddy-%s%s.sig" (latestTag.Substring(1)) ext
             | _ -> failwith "Invalid file extention for generating delta"
         
         sprintf "%s/%s" latestRelease file
-        |> downloadFile (fi.Directory.FullName @@ (sprintf "%s-%s%s" project release.NugetVersion fi.Extension))
+        |> downloadFile (fi.Directory.FullName @@ file)
 
     !! (__SOURCE_DIRECTORY__ @@ "dist/linux-x64/*.AppImage")
     ++ (__SOURCE_DIRECTORY__ @@ "dist/win-x64/*.exe")

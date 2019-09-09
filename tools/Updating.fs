@@ -23,6 +23,6 @@ module Updating =
 
         use newFileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read)
         use sigStream = new FileStream(sigFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read)
-        use deltaStream = new FileStream(sigFile.Directory.FullName @@ file.Name + ".delta", FileMode.Create, FileAccess.Write, FileShare.Read)
+        use deltaStream = new FileStream(file.FullName + ".delta", FileMode.Create, FileAccess.Write, FileShare.Read)
 
         delta.BuildDelta(newFileStream, new SignatureReader(sigStream, delta.ProgressReport), new AggregateCopyOperationsDecorator(new BinaryDeltaWriter(deltaStream)))
