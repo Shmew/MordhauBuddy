@@ -41,10 +41,9 @@ for more information.
    version from the RELEASE_NOTES.md. Do note that this will enforce that your versioning is updated every release.
 
 <div class="row">
+  <div class="span1"></div>
   <div class="span6">
-    <div class="well well-small" id="nuget">
-      <img src="img/fake.png" alt="Build process"/>
-    </div>
+    <img src="img/fake.png" alt="Build process"/>
   </div>
 </div>
 

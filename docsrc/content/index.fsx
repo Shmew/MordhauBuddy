@@ -35,10 +35,9 @@ With Windows:
  - The installer is easy to install, a single click in fact.
 
 <div class="row">
+  <div class="span1"></div>
   <div class="span6">
-    <div class="well well-small" id="nuget">
-      <img src="img/mapInstallerAvailable.png"/>
-   </div>
+    <img src="img/mapInstallerAvailable.png"/>
   </div>
 </div>
 

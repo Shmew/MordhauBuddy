@@ -21,10 +21,9 @@ This feature is not yet implemented. The plan is to keep track of the latest eve
 for when a new event is about to start/in progress, as well as keep track of current tournament or league rankings.
 
 <div class="row">
+  <div class="span1"></div>
   <div class="span6">
-    <div class="well well-small" id="nuget">
-      <img src="img/communityAnnouncements.png"/>
-    </div>
+    <img src="img/communityAnnouncements.png"/>
   </div>
 </div>
 

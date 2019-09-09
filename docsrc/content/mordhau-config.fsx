@@ -12,10 +12,9 @@ Values that have a more subject setting will have sliders available so you can a
 to your liking.
 
 <div class="row">
+  <div class="span1"></div>
   <div class="span6">
-    <div class="well well-small" id="nuget">
-      <img src="img/mordhauConfig.png"/>
-    </div>
+    <img src="img/mordhauConfig.png"/>
   </div>
 </div>
 

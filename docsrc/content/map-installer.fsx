@@ -11,10 +11,9 @@ update feature). You can simply click the plus symbol next to each map to start 
 click the install all maps button to queue everything up for download and installation.
 
 <div class="row">
+  <div class="span1"></div>
   <div class="span6">
-    <div class="well well-small" id="nuget">
-      <img src="img/mapInstallerAvailable.png"/>
-    </div>
+    <img src="img/mapInstallerAvailable.png"/>
   </div>
 </div>
 
@@ -27,10 +26,9 @@ You can uninstall maps here by clicking the action buttons on the side of each m
 if you want to remove all maps there is an uninstall all button.
 
 <div class="row">
+  <div class="span1"></div>
   <div class="span6">
-    <div class="well well-small" id="nuget">
-      <img src="img/mapInstallerInstalled.png"/>
-    </div>
+    <img src="img/mapInstallerInstalled.png"/>
   </div>
 </div>
 
@@ -41,10 +39,9 @@ installations by clicking the action bar for the map, or cancel all installation
 button at the bottom of the screen.
 
 <div class="row">
+  <div class="span1"></div>
   <div class="span6">
-    <div class="well well-small" id="nuget">
-      <img src="img/mapInstallerInstalling.png"/>
-    </div>
+    <img src="img/mapInstallerInstalling.png"/>
   </div>
 </div>
 

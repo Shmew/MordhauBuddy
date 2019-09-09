@@ -19,10 +19,9 @@ MordhauBuddy has the ability to start when you launch your desktop, you may disa
 here.
 
 <div class="row">
+  <div class="span1"></div>
   <div class="span6">
-    <div class="well well-small" id="nuget">
-      <img src="img/settings.png"/>
-    </div>
+    <img src="img/settings.png"/>
   </div>
 </div>
 

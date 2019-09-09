@@ -6,3 +6,6 @@
 
 ### 1.0.2 - Monday, September 9, 2019
 * Attempting implementation of auto updating
+
+### 1.0.3 - Monday, September 9, 2019
+* Starting auto updating test

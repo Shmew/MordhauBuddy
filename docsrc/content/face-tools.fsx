@@ -9,10 +9,9 @@ you may then select which profiles you would like to modify/export and then
 go to the next page.
 
 <div class="row">
+  <div class="span1"></div>
   <div class="span6">
-    <div class="well well-small" id="nuget">
-      <img src="img/faceToolsProfiles.png"/>
-    </div>
+    <img src="img/faceToolsProfiles.png"/>
   </div>
 </div>
 
@@ -23,10 +22,9 @@ This page also have the functionality to import and export profiles so you can e
 share your creations with others.
 
 <div class="row">
+  <div class="span1"></div>
   <div class="span6">
-    <div class="well well-small" id="nuget">
-      <img src="img/faceToolsActions.png"/>
-    </div>
+    <img src="img/faceToolsActions.png"/>
   </div>
 </div>
 
