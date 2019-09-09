@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>SliderPropMarkValue - MordhauBuddy</title>
+    <title>ElectronLogErrorOptions - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,80 +34,110 @@
 
 
 
-<h1>SliderPropMarkValue</h1>
+<h1>ElectronLogErrorOptions</h1>
 <p>
 
     <span>Namespace: MordhauBuddy.App</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-app-renderutils-materialui-props.html">Props</a></span><br />
+        <span>Parent Module: <a href="mordhaubuddy-app-bindings-electronlog.html">ElectronLog</a></span><br />
     </p>
 <div class="xmldoc">
 </div>
-  <h3>Record Fields</h3>
+  <h3>Instance members</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Instance member</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '427', 427)" onmouseover="showTip(event, '427', 427)">
-            Label
+          <code onmouseout="hideTip(event, '272', 272)" onmouseover="showTip(event, '272', 272)">
+            x.onError()
           </code>
-          <div class="tip" id="427">
-            <strong>Signature:</strong> string option<br />
+          <div class="tip" id="272">
+            <strong>Signature:</strong> unit -&gt; (obj -&gt; unit) option<br />
+              <strong>Modifiers:</strong> abstract<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L956-956" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L131-131" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>default null - attach a custom error handler.
+If the handler returns false, this error will not be processed.</p>
+
+
+              <p>CompiledName: <code>set_onError</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '428', 428)" onmouseover="showTip(event, '428', 428)">
-            Value
+          <code onmouseout="hideTip(event, '273', 273)" onmouseover="showTip(event, '273', 273)">
+            x.onError()
           </code>
-          <div class="tip" id="428">
-            <strong>Signature:</strong> float<br />
+          <div class="tip" id="273">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L955-955" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L131-131" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>default null - attach a custom error handler.
+If the handler returns false, this error will not be processed.</p>
+
+
+              <p>CompiledName: <code>get_onError</code></p>
         </td>
       </tr>
-    </tbody>
-  </table>
-  <h3>Static members</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Static member</td><td>Description</td></tr>
-    </thead>
-    <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '429', 429)" onmouseover="showTip(event, '429', 429)">
-            SliderPropMarkValue.Pojo(marks)
+          <code onmouseout="hideTip(event, '274', 274)" onmouseover="showTip(event, '274', 274)">
+            x.showDialog()
           </code>
-          <div class="tip" id="429">
-            <strong>Signature:</strong> marks:SliderPropMarkValue -&gt; obj<br />
+          <div class="tip" id="274">
+            <strong>Signature:</strong> unit -&gt; bool<br />
+              <strong>Modifiers:</strong> abstract<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L957-957" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L128-128" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>default <code>true</code> for the main process.
+Set it to <code>false</code> to prevent showing a default electron error dialog</p>
+
+
+              <p>CompiledName: <code>set_showDialog</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '275', 275)" onmouseover="showTip(event, '275', 275)">
+            x.showDialog()
+          </code>
+          <div class="tip" id="275">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Main/Bindings.fs#L128-128" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>default <code>true</code> for the main process.
+Set it to <code>false</code> to prevent showing a default electron error dialog</p>
+
+
+              <p>CompiledName: <code>get_showDialog</code></p>
         </td>
       </tr>
     </tbody>

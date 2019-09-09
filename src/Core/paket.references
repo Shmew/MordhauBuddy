@@ -4,7 +4,9 @@
 	Fake.Core.Environment
 	Fake.Core.Process
 	Fake.IO.FileSystem
+	Fake.Net.Http
 	Fake.Windows.Registry
+	FastRsyncNet
 	FParsec
 	FSharp.Core
 	FSharp.Data

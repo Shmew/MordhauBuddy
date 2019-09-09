@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Updating.fs" />
     <Compile Include="ElectronTools.fs" />
     <Compile Include="FSharpLint.fs" />
     <None Include="paket.references" />

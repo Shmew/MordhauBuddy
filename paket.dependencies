@@ -14,7 +14,9 @@ group Core
 	nuget Fake.Core.Environment ~> 5.16.1
 	nuget Fake.Core.Process ~> 5.16.1
 	nuget Fake.IO.FileSystem ~> 5.16.1
+	nuget Fake.Net.Http ~> 5.16.1
 	nuget Fake.Windows.Registry ~> 5.16.1
+	nuget FastRsyncNet ~> 2.3.0
 	nuget FParsec ~> 1.0.3
 	nuget FSharp.Core ~> 4.7 redirects:force
 	nuget FSharp.Data ~> 3.1.1
@@ -61,6 +63,7 @@ group Tooling
 	source https://api.nuget.org/v3/index.json
 
 	nuget Fake.IO.FileSystem ~> 5.16.1
+	nuget FastRsyncNet ~> 2.3.0
 	nuget FSharp.Core ~> 4.7 redirects:force
 	nuget FSharp.Json ~> 0.3.7
 	nuget FSharpLint.Core ~> 0.12.2
@@ -95,6 +98,7 @@ group FakeBuild
 	nuget Fake.Tools.Git ~> 5.16.1
 	nuget Fake.JavaScript.Yarn ~> 5.16.1
 	nuget Fake.JavaScript.Npm ~> 5.16.1
+	nuget FastRsyncNet ~> 2.3.0
 	nuget Fantomas ~> 3.0.0-beta-002-alpha-443
 	nuget FSharp.Json ~> 0.3.7
 	nuget FSharpLint.Core ~> 0.12.2

@@ -17,7 +17,7 @@ module Http =
         open System.Threading
 
         /// Download and extract a file with continuations and progress updates
-        let downloadFile (downloadFile: DownloadFile) (stream: Async<Result<Stream, string>>)
+        let downloadMap (downloadFile: DownloadFile) (stream: Async<Result<Stream, string>>)
             (size: Result<string, string>) (cToken: CancellationToken) =
             let errorMsg (e: exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' (e.Message)
 
@@ -158,7 +158,7 @@ module Http =
 
         /// Get info file list
         let getInfoFiles() =
-            let downloadInfoFiles (gList: GHContents list) =
+            let downloadInfoFiles (gList: Github.Contents list) =
                 gList
                 |> List.map (fun c ->
                     async {
@@ -170,20 +170,22 @@ module Http =
                 |> Async.Parallel
                 |> Async.RunSynchronously
                 |> List.ofArray
+
             get (ghBaseUri + "/repos/MordhauMappingModding/InfoFiles/contents", None, ReqHeaders.Github)
-            |> Result.map (Json.deserializeEx<GHContents list> Json.config)
+            |> Result.map (Json.deserializeEx<Github.Contents list> Json.config)
             |> Result.map downloadInfoFiles
 
         /// Get map zip list
         let getMapFiles() =
             get (ghBaseUri + "/repos/MordhauMappingModding/MapsFiles/contents", None, ReqHeaders.Github)
-            |> Result.map (Json.deserializeEx<GHContents list> Json.config)
+            |> Result.map (Json.deserializeEx<Github.Contents list> Json.config)
 
         /// Download a file to the given directory with continuations
         let downloadFile (cToken: CancellationToken) (download: DownloadFile) =
             async { return getStream (download.Url, None, ReqHeaders.Github) }
-            |> fun s -> Streaming.downloadFile download s (Error("")) cToken
+            |> fun s -> Streaming.downloadMap download s (Error("")) cToken
 
+        /// Downloads a file from Google Drive
         let downloadGDFile (cToken: CancellationToken) (download: DownloadFile) =
             let key = FileOps.Maps.tryGetGDKey() |> Option.map (Json.deserializeEx<GDKey> Json.config)
             match key with
@@ -198,7 +200,7 @@ module Http =
                   Param(("alt", Some("media"))) ]
                 |> Http.paramBuilder
                 |> (fun s -> async { return getGDStream (download.Url, Some(s), ReqHeaders.Generic) })
-                |> fun s -> Streaming.downloadFile download s size cToken
+                |> fun s -> Streaming.downloadMap download s size cToken
                 getInfoFiles()
                 |> function
                 | Ok(sOptList) ->
@@ -214,6 +216,7 @@ module Http =
                 | _ -> ()
             | _ -> download.ErrorFun "Failed to get Google Drive key"
 
+        /// Pulls Mordhau rss feed
         let tryGetSteamAnnRSS() =
             async {
                 try
@@ -225,3 +228,8 @@ module Http =
             |> Async.RunSynchronously
             |> Option.map ComOperations.getAnnouncements
             |> Option.flatten
+
+        /// Get MordhauBuddy releases
+        let getReleases() =
+            get (ghBaseUri + "/repos/Shmew/MordhauBuddy/releases", None, ReqHeaders.Github)
+            |> Result.map (Json.deserializeEx<Github.Release list> Json.config)

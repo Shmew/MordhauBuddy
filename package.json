@@ -17,9 +17,7 @@
     "dev": "electron-webpack dev",
     "dist:dir": "yarn distWin64 --dir -c.compression=store -c.mac.identity=null",
     "distLinux": "yarn compile && electron-builder --linux --x64",
-    "distWin": "yarn compile && electron-builder --win --x64",
-    "publishLinux": "yarn distLinux && electron-builder --publish always",
-    "publishWin": "yarn distWin && electron-builder --publish always"
+    "distWin": "yarn compile && electron-builder --win --x64"
   },
   "electronWebpack": {
     "main": {
@@ -68,11 +66,7 @@
     "@material-ui/core": "^4.3.0",
     "@material-ui/icons": "^4.2.1",
     "@material-ui/lab": "^4.0.0-alpha.23",
-    "autosuggest-highlight": "^3.1.1",
-    "downshift": "^3.2.10",
     "electron-store": "^4.0.0",
-    "electron-updater": "^4.1.2",
-    "match-sorter": "^4.0.1",
     "mdi-material-ui": "6.2.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",

@@ -187,6 +187,7 @@ module FileOps =
     module AutoLaunch =
         open Fake.Windows
         open FSharp.Json
+        open Helpers.Info
         open Helpers.Json
         open System.Reflection
 
@@ -237,25 +238,23 @@ module FileOps =
         /// Try to locate the current executable directory
         let private appPath = Environment.CurrentDirectory
 
-        /// Get application version
-        let private version =
-            Assembly.GetExecutingAssembly().GetName().Version |> (fun v -> sprintf "%i.%i.%i" v.Major v.Minor v.Build)
-
         [<RequireQualifiedAccess>]
         module Windows =
 
             [<AutoOpen>]
-            module private Utils =
+            module Utils =
                 let regBase = Registry.RegistryBaseKey.HKEYCurrentUser
                 let regKey = @"Software\Microsoft\Windows\CurrentVersion\Run"
                 let regSubValue = "MordhauBuddy"
 
-                /// Get Windows executable path
-                let getWinExecPath() =
+                /// Get Windows executable directory
+                let getWinExecDir() =
                     Environment.SpecialFolder.LocalApplicationData
                     |> Environment.GetFolderPath
                     |> fun d -> (new IO.DirectoryInfo(d)).FullName
-                    |> fun d -> (d @@ "mordhau-buddy-updater" @@ "installer.exe")
+
+                /// Get Windows executable path
+                let getWinExecPath() = getWinExecDir() @@ "mordhau-buddy-updater" @@ "installer.exe"
 
             /// Try to enable auto launch
             let enableAutoLaunch() =
@@ -285,7 +284,7 @@ module FileOps =
         [<RequireQualifiedAccess>]
         module Linux =
             [<AutoOpen>]
-            module private Utils =
+            module Utils =
                 /// Try to get home path
                 let homePath = tryGetEnvVar "HOME"
 
@@ -295,8 +294,14 @@ module FileOps =
                 /// Gets the home share falling back to `appPath` if necessary
                 let homeShare = defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
 
-                /// Gets or sets the MordhauBuddy env var if necessary
-                let getMBEnv() =
+                /// Set the new MBHome path
+                let setMBHome(newFile: string) =
+                    { Path = newFile }
+                    |> Json.serializeEx config
+                    |> File.writeString false (homeShare @@ "home.json")
+
+                /// Gets or sets the MordhauBuddy home json if necessary
+                let getMBHome() =
                     match FileInfo.ofPath (homeShare @@ "home.json") with
                     | hShare when hShare.Exists ->
                         File.readAsString hShare.FullName
@@ -316,7 +321,7 @@ module FileOps =
                       Version = version
                       Type = "Application"
                       Terminal = false
-                      Exec = getMBEnv()
+                      Exec = getMBHome()
                       Icon =
                           (defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
                            @@ "icon.png") }
@@ -413,3 +418,183 @@ module FileOps =
         let registerLinuxApp() =
             if Environment.isLinux then Linux.registerLinuxApp()
             else ()
+
+    /// Fetch and patch new updates
+    module Updating =
+        open AutoLaunch
+        open Fake.Net.Http
+        open FastRsync.Delta
+        open FastRsync.Diagnostics
+        open Helpers.Info
+        open Helpers.Http
+        open System.IO
+
+        type NewUpdate =
+            { LatestRel: Github.Release
+              Asset: Github.Asset }
+
+        type UpdatesBehind =
+            | Zero
+            | One of NewUpdate
+            | Multiple of NewUpdate
+
+        /// Try to fetch a list of assets if there is a new release
+        let tryGetAssets (releases: Github.Release list) =
+            let sorted =
+                releases
+                |> List.sortByDescending (fun r -> r.TagName.Substring(1) |> Version)
+                |> List.indexed
+
+            let updatesBehind =
+                sorted
+                |> List.tryFind (fun (_,a) -> Version(a.TagName.Substring(1)) = Version(version))
+                |> Option.map (fun (i,_) -> i)
+
+            let getRelAt i =
+                sorted
+                |> List.tryItem(i)
+                |> Option.map (fun (i,r) -> r, r.TagName.Substring(1))
+
+            let getAssetOf(endsWith: string option) (rel: (Github.Release * string) option) =
+                let getEndsWith (name: string) =
+                    match endsWith with
+                    | Some(e) -> name.EndsWith(e)
+                    | None -> true
+                
+                match rel with 
+                | Some(r,ver) ->
+                    r.Assets
+                    |> List.filter (fun a -> 
+                        a.Name.StartsWith(appFile ver) && getEndsWith a.Name)
+                    |> List.tryHead
+                    |> Option.map (fun a -> { LatestRel = r; Asset = a} )
+                | _ -> None
+
+            match updatesBehind with
+            | Some 1 ->
+                getRelAt 1
+                |> getAssetOf (Some ".delta")
+                |> function
+                | Some res -> Ok <| One res
+                | _ -> Error "No available updates"
+            | Some 0 -> Ok Zero
+            | Some i when i > 1 ->
+                getRelAt 0
+                |> getAssetOf None
+                |> function
+                | Some res -> Ok <| Multiple res
+                | _ -> Error "Multiple updates behind, asset not found"
+            | _ -> Error "Unable to determine update position"
+
+        let private getBaseUpdatePath () =
+            if Environment.isLinux then
+                Linux.Utils.homeShare
+            else Windows.Utils.getWinExecDir()
+            |> fun s -> s @@ "Updating"
+
+        /// Get update path and ensure it exists
+        let private getUpdatePath (tagName: string) =
+             getBaseUpdatePath() @@ tagName
+
+        /// Download an assets list
+        let private downloadAsset (asset: Github.Asset) (path: IO.DirectoryInfo) =
+            try
+                downloadFile path.FullName asset.BrowserDownloadUrl
+                |> Ok
+            with e -> Error(e.Message)
+
+        /// Downloads asset file to storage directory
+        let getAsset (newUp: NewUpdate) =
+            let updatePath = 
+                let p = getUpdatePath(newUp.LatestRel.TagName)
+                Directory.ensure p
+                DirectoryInfo.ofPath p
+
+            try
+                updatePath
+                |> downloadAsset newUp.Asset 
+                |> Result.bind (fun f ->
+                    match FileInfo.ofPath(f) with
+                    | fi when fi.Exists -> Ok(fi)
+                    | _ -> Error("Error during preparation"))
+            with
+            | e -> 
+                try
+                    Shell.cleanDir (updatePath.Parent.FullName)
+                with _ -> ()
+                Error e.Message
+
+        /// Get the file that will be patched
+        let getOriginal() =
+            if Environment.isLinux then
+                Linux.Utils.getMBHome()
+            else Windows.Utils.getWinExecPath()
+            |> FileInfo.ofPath
+
+        /// See if file is already downloaded and patched
+        let isReady (tagName: string) =
+            let newName = appFile (tagName.Substring(1))
+
+            getUpdatePath(tagName) @@ newName
+            |> FileInfo.ofPath
+            |> fun fi -> if fi.Exists then Some(fi.FullName) else None
+
+        /// Try to generate a new patch file
+        let tryGeneratePatch (deltaFi: FileInfo) =
+            let newFile = 
+                deltaFi.Directory.FullName @@
+                    (deltaFi.Name.Substring(0,(deltaFi.Name.Length) - 6))
+
+            try
+                let delta = 
+                    let d = new DeltaApplier()
+                    d.SkipHashCheck <- true
+                    d
+
+                let progressReporter = new ConsoleProgressReporter()
+
+                use basisStream = new FileStream(getOriginal().FullName, FileMode.Open, FileAccess.Read, FileShare.Read)
+                use deltaStream = new FileStream(deltaFi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read)
+                use newFileStream = new FileStream(newFile, FileMode.Create, FileAccess.Write, FileShare.Read)
+
+                delta.ApplyAsync(basisStream, new BinaryDeltaReader(deltaStream, progressReporter), newFileStream)
+                |> Async.AwaitTask
+                |> Async.RunSynchronously
+
+                Ok(newFile)
+
+            with e -> 
+                try Shell.cleanDir <| getBaseUpdatePath()
+                with _ -> ()
+                Error(e.Message)
+
+        /// Apply the new patch
+        let applyPatch (path: string) =
+            let fi = FileInfo.ofPath path
+
+            let newName =
+                if Environment.isLinux then
+                    fi.Name
+                else "installer.exe"
+
+            try
+                if fi.Exists then
+                    let origFile = getOriginal()
+                    Shell.rm(origFile.FullName)
+                    Shell.cp fi.FullName (origFile.Directory.FullName @@ newName)
+                    if Environment.isLinux then
+                        Linux.Utils.setMBHome(origFile.Directory.FullName @@ newName)
+                    Shell.cleanDir <| getBaseUpdatePath()
+                    Ok(true)
+                else failwithf "Update file not found %s" path
+            with
+            | e -> Error e.Message
+
+        /// Try to clean update path and dispose of errors
+        let cleanBaseUpdatePath() =
+            try Shell.cleanDir <| getBaseUpdatePath()
+            with e -> 
+#if DEBUG
+                failwith e.Message
+#endif
+                ()

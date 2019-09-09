@@ -141,6 +141,12 @@ module ElectronBridge =
         | DisabledAutoLaunch of bool
 
     [<RequireQualifiedAccess>]
+    type UpdateResult =
+        | Ready
+        | Complete
+        | Failed
+
+    [<RequireQualifiedAccess>]
     type BridgeResult =
         | Community of CommunityResult
         | INIOperation of INIOperationResult
@@ -149,6 +155,7 @@ module ElectronBridge =
         | Config of ConfigResult
         | Maps of MapResult
         | Settings of SettingResult
+        | Updates of UpdateResult
 
     [<RequireQualifiedAccess>]
     type Caller =
@@ -261,6 +268,10 @@ module ElectronBridge =
         | ConfirmInstalled of string
         | CancelMap of string
 
+    [<RequireQualifiedAccess>]
+    type Updates =
+        | Start
+
     type BridgeOperations =
         | CommunityOperation of CommunityOperation
         | INIOperation of INIFileOperation
@@ -269,6 +280,7 @@ module ElectronBridge =
         | Configs of Configs
         | Maps of Maps
         | SettingsOperation of SettingsOperation
+        | Updates of Updates
         static member Endpoint = "/ws"
 
     type BridgeMsg =

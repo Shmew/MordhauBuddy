@@ -17,7 +17,8 @@ module Bridge =
               Engine: INIValue option
               GameUserSettings: INIValue option
               InstallingMaps: (string * CancellationTokenSource) list
-              BackupSettings: BackupSettings }
+              BackupSettings: BackupSettings
+              UpdatePending: string option }
             member this.GetIVal(file: ConfigFile) =
                 match file with
                 | ConfigFile.Game -> this.Game
@@ -32,7 +33,8 @@ module Bridge =
               GameUserSettings = None
               Engine = None
               InstallingMaps = []
-              BackupSettings = KeepAll }, Cmd.none
+              BackupSettings = KeepAll
+              UpdatePending = None }, Cmd.none
 
         let createClientResp (caller: Caller) (file: INIFile option) (br: BridgeResult) =
             { Caller = caller
@@ -266,6 +268,30 @@ module Bridge =
                         | SetupLinux ->
                             Settings.setupLinux()
                             model, None
+                    | Updates uCmd ->
+                        let cResp br = createClientResp caller None br
+                        match uCmd with
+                        | Updates.Start ->
+                            match model.UpdatePending with
+                            | Some(file) -> Updating.installUpdates file
+                            | _ -> Error "No pending file"
+                            |> function
+                            | Ok(true) -> 
+                                { model with UpdatePending = None }, 
+                                UpdateResult.Complete
+                                |> BridgeResult.Updates
+                                |> cResp
+                            | Ok(false) ->
+                                Updating.cleanUpdatingDir()
+                                { model with UpdatePending = None},
+                                UpdateResult.Failed
+                                |> BridgeResult.Updates
+                                |> cResp
+                            | Error e -> 
+#if DEBUG
+                                System.Console.WriteLine e
+#endif
+                                model, None
 
             match remoteCMsg with
             | Some(rMsg) -> Resp(rMsg) |> clientDispatch

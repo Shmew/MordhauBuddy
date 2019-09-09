@@ -194,10 +194,7 @@ module Main =
     /// initialization and is ready to create browser windows.
     main.app.onReady (fun _ _ ->
         createMainWindow()
-        createTray()
-        if main.app.isPackaged then
-            let autoUpdater: ElectronUpdater.AutoUpdater = importMember "electron-updater"
-            autoUpdater.checkForUpdatesAndNotify())
+        createTray())
     |> ignore
     /// Quit when all windows are closed.
     main.app.onWindowAllClosed (fun _ ->

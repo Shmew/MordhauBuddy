@@ -113,7 +113,7 @@ module BridgeOperations =
         /// Download map if available
         let installMap (mCmd: MapTarget) (dispatchWrapper: MapResult -> unit) (cToken: CancellationToken) =
             let fName = mCmd.Folder + ".zip"
-            let getMap (mList: GHContents list) = mList |> List.filter (fun m -> m.Name = fName)
+            let getMap (mList: Github.Contents list) = mList |> List.filter (fun m -> m.Name = fName)
             let diDir = IO.DirectoryInfo(mCmd.Directory)
             match mCmd.GDrive with
             | Some(gd) ->
@@ -178,3 +178,55 @@ module BridgeOperations =
 
         /// Try to setup the linux application
         let setupLinux() = registerLinuxApp()
+
+    [<RequireQualifiedAccess>]
+    module Updating =
+        open FileOps.Updating
+        open Http.WebRequests
+
+        /// Downloads and prepares for update
+        let getUpdates() =
+            async {
+                return
+                    getReleases()
+                    |> Result.bind tryGetAssets
+                    |> function
+                    | Ok(valid) ->
+                        match valid with
+                        | Zero -> Ok None
+                        | One nUp ->
+                            match isReady (nUp.LatestRel.TagName) with
+                            | Some(r) -> Ok <| Some(r)
+                            | _ ->
+                                nUp
+                                |> getAsset
+                                |> Result.bind tryGeneratePatch
+                                |> function
+                                | Ok f -> Ok <| Some f
+                                | Error e -> Error e
+                        | Multiple nUp ->
+                            match isReady (nUp.LatestRel.TagName) with
+                            | Some(r) -> Ok <| Some(r)
+                            | _ ->
+                                nUp
+                                |> getAsset
+                                |> function
+                                | Ok fi -> Ok <| Some fi.FullName
+                                | Error e -> Error e
+                    | Error e -> Error e
+            }
+            |> Async.RunSynchronously
+            
+        /// Install the new update
+        let installUpdates(newFile: string) =
+            async {
+                return
+                    applyPatch newFile
+            }
+            |> Async.RunSynchronously
+
+        let cleanUpdatingDir() =
+            async {
+                cleanBaseUpdatePath()
+            }
+            |> Async.RunSynchronously

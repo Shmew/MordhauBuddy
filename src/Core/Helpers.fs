@@ -6,6 +6,19 @@ module Helpers =
     open FSharp.Data
     open FSharp.Json
     open MordhauBuddy.Shared.ElectronBridge
+    
+    module Info =
+        open Fake.Core
+        open System.Reflection
+
+        /// Get application version
+        let version =
+            Assembly.GetExecutingAssembly().GetName().Version |> (fun v -> sprintf "%i.%i.%i" v.Major v.Minor v.Build)
+
+        let appFile ver =
+            if Environment.isLinux then
+                sprintf "MordhauBuddy-%s.AppImage" ver
+            else sprintf "MordhauBuddy.Setup.%s.exe" ver
 
     /// Http related helper fuctions
     module Http =
@@ -23,22 +36,74 @@ module Helpers =
               ErrorFun: string -> unit
               CancelFun: OperationCanceledException -> unit }
 
-        /// Record to represent GH content api response
-        type GHContents =
-            { Name: string
-              Path: string
-              Sha: string
-              Size: int64
-              Url: string
-              [<JsonField("html_url")>]
-              HtmlUrl: string
-              [<JsonField("html_url")>]
-              GitUrl: string
-              [<JsonField("download_url")>]
-              DownloadUrl: string
-              Type: string
-              [<JsonField("_links")>]
-              Links: obj }
+        /// Collection of Github schema types
+        [<RequireQualifiedAccess>]
+        module Github =
+            /// Record to represent GH content api response
+            type Contents =
+                { Name: string
+                  Path: string
+                  Sha: string
+                  Size: int64
+                  Url: string
+                  [<JsonField("html_url")>]
+                  HtmlUrl: string
+                  [<JsonField("git_url")>]
+                  GitUrl: string
+                  [<JsonField("download_url")>]
+                  DownloadUrl: string
+                  Type: string
+                  [<JsonField("_links")>]
+                  Links: obj }
+
+            type Asset = 
+                { Url: string
+                  [<JsonField("browser_download_url")>]
+                  BrowserDownloadUrl: string
+                  Id: int
+                  [<JsonField("node_id")>]
+                  NodeId: string
+                  Name: string
+                  Label: string
+                  State: string
+                  [<JsonField("content_type")>]
+                  ContentType: string
+                  Size: int
+                  [<JsonField("download_count")>]
+                  DownloadCount: int
+                  [<JsonField("created_at")>]
+                  CreatedAt: string
+                  [<JsonField("updated_at")>]
+                  UpdatedAt: string
+                  Uploader: obj }
+
+            type Release =
+                { Url: string
+                  [<JsonField("html_url")>]
+                  HtmlUrl: string
+                  [<JsonField("assets_url")>]
+                  AssetsUrl: string
+                  [<JsonField("upload_url")>]
+                  UploadUrl: string
+                  [<JsonField("tarball_url")>]
+                  TarBallUrl: string
+                  [<JsonField("zipball_url")>]
+                  ZipBallUrl: string
+                  Id: int
+                  [<JsonField("node_id")>]
+                  NodeId: string
+                  [<JsonField("tag_name")>]
+                  TagName: string
+                  [<JsonField("target_commitish")>]
+                  TargetCommitish: string
+                  Draft: bool
+                  Prerelease: bool
+                  [<JsonField("created_at")>]
+                  CreatedAt: string
+                  [<JsonField("published_at")>]
+                  PublishedAt: string
+                  Author: obj
+                  Assets: Asset list }
 
         /// Single case DU for creating GET queries
         type ParamValues =

@@ -5,6 +5,7 @@
 #r "paket: groupref FakeBuild //"
 #load "./tools/FSharpLint.fs"
 #load "./tools/ElectronTools.fs"
+#load "./tools/Updating.fs"
 #load "./.fake/build.fsx/intellisense.fsx"
 
 open Fake.Core
@@ -14,12 +15,15 @@ open Fake.JavaScript
 open Fake.IO
 open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
+open Fake.Net.Http
 open Fake.Tools
 open Fantomas
 open Fantomas.FakeHelpers
 open Fantomas.FormatConfig
-open Tools.Linting
+open FastRSync
 open Tools.Electron
+open Tools.Linting
+open Tools.Updating
 open System
 open System.IO
 
@@ -164,6 +168,7 @@ Target.create "AssemblyInfo" <| fun _ ->
 
 // --------------------------------------------------------------------------------------
 // Update package.json version & name      
+
 Target.create "PackageJson" <| fun _ ->
     let setValues (current: Json.JsonPackage) =
         { current with
@@ -201,18 +206,7 @@ Target.create "CopyBinaries" <| fun _ ->
     |> Seq.iter (fun (fromDir, toDir) -> Shell.copyDir toDir fromDir (fun _ -> true))
 
 // --------------------------------------------------------------------------------------
-// Renames win32 target folder to match what electron expects
-
-Target.create "RewriteWin32" <| fun _ ->
-    netCoreVersions
-    |> List.iter(fun dir ->
-        !! (bin @@ "Core" @@ dir @@ "win-x86/*")
-        |> Seq.map (Path.getDirectory)
-        |> Seq.distinct
-        |> Seq.iter (fun d -> Shell.rename ("bin/Core" @@ dir @@ "win-ia32") d) )
-
-// --------------------------------------------------------------------------------------
-// Clean build results
+// Clean tasks
 
 Target.create "Clean" <| fun _ ->
     let clean() =
@@ -342,10 +336,39 @@ Target.create "Dist" <| fun _ ->
 Target.create "DistDir" <| fun _ ->
     Yarn.exec "dist:dir" id
 
-// Build artifacts and publish
-Target.create "Publish" <| fun _ ->
-    Yarn.exec "publishWin" id
-    Yarn.exec "publishLinux" id
+// --------------------------------------------------------------------------------------
+// Create differentials for updating
+
+Target.create "CreateDiffs" <| fun _ ->
+    let latestRelease =
+        let latestTag = Git.Information.getLastTag()
+
+        if release.NugetVersion = latestTag.Substring(1) then 
+            failwith "Cannot create diff of same version"
+        else
+            sprintf "https://github.com/Shmew/MordhauBuddy/releases/tag/%s" latestTag
+
+    let downloadSignature (fi: FileInfo) =
+        let file =
+            match fi.Extension with
+            | ext when ext = ".exe" -> sprintf "MordhauBuddy.Setup.%s%s.sig" (latestRelease.Substring(1)) ext
+            | ext when ext = ".AppImage" -> sprintf "MordhauBuddy-%s%s.sig" (latestRelease.Substring(1)) ext
+            | _ -> failwith "Invalid file extention for generating delta"
+        
+        sprintf "%s/%s" latestRelease file
+        |> downloadFile (fi.Directory.FullName @@ (sprintf "%s-%s%s" project release.NugetVersion fi.Extension))
+
+    !! (__SOURCE_DIRECTORY__ @@ "dist/linux-x64/*.AppImage")
+    ++ (__SOURCE_DIRECTORY__ @@ "dist/win-x64/*.exe")
+    |> List.ofSeq
+    |> List.distinct
+    |> List.iter (fun f ->
+        let fi = FileInfo.ofPath(f)
+        genSigNew (sprintf "%s.sig" fi.Name) fi
+        
+        downloadSignature fi
+        |> FileInfo.ofPath
+        |> genDelta fi)
 
 // --------------------------------------------------------------------------------------
 // Publish net core applications
@@ -658,7 +681,6 @@ Target.create "All" ignore
 "All" <== ["Lint"; "RunTests"; "GenerateDocs"; "CleanElectronBin"]
 
 "All" 
-  ?=> "RewriteWin32" 
   ?=> "Dist"
   ?=> "DistDir"
 
@@ -670,8 +692,8 @@ Target.create "All" ignore
 
 "Dev" <== ["All"; "LocalDocs"; "ConfigDebug"]
 
-"Dist" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigRelease"]
+"Dist" <== ["All"; "ReleaseDocs"; "ConfigRelease"]
 
-"DistDir" <== ["All"; "ReleaseDocs"; "RewriteWin32"; "ConfigDebug"]
+"DistDir" <== ["All"; "ReleaseDocs"; "ConfigDebug"]
 
 Target.runOrDefaultWithArguments "Dev"
