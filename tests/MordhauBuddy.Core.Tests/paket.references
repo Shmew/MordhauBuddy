@@ -6,3 +6,4 @@ group Testing
 	Foq
 	FSharp.Core
 	FSharp.Data
+    Microsoft.NETCore.Platforms
