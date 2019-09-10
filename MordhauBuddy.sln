@@ -86,12 +86,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{CEA0FB6F-5
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C44455B5-5DAF-4FF7-8983-093037B3BBDA}"
-	ProjectSection(SolutionItems) = preProject
-		branchCleanup.yml = branchCleanup.yml
-		labels.yml = labels.yml
-		secrets.yml = secrets.yml
-		stale.yml = stale.yml
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
