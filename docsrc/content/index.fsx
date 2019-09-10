@@ -7,19 +7,20 @@ the burden of keeping track and updating each separate piece of software. Mordha
 when a new version is released.
 
 The main features that MordhauBuddy enables you to do is:
+
  - Keep up to date on community events
-   - This is still on-going, stay tuned!
+    - This is still on-going, stay tuned!
  - Install the latest community maps
-   - Auto updates based on your preferences
+    - Auto updates based on your preferences
  - Manage custom settings not available in the UI
-   - Things like Runescape mode, and disabling in-game fog.
+    - Things like Runescape mode, and disabling in-game fog.
  - Modify character faces with multiple options:
-   - Frankenstein - Set all values to the minimum or maximum allowed
-   - Random - Set all values randomly
-   - Import - Import someone else's character so you can be ugly together
-   - Export - Spread your filth with the world
+    - Frankenstein - Set all values to the minimum or maximum allowed
+    - Random - Set all values randomly
+    - Import - Import someone else's character so you can be ugly together
+    - Export - Spread your filth with the world
  - Creates and manages backups for any non-map related task
-   - Can be adjusted in the settings
+    - Can be adjusted in the settings
 
 ## How to get MordhauBuddy ##
 
