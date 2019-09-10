@@ -19,3 +19,4 @@ jobs:
       run: fake build -t RunTests
       env:
         CI: true
+        GD_KEY: ${{ secrets.GD_KEY }}

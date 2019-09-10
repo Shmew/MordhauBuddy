@@ -126,6 +126,22 @@ let setCmd f args =
 let configuration() =
     FakeVar.getOrDefault "configuration" "Release"
 
+let getEnvFromAllOrNone (s: string) =
+    let envOpt (envVar: string) =
+        if String.isNullOrEmpty envVar then None
+        else Some(envVar)
+
+    let procVar = Environment.GetEnvironmentVariable(s) |> envOpt
+    let userVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.User) |> envOpt
+    let machVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.Machine) |> envOpt
+
+    match procVar,userVar,machVar with
+    | Some(v), _, _
+    | _, Some(v), _
+    | _, _, Some(v)
+        -> Some(v)
+    | _ -> None
+
 // --------------------------------------------------------------------------------------
 // Set configuration mode based on target
 
@@ -296,6 +312,23 @@ Target.create "YarnInstall" <| fun _ ->
                 Yarn.YarnParams.YarnFilePath = (__SOURCE_DIRECTORY__ @@ "packages/tooling/Yarnpkg.Yarn/content/bin/yarn.cmd")
             }
     Yarn.install setParams
+
+// Build Key.json if necessary from GD_KEY env variable
+Target.create "BuildKeys" <| fun _ ->
+    let jsonPath = 
+        __SOURCE_DIRECTORY__ @@ "src/Core/Key.json"
+        |> FileInfo.ofPath
+    let key = 
+        let insertKey s = sprintf "{ \"key\": \"%s\" }" s
+
+        getEnvFromAllOrNone "GD_KEY"
+        |> Option.map (insertKey)
+        |> defaultArg <| ""
+    TraceSecrets.register "<GD_KEY Json>" key
+    
+    if key <> "" && jsonPath.Exists |> not then
+        File.writeString false jsonPath.FullName key
+    else ()
 
 // --------------------------------------------------------------------------------------
 // Build tasks
@@ -642,6 +675,7 @@ Target.create "All" ignore
   ==> "Restore"
   ==> "PackageJson"
   ==> "YarnInstall"
+  ==> "BuildKeys"
   ==> "Build"
   ==> "BuildElectron"
   ==> "PostBuildClean" 
