@@ -12,3 +12,6 @@
 
 ### 1.0.5 - Tuesday, September 10, 2019
 * Fixed directory setting storage bug
+
+### 1.0.6 - Tuesday, September 10, 2019
+* Fix announcements duplication bug
