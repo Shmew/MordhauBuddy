@@ -187,8 +187,6 @@ module FileOps =
         open FSharp.Json
         open Helpers.Info
         open Helpers.Json
-        open System.Reflection
-
 
         /// Linux DesktopFile
         type DesktopFile =
@@ -597,5 +595,5 @@ module FileOps =
         let startNewVersion (file: string) =
             async {
                 let fi = FileInfo.ofPath file
-                do! Shell.AsyncExec(fi.Name, dir = fi.Directory.FullName) |> Async.Ignore
+                Process.shellExec { ExecParams.Empty with Program = fi.FullName } |> ignore
             }

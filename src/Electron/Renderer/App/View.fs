@@ -335,16 +335,18 @@ module View =
                                               [ CSSProp.BorderRadius "4px"
                                                 CSSProp.Display DisplayOptions.Block
                                                 CSSProp.Padding "0.2em 2em" ] ] ]
-                                iconButton
-                                    [ Class classes?titleButton
-                                      DOMAttr.OnClick <| fun _ -> dispatch StartPatch
-                                      Style
-                                          [ CSSProp.Display <|
-                                                if model.UpdatePending.Ready then
-                                                    DisplayOptions.Inherit
-                                                else DisplayOptions.None
-                                            CSSProp.Color "#15cf46"
-                                            CSSProp.BorderRadius "20%" ] ] [ downloadIcon [] ]
+                                tooltip [
+                                    TooltipProp.Title <| str "Update available!"
+                                ] [ iconButton
+                                        [ Class classes?titleButton
+                                          DOMAttr.OnClick <| fun _ -> dispatch StartPatch
+                                          Style
+                                              [ CSSProp.Display <|
+                                                    if model.UpdatePending.Ready then
+                                                        DisplayOptions.Inherit
+                                                    else DisplayOptions.None
+                                                CSSProp.Color "#15cf46"
+                                                CSSProp.BorderRadius "20%" ] ] [ downloadIcon [] ] ]
                                 iconButton
                                     [ Class classes?titleButton
                                       DOMAttr.OnClick <| fun _ ->

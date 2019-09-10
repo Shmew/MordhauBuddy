@@ -56,7 +56,7 @@ let netCoreVersions = [ "netcoreapp3.0" ]
 let netFrameworkVersions = [ "net462" ]
 
 // OS runtime targets
-let runTimes = ["win-x64";"win-x86";"linux-x64"]
+let runTimes = ["win-x64";"linux-x64"]
 
 // Read additional information from the release notes document
 let release = ReleaseNotes.load (__SOURCE_DIRECTORY__ @@ "RELEASE_NOTES.md")

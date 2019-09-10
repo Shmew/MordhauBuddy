@@ -1,6 +1,6 @@
 {
   "name": "mordhau-buddy",
-  "version": "1.0.4",
+  "version": "1.0.3",
   "description": "Compilation of Mordhau Tools",
   "homepage": "https://github.com/Shmew/MordhauBuddy",
   "bugs": {
@@ -15,7 +15,7 @@
   "scripts": {
     "compile": "electron-webpack",
     "dev": "electron-webpack dev",
-    "dist:dir": "yarn distWin64 --dir -c.compression=store -c.mac.identity=null",
+    "dist:dir": "yarn distWin --dir -c.compression=store -c.mac.identity=null",
     "distLinux": "yarn compile && electron-builder --linux --x64",
     "distWin": "yarn compile && electron-builder --win --x64"
   },

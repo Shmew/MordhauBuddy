@@ -11,4 +11,4 @@
 * Staging auto updating and fixes
 
 ### 1.0.4 - Monday, September 9, 2019
-* Starting auto updating test
+* Auto updating validation
