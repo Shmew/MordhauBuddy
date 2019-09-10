@@ -89,6 +89,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\branchCleanup.yml = .github\workflows\branchCleanup.yml
 		.github\workflows\labels.yml = .github\workflows\labels.yml
+		.github\workflows\runTests.yml = .github\workflows\runTests.yml
 		.github\workflows\secrets.yml = .github\workflows\secrets.yml
 		.github\workflows\stale.yml = .github\workflows\stale.yml
 	EndProjectSection
