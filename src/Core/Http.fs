@@ -20,12 +20,17 @@ module Http =
         let downloadMap (downloadFile: DownloadFile) (stream: Async<Result<Stream, string>>)
             (size: Result<string, string>) (cToken: CancellationToken) =
             let errorMsg (e: exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' (e.Message)
+            let path = downloadFile.Directory.FullName @@ downloadFile.FileName
+
+            let deleteMapIgnore () =
+                try
+                    FileOps.Maps.asyncDeleteZip path |> Async.Start
+                with _ -> ()
 
             let download =
                 async {
                     let mutable downloading = true
                     let! requestRes = stream
-                    let path = downloadFile.Directory.FullName @@ downloadFile.FileName
 
                     let dlSize =
                         match size with
@@ -77,14 +82,21 @@ module Http =
                         zipStream.ExtractToDirectory(downloadFile.Directory.FullName)
                         do! Async.Sleep 1000
                         zipStream.Dispose()
-                        do! FileOps.Maps.asyncDeleteZip (path)
+                        deleteMapIgnore()
                     }
                     |> fun a -> Async.RunSynchronously(a, cancellationToken = cToken)
                     |> ignore
                 }
 
-            let onError (e: exn) = errorMsg e |> downloadFile.ErrorFun
-            Async.StartWithContinuations(download, downloadFile.CompleteFun, onError, downloadFile.CancelFun)
+            let onError (e: exn) = 
+                deleteMapIgnore()
+                errorMsg e |> downloadFile.ErrorFun
+
+            let onCancel (cancelFun: System.OperationCanceledException -> unit) (cExn: System.OperationCanceledException) =
+                deleteMapIgnore()
+                cancelFun cExn
+
+            Async.StartWithContinuations(download, downloadFile.CompleteFun, onError, (onCancel downloadFile.CancelFun))
 
     /// Functions for interacting with the Github Api
     module WebRequests =

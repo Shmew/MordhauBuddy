@@ -15,3 +15,6 @@
 
 ### 1.0.6 - Tuesday, September 10, 2019
 * Fix announcements duplication bug
+
+### 1.0.7 - Tuesday, September 10, 2019
+* Cleanup map downloads on error or cancel
