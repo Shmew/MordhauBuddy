@@ -290,15 +290,17 @@ module FileOps =
                 /// Gets the home share falling back to `appPath` if necessary
                 let homeShare = defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
 
+                let homeName = sprintf "home-%s.json" version
+
                 /// Set the new MBHome path
                 let setMBHome (newFile: string) =
                     { Path = newFile }
                     |> Json.serializeEx config
-                    |> File.writeString false (homeShare @@ "home.json")
+                    |> File.writeString false (homeShare @@ homeName)
 
                 /// Gets or sets the MordhauBuddy home json if necessary
                 let getMBHome() =
-                    match FileInfo.ofPath (homeShare @@ "home.json") with
+                    match FileInfo.ofPath (homeShare @@ homeName) with
                     | hShare when hShare.Exists ->
                         File.readAsString hShare.FullName
                         |> Json.deserializeEx<HomeFile> config
@@ -307,7 +309,7 @@ module FileOps =
                         let ePath = appPath @@ appImageName
                         { Path = ePath }
                         |> Json.serializeEx config
-                        |> File.writeString false (homeShare @@ "home.json")
+                        |> File.writeString false (homeShare @@ homeName)
                         ePath
 
                 /// Create desktop file string
@@ -448,7 +450,7 @@ module FileOps =
 
             let getRelAt i =
                 sorted
-                |> List.tryItem (i)
+                |> List.tryItem (i-1)
                 |> Option.map (fun (i, r) -> r, r.TagName.Substring(1))
 
             let getAssetOf (endsWith: string option) (rel: (Github.Release * string) option) =
@@ -483,6 +485,7 @@ module FileOps =
                 | _ -> Error "Multiple updates behind, asset not found"
             | _ -> Error "Unable to determine update position"
 
+        /// Get base update path
         let private getBaseUpdatePath() =
             if Environment.isLinux then Linux.Utils.homeShare
             else Windows.Utils.getWinExecDir()
