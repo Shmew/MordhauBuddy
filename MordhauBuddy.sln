@@ -86,6 +86,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{CEA0FB6F-5
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C44455B5-5DAF-4FF7-8983-093037B3BBDA}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\branchCleanup.yml = .github\workflows\branchCleanup.yml
+		.github\workflows\labels.yml = .github\workflows\labels.yml
+		.github\workflows\secrets.yml = .github\workflows\secrets.yml
+		.github\workflows\stale.yml = .github\workflows\stale.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
