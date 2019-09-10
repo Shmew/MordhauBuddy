@@ -5,10 +5,10 @@
 * Validate auto updating
 
 ### 1.0.2 - Monday, September 9, 2019
-* Attempting implementation of auto updating
+* Auto updating bug fixes
 
 ### 1.0.3 - Monday, September 9, 2019
 * Staging auto updating and fixes
 
-### 1.0.4 - Monday, September 9, 2019
-* Auto updating validation
+### 1.0.5 - Tuesday, September 10, 2019
+* Fixed directory setting storage bug

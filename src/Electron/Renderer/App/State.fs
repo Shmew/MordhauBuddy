@@ -294,10 +294,38 @@ module State =
                     else
                         cList
 
+                let appendDirs (cList: Cmd<Msg> list) =
+                    if m.Settings.GameDir <> newM.GameDir then
+                        [ Some(newM.GameDir.Directory |> Store.Msg.SetGameLocation) ]
+                    else 
+                        [ None ]
+                    |> fun dList ->
+                        if m.Settings.EngineDir <> newM.EngineDir then
+                            Some(newM.EngineDir.Directory |> Store.Msg.SetEngineLocation) :: dList
+                        else
+                            dList
+                    |> fun dList ->
+                        if m.Settings.GameUserDir <> newM.GameUserDir then
+                            Some(newM.GameUserDir.Directory |> Store.Msg.SetGameUserLocation) :: dList
+                        else
+                            dList
+                    |> fun dList ->
+                        if m.Settings.MapsDir <> newM.MapsDir then
+                            Some(newM.MapsDir.Directory |> Store.Msg.SetMapsLocation) :: dList
+                        else
+                            dList
+                    |> List.choose id
+                    |> List.map (fun msg' ->
+                            msg'
+                            |> StoreMsg
+                            |> Cmd.ofMsg)
+                    |> List.append cList
+
                 [ Cmd.map SettingsMsg cmd ]
                 |> appendMapUpdate
                 |> appendBackup
                 |> appendAutoLaunch
+                |> appendDirs
                 |> Cmd.batch
                 |> fun cmd' -> setSettings m newM, cmd'
         | AboutMsg msg' ->

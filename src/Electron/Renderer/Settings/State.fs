@@ -194,7 +194,7 @@ module State =
                         |> fun m -> m, Cmd.none
                 | MapOperationResult.DirExists b ->
                     if b then
-                        setDirSuccess "Maps directory located" model.MapsDir
+                        setDirSuccess "" model.MapsDir
                         |> setDir model Maps
                         |> fun m ->
                             m,
