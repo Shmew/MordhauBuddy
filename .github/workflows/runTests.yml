@@ -13,6 +13,7 @@ jobs:
       uses: actions/setup-dotnet@master
       with:
         dotnet-version: '3.0.100-preview9-014004'
+
     - name: Install FAKE
       run: dotnet tool install fake-cli -g
     - name: Run tests
@@ -20,3 +21,4 @@ jobs:
       env:
         CI: true
         GD_KEY: ${{ secrets.GD_KEY }}
+        DOTNET_MULTILEVEL_LOOKUP: 0
