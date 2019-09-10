@@ -225,8 +225,15 @@ module BridgeOperations =
             }
             |> Async.RunSynchronously
 
+        /// Clean the Updating temp directory
         let cleanUpdatingDir () =
             async {
                 cleanBaseUpdatePath()
             }
             |> Async.RunSynchronously
+
+        /// Launch the new version
+        let launchNewVersion (file: string) =
+            startNewVersion(file)
+            |> Async.Start
+            

@@ -64,7 +64,7 @@ module Helpers =
                   [<JsonField("node_id")>]
                   NodeId: string
                   Name: string
-                  Label: string
+                  Label: string option
                   State: string
                   [<JsonField("content_type")>]
                   ContentType: string
@@ -103,7 +103,8 @@ module Helpers =
                   [<JsonField("published_at")>]
                   PublishedAt: string
                   Author: obj
-                  Assets: Asset list }
+                  Assets: Asset list
+                  Body: string }
 
         /// Single case DU for creating GET queries
         type ParamValues =

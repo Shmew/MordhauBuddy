@@ -251,10 +251,10 @@ module FileOps =
                 let getWinExecDir() =
                     Environment.SpecialFolder.LocalApplicationData
                     |> Environment.GetFolderPath
-                    |> fun d -> (new IO.DirectoryInfo(d)).FullName
+                    |> fun d -> (new IO.DirectoryInfo(d)).FullName @@ "mordhau-buddy-updater"
 
                 /// Get Windows executable path
-                let getWinExecPath() = getWinExecDir() @@ "mordhau-buddy-updater" @@ "installer.exe"
+                let getWinExecPath() = getWinExecDir() @@ "installer.exe"
 
             /// Try to enable auto launch
             let enableAutoLaunch() =
@@ -499,7 +499,7 @@ module FileOps =
         /// Download an assets list
         let private downloadAsset (asset: Github.Asset) (path: IO.DirectoryInfo) =
             try
-                downloadFile path.FullName asset.BrowserDownloadUrl
+                downloadFile (path.FullName @@ asset.Name) asset.BrowserDownloadUrl
                 |> Ok
             with e -> Error(e.Message)
 
@@ -585,7 +585,7 @@ module FileOps =
                     if Environment.isLinux then
                         Linux.Utils.setMBHome(origFile.Directory.FullName @@ newName)
                     Shell.cleanDir <| getBaseUpdatePath()
-                    Ok(true)
+                    Ok <| Some(origFile.Directory.FullName @@ newName)
                 else failwithf "Update file not found %s" path
             with
             | e -> Error e.Message
@@ -598,3 +598,10 @@ module FileOps =
                 failwith e.Message
 #endif
                 ()
+
+        /// Start the new application
+        let startNewVersion (file: string) =
+            async {
+                let fi = FileInfo.ofPath file
+                do! Shell.AsyncExec(fi.Name, dir = fi.Directory.FullName) |> Async.Ignore
+            }

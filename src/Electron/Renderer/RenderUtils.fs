@@ -121,6 +121,11 @@ module RenderUtils =
         path.resolve (__dirname, "..", "..", "static", s)
 
 #endif
+
+    /// Exit the application
+    let quitApplication() =
+        Electron.renderer.remote.app.quit()
+
     [<AutoOpen>]
     module RenderTypes =
         open FSharp.Reflection

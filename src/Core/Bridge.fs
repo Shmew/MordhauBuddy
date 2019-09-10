@@ -273,15 +273,17 @@ module Bridge =
                         match uCmd with
                         | Updates.Start ->
                             match model.UpdatePending with
-                            | Some(file) -> Updating.installUpdates file
+                            | Some file -> Updating.installUpdates file
                             | _ -> Error "No pending file"
                             |> function
-                            | Ok(true) -> 
+                            | Ok(Some file) -> 
+                                Updating.cleanUpdatingDir()
+                                Updating.launchNewVersion(file)
                                 { model with UpdatePending = None }, 
                                 UpdateResult.Complete
                                 |> BridgeResult.Updates
                                 |> cResp
-                            | Ok(false) ->
+                            | Ok _ ->
                                 Updating.cleanUpdatingDir()
                                 { model with UpdatePending = None},
                                 UpdateResult.Failed
@@ -297,7 +299,7 @@ module Bridge =
                             | Ok res -> 
                                 { model with UpdatePending = res }, 
                                 match res with
-                                | Some(_) ->
+                                | Some _ ->
                                     UpdateResult.Ready
                                     |> BridgeResult.Updates
                                     |> cResp
@@ -308,7 +310,7 @@ module Bridge =
 #endif
                                 model, None
             match remoteCMsg with
-            | Some(rMsg) -> Resp(rMsg) |> clientDispatch
+            | Some rMsg -> Resp rMsg |> clientDispatch
             | _ -> ()
             model, Cmd.none
 

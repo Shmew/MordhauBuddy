@@ -411,6 +411,7 @@ module State =
                             setUpdateReady true m.UpdatePending
                             |> setUpdate m, Cmd.none
                         | UpdateResult.Complete -> 
+                            quitApplication()
                             setUpdateReady false m.UpdatePending
                             |> setUpdateError false
                             |> setUpdate m, Cmd.none
