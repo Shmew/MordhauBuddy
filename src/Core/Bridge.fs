@@ -276,28 +276,28 @@ module Bridge =
                             | Some file -> Updating.installUpdates file
                             | _ -> Error "No pending file"
                             |> function
-                            | Ok(Some file) -> 
+                            | Ok(Some file) ->
                                 Updating.cleanUpdatingDir()
-                                Updating.launchNewVersion(file)
-                                { model with UpdatePending = None }, 
+                                Updating.launchNewVersion (file)
+                                { model with UpdatePending = None },
                                 UpdateResult.Complete
                                 |> BridgeResult.Updates
                                 |> cResp
                             | Ok _ ->
                                 Updating.cleanUpdatingDir()
-                                { model with UpdatePending = None},
+                                { model with UpdatePending = None },
                                 UpdateResult.Failed
                                 |> BridgeResult.Updates
                                 |> cResp
-                            | Error e -> 
+                            | Error e ->
 #if DEBUG
                                 System.Console.WriteLine e
 #endif
                                 model, None
                         | Updates.Check ->
                             match Updating.getUpdates() with
-                            | Ok res -> 
-                                { model with UpdatePending = res }, 
+                            | Ok res ->
+                                { model with UpdatePending = res },
                                 match res with
                                 | Some _ ->
                                     UpdateResult.Ready
@@ -309,6 +309,7 @@ module Bridge =
                                 System.Console.WriteLine e
 #endif
                                 model, None
+
             match remoteCMsg with
             | Some rMsg -> Resp rMsg |> clientDispatch
             | _ -> ()

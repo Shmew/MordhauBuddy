@@ -343,7 +343,7 @@ module View =
                                                 if model.UpdatePending.Ready then
                                                     DisplayOptions.Inherit
                                                 else DisplayOptions.None
-                                            CSSProp.Color "#ffffff"
+                                            CSSProp.Color "#15cf46"
                                             CSSProp.BorderRadius "20%" ] ] [ downloadIcon [] ]
                                 iconButton
                                     [ Class classes?titleButton

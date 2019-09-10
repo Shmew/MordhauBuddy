@@ -6,7 +6,7 @@ module Helpers =
     open FSharp.Data
     open FSharp.Json
     open MordhauBuddy.Shared.ElectronBridge
-    
+
     module Info =
         open Fake.Core
         open System.Reflection
@@ -16,8 +16,7 @@ module Helpers =
             Assembly.GetExecutingAssembly().GetName().Version |> (fun v -> sprintf "%i.%i.%i" v.Major v.Minor v.Build)
 
         let appFile ver =
-            if Environment.isLinux then
-                sprintf "MordhauBuddy-%s.AppImage" ver
+            if Environment.isLinux then sprintf "MordhauBuddy-%s.AppImage" ver
             else sprintf "MordhauBuddy.Setup.%s.exe" ver
 
     /// Http related helper fuctions
@@ -56,7 +55,7 @@ module Helpers =
                   [<JsonField("_links")>]
                   Links: obj }
 
-            type Asset = 
+            type Asset =
                 { Url: string
                   [<JsonField("browser_download_url")>]
                   BrowserDownloadUrl: string

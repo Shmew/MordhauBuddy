@@ -73,8 +73,7 @@ module FileOps =
                             | f when f.Name.StartsWith("Game") -> "Game"
                             | _ -> "")
                         |> Array.iter (fun (k, fArr) ->
-                            if k = "" then
-                                ()
+                            if k = "" then ()
                             else
                                 fArr
                                 |> Array.sortBy (fun f -> f.CreationTime)
@@ -105,8 +104,7 @@ module FileOps =
                 try
                     File.readAsString file |> INIValue.TryParse
                 with _ -> None
-            else
-                None
+            else None
 
     /// File operations for maps
     module Maps =
@@ -295,7 +293,7 @@ module FileOps =
                 let homeShare = defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
 
                 /// Set the new MBHome path
-                let setMBHome(newFile: string) =
+                let setMBHome (newFile: string) =
                     { Path = newFile }
                     |> Json.serializeEx config
                     |> File.writeString false (homeShare @@ "home.json")
@@ -447,27 +445,28 @@ module FileOps =
 
             let updatesBehind =
                 sorted
-                |> List.tryFind (fun (_,a) -> Version(a.TagName.Substring(1)) = Version(version))
-                |> Option.map (fun (i,_) -> i)
+                |> List.tryFind (fun (_, a) -> Version(a.TagName.Substring(1)) = Version(version))
+                |> Option.map (fun (i, _) -> i)
 
             let getRelAt i =
                 sorted
-                |> List.tryItem(i)
-                |> Option.map (fun (i,r) -> r, r.TagName.Substring(1))
+                |> List.tryItem (i)
+                |> Option.map (fun (i, r) -> r, r.TagName.Substring(1))
 
-            let getAssetOf(endsWith: string option) (rel: (Github.Release * string) option) =
+            let getAssetOf (endsWith: string option) (rel: (Github.Release * string) option) =
                 let getEndsWith (name: string) =
                     match endsWith with
                     | Some(e) -> name.EndsWith(e)
                     | None -> true
-                
-                match rel with 
-                | Some(r,ver) ->
+
+                match rel with
+                | Some(r, ver) ->
                     r.Assets
-                    |> List.filter (fun a -> 
-                        a.Name.StartsWith(appFile ver) && getEndsWith a.Name)
+                    |> List.filter (fun a -> a.Name.StartsWith(appFile ver) && getEndsWith a.Name)
                     |> List.tryHead
-                    |> Option.map (fun a -> { LatestRel = r; Asset = a} )
+                    |> Option.map (fun a ->
+                        { LatestRel = r
+                          Asset = a })
                 | _ -> None
 
             match updatesBehind with
@@ -486,39 +485,35 @@ module FileOps =
                 | _ -> Error "Multiple updates behind, asset not found"
             | _ -> Error "Unable to determine update position"
 
-        let private getBaseUpdatePath () =
-            if Environment.isLinux then
-                Linux.Utils.homeShare
+        let private getBaseUpdatePath() =
+            if Environment.isLinux then Linux.Utils.homeShare
             else Windows.Utils.getWinExecDir()
             |> fun s -> s @@ "Updating"
 
         /// Get update path and ensure it exists
-        let private getUpdatePath (tagName: string) =
-             getBaseUpdatePath() @@ tagName
+        let private getUpdatePath (tagName: string) = getBaseUpdatePath() @@ tagName
 
         /// Download an assets list
         let private downloadAsset (asset: Github.Asset) (path: IO.DirectoryInfo) =
             try
-                downloadFile (path.FullName @@ asset.Name) asset.BrowserDownloadUrl
-                |> Ok
+                downloadFile (path.FullName @@ asset.Name) asset.BrowserDownloadUrl |> Ok
             with e -> Error(e.Message)
 
         /// Downloads asset file to storage directory
         let getAsset (newUp: NewUpdate) =
-            let updatePath = 
-                let p = getUpdatePath(newUp.LatestRel.TagName)
+            let updatePath =
+                let p = getUpdatePath (newUp.LatestRel.TagName)
                 Directory.ensure p
                 DirectoryInfo.ofPath p
 
             try
                 updatePath
-                |> downloadAsset newUp.Asset 
+                |> downloadAsset newUp.Asset
                 |> Result.bind (fun f ->
-                    match FileInfo.ofPath(f) with
+                    match FileInfo.ofPath (f) with
                     | fi when fi.Exists -> Ok(fi)
                     | _ -> Error("Error during preparation"))
-            with
-            | e -> 
+            with e ->
                 try
                     Shell.cleanDir (updatePath.Parent.FullName)
                 with _ -> ()
@@ -526,8 +521,7 @@ module FileOps =
 
         /// Get the file that will be patched
         let getOriginal() =
-            if Environment.isLinux then
-                Linux.Utils.getMBHome()
+            if Environment.isLinux then Linux.Utils.getMBHome()
             else Windows.Utils.getWinExecPath()
             |> FileInfo.ofPath
 
@@ -535,18 +529,18 @@ module FileOps =
         let isReady (tagName: string) =
             let newName = appFile (tagName.Substring(1))
 
-            getUpdatePath(tagName) @@ newName
+            getUpdatePath (tagName) @@ newName
             |> FileInfo.ofPath
-            |> fun fi -> if fi.Exists then Some(fi.FullName) else None
+            |> fun fi ->
+                if fi.Exists then Some(fi.FullName)
+                else None
 
         /// Try to generate a new patch file
         let tryGeneratePatch (deltaFi: FileInfo) =
-            let newFile = 
-                deltaFi.Directory.FullName @@
-                    (deltaFi.Name.Substring(0,(deltaFi.Name.Length) - 6))
+            let newFile = deltaFi.Directory.FullName @@ (deltaFi.Name.Substring(0, (deltaFi.Name.Length) - 6))
 
             try
-                let delta = 
+                let delta =
                     let d = new DeltaApplier()
                     d.SkipHashCheck <- true
                     d
@@ -562,9 +556,11 @@ module FileOps =
                 |> Async.RunSynchronously
 
                 Ok(newFile)
+            with
 
-            with e -> 
-                try Shell.cleanDir <| getBaseUpdatePath()
+            e ->
+                try
+                    Shell.cleanDir <| getBaseUpdatePath()
                 with _ -> ()
                 Error(e.Message)
 
@@ -573,27 +569,25 @@ module FileOps =
             let fi = FileInfo.ofPath path
 
             let newName =
-                if Environment.isLinux then
-                    fi.Name
+                if Environment.isLinux then fi.Name
                 else "installer.exe"
 
             try
                 if fi.Exists then
                     let origFile = getOriginal()
-                    Shell.rm(origFile.FullName)
+                    Shell.rm (origFile.FullName)
                     Shell.cp fi.FullName (origFile.Directory.FullName @@ newName)
-                    if Environment.isLinux then
-                        Linux.Utils.setMBHome(origFile.Directory.FullName @@ newName)
+                    if Environment.isLinux then Linux.Utils.setMBHome (origFile.Directory.FullName @@ newName)
                     Shell.cleanDir <| getBaseUpdatePath()
                     Ok <| Some(origFile.Directory.FullName @@ newName)
                 else failwithf "Update file not found %s" path
-            with
-            | e -> Error e.Message
+            with e -> Error e.Message
 
         /// Try to clean update path and dispose of errors
         let cleanBaseUpdatePath() =
-            try Shell.cleanDir <| getBaseUpdatePath()
-            with e -> 
+            try
+                Shell.cleanDir <| getBaseUpdatePath()
+            with e ->
 #if DEBUG
                 failwith e.Message
 #endif

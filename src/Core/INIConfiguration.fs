@@ -31,7 +31,7 @@ module INIConfiguration =
 
             /// Generate random values via provided min, max, and mapper function over 49 space `int list`
             let genFaces (mapper: int -> int) (min: int) (max: int) =
-                [ 0 .. 48 ]
+                [ 0..48 ]
                 |> List.map (fun _ ->
                     rng.Next(min, max)
                     |> mapper
