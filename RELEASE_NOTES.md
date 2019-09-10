@@ -9,6 +9,3 @@
 
 ### 1.0.3 - Monday, September 9, 2019
 * Staging auto updating and fixes
-
-### 1.0.4 - Monday, September 9, 2019
-* Auto updating validation

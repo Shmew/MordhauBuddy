@@ -223,4 +223,8 @@ module BridgeOperations =
         let cleanUpdatingDir() = async { cleanBaseUpdatePath() } |> Async.RunSynchronously
 
         /// Launch the new version
-        let launchNewVersion (file: string) = startNewVersion (file) |> Async.Start
+        let launchNewVersion (file: string) = 
+            async {
+                startNewVersion (file) |> Async.Start
+                do! Async.Sleep 1000
+            } |> Async.RunSynchronously
