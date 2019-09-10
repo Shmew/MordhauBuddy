@@ -13,9 +13,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60BC93-E09B-4E5F-9D85-95A519479D54}"
 	ProjectSection(SolutionItems) = preProject
-		azure-pipelines.yml = azure-pipelines.yml
+		.editorconfig = .editorconfig
+		.github\ISSUE_TEMPLATE\BUG_REPORT.md = .github\ISSUE_TEMPLATE\BUG_REPORT.md
+		.github\ISSUE_TEMPLATE\FEATURE_REQUEST.md = .github\ISSUE_TEMPLATE\FEATURE_REQUEST.md
+		.github\labels.json = .github\labels.json
 		LICENSE.md = LICENSE.md
-		PULL_REQUEST_TEMPLATE.md = PULL_REQUEST_TEMPLATE.md
+		.github\PULL_REQUEST_TEMPLATE.md = .github\PULL_REQUEST_TEMPLATE.md
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
 	EndProjectSection
@@ -82,6 +85,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{CEA0FB6F-5
 		tests\MordhauBuddy.Core.Tests\Data\GameUserSettings.ini = tests\MordhauBuddy.Core.Tests\Data\GameUserSettings.ini
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C44455B5-5DAF-4FF7-8983-093037B3BBDA}"
+	ProjectSection(SolutionItems) = preProject
+		branchCleanup.yml = branchCleanup.yml
+		labels.yml = labels.yml
+		secrets.yml = secrets.yml
+		stale.yml = stale.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -122,6 +133,7 @@ Global
 		{D3D47A52-41D2-4E7E-A93C-0FF0E6F70BFA} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
 		{E03A3045-EEAB-4616-B0D8-A50A1B75F72B} = {55637037-300B-4FA5-8D14-B2CECCCD4B0D}
 		{CEA0FB6F-5476-4ECF-827A-4347FBEC4DCE} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+		{C44455B5-5DAF-4FF7-8983-093037B3BBDA} = {BF60BC93-E09B-4E5F-9D85-95A519479D54}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {96DAE6A9-B1CC-4FF7-B08C-D5FBFD55B385}
