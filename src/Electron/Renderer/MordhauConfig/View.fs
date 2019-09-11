@@ -145,27 +145,34 @@ module View =
                               <| panelDetails classes model dispatch p.Items ] ] ])
 
     let private content (classes: IClasses) model dispatch =
-        [ card [ CardProp.Raised true ] <| expansionPanels classes model dispatch
-          div [ Style [ CSSProp.MarginTop "2em" ] ] []
-          div
-              [ Style
-                  [ CSSProp.MarginTop "auto"
-                    CSSProp.MarginLeft "auto" ] ]
-              [ button
-                  [ HTMLAttr.Disabled <| model.Submit.IsSubmitSuccess
-                    ButtonProp.Variant ButtonVariant.Contained
-                    MaterialProp.Color ComponentColor.Primary
-                    DOMAttr.OnClick <| fun _ -> dispatch Submit
-                    Style
-                        [ CSSProp.MaxHeight "2.6em"
-                          CSSProp.MarginTop "auto"
+        [ yield card [ CardProp.Raised true ] <| expansionPanels classes model dispatch
+          yield div [ Style [ CSSProp.MarginTop "2em" ] ] []
+          yield div
+                    [ Style
+                        [ CSSProp.MarginTop "auto"
                           CSSProp.MarginLeft "auto" ] ]
-                    [ if model.Submit.IsSubmitWaiting then
-                        yield circularProgress
-                                  [ CircularProgressProp.Size(CircularProgressSize.Case1(20))
-                                    Style [ CSSProp.MaxHeight "2.6em" ] ]
-                      else
-                          yield str "Submit" ] ] ]
+                    [ button
+                        [ HTMLAttr.Disabled <| (model.Submit.IsSubmitSuccess || model.Submit.IsSubmitError)
+                          MaterialProp.Error <| model.Submit.IsSubmitError
+                          ButtonProp.Variant ButtonVariant.Contained
+                          MaterialProp.Color ComponentColor.Primary
+                          DOMAttr.OnClick <| fun _ -> dispatch Submit
+                          Style
+                              [ CSSProp.MaxHeight "2.6em"
+                                CSSProp.MarginTop "auto"
+                                CSSProp.MarginLeft "auto" ] ]
+                          [ if model.Submit.IsSubmitWaiting then
+                              yield circularProgress
+                                        [ CircularProgressProp.Size(CircularProgressSize.Case1(20))
+                                          Style [ CSSProp.MaxHeight "2.6em" ] ]
+                            else
+                                yield str "Submit" ] ]
+          if model.Submit.IsSubmitError then
+              yield typography
+                        [ TypographyProp.Variant TypographyVariant.Caption
+                          TypographyProp.Color TypographyColor.Error
+                          TypographyProp.Align TypographyAlign.Right
+                          Style [ CSSProp.MarginBottom "-1em" ] ] [ str "Mordhau is running" ] ]
 
     let private view' (classes: IClasses) model dispatch =
         div

@@ -112,20 +112,22 @@ module State =
                         |> fun m -> m, Cmd.none
                     | _ -> model, Cmd.none
                 | INIOperationResult.Exists b ->
+                    let setNotFound s =
+                        sprintf "%s.ini not found. Usually located at a path like:\n%s" s RenderUtils.Samples.typicalConfigDir
                     match bMsg.File with
                     | Some(f) ->
                         match f.File with
                         | ConfigFile.Game ->
                             if b then setDirSuccess "Game.ini located" model.GameDir
-                            else setDirError "Game.ini not found" model.GameDir
+                            else setDirError (setNotFound "Game") model.GameDir
                             |> fun cDir -> setDir model Game cDir, model.GameDir.Directory
                         | ConfigFile.Engine ->
                             if b then setDirSuccess "Engine.ini located" model.EngineDir
-                            else setDirError "Engine.ini not found" model.EngineDir
+                            else setDirError (setNotFound "Engine") model.EngineDir
                             |> fun cDir -> setDir model Engine cDir, model.EngineDir.Directory
                         | ConfigFile.GameUserSettings ->
                             if b then setDirSuccess "GameUserSettings.ini located" model.GameUserDir
-                            else setDirError "GameUserSettings.ini not found" model.GameUserDir
+                            else setDirError (setNotFound "GameUserSettings") model.GameUserDir
                             |> fun cDir -> setDir model GameUser cDir, model.GameUserDir.Directory
                         |> fun (m, dir) -> m, sendParseIf f.File dir b
                     | _ -> model, Cmd.none
@@ -202,7 +204,7 @@ module State =
                             |> mapSenderMap.GetInstalled
                             |> Cmd.bridgeSend
                     else
-                        setDirSuccess "Maps directory not found" model.MapsDir
+                        setDirError "Maps directory not found" model.MapsDir
                         |> setDir model Maps
                         |> fun m -> m, Cmd.none
                 | _ -> model, Cmd.none

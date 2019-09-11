@@ -309,18 +309,18 @@ module View =
                                 iconButton
                                     [ Class classes?titleButton
                                       DOMAttr.OnClick <| fun _ ->
-                                        window.maximize()
-                                        true
-                                        |> MinMaxMsg
-                                        |> dispatch
+                                          window.maximize()
+                                          true
+                                          |> MinMaxMsg
+                                          |> dispatch
                                       Style [ hideIfMax true ] ] [ windowMaximizeIcon [] ]
                                 iconButton
                                     [ Class classes?titleButton
                                       DOMAttr.OnClick <| fun _ ->
-                                        window.unmaximize()
-                                        false
-                                        |> MinMaxMsg
-                                        |> dispatch
+                                          window.unmaximize()
+                                          false
+                                          |> MinMaxMsg
+                                          |> dispatch
                                       Style [ hideIfMax false ] ] [ windowRestoreIcon [] ]
                                 iconButton
                                     [ Class classes?titleButton
@@ -335,24 +335,22 @@ module View =
                                               [ CSSProp.BorderRadius "4px"
                                                 CSSProp.Display DisplayOptions.Block
                                                 CSSProp.Padding "0.2em 2em" ] ] ]
-                                tooltip [
-                                    TooltipProp.Title <| str "Update available!"
-                                ] [ iconButton
+                                tooltip [ TooltipProp.Title <| str "Update available!" ]
+                                    [ iconButton
                                         [ Class classes?titleButton
                                           DOMAttr.OnClick <| fun _ -> dispatch StartPatch
                                           Style
-                                              [ CSSProp.Display <|
-                                                    if model.UpdatePending.Ready then
-                                                        DisplayOptions.Inherit
-                                                    else DisplayOptions.None
+                                              [ CSSProp.Display <| if model.UpdatePending.Ready then
+                                                                       DisplayOptions.Inherit
+                                                                   else DisplayOptions.None
                                                 CSSProp.Color "#15cf46"
                                                 CSSProp.BorderRadius "20%" ] ] [ downloadIcon [] ] ]
                                 iconButton
                                     [ Class classes?titleButton
                                       DOMAttr.OnClick <| fun _ ->
-                                        Store.Msg.ToggleDarkTheme
-                                        |> StoreMsg
-                                        |> dispatch
+                                          Store.Msg.ToggleDarkTheme
+                                          |> StoreMsg
+                                          |> dispatch
                                       Style
                                           [ CSSProp.Color "#ffffff"
                                             CSSProp.BorderRadius "20%" ] ] [ themeLightDarkIcon [] ] ] ]

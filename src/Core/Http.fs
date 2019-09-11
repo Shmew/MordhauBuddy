@@ -22,7 +22,7 @@ module Http =
             let errorMsg (e: exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' (e.Message)
             let path = downloadFile.Directory.FullName @@ downloadFile.FileName
 
-            let deleteMapIgnore () =
+            let deleteMapIgnore() =
                 try
                     FileOps.Maps.asyncDeleteZip path |> Async.Start
                 with _ -> ()
@@ -88,15 +88,17 @@ module Http =
                     |> ignore
                 }
 
-            let onError (e: exn) = 
+            let onError (e: exn) =
                 deleteMapIgnore()
                 errorMsg e |> downloadFile.ErrorFun
 
-            let onCancel (cancelFun: System.OperationCanceledException -> unit) (cExn: System.OperationCanceledException) =
+            let onCancel (cancelFun: System.OperationCanceledException -> unit)
+                (cExn: System.OperationCanceledException) =
                 deleteMapIgnore()
                 cancelFun cExn
 
-            Async.StartWithContinuations(download, downloadFile.CompleteFun, onError, (onCancel downloadFile.CancelFun))
+            Async.StartWithContinuations
+                (download, downloadFile.CompleteFun, onError, (onCancel downloadFile.CancelFun))
 
     /// Functions for interacting with the Github Api
     module WebRequests =

@@ -22,6 +22,8 @@ module Types =
         | LoadConfig of ConfigFile
         | LoadMap
         | InitSetup
+        | StartCheckMordhau
+        | CheckMordhau
         | StartCheckUpdates
         | CheckUpdates
         | StartPatch
@@ -72,6 +74,8 @@ module Types =
           IsMax: bool
           Store: Store.Model
           IsBridgeConnected: bool
+          MordhauChecking: bool
+          MordhauRunning: bool
           UpdatePending: UpdatePending
           Resources: Loaded
           ContextMenu: ContextMenu.Types.Model

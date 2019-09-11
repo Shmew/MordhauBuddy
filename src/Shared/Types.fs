@@ -147,6 +147,9 @@ module ElectronBridge =
         | Failed
 
     [<RequireQualifiedAccess>]
+    type MiscResult = MordhauRunning of bool
+
+    [<RequireQualifiedAccess>]
     type BridgeResult =
         | Community of CommunityResult
         | INIOperation of INIOperationResult
@@ -156,6 +159,7 @@ module ElectronBridge =
         | Maps of MapResult
         | Settings of SettingResult
         | Updates of UpdateResult
+        | Misc of MiscResult
 
     [<RequireQualifiedAccess>]
     type Caller =
@@ -273,6 +277,8 @@ module ElectronBridge =
         | Start
         | Check
 
+    type MiscOperation = IsMordhauRunning
+
     type BridgeOperations =
         | CommunityOperation of CommunityOperation
         | INIOperation of INIFileOperation
@@ -282,6 +288,7 @@ module ElectronBridge =
         | Maps of Maps
         | SettingsOperation of SettingsOperation
         | Updates of Updates
+        | Misc of MiscOperation
         static member Endpoint = "/ws"
 
     type BridgeMsg =

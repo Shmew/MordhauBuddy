@@ -139,7 +139,7 @@ module rec Types =
                     | ChooseProfiles when model.TransferList.RightProfiles.Length = 0 -> true
                     | ChooseAction when (not model.Import.State.IsImportSuccess && model.TabSelected = Tab.Import)
                                         || model.TabSelected = Tab.Export -> true
-                    | _ when model.Submit.IsSubmitWaiting -> true
+                    | _ when model.Submit.IsSubmitWaiting || model.Submit.IsSubmitError -> true
                     | _ -> false
 
                 [ button
@@ -147,6 +147,7 @@ module rec Types =
                       DOMAttr.OnClick <| fun _ -> dispatch (StepperBack) ] [ str "Back" ]
                   button
                       [ HTMLAttr.Disabled isDisabled
+                        MaterialProp.Error <| model.Submit.IsSubmitError
                         ButtonProp.Variant ButtonVariant.Contained
                         MaterialProp.Color ComponentColor.Primary
                         DOMAttr.OnClick <| fun _ ->

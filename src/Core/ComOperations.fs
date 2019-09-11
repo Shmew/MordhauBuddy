@@ -24,16 +24,16 @@ module ComOperations =
             aOpts
             |> Option.map (fun (aList: (string * string) list) ->
                 aList
-                |> List.windowed 2 
+                |> List.windowed 2
                 |> List.choose (fun wList ->
                     match wList with
-                    | [l1;l2] when wList.Length = 2 ->
-                        match l1,l2 with
-                        | (t1,b1),(t2,b2) when t1 = t2 ->
-                            if b1.Length > b2.Length then [(t1,b1)]
-                            else [(t2,b2)]
+                    | [ l1; l2 ] when wList.Length = 2 ->
+                        match l1, l2 with
+                        | (t1, b1), (t2, b2) when t1 = t2 ->
+                            if b1.Length > b2.Length then [ (t1, b1) ]
+                            else [ (t2, b2) ]
                             |> Some
-                        | _ -> [l1;l2] |> Some
+                        | _ -> [ l1; l2 ] |> Some
                     | _ -> None))
             |> Option.map (List.concat >> List.distinct)
 

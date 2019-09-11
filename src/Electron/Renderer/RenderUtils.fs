@@ -77,10 +77,13 @@ module BridgeUtils =
     /// Send app operations
     type AppBridgeSender(caller: Caller) =
         let wrapUpdate uCmd = BridgeOps(Updates(uCmd), caller)
+        let wrapMisc mCmd = BridgeOps(Misc(mCmd), caller)
         /// Begin patching new update
         member this.StartUpdate = Updates.Start |> wrapUpdate
         /// Check for new updates
         member this.CheckUpdate = Updates.Check |> wrapUpdate
+        /// Check if Mordhau is running
+        member this.CheckMordhau = MiscOperation.IsMordhauRunning |> wrapMisc
 
 /// Helper modules and functions for renderer processes
 module RenderUtils =
@@ -123,8 +126,7 @@ module RenderUtils =
 #endif
 
     /// Exit the application
-    let quitApplication() =
-        Electron.renderer.remote.app.quit()
+    let quitApplication() = Electron.renderer.remote.app.quit()
 
     [<AutoOpen>]
     module RenderTypes =
@@ -638,6 +640,9 @@ module RenderUtils =
             30720,31704,30725,1,988,29,960,0,65535,0,65535,65535,16326,0,65535,65535,15383,30,960),Scale=(0,30,\
             4139,30749,65535,30749,0,65535,65535,0,0,0,0,65535,31709,0,0,190,0,0,0,589,0,0,0,30749,31166,989,\
             65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
+
+        let typicalConfigDir = @"C:\Users\shmew\AppData\Local\Mordhau\Saved\Config\WindowsClient"
+        let typicalMapDir = @"C:\Program Files (x86)\Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps"
 
     /// Module to deal with parsing external data sources
     module WebParsing =

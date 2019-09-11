@@ -5,9 +5,6 @@ module Bindings =
     open Fable.Core.JsInterop
     open Electron
 
-    [<Emit("$0")>]
-    let menuItemOptionsPojo menuItemOptions: MenuItemOptions = jsNative
-
     module Info =
         open Node.Api
 

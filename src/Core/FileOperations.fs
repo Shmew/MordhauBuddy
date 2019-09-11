@@ -73,7 +73,8 @@ module FileOps =
                             | f when f.Name.StartsWith("Game") -> "Game"
                             | _ -> "")
                         |> Array.iter (fun (k, fArr) ->
-                            if k = "" then ()
+                            if k = "" then
+                                ()
                             else
                                 fArr
                                 |> Array.sortBy (fun f -> f.CreationTime)
@@ -104,7 +105,8 @@ module FileOps =
                 try
                     File.readAsString file |> INIValue.TryParse
                 with _ -> None
-            else None
+            else
+                None
 
     /// File operations for maps
     module Maps =
@@ -112,30 +114,34 @@ module FileOps =
 
         /// Try to find the Map directory
         let defaultDir =
-            let mapPath =
-                match Environment.isWindows with
-                | true ->
-                    [ @"C:\Program Files (x86)"; @"C:\Program Files" ]
-                    |> List.map (fun fol -> fol @@ @"Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps")
-                | false ->
-                    [ ".steam/steam"; ".local/share/Steam" ]
-                    |> List.map
-                        ((fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
-                         >> (fun fol -> fol @@ @"steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps"))
+            try
+                let mapPath =
+                    match Environment.isWindows with
+                    | true ->
+                        [ @"C:\Program Files (x86)"; @"C:\Program Files" ]
+                        |> List.map (fun fol -> fol @@ @"Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps")
+                    | false ->
+                        [ ".steam/steam"; ".local/share/Steam" ]
+                        |> List.map
+                            ((fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
+                             >> (fun fol -> fol @@ @"steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps"))
 
-            let bindDirectory (dir: string) =
-                IO.DirectoryInfo dir
-                |> DirectoryInfo.exists
-                |> function
-                | true -> Some(dir)
-                | false -> None
+                let bindDirectory (dir: string) =
+                    IO.DirectoryInfo dir
+                    |> DirectoryInfo.exists
+                    |> function
+                    | true -> Some(dir)
+                    | false -> None
 
-            mapPath |> List.tryFind (bindDirectory >> Option.isSome)
+                mapPath |> List.tryFind (bindDirectory >> Option.isSome)
+            with _ -> None
 
         /// Determine if maps directory is valid
         let tryFindMaps (dir: string) =
-            let di = IO.DirectoryInfo(dir)
-            di.Parent.Name = "Mordhau" && di.Exists && di.FullName.ToLower().Contains("steam")
+            try
+                let di = IO.DirectoryInfo(dir)
+                di.Parent.Name = "Mordhau" && di.Exists && di.FullName.ToLower().Contains("steam") && di.Name = "Maps"
+            with _ -> false
 
         /// Get all installed map metadata
         let getInstalled (dir: string) =
@@ -450,7 +456,7 @@ module FileOps =
 
             let getRelAt i =
                 sorted
-                |> List.tryItem (i-1)
+                |> List.tryItem (i - 1)
                 |> Option.map (fun (i, r) -> r, r.TagName.Substring(1))
 
             let getAssetOf (endsWith: string option) (rel: (Github.Release * string) option) =
@@ -581,7 +587,8 @@ module FileOps =
                     if Environment.isLinux then Linux.Utils.setMBHome (origFile.Directory.FullName @@ newName)
                     Shell.cleanDir <| getBaseUpdatePath()
                     Ok <| Some(origFile.Directory.FullName @@ newName)
-                else failwithf "Update file not found %s" path
+                else
+                    failwithf "Update file not found %s" path
             with e -> Error e.Message
 
         /// Try to clean update path and dispose of errors

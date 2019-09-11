@@ -241,18 +241,24 @@ module View =
                             [ CSSProp.FlexDirection "column"
                               CSSProp.Display DisplayOptions.Flex
                               CSSProp.Height "inherit" ] ]
-                        [ card [ CardProp.Raised true ]
-                              [ stepper [ StepperProp.ActiveStep(model.Stepper.GetTag) ]
-                                <| model.Stepper.StepElems model.StepperComplete ]
-                          div
-                              [ Style
-                                  [ CSSProp.PaddingLeft "3em"
-                                    CSSProp.PaddingTop "2em" ] ] model.Stepper.StepCaption
-                          div
-                              [ Style
-                                  [ CSSProp.Padding "3em"
-                                    CSSProp.PaddingTop "2em" ] ] [ content classes model dispatch ]
-                          model.Stepper.Buttons dispatch model ] ]
+                        [ yield card [ CardProp.Raised true ]
+                                    [ stepper [ StepperProp.ActiveStep(model.Stepper.GetTag) ]
+                                      <| model.Stepper.StepElems model.StepperComplete ]
+                          yield div
+                                    [ Style
+                                        [ CSSProp.PaddingLeft "3em"
+                                          CSSProp.PaddingTop "2em" ] ] model.Stepper.StepCaption
+                          yield div
+                                    [ Style
+                                        [ CSSProp.Padding "3em"
+                                          CSSProp.PaddingTop "2em" ] ] [ content classes model dispatch ]
+                          yield model.Stepper.Buttons dispatch model
+                          if model.Submit.IsSubmitError then
+                              yield typography
+                                        [ TypographyProp.Variant TypographyVariant.Caption
+                                          TypographyProp.Color TypographyColor.Error
+                                          TypographyProp.Align TypographyAlign.Right
+                                          Style [ CSSProp.MarginBottom "-1em" ] ] [ str "Mordhau is running" ] ] ]
 
     /// Workaround for using JSS with Elmish
     /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471

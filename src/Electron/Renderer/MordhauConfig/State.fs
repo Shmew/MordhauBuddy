@@ -124,7 +124,9 @@ module State =
                                   else { s with Value = None })
                       Enabled = toggle }
             { model with
-                  Submit = Submit.Init
+                  Submit =
+                      if model.Submit.IsSubmitError then model.Submit
+                      else Submit.Init
                   Panels =
                       model.Panels
                       |> List.map (fun p ->

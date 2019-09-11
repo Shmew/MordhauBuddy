@@ -34,10 +34,12 @@ module State =
               IsMax = window.isMaximized()
               Store = store
               IsBridgeConnected = false
+              MordhauChecking = false
+              MordhauRunning = false
               UpdatePending =
-                { Refreshing = false
-                  Ready = false
-                  Error = false }
+                  { Refreshing = false
+                    Ready = false
+                    Error = false }
               Resources =
                   { InitSetup = { AttemptedLoad = false }
                     Community = { AttemptedLoad = false }
@@ -140,6 +142,25 @@ module State =
         let setFaceTools (model: Model) (fTool: FaceTools.Types.Model) = { model with FaceTools = fTool }
         let setMordConfig (model: Model) (mConf: MordhauConfig.Types.Model) = { model with MordhauConfig = mConf }
 
+        let setMordRunning (model: Model) b =
+            let mRunningMC (model: Model) =
+                { model.MordhauConfig with
+                      Submit =
+                          if b then RenderTypes.Submit.Error "Mordhau is running"
+                          else RenderTypes.Submit.Init }
+                |> setMordConfig model
+
+            let mRunningFT (model: Model) =
+                { model.FaceTools with
+                      Submit =
+                          if b then RenderTypes.Submit.Error "Mordhau is running"
+                          else RenderTypes.Submit.Init }
+                |> setFaceTools model
+
+            { model with MordhauRunning = b }
+            |> mRunningMC
+            |> mRunningFT
+
         let settingsSender = BridgeUtils.SettingBridgeSender(Caller.Settings)
         let comSender = BridgeUtils.CommunityBridgeSender(Caller.Community)
         let appSender = BridgeUtils.AppBridgeSender(Caller.App)
@@ -149,7 +170,30 @@ module State =
             while true do
                 dispatch CheckUpdates
                 do! Async.Sleep 10800000
-        } |> Async.StartImmediate
+        }
+        |> Async.StartImmediate
+
+    let private checkForMordhau dispatch =
+        async {
+            while true do
+                dispatch CheckMordhau
+                do! Async.Sleep 10000
+        }
+        |> Async.StartImmediate
+
+    let private mordhauClosed (model: Model) =
+        let parseEngine =
+            { File = ConfigFile.Engine
+              WorkingDir = model.Settings.EngineDir.Directory |> Some }
+            |> BridgeUtils.INIBridgeSender(Caller.MordhauConfig).Parse
+
+        let parseGameUser =
+            { File = ConfigFile.GameUserSettings
+              WorkingDir = model.Settings.GameUserDir.Directory |> Some }
+            |> BridgeUtils.INIBridgeSender(Caller.MordhauConfig).Parse
+
+        [ Cmd.bridgeSend parseEngine
+          Cmd.bridgeSend parseGameUser ]
 
     let update msg m =
         match msg with
@@ -177,7 +221,11 @@ module State =
                 |> setResource m
                 |> fun m' -> m', Cmd.ofMsg LoadMap
             | _ -> m, Cmd.none
-        | ResourcesLoaded -> { m with Community = { m.Community with LoadingElem = false } }, Cmd.ofMsg StartCheckUpdates
+        | ResourcesLoaded ->
+            { m with Community = { m.Community with LoadingElem = false } },
+            Cmd.batch
+                [ Cmd.ofMsg StartCheckUpdates
+                  Cmd.ofMsg StartCheckMordhau ]
         | LoadCom -> m, Cmd.bridgeSend <| comSender.GetSteamAnnouncements()
         | LoadConfig cFile ->
             let resource, error, setResPath =
@@ -207,7 +255,11 @@ module State =
                 Settings.State.update (Settings.Types.GetDefaultDir) m.Settings |> loadConfig m
             | s when error |> not ->
                 Settings.State.update (Settings.Types.SetConfigDir(s, Ok s, cFile)) m.Settings |> loadConfig m
-            | _ -> m, Cmd.none
+            | _ ->
+                resource
+                |> setAttemptedLoad true
+                |> setResLoaded () m.Resources
+                |> setResource m, Cmd.none
         | LoadMap ->
             let loadMap m' cmd (cmDir: CMDir) =
                 cmDir
@@ -226,19 +278,24 @@ module State =
                      && m.Settings.MapsDir.State.IsDirError |> not ->
                 let m', cmd = Settings.State.update (Settings.Types.SetMapDir(s, Ok s)) m.Settings
                 setPath m'.MapsDir.Directory m.Resources.Maps |> loadMap m' cmd
-            | _ -> m, Cmd.none
+            | _ ->
+                m.Resources.Maps
+                |> setAttemptedLoad true
+                |> setResLoaded () m.Resources
+                |> setResource m, Cmd.none
         | InitSetup ->
             let m', cmd = Settings.State.update (Settings.Types.RunSetup) m.Settings
             { m with Settings = m' }, Cmd.map SettingsMsg cmd
-        | StartCheckUpdates -> 
-            setUpdateRefreshing true m.UpdatePending
-            |> setUpdate m, 
+        | StartCheckMordhau ->
+            if m.MordhauChecking then m, Cmd.none
+            else { m with MordhauChecking = true }, Cmd.ofSub checkForMordhau
+        | CheckMordhau -> m, Cmd.bridgeSend (appSender.CheckMordhau)
+        | StartCheckUpdates ->
+            setUpdateRefreshing true m.UpdatePending |> setUpdate m, (
             if m.UpdatePending.Refreshing then Cmd.none
-            else Cmd.ofSub checkForUpdates
-        | CheckUpdates ->
-            m, Cmd.bridgeSend (appSender.CheckUpdate)
-        | StartPatch ->
-            m, Cmd.bridgeSend (appSender.StartUpdate)
+            else Cmd.ofSub checkForUpdates)
+        | CheckUpdates -> m, Cmd.bridgeSend (appSender.CheckUpdate)
+        | StartPatch -> m, Cmd.bridgeSend (appSender.StartUpdate)
         | StoreMsg msg' ->
             let m', cmd = Store.update msg' m.Store, Cmd.none
             { m with Store = m' }, Cmd.map StoreMsg cmd
@@ -297,28 +354,24 @@ module State =
                 let appendDirs (cList: Cmd<Msg> list) =
                     if m.Settings.GameDir <> newM.GameDir then
                         [ Some(newM.GameDir.Directory |> Store.Msg.SetGameLocation) ]
-                    else 
-                        [ None ]
+                    else [ None ]
                     |> fun dList ->
                         if m.Settings.EngineDir <> newM.EngineDir then
                             Some(newM.EngineDir.Directory |> Store.Msg.SetEngineLocation) :: dList
-                        else
-                            dList
+                        else dList
                     |> fun dList ->
                         if m.Settings.GameUserDir <> newM.GameUserDir then
                             Some(newM.GameUserDir.Directory |> Store.Msg.SetGameUserLocation) :: dList
-                        else
-                            dList
+                        else dList
                     |> fun dList ->
                         if m.Settings.MapsDir <> newM.MapsDir then
                             Some(newM.MapsDir.Directory |> Store.Msg.SetMapsLocation) :: dList
-                        else
-                            dList
+                        else dList
                     |> List.choose id
                     |> List.map (fun msg' ->
-                            msg'
-                            |> StoreMsg
-                            |> Cmd.ofMsg)
+                        msg'
+                        |> StoreMsg
+                        |> Cmd.ofMsg)
                     |> List.append cList
 
                 [ Cmd.map SettingsMsg cmd ]
@@ -435,18 +488,26 @@ module State =
                     match bMsg.BridgeResult with
                     | BridgeResult.Updates uMsg ->
                         match uMsg with
-                        | UpdateResult.Ready -> 
-                            setUpdateReady true m.UpdatePending
-                            |> setUpdate m, Cmd.none
-                        | UpdateResult.Complete -> 
+                        | UpdateResult.Ready -> setUpdateReady true m.UpdatePending |> setUpdate m, Cmd.none
+                        | UpdateResult.Complete ->
                             quitApplication()
                             setUpdateReady false m.UpdatePending
                             |> setUpdateError false
                             |> setUpdate m, Cmd.none
-                        | UpdateResult.Failed -> 
+                        | UpdateResult.Failed ->
                             setUpdateReady false m.UpdatePending
                             |> setUpdateError true
                             |> setUpdate m, Cmd.none
+                    | BridgeResult.Misc mMsg ->
+                        match mMsg with
+                        | MiscResult.MordhauRunning b ->
+                            setMordRunning m b,
+                            match b with
+                            | false when m.MordhauRunning ->
+                                mordhauClosed m
+                                |> List.append [ Cmd.ofMsg <| FaceToolsMsg(FaceTools.Types.Msg.StepperRestart) ]
+                                |> Cmd.batch
+                            | _ -> Cmd.none
                     | _ -> m, Cmd.none
             | Connected ->
                 if m.Settings.AutoLaunch && (store.AutoLaunchSet |> not) then

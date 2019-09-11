@@ -4,6 +4,15 @@ open MordhauBuddy.Shared.ElectronBridge
 
 /// Mapping of internal functions to client requests
 module BridgeOperations =
+
+    /// Misc bridge commands
+    [<RequireQualifiedAccess>]
+    module Misc =
+        open Helpers
+
+        /// Check if Mordhau is running
+        let isMordhauRunning() = async { return Info.isMordhauRunning() } |> Async.RunSynchronously
+
     /// Community related bridge commands
     [<RequireQualifiedAccess>]
     module Community =
@@ -223,8 +232,9 @@ module BridgeOperations =
         let cleanUpdatingDir() = async { cleanBaseUpdatePath() } |> Async.RunSynchronously
 
         /// Launch the new version
-        let launchNewVersion (file: string) = 
+        let launchNewVersion (file: string) =
             async {
                 startNewVersion (file) |> Async.Start
                 do! Async.Sleep 1000
-            } |> Async.RunSynchronously
+            }
+            |> Async.RunSynchronously

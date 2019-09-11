@@ -7,6 +7,7 @@ module Helpers =
     open FSharp.Json
     open MordhauBuddy.Shared.ElectronBridge
 
+    /// Functions to gather information
     module Info =
         open Fake.Core
         open System.Reflection
@@ -15,9 +16,17 @@ module Helpers =
         let version =
             Assembly.GetExecutingAssembly().GetName().Version |> (fun v -> sprintf "%i.%i.%i" v.Major v.Minor v.Build)
 
+        /// Get application name
         let appFile ver =
             if Environment.isLinux then sprintf "MordhauBuddy-%s.AppImage" ver
             else sprintf "MordhauBuddy.Setup.%s.exe" ver
+
+        /// Check if Mordhau is running
+        let isMordhauRunning() =
+            Process.getAllByName "Mordhau"
+            |> Seq.filter (fun p -> p.ProcessName = "Mordhau-Win64-Shipping")
+            |> Seq.isEmpty
+            |> not
 
     /// Http related helper fuctions
     module Http =

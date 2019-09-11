@@ -18,3 +18,8 @@
 
 ### 1.0.7 - Tuesday, September 10, 2019
 * Cleanup map downloads on error or cancel
+
+### 1.1.0 - Tuesday, September 10, 2019
+* Adding checking to prohibit users from taking 
+  certain actions while Mordhau is running
+* Fixed some issues with initial setup

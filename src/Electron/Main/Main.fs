@@ -94,15 +94,19 @@ module Main =
     /// Create the websocket bridge.
     let bridge = startBridge()
 
+    /// Create the system tray
     let createTray() =
         let show =
-            menuItemOptionsPojo
-                ({| label = "Open"
-                    click =
-                        fun () ->
-                            match mainWindow with
-                            | Some(win) -> win.show()
-                            | None -> () |}) |> U2.Case1
+            main.MenuItem.Create
+                (jsOptions<MenuItemOptions> (fun o ->
+                    o.label <- "Open"
+                    o.click <-
+                        unbox
+                            (System.Func<_, unit>(fun (_, _, _) ->
+                                match mainWindow with
+                                | Some(win) -> win.show()
+                                | None -> ()))))
+            |> U2.Case2
 
         let quit =
             main.MenuItem.Create
@@ -111,7 +115,7 @@ module Main =
                     o.role <- MenuItemRole.Quit))
             |> U2.Case2
 
-        /// Create the sytem tray
+        /// Create the base sytem tray object
         let appTray =
             let iconPath =
 #if DEBUG

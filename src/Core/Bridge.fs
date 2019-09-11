@@ -309,6 +309,15 @@ module Bridge =
                                 System.Console.WriteLine e
 #endif
                                 model, None
+                    | Misc mCmd ->
+                        let cResp br = createClientResp caller None br
+                        match mCmd with
+                        | MiscOperation.IsMordhauRunning ->
+                            model,
+                            Misc.isMordhauRunning()
+                            |> MiscResult.MordhauRunning
+                            |> BridgeResult.Misc
+                            |> cResp
 
             match remoteCMsg with
             | Some rMsg -> Resp rMsg |> clientDispatch
