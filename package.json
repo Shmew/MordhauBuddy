@@ -53,6 +53,9 @@
         "AppImage"
       ]
     },
+    "nsis": {
+      "include": "./scripts/installer.nsh"
+    },
     "productName": "MordhauBuddy",
     "win": {
       "icon": "./static/icon.ico",
