@@ -9,7 +9,7 @@ If you encounter any issues while using this application you can navigate
 to the following locations:
 
  - Windows
-   - `C:\Users\shmew\AppData\Local\mordhau-buddy-updater\logging`
+   - `C:\Users\<user>\AppData\Local\mordhau-buddy-updater\logging`
  - Linux
    - `~/.local/share/mordhau-buddy/logging`
 
