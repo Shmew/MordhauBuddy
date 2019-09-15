@@ -99,7 +99,7 @@ module View =
                   [ dConf model.GameDir
                     dConf model.EngineDir
                     dConf model.GameUserDir
-                    selectBackup classes model dispatch 
+                    selectBackup classes model dispatch
                     toggleAutoLaunch classes model dispatch ] ]
 
     /// Workaround for using JSS with Elmish

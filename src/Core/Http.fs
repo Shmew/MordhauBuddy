@@ -80,7 +80,7 @@ module Http =
                         zipStream.ExtractToDirectory(downloadFile.Directory.FullName)
                         do! Async.Sleep 1000
                         zipStream.Dispose()
-                        deleteFileIgnore(path)
+                        deleteFileIgnore (path)
                     }
                     |> fun a -> Async.RunSynchronously(a, cancellationToken = cToken)
                     |> ignore
@@ -88,12 +88,12 @@ module Http =
 
             let onError (e: exn) =
                 logger.LogError "Error fetching file:\n\t%O\n%O" downloadFile e
-                deleteFileIgnore(path)
+                deleteFileIgnore (path)
                 errorMsg e |> downloadFile.ErrorFun
 
             let onCancel (cancelFun: System.OperationCanceledException -> unit)
                 (cExn: System.OperationCanceledException) =
-                deleteFileIgnore(path)
+                deleteFileIgnore (path)
                 cancelFun cExn
 
             Async.StartWithContinuations
@@ -130,7 +130,7 @@ module Http =
         let private makeRequest (req: unit -> HttpResponse) =
             try
                 req()
-            with e -> 
+            with e ->
                 logger.LogError "Error making HTTP request:\n%O" e
                 raise <| System.Exception()
             |> Http.httpOk
@@ -138,7 +138,7 @@ module Http =
         let private makeRequestStream (req: unit -> HttpResponseWithStream) =
             try
                 req()
-            with e -> 
+            with e ->
                 logger.LogError "Error making HTTP request:\n%O" e
                 raise <| System.Exception()
             |> Http.httpStreamOk
@@ -179,7 +179,7 @@ module Http =
                     let! result = getStringAsync
                                       (@"https://steamcommunity.com/games/629760/rss/", None, ReqHeaders.Generic)
                     return result |> Some
-                with e -> 
+                with e ->
                     logger.LogError "Failed to fetch Mordhau Steam rss feed:\n%O" e
                     return None
             }

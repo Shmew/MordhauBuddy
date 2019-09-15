@@ -86,7 +86,8 @@ module State =
                     | _ -> model, Cmd.none
                 | INIOperationResult.Exists b ->
                     let setNotFound s =
-                        sprintf "%s.ini not found. Usually located at a path like:\n%s" s RenderUtils.Samples.typicalConfigDir
+                        sprintf "%s.ini not found. Usually located at a path like:\n%s" s
+                            RenderUtils.Samples.typicalConfigDir
                     match bMsg.File with
                     | Some(f) ->
                         match f.File with
@@ -183,9 +184,9 @@ module State =
             |> fun (d, c) -> setConfigDir res c d
         | RequestLoad cFile ->
             let handleLoaded =
-                    function
-                    | DirSelect.Selected s -> (s, validateDir s, cFile) |> SetConfigDir
-                    | DirSelect.Canceled -> LoadCanceled
+                function
+                | DirSelect.Selected s -> (s, validateDir s, cFile) |> SetConfigDir
+                | DirSelect.Canceled -> LoadCanceled
             model, Cmd.OfPromise.perform selectDir () handleLoaded
         | LoadCanceled -> model, Cmd.none
         | BackupSetting newSets ->
@@ -199,5 +200,5 @@ module State =
         | RunSetup ->
             let cmds =
                 [ if ``process``.platform <> Node.Base.Platform.Win32 then
-                      yield Cmd.bridgeSend (settingsSender.SetupLinux) ]
+                    yield Cmd.bridgeSend (settingsSender.SetupLinux) ]
             model, Cmd.batch cmds

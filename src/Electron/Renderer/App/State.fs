@@ -75,9 +75,9 @@ module State =
 
         let inline setResLoaded (cFile: ConfigFile) (res: Loaded) (cDir: ConfigDir) =
             match cFile with
-            | ConfigFile.Game-> { res with GameConfig = cDir }
+            | ConfigFile.Game -> { res with GameConfig = cDir }
             | ConfigFile.Engine -> { res with EngineConfig = cDir }
-            | ConfigFile.GameUserSettings-> { res with GameUserConfig = cDir }
+            | ConfigFile.GameUserSettings -> { res with GameUserConfig = cDir }
 
         let inline setUpdateRefreshing (b: bool) (up: UpdatePending) = { up with Refreshing = b }
         let inline setUpdateReady (b: bool) (up: UpdatePending) = { up with Ready = b }
@@ -210,7 +210,7 @@ module State =
             else { m with MordhauChecking = true }, Cmd.ofSub checkForMordhau
         | CheckMordhau -> m, Cmd.bridgeSend (appSender.CheckMordhau)
         | StartCheckUpdates ->
-            setUpdateRefreshing true m.UpdatePending 
+            setUpdateRefreshing true m.UpdatePending
             |> setUpdate m
             |> fun m' ->
                 if m.UpdatePending.Refreshing then m', Cmd.none
@@ -339,9 +339,13 @@ module State =
                         | Some(res) -> setSettings m m' |> setResource' bMsg (res |> snd), []
                         | _ -> setSettings m m', []
                     | None, BridgeResult.Settings(SettingResult.DisabledAutoLaunch true) ->
-                        setSettings m m', [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet false)); Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunch false)) ]
+                        setSettings m m',
+                        [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet false))
+                          Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunch false)) ]
                     | None, BridgeResult.Settings(SettingResult.EnabledAutoLaunch true) ->
-                        setSettings m m', [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet true)); Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunch true)) ]
+                        setSettings m m',
+                        [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet true))
+                          Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunch true)) ]
                     | _ -> setSettings m m', []
                     |> fun (newM, cmds) -> newM, Cmd.batch ([ Cmd.map SettingsMsg cmd ] |> List.append cmds)
                 | Caller.App ->

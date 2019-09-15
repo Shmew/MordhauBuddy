@@ -6,17 +6,17 @@ open System.Xml.Linq
 
 /// Module for community related content
 module ComOperations =
-    
+
     let logger = Logger "ComOperations"
 
     module private XML =
-        
+
         let logger = Logger "ComOperations.XML"
 
         let tryParse s =
             try
                 XDocument.Parse s |> Some
-            with e -> 
+            with e ->
                 logger.LogError "Failed to parse XML: %s\n%O" s e
                 None
 

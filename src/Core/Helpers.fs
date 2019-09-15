@@ -17,7 +17,7 @@ module rec Helpers =
     /// Functions to gather information
     module Info =
         open System.Reflection
-        
+
         /// Get application version
         let version =
             Assembly.GetExecutingAssembly().GetName().Version |> (fun v -> sprintf "%i.%i.%i" v.Major v.Minor v.Build)
@@ -32,8 +32,7 @@ module rec Helpers =
 
         /// Check if Mordhau is running
         let isMordhauRunning() =
-            Process.getAllByName "Mordhau"
-            |> Seq.exists (fun p -> p.ProcessName = "Mordhau-Win64-Shipping")
+            Process.getAllByName "Mordhau" |> Seq.exists (fun p -> p.ProcessName = "Mordhau-Win64-Shipping")
 
         /// Try to get an env variable with increasing scope
         let tryGetEnvVar (s: string) =
@@ -66,8 +65,7 @@ module rec Helpers =
                 |> fun d -> (new IO.DirectoryInfo(d)).FullName @@ "mordhau-buddy-updater"
 
             /// Get Windows executable path
-            let getWinExecPath() = 
-                getWinExecDir() @@ "installer.exe"
+            let getWinExecPath() = getWinExecDir() @@ "installer.exe"
 
         [<RequireQualifiedAccess>]
         module Linux =
@@ -78,8 +76,7 @@ module rec Helpers =
             let appImageName = sprintf "MordhauBuddy-%s.AppImage" version
 
             /// Gets the home share falling back to `appPath` if necessary
-            let homeShare = 
-                defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
+            let homeShare = defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
 
             /// Name of the home json file
             let homeName = sprintf "home-%s.json" version
@@ -90,9 +87,8 @@ module rec Helpers =
         open Logary.Targets.FileSystem
 
         /// Determine logging directory path
-        let logPath : FolderPath = 
-            if Environment.isLinux then
-                Info.Linux.homeShare @@ "logging"
+        let logPath: FolderPath =
+            if Environment.isLinux then Info.Linux.homeShare @@ "logging"
             else Info.Windows.getWinExecDir() @@ "logging"
 
         module private Impl =
@@ -102,8 +98,12 @@ module rec Helpers =
 
             /// Define logging file naming scheme
             let fileConf =
-                File.FileConf.create logPath (Naming ("{service}-{host}-{datetime}", "log"))
-                |> fun f -> { f with policies = Rotation.Rotate([RotationPolicy.FileSize(MiB 5L)], [DeletionPolicies.maxNoOfFiles 5s]) }
+                File.FileConf.create logPath (Naming("{service}-{host}-{datetime}", "log"))
+                |> fun f ->
+                    { f with
+                          policies =
+                              Rotation.Rotate
+                                  ([ RotationPolicy.FileSize(MiB 5L) ], [ DeletionPolicies.maxNoOfFiles 5s ]) }
 
             /// Create logging targets
             let targets =
@@ -123,10 +123,8 @@ module rec Helpers =
             /// Create a logger
             let getLogger (sOpt: string option) =
                 match sOpt with
-                | Some(s) ->
-                    sprintf "%s.%s.%s" Impl.service Impl.host s
-                | None ->
-                    sprintf "%s.%s" Impl.service Impl.host
+                | Some(s) -> sprintf "%s.%s.%s" Impl.service Impl.host s
+                | None -> sprintf "%s.%s" Impl.service Impl.host
                 |> PointName.parse
                 |> Impl.logary.getLogger
 
@@ -141,38 +139,32 @@ module rec Helpers =
             /// Accepts a `string` or `StringFormat`
             ///
             /// Log a verbose message and consume the input
-            member this.LogVerbose<'T> (format: StringFormat<'T, unit>) : 'T =
-                kprintf (ev >> logger.verbose) format
+            member this.LogVerbose<'T>(format: StringFormat<'T, unit>): 'T = kprintf (ev >> logger.verbose) format
 
             /// Accepts a `string` or `StringFormat`
             ///
             /// Log an info message and consume the input
-            member this.LogInfo<'T> (format: StringFormat<'T, unit>) : 'T =
-                kprintf (ev >> logger.info) format
+            member this.LogInfo<'T>(format: StringFormat<'T, unit>): 'T = kprintf (ev >> logger.info) format
 
             /// Accepts a `string` or `StringFormat`
             ///
             /// Log a debug message and consume the input
-            member this.LogDebug<'T> (format: StringFormat<'T, unit>) : 'T =
-                kprintf (ev >> logger.debug) format
+            member this.LogDebug<'T>(format: StringFormat<'T, unit>): 'T = kprintf (ev >> logger.debug) format
 
             /// Accepts a `string` or `StringFormat`
             ///
             /// Log a warning message and consume the input
-            member this.LogWarn<'T> (format: StringFormat<'T, unit>) : 'T =
-                kprintf (ev >> logger.warn) format
+            member this.LogWarn<'T>(format: StringFormat<'T, unit>): 'T = kprintf (ev >> logger.warn) format
 
             /// Accepts a `string` or `StringFormat`
             ///
             /// Log an error message and consume the input
-            member this.LogError<'T> (format: StringFormat<'T, unit>) : 'T =
-                kprintf (ev >> logger.error) format
+            member this.LogError<'T>(format: StringFormat<'T, unit>): 'T = kprintf (ev >> logger.error) format
 
             /// Accepts a `string` or `StringFormat`
             ///
             /// Log a fatal message and consume the input
-            member this.LogFatal<'T> (format: StringFormat<'T, unit>) : 'T =
-                kprintf (ev >> logger.fatal) format
+            member this.LogFatal<'T>(format: StringFormat<'T, unit>): 'T = kprintf (ev >> logger.fatal) format
 
     /// Generic IO tasks
     [<AutoOpen>]
@@ -185,18 +177,14 @@ module rec Helpers =
 
         let deleteFileIgnore (filePath: string) =
             try
-                async { File.Delete filePath } 
-                |> Async.RunSynchronously
-            with e -> 
+                async { File.Delete filePath } |> Async.RunSynchronously
+            with e ->
                 logger.LogError "Error deleting file: %s\n%s\n%s" filePath e.Message e.StackTrace
                 ()
 
         let deleteDir (dirPath: string) =
             try
-                async {
-                    Shell.deleteDir dirPath    
-                }
-                |> Async.RunSynchronously
+                async { Shell.deleteDir dirPath } |> Async.RunSynchronously
             with e ->
                 logger.LogError "Error deleting directory: %s\n%s\n%s" dirPath e.Message e.StackTrace
                 ()
@@ -205,7 +193,7 @@ module rec Helpers =
             let di = DirectoryInfo.ofPath dir
 
             if di.Exists && di.GetFiles().Length > 5 then
-                !! (di.FullName @@ "*.log")
+                !!(di.FullName @@ "*.log")
                 |> List.ofSeq
                 |> List.map (fun f -> FileInfo.ofPath (di.FullName @@ f))
                 |> List.sortByDescending (fun f -> f.LastWriteTimeUtc)

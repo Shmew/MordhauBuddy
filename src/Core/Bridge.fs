@@ -8,13 +8,14 @@ module App =
     open INIReader
     open Saturn
     open MordhauBuddy.Shared.ElectronBridge
-    
+
     let logger = Logger "App"
+
 
     /// Websocket bridge
     [<AutoOpen>]
     module Bridge =
-        
+
         let logger = Logger "Bridge"
 
         type Model =
@@ -33,13 +34,12 @@ module App =
 
         let private cDispatchWithLog (clientDispatch: Dispatch<RemoteClientMsg>) (msg: RemoteClientMsg) =
             match msg with
-            | RemoteClientMsg.Resp(bMsg) when 
-                bMsg.BridgeResult = BridgeResult.Misc(MiscResult.MordhauRunning(true)) 
-                    || bMsg.BridgeResult = BridgeResult.Misc(MiscResult.MordhauRunning(false)) -> 
-                    
-                    logger.LogVerbose "%O" msg
-                    msg
-            | _ -> 
+            | RemoteClientMsg.Resp(bMsg) when bMsg.BridgeResult = BridgeResult.Misc(MiscResult.MordhauRunning(true))
+                                              || bMsg.BridgeResult = BridgeResult.Misc(MiscResult.MordhauRunning(false)) ->
+
+                logger.LogVerbose "%O" msg
+                msg
+            | _ ->
                 logger.LogInfo "%O" msg
                 msg
             |> clientDispatch
@@ -48,11 +48,12 @@ module App =
             if oldModel <> model then
                 logger.LogInfo "%O" model
                 model
-            else model
+            else
+                model
 
         let logInc (clientMsg: RemoteServerMsg) =
             match clientMsg with
-            | BridgeOps(Misc(IsMordhauRunning),Caller.App) ->
+            | BridgeOps(Misc(IsMordhauRunning), Caller.App) ->
                 logger.LogVerbose "New server message:\n%O" clientMsg
             | _ ->
                 logger.LogInfo "New server message:\n%O" clientMsg
@@ -82,13 +83,13 @@ module App =
             }
             |> Async.Start
 
-        let update (clientDispatch: Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model: Model) =
-            let updateModel (file: ConfigFile) (iOpt: INIValue option) model =
-                match file with
-                | ConfigFile.Game -> { model with Game = iOpt }
-                | ConfigFile.GameUserSettings -> { model with GameUserSettings = iOpt }
-                | ConfigFile.Engine -> { model with Engine = iOpt }
+        let private updateModel (file: ConfigFile) (iOpt: INIValue option) model =
+            match file with
+            | ConfigFile.Game -> { model with Game = iOpt }
+            | ConfigFile.GameUserSettings -> { model with GameUserSettings = iOpt }
+            | ConfigFile.Engine -> { model with Engine = iOpt }
 
+        let update (clientDispatch: Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model: Model) =
             logInc clientMsg
 
             let m, remoteCMsg =
@@ -289,12 +290,10 @@ module App =
             match remoteCMsg with
             | Some rMsg -> Resp rMsg |> cDispatchWithLog clientDispatch
             | _ -> ()
-            
+
             modelUpdateWithLog model m, Cmd.none
 
-        let bridge =
-            Bridge.mkServer BridgeOperations.Endpoint init update
-            |> Bridge.run Giraffe.server
+        let bridge = Bridge.mkServer BridgeOperations.Endpoint init update |> Bridge.run Giraffe.server
 
     let server = router { get BridgeOperations.Endpoint bridge }
 
@@ -308,7 +307,7 @@ module App =
 
     [<EntryPoint>]
     let main _ =
-        cleanUpLogging(logPath)
+        cleanUpLogging (logPath)
         logger.LogInfo "Working directory - %s" <| System.IO.Directory.GetCurrentDirectory()
 
         try

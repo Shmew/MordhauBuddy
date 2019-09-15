@@ -9,8 +9,12 @@ open System.Globalization
 open System.IO
 
 module rec INIReader =
-    
+
     let logger = Logger "INIReader"
+
+
+
+
 
     [<RequireQualifiedAccess>]
     [<StructuredFormatDisplay("{_Print}")>]
@@ -73,18 +77,34 @@ module rec INIReader =
         /// Parses text surrounded by zero or more white spaces but stopping at newline
         let ws p = spaces >>. p .>> (skipMany (pchar ' ' <|> pchar '\t'))
 
+
+
+
+
         /// ws helper
         let wstr t = ws (pstring t)
+
+
+
+
 
         /// Returns parser that is between two characters
         let listBetweenStrings sOpen sClose pElement =
             between (pstring sOpen) (pstring sClose)
                 (spaces >>. sepBy (pElement .>> spaces) ((wstr "," <|> wstr ";") .>> spaces))
 
+
+
+
+
         /// Determines if it is a section header
         let identifier =
             many1Satisfy2 (fun ch -> Char.IsLetter(ch) || ch = '/')
                 (fun ch -> Char.IsLetterOrDigit(ch) || ch = '.' || ch = '/' || ch = '_')
+
+
+
+
 
         /// Determines if the selection is text
         let anyText =
@@ -92,34 +112,70 @@ module rec INIReader =
                 (fun ch ->
                 not (ch = ')' || ch = '(' || ch = ']' || ch = '[' || ch = ',' || ch = ';' || ch = '=' || ch = '\n'))
 
+
+
+
+
         /// Determines if it is a kv pair
         let hasKey = previousCharSatisfiesNot (fun ch -> ch = '=') >>. anyText .>>? wstr "="
+
+
+
+
 
         /// Determines if it is a field value
         let hasFieldValue =
             previousCharSatisfies (fun ch -> ch = '=') >>? anyText .>>? nextCharSatisfies (fun ch -> ch = '(')
 
+
+
+
+
         /// Parse quoted string returning without quotes
         let parseQuoted = pchar '"' >>. manySatisfy (fun c -> c <> '"') .>> pchar '"'
+
+
+
+
 
         /// Parse quoted string returning string with quotes
         let parseQuotedInc =
             pchar '"' .>>. manySatisfy (fun c -> c <> '"') .>>. pchar '"'
             |>> (fun ((c, s), c2) -> string c + s + string c2)
 
+
+
+
+
         /// Create parser and reference cell
         let iValue, iValueRef = createParserForwardedToRef()
 
+
+
+
+
         /// Parse comment
         let comment = pstring "#" >>. skipRestOfLine true
+
+
+
+
 
         /// Determine if the line is empty
         let iniEmpty =
             pchar '\n' |>> ignore <|> previousCharSatisfies (fun ch -> ch = '=' || ch = ',' || ch = ')')
             |>> ((fun _ -> None) >> INIValue.String)
 
+
+
+
+
         /// Parse a string
         let iniString = parseQuoted <|> anyText |>> (Some >> INIValue.String) .>> spaces
+
+
+
+
 
         /// Parse a field text value
         ///
@@ -129,11 +185,23 @@ module rec INIReader =
             .>>. (listBetweenStrings "(" ")" parseQuotedInc |>> (List.map (Some >> INIValue.String)) |>> INIValue.Tuple)
             |>> INIValue.FieldText
 
+
+
+
+
         /// Parse a key value pair
         let iniKV = hasKey .>>. iValue |>> INIValue.KeyValue
 
+
+
+
+
         /// Parse a tuple
         let iniTuple = listBetweenStrings "(" ")" iValue |>> INIValue.Tuple
+
+
+
+
 
         /// Parse a section
         let iniSection =
@@ -152,7 +220,7 @@ module rec INIReader =
                 match result with
                 | INIValue.File([]) -> failwith "No sections found in file."
                 | _ -> result
-            | Failure(msg, _, _) -> 
+            | Failure(msg, _, _) ->
                 logger.LogWarn "Failed to parse INI file: %s" msg
                 raise <| System.Exception()
 
@@ -161,11 +229,11 @@ module rec INIReader =
             match run ini iniText with
             | Success(result, _, _) ->
                 match result with
-                | INIValue.File([]) -> 
+                | INIValue.File([]) ->
                     logger.LogWarn "Parsed empty INI File."
                     None
                 | _ -> result |> Some
-            | Failure(msg, _, _) -> 
+            | Failure(msg, _, _) ->
                 logger.LogWarn "Failed to parse INI file: %s" msg
                 None
 
@@ -174,7 +242,7 @@ module rec INIReader =
         member this.ParseSnippet() =
             match run iValue iniText with
             | Success(result, _, _) -> result
-            | Failure(s,parseError, _) -> 
+            | Failure(s, parseError, _) ->
                 logger.LogError "Error parsing snippet: %s\n%O" s parseError
                 raise <| System.Exception()
 
@@ -182,7 +250,7 @@ module rec INIReader =
         member this.TryParseSnippet() =
             match run iValue iniText with
             | Success(result, _, _) -> result |> Some
-            | Failure(s,parseError, _) -> 
+            | Failure(s, parseError, _) ->
                 logger.LogError "Error parsing snippet: %s\n%O" s parseError
                 None
 
@@ -276,7 +344,7 @@ module rec INIReader =
                 | (_, pList) when pList.Length > 0 ->
                     logger.LogError "Didn't find property '%s' in %s" propertyName <| x.ToString()
                     raise <| System.Exception()
-                | _ -> 
+                | _ ->
                     logger.LogError "Not an object: %s" <| x.ToString()
                     raise <| System.Exception()
 
@@ -323,7 +391,7 @@ module rec INIReader =
             static member AsString(x) =
                 match INIConversions.AsString x with
                 | Some s -> s
-                | _ -> 
+                | _ ->
                     logger.LogError "Not a string: %s" <| x.ToString()
                     raise <| System.Exception()
 
@@ -333,7 +401,7 @@ module rec INIReader =
                 let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                 match INIConversions.AsInteger cultureInfo x with
                 | Some i -> i
-                | _ -> 
+                | _ ->
                     logger.LogError "Not an int: %s" <| x.ToString()
                     raise <| System.Exception()
 
@@ -343,7 +411,7 @@ module rec INIReader =
                 let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                 match INIConversions.AsInteger64 cultureInfo x with
                 | Some i -> i
-                | _ -> 
+                | _ ->
                     logger.LogError "Not an int64: %s" <| x.ToString()
                     raise <| System.Exception()
 
@@ -353,7 +421,7 @@ module rec INIReader =
                 let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                 match INIConversions.AsDecimal cultureInfo x with
                 | Some d -> d
-                | _ -> 
+                | _ ->
                     logger.LogError "Not a decimal: %s" <| x.ToString()
                     raise <| System.Exception()
 
@@ -364,7 +432,7 @@ module rec INIReader =
                 let missingValues = defaultArg missingValues TextConversions.DefaultMissingValues
                 match INIConversions.AsFloat missingValues false cultureInfo x with
                 | Some f -> f
-                | _ -> 
+                | _ ->
                     logger.LogError "Not a float: %s" <| x.ToString()
                     raise <| System.Exception()
 
@@ -373,7 +441,7 @@ module rec INIReader =
             static member AsBoolean(x) =
                 match INIConversions.AsBoolean x with
                 | Some b -> b
-                | _ -> 
+                | _ ->
                     logger.LogError "Not a boolean: %s" <| x.ToString()
                     raise <| System.Exception()
 
@@ -478,7 +546,7 @@ module rec INIReader =
                     | (_, pList) when pList.Length > 0 ->
                         logger.LogError "Didn't find property '%s' in %s" propertyName <| this.ToString()
                         raise <| System.Exception()
-                    | _ -> 
+                    | _ ->
                         logger.LogError "Not an object: %s" <| this.ToString()
                         raise <| System.Exception()
 
@@ -520,7 +588,7 @@ module rec INIReader =
                 member this.AsString() =
                     match INIConversions.AsString this with
                     | Some s -> s
-                    | _ -> 
+                    | _ ->
                         logger.LogError "Not a string: %s" <| this.ToString()
                         raise <| System.Exception()
 
@@ -529,7 +597,7 @@ module rec INIReader =
                     let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                     match INIConversions.AsInteger cultureInfo this with
                     | Some i -> i
-                    | _ -> 
+                    | _ ->
                         logger.LogError "Not an int: %s" <| this.ToString()
                         raise <| System.Exception()
 
@@ -538,7 +606,7 @@ module rec INIReader =
                     let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                     match INIConversions.AsInteger64 cultureInfo this with
                     | Some i -> i
-                    | _ -> 
+                    | _ ->
                         logger.LogError "Not an int64: %s" <| this.ToString()
                         raise <| System.Exception()
 
@@ -547,7 +615,7 @@ module rec INIReader =
                     let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                     match INIConversions.AsDecimal cultureInfo this with
                     | Some d -> d
-                    | _ -> 
+                    | _ ->
                         logger.LogError "Not a decimal: %s" <| this.ToString()
                         raise <| System.Exception()
 
@@ -557,7 +625,7 @@ module rec INIReader =
                     let missingValues = defaultArg missingValues TextConversions.DefaultMissingValues
                     match INIConversions.AsFloat missingValues false cultureInfo this with
                     | Some f -> f
-                    | _ -> 
+                    | _ ->
                         logger.LogError "Not a float: %s" <| this.ToString()
                         raise <| System.Exception()
 
@@ -565,7 +633,7 @@ module rec INIReader =
                 member this.AsBoolean() =
                     match INIConversions.AsBoolean this with
                     | Some b -> b
-                    | _ -> 
+                    | _ ->
                         logger.LogError "Not a boolean: %s" <| this.ToString()
                         raise <| System.Exception()
 

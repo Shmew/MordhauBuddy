@@ -17,9 +17,6 @@ open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 open Fake.Net.Http
 open Fake.Tools
-open Fantomas
-open Fantomas.FakeHelpers
-open Fantomas.FormatConfig
 open Tools.Electron
 open Tools.Linting
 open Tools.Updating
@@ -49,8 +46,7 @@ let repo = @"https://github.com/Shmew/MordhauBuddy"
 // Web or JS related fs projects
 // Projects that have bindings to other languages where name linting needs to be more relaxed.
 let relaxedNameLinting = 
-    [ (__SOURCE_DIRECTORY__ @@ "src/Electron/**/*.fs")
-      (__SOURCE_DIRECTORY__ @@ "src/Core/Maps.fs") ]
+    [ (__SOURCE_DIRECTORY__ @@ "src/Electron/**/*.fs") ]
 
 let netCoreVersions = [ "netcoreapp3.0" ]
 let netFrameworkVersions = [ "net462" ]
@@ -114,6 +110,9 @@ module dotnet =
     let tool optionConfig command args =
         DotNet.exec (fun p -> { p with WorkingDirectory = tools} |> optionConfig ) (sprintf "%s" command) args
         |> failOnBadExitAndPrint
+
+    let fantomas optionConfig args =
+        tool optionConfig "fantomas" args
 
     let femto optionConfig args =
         tool optionConfig (!!(__SOURCE_DIRECTORY__ @@ "packages/tooling/Femto/tools/**/**/Femto.dll") |> Seq.head) args
@@ -442,14 +441,10 @@ Target.create "PublishDotNet" <| fun _ ->
 // Lint and format source code to ensure consistency
 
 Target.create "Format" <| fun _ ->
-    let config =
-        { FormatConfig.Default with
-            PageWidth = 120 }
-            
     fsSrcAndTest
-    |> formatCode config
-    |> Async.Ignore
-    |> Async.RunSynchronously
+    |> Seq.iter (fun file ->
+        dotnet.fantomas id
+            (sprintf "%s --pageWidth 120 --noSpaceBeforeColon" file))
 
 Target.create "Lint" <| fun _ ->
     fsSrcAndTest
@@ -710,7 +705,7 @@ Target.create "All" ignore
   ==> "GitPush"
   ?=> "GitTag"
 
-"All" <== ["Lint"; "RunTests"; "GenerateDocs"; "CleanElectronBin"]
+"All" <== ["RunTests"; "GenerateDocs"; "CleanElectronBin"]
 
 "All" 
   ?=> "Dist"

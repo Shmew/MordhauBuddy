@@ -15,15 +15,15 @@ module Store =
           EngineLocation: string option
           GameUserLocation: string option
           BackupSettings: string }
-        //member this.ToPojo () =
-        //    {| AutoLaunch = this.AutoLaunch |> string
-        //       AutoLaunchSet = this.AutoLaunchSet |> string
-        //       DarkTheme = this.DarkTheme |> string
-        //       GameLocation = this.GameLocation
-        //       EngineLocation = this.EngineLocation
-        //       GameUserLocation = this.GameUserLocation
-        //       BackupSettings = this.BackupSettings |}
-        //    |> toPlainJsObj
+    //member this.ToPojo () =
+    //    {| AutoLaunch = this.AutoLaunch |> string
+    //       AutoLaunchSet = this.AutoLaunchSet |> string
+    //       DarkTheme = this.DarkTheme |> string
+    //       GameLocation = this.GameLocation
+    //       EngineLocation = this.EngineLocation
+    //       GameUserLocation = this.GameUserLocation
+    //       BackupSettings = this.BackupSettings |}
+    //    |> toPlainJsObj
 
     type Msg =
         | AutoLaunch of bool
@@ -95,8 +95,18 @@ module Store =
 
         type StoreStatic =
 
+
+
+
+
+
             [<EmitConstructor>]
             abstract Create: unit -> Store
+
+
+
+
+
 
             [<EmitConstructor>]
             abstract Create: Options -> Store
@@ -110,8 +120,7 @@ module Store =
                GameLocation = None
                EngineLocation = None
                GameUserLocation = None
-               BackupSettings = "KeepLast10" |}
-            |> toPlainJsObj
+               BackupSettings = "KeepLast10" |} |> toPlainJsObj
 
         /// Create store object
         let store = getStore.Create(jsOptions<Options> (fun o -> o.defaults <- defaults))

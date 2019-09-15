@@ -74,6 +74,7 @@ group Tooling
 
 	clitool dotnet-fable ~> 2.0.11
 	clitool dotnet-fake ~> 5.16.1
+    clitool dotnet-fantomas ~> 3.0.0-beta-003
 	clitool Femto ~> 0.5.2
 
 group Formatting
@@ -100,7 +101,6 @@ group FakeBuild
 	nuget Fake.JavaScript.Yarn
 	nuget Fake.JavaScript.Npm
 	nuget FastRsyncNet ~> 2.3.0
-	nuget Fantomas ~> 3.0.0-beta-003
 	nuget FSharp.Json ~> 0.3.7
 	nuget FSharpLint.Core ~> 0.12.2
 	

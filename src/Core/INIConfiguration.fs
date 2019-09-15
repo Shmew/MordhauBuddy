@@ -9,8 +9,12 @@ open MordhauBuddy.Shared.ElectronBridge
 module INIConfiguration =
     /// Module for modifying character face values
     module Frankenstein =
-        
+
         let logger = Logger "INIConfiguration.Frakenstein"
+
+
+
+
 
         [<RequireQualifiedAccess>]
         type FaceActions =
@@ -186,8 +190,9 @@ module INIConfiguration =
                 profiles
                 |> List.fold (fun acc profile -> setCharacterProfileFace acc profile fAction) iVal
                 |> Some
-            with e -> 
-                logger.LogError "Failed to apply changes of:\n\tProfiles: %O\n\tINIValue:\n\t%O\n\tAction: %O\n%O" profiles iVal fAction e
+            with e ->
+                logger.LogError "Failed to apply changes of:\n\tProfiles: %O\n\tINIValue:\n\t%O\n\tAction: %O\n%O"
+                    profiles iVal fAction e
                 None
 
     /// Module for modifying Game and GameUserSettings ini files
@@ -322,6 +327,8 @@ module INIConfiguration =
                     |> mapOptions gameUserFile [ @"/Script/Mordhau.MordhauGameUserSettings" ]
 
                 Some(engine), Some(gameUser)
-            with e -> 
-                logger.LogError "Failed to map settings of:\n\tEngine file:\n\t%O\n\tGame user file:\n\t%O\n\tOptions:\n\t%O\n%O" engineFile gameUserFile options e
+            with e ->
+                logger.LogError
+                    "Failed to map settings of:\n\tEngine file:\n\t%O\n\tGame user file:\n\t%O\n\tOptions:\n\t%O\n%O"
+                    engineFile gameUserFile options e
                 None, None

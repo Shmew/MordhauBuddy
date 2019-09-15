@@ -100,11 +100,11 @@ module Main =
             main.MenuItem.Create
                 (jsOptions<MenuItemOptions> (fun o ->
                     o.label <- "Open"
-                    o.click <- 
-                        System.Action<_,_,_>(fun _ _ _ ->
-                                match mainWindow with
-                                | Some(win) -> win.show()
-                                | None -> ())))
+                    o.click <-
+                        System.Action<_, _, _>(fun _ _ _ ->
+                            match mainWindow with
+                            | Some(win) -> win.show()
+                            | None -> ())))
             |> U2.Case2
 
         let quit =

@@ -22,7 +22,7 @@ module FileOps =
                 |> DirectoryInfo.exists
                 |> function
                 | true -> Some(dir)
-                | false -> 
+                | false ->
                     logger.LogWarn "Failed to find default directory: %s does not exist." dir
                     None
 
@@ -49,7 +49,7 @@ module FileOps =
             match workingDir, (fiPath = file && File.exists file) with
             | _, true -> Some(file)
             | Some(dir), _ when File.exists (dir @@ file) -> Some(dir @@ file)
-            | _ -> 
+            | _ ->
                 logger.LogWarn "Unable to find INIFile %s in %O" file workingDir
                 None
 
@@ -63,7 +63,7 @@ module FileOps =
                 Directory.ensure backups
                 Shell.copyFile (backups @@ newName) file
                 File.exists (backups @@ newName)
-            | false -> 
+            | false ->
                 logger.LogError "Tried to backup non-existant file: %s" file
                 false
 
@@ -96,7 +96,8 @@ module FileOps =
                     FileInfo.ofPath(file).Directory.GetDirectories("*MordhauBuddy_backups*")
                     |> Array.map (fun d -> d.FullName)
                     |> Shell.cleanDirs
-            with e -> logger.LogError "Failed to clean backups:\n%O" e
+            with e ->
+                logger.LogError "Failed to clean backups:\n%O" e
 
         /// Write `INIValue` to file path
         let tryWriteINI (iVal: INIValue) (outFile: string) =
@@ -160,9 +161,10 @@ module FileOps =
             async { let! child = Async.StartChild(action, timeout)
                     return! child }
 
+
         [<RequireQualifiedAccess>]
         module Windows =
-            
+
             let logger = Logger "FileOps.AutoLaunch.Windows"
 
             /// Try to enable auto launch
@@ -171,12 +173,13 @@ module FileOps =
                     return try
                                use registryKey = Registry.getRegistryKey Windows.regBase Windows.regKey true
                                registryKey.SetValue
-                                   (Windows.regSubValue, sprintf "%s /S --force-run" <| Windows.getWinExecPath(), Microsoft.Win32.RegistryValueKind.String)
+                                   (Windows.regSubValue, sprintf "%s /S --force-run" <| Windows.getWinExecPath(),
+                                    Microsoft.Win32.RegistryValueKind.String)
                                registryKey.Flush()
                                registryKey.Dispose()
                                Async.Sleep 1000 |> Async.RunSynchronously
                                Registry.valueExistsForKey Windows.regBase Windows.regKey Windows.regSubValue
-                           with e -> 
+                           with e ->
                                logger.LogError "Error enabling auto launch:\n%O" e
                                false
                 }
@@ -188,7 +191,7 @@ module FileOps =
                     return try
                                Registry.deleteRegistryValue Windows.regBase Windows.regKey Windows.regSubValue
                                Registry.valueExistsForKey Windows.regBase Windows.regKey Windows.regSubValue |> not
-                           with e -> 
+                           with e ->
                                logger.LogError "Error disabling auto launch:\n%O" e
                                false
                 }
@@ -199,6 +202,7 @@ module FileOps =
 
             let logger = Logger "FileOps.AutoLaunch.Linux"
 
+
             [<AutoOpen>]
             module Utils =
                 /// Set the new MBHome path
@@ -207,7 +211,8 @@ module FileOps =
                         { Path = newFile }
                         |> Json.serializeEx config
                         |> File.writeString false (Linux.homeShare @@ Linux.homeName)
-                    with e -> logger.LogError "Failed to set new MBHome path: %s\n%O" newFile e
+                    with e ->
+                        logger.LogError "Failed to set new MBHome path: %s\n%O" newFile e
 
                 /// Gets or sets the MordhauBuddy home json if necessary
                 let getMBHome() =
@@ -217,7 +222,7 @@ module FileOps =
                             File.readAsString hShare.FullName
                             |> Json.deserializeEx<HomeFile> config
                             |> fun hf -> hf.Path
-                        with e -> 
+                        with e ->
                             logger.LogError "Failed to get MordhauBuddy home.json:\n%O" e
                             appPath @@ Linux.appImageName
                     | _ ->
@@ -229,7 +234,7 @@ module FileOps =
                                 |> Json.serializeEx config
                                 |> File.writeString false (Linux.homeShare @@ Linux.homeName)
                                 ePath
-                            with e -> 
+                            with e ->
                                 logger.LogError "Failed to set MordhauBuddy home.json:\n%O" e
                                 ePath
 
@@ -242,8 +247,8 @@ module FileOps =
                       Terminal = false
                       Exec = getMBHome()
                       Icon =
-                          (defaultArg (Linux.homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
-                           @@ "icon.png") }
+                          (defaultArg (Linux.homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy"))
+                               appPath @@ "icon.png") }
                     |> fun dFile -> dFile.ToDesktopString()
 
                 /// Extracts the icon file from the AppImage and stores it in the linux .local folder
@@ -258,13 +263,16 @@ module FileOps =
                                 { Shell.moveFile (path @@ "mordhau-buddy") (appPath @@ "squashfs-root/static/icon.png") }
                             |> withTimeout 5000
                             |> Async.RunSynchronously
-                        with e -> logger.LogError "Failed to extract AppImage icon from: %s\n%O" path e
+                        with e ->
+                            logger.LogError "Failed to extract AppImage icon from: %s\n%O" path e
                     finally
-                        async { 
-                            let squash = (appPath @@ "squashfs-root") 
+                        async {
+                            let squash = (appPath @@ "squashfs-root")
                             try
                                 Shell.deleteDir squash
-                            with e -> logger.LogError "Failed to delete %s after extracting AppImage icon:\n%O" squash e }
+                            with e ->
+                                logger.LogError "Failed to delete %s after extracting AppImage icon:\n%O" squash e
+                        }
                         |> withTimeout 5000
                         |> Async.RunSynchronously
 
@@ -279,7 +287,7 @@ module FileOps =
                             File.writeString false desktopFilePath <| desktopFile()
                             do! Async.Sleep 1000
                             return File.exists desktopFilePath
-                        with e -> 
+                        with e ->
                             logger.LogError "Failed to create %s file in: %s\n%O" desktopFilePath autoStart e
                             return false
                     }
@@ -298,7 +306,8 @@ module FileOps =
                                 File.writeString false (path @@ "applications/mordhau-buddy.desktop") <| desktopFile()
                                 if File.exists (path @@ "mordhau-buddy" @@ "icon.png") |> not then extractIcon path
                             | None -> ()
-                    with e -> logger.LogError "Failed to register application:\n%O" e
+                    with e ->
+                        logger.LogError "Failed to register application:\n%O" e
                 }
                 |> Async.Start
 
@@ -309,7 +318,7 @@ module FileOps =
                                Linux.homePath
                                |> Option.map (fun path -> createAutoStartDeskFile (path @@ ".config"))
                                |> Option.isSome
-                           with e -> 
+                           with e ->
                                logger.LogError "failed to enable AutoLaunch:\n%O" e
                                false
                 }
@@ -327,7 +336,7 @@ module FileOps =
                                    File.exists appPath
                                | None -> false
                                |> not
-                           with e -> 
+                           with e ->
                                logger.LogError "Failed to disable AutoLaunch:\n%O" e
                                false
                 }
@@ -408,7 +417,7 @@ module FileOps =
                 |> getAssetOf (Some ".delta")
                 |> function
                 | Some res -> Ok <| One res
-                | _ -> 
+                | _ ->
                     logger.LogError "No available updates, but detected behind one from current."
                     Error "No available updates"
             | Some 0 -> Ok Zero
@@ -417,10 +426,10 @@ module FileOps =
                 |> getAssetOf None
                 |> function
                 | Some res -> Ok <| Multiple res
-                | _ -> 
+                | _ ->
                     logger.LogError "Multiple updates behind, asset not found"
                     Error "Multiple updates behind, asset not found"
-            | _ -> 
+            | _ ->
                 logger.LogError "Unable to determine update position"
                 Error "Unable to determine update position"
 
@@ -437,7 +446,7 @@ module FileOps =
         let private downloadAsset (asset: Github.Asset) (path: IO.DirectoryInfo) =
             try
                 downloadFile (path.FullName @@ asset.Name) asset.BrowserDownloadUrl |> Ok
-            with e -> 
+            with e ->
                 logger.LogError "failed to download asset to: %s\n%O\n%O" path.FullName asset e
                 raise e
 
@@ -458,7 +467,8 @@ module FileOps =
             with e ->
                 try
                     Shell.cleanDir <| updatePath.Parent.FullName
-                with e -> logger.LogError "Failed to clean update path: %s\n%O" updatePath.Parent.FullName e
+                with e ->
+                    logger.LogError "Failed to clean update path: %s\n%O" updatePath.Parent.FullName e
                 Error e.Message
 
         /// Get the file that will be patched
@@ -497,13 +507,13 @@ module FileOps =
                 |> Async.AwaitTask
                 |> Async.RunSynchronously
 
-                Ok(newFile)
-            with
-            | e ->
+                Ok newFile
+            with e ->
                 logger.LogError "Failed to generate patched file:\n\tDelta:\n\t%O\n\tNew file: %s\n%O" deltaFi newFile e
                 try
                     Shell.cleanDir <| getBaseUpdatePath()
-                with e -> logger.LogError "Failed to clean update path: %s\n%O" (getBaseUpdatePath()) e
+                with e ->
+                    logger.LogError "Failed to clean update path: %s\n%O" (getBaseUpdatePath()) e
                 Error(e.Message)
 
         /// Apply the new patch
@@ -525,22 +535,24 @@ module FileOps =
                 else
                     logger.LogError "Update file not found %s" path
                     Error <| sprintf "Update file not found %s" path
-            with e -> 
+            with e ->
                 logger.LogError "Error applying patch:\n\tPatched file: %s\n\tNew name: %s\n%O" path newName e
                 Error e.Message
 
         /// Try to clean update path and dispose of errors
         let cleanBaseUpdatePath() =
-            try Shell.cleanDir <| getBaseUpdatePath()
-            with e -> logger.LogError "Failed to clean base update path:\n%O" e
+            try
+                Shell.cleanDir <| getBaseUpdatePath()
+            with e ->
+                logger.LogError "Failed to clean base update path:\n%O" e
 
         /// Start the new application
         let startNewVersion (file: string) =
             async {
                 let fi = FileInfo.ofPath file
-                { ExecParams.Empty with 
-                    Program = fi.FullName
-                    CommandLine = "/S --force-run" }
-                |> Process.shellExec 
+                { ExecParams.Empty with
+                      Program = fi.FullName
+                      CommandLine = "/S --force-run" }
+                |> Process.shellExec
                 |> ignore
             }

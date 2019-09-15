@@ -64,7 +64,7 @@ module View =
 
     let private allResourcesAttempted (model: Model) =
         model.Resources.GameConfig.AttemptedLoad && model.Resources.EngineConfig.AttemptedLoad
-        && model.Resources.GameUserConfig.AttemptedLoad && model.Resources.Community.AttemptedLoad 
+        && model.Resources.GameUserConfig.AttemptedLoad && model.Resources.Community.AttemptedLoad
         && model.Resources.InitSetup.AttemptedLoad
 
     let private pageListItem (classes: IClasses) model dispatch page =
@@ -82,7 +82,10 @@ module View =
                                     |> fun b -> b || (not model.IsBridgeConnected))
               Key(pageTitle page)
               DOMAttr.OnClick(fun _ -> Navigate page |> dispatch) ]
-            [ listItemText [] [ page |> pageTitle |> str ] ]
+            [ listItemText []
+                  [ page
+                    |> pageTitle
+                    |> str ] ]
 
     let private pageView (classes: IClasses) model dispatch =
         match model.Page with

@@ -152,7 +152,8 @@ module View =
                         [ CSSProp.MarginTop "auto"
                           CSSProp.MarginLeft "auto" ] ]
                     [ button
-                        [ HTMLAttr.Disabled <| (model.Submit.IsSubmitSuccess || model.Submit.IsSubmitError || model.Submit.IsSubmitWaiting)
+                        [ HTMLAttr.Disabled
+                          <| (model.Submit.IsSubmitSuccess || model.Submit.IsSubmitError || model.Submit.IsSubmitWaiting)
                           MaterialProp.Error <| model.Submit.IsSubmitError
                           ButtonProp.Variant ButtonVariant.Contained
                           MaterialProp.Color ComponentColor.Primary

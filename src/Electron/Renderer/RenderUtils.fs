@@ -267,8 +267,10 @@ module RenderUtils =
                     match iList.Length with
                     | i when i >= 3 -> iList |> List.take 3
                     | i -> List.init (3 - i) (fun _ -> 0) |> List.append iList
-                    |> fun iL -> 
-                        {| Major = iL.[0]; Minor = iL.[1]; Patch = iL.[2] |}
+                    |> fun iL ->
+                        {| Major = iL.[0]
+                           Minor = iL.[1]
+                           Patch = iL.[2] |}
 
             let getDate (s: string) =
                 s.Split('/')
