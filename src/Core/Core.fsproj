@@ -4,13 +4,11 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp3.0; net462</TargetFrameworks>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Key.json">
-      <CustomToolNamespace>MordhauBuddy.Core</CustomToolNamespace>
-    </EmbeddedResource>
-    <Compile Include="INIReader.fs" />
     <Compile Include="Helpers.fs" />
+    <Compile Include="INIReader.fs" />
     <Compile Include="FileOperations.fs" />
     <Compile Include="INIConfiguration.fs" />
     <Compile Include="ComOperations.fs" />

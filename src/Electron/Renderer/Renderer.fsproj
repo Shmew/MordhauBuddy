@@ -23,9 +23,6 @@
     <Compile Include="Settings\Types.fs" />
     <Compile Include="Settings\State.fs" />
     <Compile Include="Settings\View.fs" />
-    <Compile Include="MapsInstaller\Types.fs" />
-    <Compile Include="MapsInstaller\State.fs" />
-    <Compile Include="MapsInstaller\View.fs" />
     <Compile Include="FaceTools\Types.fs" />
     <Compile Include="FaceTools\State.fs" />
     <Compile Include="FaceTools\View.fs" />
@@ -44,6 +41,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.fsproj" />
     <ProjectReference Include="..\Main\Main.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MapsInstaller\" />
   </ItemGroup>
   <Import Project="..\..\..\.paket\Paket.Restore.targets" />
 </Project>

@@ -51,7 +51,7 @@ module BridgeOperations =
         /// Write an `INIValue` to a file, overwriting if it already exists
         let write (iFile: INIFile) (iVal: INIValue) =
             FileOps.INI.tryGetFile iFile.File.Name iFile.WorkingDir
-            |> Option.bind (FileOps.INI.writeINI iVal)
+            |> Option.bind (FileOps.INI.tryWriteINI iVal)
             |> Option.isSome
 
         /// Create a backup of a file by putting it into a subdirectory
@@ -89,90 +89,6 @@ module BridgeOperations =
         /// Apply the new values into the two INIValues or add them
         let mapConfigs (engine: INIValue) (gameUser: INIValue) (options: OptionGroup list) =
             tryMapSettings engine gameUser options
-
-    /// Map related bridge commands
-    [<RequireQualifiedAccess>]
-    module Maps =
-        open Helpers
-        open Http
-        open Http.WebRequests
-        open System
-        open System.Threading
-
-        /// Try to locate the default Mordhau maps directory
-        let defDir() = FileOps.Maps.defaultDir
-
-        /// Determine if input is valid maps directory
-        let dirExists (dir: string) = FileOps.Maps.tryFindMaps dir
-
-        /// Get the list of valid community maps based on info files
-        let getAvailableMaps() =
-            let infoArr (s: string) = s.Split([| "\r\n"; "\r"; "\n" |], StringSplitOptions.None)
-            match getInfoFiles() with
-            | Ok(resList) ->
-                resList
-                |> List.choose (function
-                    | Some(infoF) as i when (infoArr infoF).Length >= 5 -> i
-                    | _ -> None)
-            | Error(_) -> []
-
-        /// Get all installed maps
-        let getInstalledMaps (dir: string) = FileOps.Maps.getInstalled dir
-
-        /// Download map if available
-        let installMap (mCmd: MapTarget) (dispatchWrapper: MapResult -> unit) (cToken: CancellationToken) =
-            let fName = mCmd.Folder + ".zip"
-            let getMap (mList: Github.Contents list) = mList |> List.filter (fun m -> m.Name = fName)
-            let diDir = IO.DirectoryInfo(mCmd.Directory)
-            match mCmd.GDrive with
-            | Some(gd) ->
-                async {
-                    { Url = sprintf "https://www.googleapis.com/drive/v3/files/%s" gd.ID
-                      FileName = fName
-                      MapName = mCmd.Folder
-                      Directory = diDir
-                      Size = gd.Size
-                      UpdateFun = fun i -> MapResult.InstallMapProgress(mCmd.Folder, i) |> dispatchWrapper
-                      CompleteFun = fun () -> MapResult.InstallMapComplete(mCmd.Folder) |> dispatchWrapper
-                      ErrorFun = fun e -> MapResult.InstallMapError(mCmd.Folder, e) |> dispatchWrapper
-                      CancelFun = fun c -> MapResult.InstallMapCancelled(mCmd.Folder, true) |> dispatchWrapper }
-                    |> downloadGDFile cToken
-                }
-                |> Async.Start
-                true
-            | _ ->
-                match getMapFiles() with
-                | Ok(mList) when (mList
-                                  |> getMap
-                                  |> List.isEmpty
-                                  |> not)
-                                 && diDir.Exists ->
-                    async {
-                        let fileInfo =
-                            mList
-                            |> getMap
-                            |> List.head
-                        { Url = fileInfo.DownloadUrl
-                          FileName = fName
-                          MapName = mCmd.Folder
-                          Directory = diDir
-                          Size =
-                              fileInfo.Size
-                              |> float
-                              |> (*) 1.0<B>
-                              |> convertBtoMB
-                          UpdateFun = fun i -> MapResult.InstallMapProgress(mCmd.Folder, i) |> dispatchWrapper
-                          CompleteFun = fun () -> MapResult.InstallMapComplete(mCmd.Folder) |> dispatchWrapper
-                          ErrorFun = fun e -> MapResult.InstallMapError(mCmd.Folder, e) |> dispatchWrapper
-                          CancelFun = fun c -> MapResult.InstallMapCancelled(mCmd.Folder, true) |> dispatchWrapper }
-                        |> downloadFile cToken
-                    }
-                    |> Async.Start
-                    true
-                | _ -> false
-
-        /// Remove a map
-        let uninstallMap (dir: string) (fName: string) = FileOps.Maps.tryUninstall dir fName
 
     /// Settings related bridge commands
     [<RequireQualifiedAccess>]

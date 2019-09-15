@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>MapBridgeSender - MordhauBuddy</title>
+    <title>Logger - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,15 +34,13 @@
 
 
 
-<h1>MapBridgeSender</h1>
+<h1>Logger</h1>
 <p>
 
-    <span>Namespace: MordhauBuddy.App</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-app-bridgeutils.html">BridgeUtils</a></span><br />
+    <span>Namespace: MordhauBuddy.Core</span><br />
+        <span>Parent Module: <a href="mordhaubuddy-core-helpers-logger.html">Logger</a></span><br />
     </p>
 <div class="xmldoc">
-<p>Send map operations</p>
-
 </div>
   <h3>Constructors</h3>
   <table class="table table-bordered member-list">
@@ -53,15 +51,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '343', 343)" onmouseover="showTip(event, '343', 343)">
-            new(caller)
+          <code onmouseout="hideTip(event, '714', 714)" onmouseover="showTip(event, '714', 714)">
+            new(logSource, event)
           </code>
-          <div class="tip" id="343">
-            <strong>Signature:</strong> caller:Caller -&gt; MapBridgeSender<br />
+          <div class="tip" id="714">
+            <strong>Signature:</strong> (logSource:string option * event:IEvent option) -&gt; Logger<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L45-45" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L136-136" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -80,19 +78,20 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '344', 344)" onmouseover="showTip(event, '344', 344)">
-            x.Cancel(fName)
+          <code onmouseout="hideTip(event, '715', 715)" onmouseover="showTip(event, '715', 715)">
+            x.LogDebug(format)
           </code>
-          <div class="tip" id="344">
-            <strong>Signature:</strong> fName:string -&gt; RemoteServerMsg<br />
-                                  </div>
+          <div class="tip" id="715">
+            <strong>Signature:</strong> format:StringFormat&lt;&#39;T,unit&gt; -&gt; &#39;T<br />
+                          <strong>Type parameters:</strong> 'T                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L63-63" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L156-156" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Cancel a map installation</p>
+          <p>Accepts a <code>string</code> or <code>StringFormat</code></p>
+<p>Log a debug message and consume the input</p>
 
 
         </td>
@@ -100,19 +99,20 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '345', 345)" onmouseover="showTip(event, '345', 345)">
-            x.ConfirmInstall(s)
+          <code onmouseout="hideTip(event, '716', 716)" onmouseover="showTip(event, '716', 716)">
+            x.LogError(format)
           </code>
-          <div class="tip" id="345">
-            <strong>Signature:</strong> s:string -&gt; RemoteServerMsg<br />
-                                  </div>
+          <div class="tip" id="716">
+            <strong>Signature:</strong> format:StringFormat&lt;&#39;T,unit&gt; -&gt; &#39;T<br />
+                          <strong>Type parameters:</strong> 'T                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L59-59" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L168-168" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Acknowledge that a map has been installed</p>
+          <p>Accepts a <code>string</code> or <code>StringFormat</code></p>
+<p>Log an error message and consume the input</p>
 
 
         </td>
@@ -120,40 +120,20 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '346', 346)" onmouseover="showTip(event, '346', 346)">
-            x.DefaultDir
+          <code onmouseout="hideTip(event, '717', 717)" onmouseover="showTip(event, '717', 717)">
+            x.LogFatal(format)
           </code>
-          <div class="tip" id="346">
-            <strong>Signature:</strong> RemoteServerMsg<br />
-                                  </div>
+          <div class="tip" id="717">
+            <strong>Signature:</strong> format:StringFormat&lt;&#39;T,unit&gt; -&gt; &#39;T<br />
+                          <strong>Type parameters:</strong> 'T                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L49-49" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L174-174" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Try to locate the default Mordhau maps directory</p>
-
-
-              <p>CompiledName: <code>get_DefaultDir</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '347', 347)" onmouseover="showTip(event, '347', 347)">
-            x.DirExists(s)
-          </code>
-          <div class="tip" id="347">
-            <strong>Signature:</strong> s:string -&gt; RemoteServerMsg<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L51-51" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>See if a directory exists</p>
+          <p>Accepts a <code>string</code> or <code>StringFormat</code></p>
+<p>Log a fatal message and consume the input</p>
 
 
         </td>
@@ -161,60 +141,39 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '348', 348)" onmouseover="showTip(event, '348', 348)">
-            x.GetAvailable
+          <code onmouseout="hideTip(event, '718', 718)" onmouseover="showTip(event, '718', 718)">
+            x.Logger
           </code>
-          <div class="tip" id="348">
-            <strong>Signature:</strong> RemoteServerMsg<br />
+          <div class="tip" id="718">
+            <strong>Signature:</strong> Logger<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L53-53" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L139-139" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Get available maps</p>
-
-
-              <p>CompiledName: <code>get_GetAvailable</code></p>
+          
+              <p>CompiledName: <code>get_Logger</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '349', 349)" onmouseover="showTip(event, '349', 349)">
-            x.GetInstalled(s)
+          <code onmouseout="hideTip(event, '719', 719)" onmouseover="showTip(event, '719', 719)">
+            x.LogInfo(format)
           </code>
-          <div class="tip" id="349">
-            <strong>Signature:</strong> s:string -&gt; RemoteServerMsg<br />
-                                  </div>
+          <div class="tip" id="719">
+            <strong>Signature:</strong> format:StringFormat&lt;&#39;T,unit&gt; -&gt; &#39;T<br />
+                          <strong>Type parameters:</strong> 'T                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L55-55" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L150-150" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Get installed maps</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '350', 350)" onmouseover="showTip(event, '350', 350)">
-            x.Install(mt)
-          </code>
-          <div class="tip" id="350">
-            <strong>Signature:</strong> mt:MapTarget -&gt; RemoteServerMsg<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L57-57" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Install a map</p>
+          <p>Accepts a <code>string</code> or <code>StringFormat</code></p>
+<p>Log an info message and consume the input</p>
 
 
         </td>
@@ -222,19 +181,41 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '351', 351)" onmouseover="showTip(event, '351', 351)">
-            x.Uninstall dir fName
+          <code onmouseout="hideTip(event, '720', 720)" onmouseover="showTip(event, '720', 720)">
+            x.LogVerbose(format)
           </code>
-          <div class="tip" id="351">
-            <strong>Signature:</strong> dir:string -&gt; fName:string -&gt; RemoteServerMsg<br />
-                                  </div>
+          <div class="tip" id="720">
+            <strong>Signature:</strong> format:StringFormat&lt;&#39;T,unit&gt; -&gt; &#39;T<br />
+                          <strong>Type parameters:</strong> 'T                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L61-61" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L144-144" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Uninstall a map</p>
+          <p>Accepts a <code>string</code> or <code>StringFormat</code></p>
+<p>Log a verbose message and consume the input</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '721', 721)" onmouseover="showTip(event, '721', 721)">
+            x.LogWarn(format)
+          </code>
+          <div class="tip" id="721">
+            <strong>Signature:</strong> format:StringFormat&lt;&#39;T,unit&gt; -&gt; &#39;T<br />
+                          <strong>Type parameters:</strong> 'T                      </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L162-162" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Accepts a <code>string</code> or <code>StringFormat</code></p>
+<p>Log a warning message and consume the input</p>
 
 
         </td>
@@ -251,12 +232,12 @@
             <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
             <li><a href="/MordhauBuddy/release-notes.html">Release Notes</a></li>
             <li><a href="/MordhauBuddy/contributing.html">Contributing</a></li>
+            <li><a href="/MordhauBuddy/reporting-issues.html">Reporting Issues</a></li>
             
             <li class="nav-header">Documentation</li>
             <li><a href="/MordhauBuddy/index.html">Introduction</a></li>
             <li class="divider"></li>
             <li><a href="/MordhauBuddy/community.html">Community</a></li>
-            <li><a href="/MordhauBuddy/map-installer.html">Map Installer</a></li>
             <li><a href="/MordhauBuddy/mordhau-config.html">Mordhau Configuration</a></li>
             <li><a href="/MordhauBuddy/face-tools.html">Face Tools</a></li>
             <li><a href="/MordhauBuddy/settings.html">MordhauBuddy Settings</a></li>

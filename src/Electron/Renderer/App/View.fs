@@ -62,13 +62,18 @@ module View =
                  CSSProp.MarginBottom "-1em"
                  CSSProp.MarginTop "-0.25em" ]) ]
 
+    let private allResourcesAttempted (model: Model) =
+        model.Resources.GameConfig.AttemptedLoad && model.Resources.EngineConfig.AttemptedLoad
+        && model.Resources.GameUserConfig.AttemptedLoad && model.Resources.Community.AttemptedLoad 
+        && model.Resources.InitSetup.AttemptedLoad
+
     let private pageListItem (classes: IClasses) model dispatch page =
         listItem
             [ ListItemProp.Button true
               ListItemProp.Divider(page = Community)
               HTMLAttr.Selected(model.Page = page)
               HTMLAttr.Disabled <| (match page with
-                                    | MapsInstaller -> model.MapsInstaller.MapsDir.Directory = ""
+                                    | _ when allResourcesAttempted model |> not -> true
                                     | FaceTools -> model.FaceTools.GameDir.Directory = ""
                                     | MordhauConfig ->
                                         model.MordhauConfig.EngineDir.Directory = ""
@@ -77,33 +82,15 @@ module View =
                                     |> fun b -> b || (not model.IsBridgeConnected))
               Key(pageTitle page)
               DOMAttr.OnClick(fun _ -> Navigate page |> dispatch) ]
-            [ listItemText []
-                  [ yield page
-                          |> pageTitle
-                          |> str
-                    if page = MapsInstaller then
-                        yield badge
-                                  [ Class classes?navBadge
-                                    BadgeProp.Color BadgeColor.Primary
-                                    BadgeProp.Max 20
-                                    BadgeProp.Invisible <| (model.MapsInstaller.UpdatesAvailable = 0 || match model.MapsInstaller.UpdateSettings with
-                                                                                                        | UpdateSettings.NotifyOnly ->
-                                                                                                            false
-                                                                                                        | _ -> true)
-                                    BadgeProp.BadgeContent <| ofInt (model.MapsInstaller.UpdatesAvailable) ] [] ] ]
+            [ listItemText [] [ page |> pageTitle |> str ] ]
 
     let private pageView (classes: IClasses) model dispatch =
-        let allResourcesAttempted =
-            model.Resources.GameConfig.AttemptedLoad && model.Resources.EngineConfig.AttemptedLoad
-            && model.Resources.GameUserConfig.AttemptedLoad && model.Resources.Maps.AttemptedLoad
-            && model.Resources.Community.AttemptedLoad && model.Resources.InitSetup.AttemptedLoad
-
         match model.Page with
         | Community ->
             let isAnyLoading =
                 model.Resources.GameConfig.Loading || model.Resources.EngineConfig.Loading
-                || model.Resources.GameUserConfig.Loading || model.Resources.Maps.Loading
-            match model.IsBridgeConnected, allResourcesAttempted, isAnyLoading with
+                || model.Resources.GameUserConfig.Loading
+            match model.IsBridgeConnected, allResourcesAttempted model, isAnyLoading with
             | true, true, false ->
                 if model.Community.LoadingElem then dispatch ResourcesLoaded
             | true, false, false ->
@@ -114,11 +101,9 @@ module View =
                 | r when r.EngineConfig.AttemptedLoad |> not -> dispatch <| LoadResources(LoadConfig(ConfigFile.Engine))
                 | r when r.GameUserConfig.AttemptedLoad |> not ->
                     dispatch <| LoadResources(LoadConfig(ConfigFile.GameUserSettings))
-                | r when r.Maps.AttemptedLoad |> not -> dispatch <| LoadResources(LoadMap)
                 | _ -> ()
             | _ -> ()
             lazyView2 Community.View.view model.Community (CommunityMsg >> dispatch)
-        | MapsInstaller -> lazyView2 MapsInstaller.View.view model.MapsInstaller (MapsInstallerMsg >> dispatch)
         | FaceTools -> lazyView2 FaceTools.View.view model.FaceTools (FaceToolsMsg >> dispatch)
         | MordhauConfig -> lazyView2 MordhauConfig.View.view model.MordhauConfig (MordhauConfigMsg >> dispatch)
         | Settings -> lazyView2 Settings.View.view model.Settings (SettingsMsg >> dispatch)

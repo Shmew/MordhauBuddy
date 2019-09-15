@@ -6,12 +6,11 @@ module Types =
 
     type Page =
         | Community
-        | MapsInstaller
         | FaceTools
         | MordhauConfig
         | Settings
         | About
-        static member All = [ Community; MapsInstaller; FaceTools; MordhauConfig; Settings; About ]
+        static member All = [ Community; FaceTools; MordhauConfig; Settings; About ]
 
     type Msg =
         | Navigate of Page
@@ -20,7 +19,6 @@ module Types =
         | ResourcesLoaded
         | LoadCom
         | LoadConfig of ConfigFile
-        | LoadMap
         | InitSetup
         | StartCheckMordhau
         | CheckMordhau
@@ -30,7 +28,6 @@ module Types =
         | StoreMsg of Store.Msg
         | ContextMenuMsg of ContextMenu.Types.Msg
         | CommunityMsg of Community.Types.Msg
-        | MapsInstallerMsg of MapsInstaller.Types.Msg
         | FaceToolsMsg of FaceTools.Types.Msg
         | MordhauConfigMsg of MordhauConfig.Types.Msg
         | SettingsMsg of Settings.Types.Msg
@@ -41,12 +38,6 @@ module Types =
         { Path: string
           Exists: bool
           Parsed: bool
-          AttemptedLoad: bool
-          Loading: bool }
-
-    type MapDir =
-        { Path: string
-          Exists: bool
           AttemptedLoad: bool
           Loading: bool }
 
@@ -61,8 +52,7 @@ module Types =
           Community: ComResources
           GameConfig: ConfigDir
           EngineConfig: ConfigDir
-          GameUserConfig: ConfigDir
-          Maps: MapDir }
+          GameUserConfig: ConfigDir }
 
     type UpdatePending =
         { Refreshing: bool
@@ -80,7 +70,6 @@ module Types =
           Resources: Loaded
           ContextMenu: ContextMenu.Types.Model
           Community: Community.Types.Model
-          MapsInstaller: MapsInstaller.Types.Model
           FaceTools: FaceTools.Types.Model
           MordhauConfig: MordhauConfig.Types.Model
           Settings: Settings.Types.Model

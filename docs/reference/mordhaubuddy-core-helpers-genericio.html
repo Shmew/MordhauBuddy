@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>MapVersion - MordhauBuddy</title>
+    <title>GenericIO - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,37 +34,41 @@
 
 
 
-<h1>MapVersion</h1>
+<h1>GenericIO</h1>
 <p>
-
-    <span>Namespace: MordhauBuddy.App</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-app-renderutils-maptypes.html">MapTypes</a></span><br />
-            <span>
-            Attributes: <br />
-[&lt;RequireQualifiedAccess&gt;]<br />
-            
-        </span>
+  <span>Namespace: MordhauBuddy.Core</span><br />
+  <span>Parent Module: <a href="mordhaubuddy-core-helpers.html">Helpers</a></span>
+        <span>
+          Attributes:<br />
+[&lt;AutoOpen&gt;]<br />
+          
+      </span>
 </p>
 <div class="xmldoc">
+<p>Generic IO tasks</p>
+
 </div>
-  <h3>Record Fields</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '391', 391)" onmouseover="showTip(event, '391', 391)">
-            Major
+          <code onmouseout="hideTip(event, '217', 217)" onmouseover="showTip(event, '217', 217)">
+            cleanUpLogging(dir)
           </code>
-          <div class="tip" id="391">
-            <strong>Signature:</strong> int<br />
+          <div class="tip" id="217">
+            <strong>Signature:</strong> dir:string -&gt; unit<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L213-213" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L204-204" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -74,15 +78,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '392', 392)" onmouseover="showTip(event, '392', 392)">
-            Minor
+          <code onmouseout="hideTip(event, '218', 218)" onmouseover="showTip(event, '218', 218)">
+            deleteDir(dirPath)
           </code>
-          <div class="tip" id="392">
-            <strong>Signature:</strong> int<br />
+          <div class="tip" id="218">
+            <strong>Signature:</strong> dirPath:string -&gt; unit<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L214-214" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L194-194" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -92,67 +96,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '393', 393)" onmouseover="showTip(event, '393', 393)">
-            Patch
+          <code onmouseout="hideTip(event, '219', 219)" onmouseover="showTip(event, '219', 219)">
+            deleteFileIgnore(filePath)
           </code>
-          <div class="tip" id="393">
-            <strong>Signature:</strong> int<br />
+          <div class="tip" id="219">
+            <strong>Signature:</strong> filePath:string -&gt; unit<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L215-215" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L186-186" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
         </td>
       </tr>
-    </tbody>
-  </table>
-  <h3>Instance members</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Instance member</td><td>Description</td></tr>
-    </thead>
-    <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '394', 394)" onmouseover="showTip(event, '394', 394)">
-            x.GetString()
+          <code onmouseout="hideTip(event, '220', 220)" onmouseover="showTip(event, '220', 220)">
+            logger
           </code>
-          <div class="tip" id="394">
-            <strong>Signature:</strong> unit -&gt; string<br />
+          <div class="tip" id="220">
+            <strong>Signature:</strong> Logger<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L222-222" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <h3>Static members</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Static member</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '395', 395)" onmouseover="showTip(event, '395', 395)">
-            MapVersion.Create(major, minor, patch)
-          </code>
-          <div class="tip" id="395">
-            <strong>Signature:</strong> (major:int * minor:int * patch:int) -&gt; MapVersion<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/RenderUtils.fs#L217-217" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L184-184" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -171,12 +141,12 @@
             <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
             <li><a href="/MordhauBuddy/release-notes.html">Release Notes</a></li>
             <li><a href="/MordhauBuddy/contributing.html">Contributing</a></li>
+            <li><a href="/MordhauBuddy/reporting-issues.html">Reporting Issues</a></li>
             
             <li class="nav-header">Documentation</li>
             <li><a href="/MordhauBuddy/index.html">Introduction</a></li>
             <li class="divider"></li>
             <li><a href="/MordhauBuddy/community.html">Community</a></li>
-            <li><a href="/MordhauBuddy/map-installer.html">Map Installer</a></li>
             <li><a href="/MordhauBuddy/mordhau-config.html">Mordhau Configuration</a></li>
             <li><a href="/MordhauBuddy/face-tools.html">Face Tools</a></li>
             <li><a href="/MordhauBuddy/settings.html">MordhauBuddy Settings</a></li>

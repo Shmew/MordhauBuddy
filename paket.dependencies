@@ -1,4 +1,4 @@
-version 5.215.0
+version 5.216.0
 
 framework: auto-detect
 
@@ -21,6 +21,7 @@ group Core
 	nuget FSharp.Core ~> 4.7 redirects:force
 	nuget FSharp.Data ~> 3.1.1
 	nuget FSharp.Json ~> 0.3.7
+    nuget Logary ~> 5.0.0-rc.13
 	nuget Microsoft.NETCore.Platforms ~> 3.0.0-preview9.19421.4
 	nuget Saturn ~> 0.9.0
 
@@ -28,7 +29,7 @@ group Electron
 	source https://nuget.org/api/v2
 	source https://api.nuget.org/v3/index.json
 
-	nuget Fable.Electron ~> 1.0
+	nuget Fable.Electron ~> 3.0
 	nuget Fable.Core ~> 3.0
 	nuget Fable.Elmish ~> 3.0
 	nuget Fable.Elmish.Debugger ~> 3.0
@@ -56,6 +57,7 @@ group Testing
 	nuget Foq ~> 1.8.0
 	nuget FSharp.Core ~> 4.7 redirects:force
 	nuget FSharp.Data ~> 3.1.1
+    nuget Logary ~> 5.0.0-rc.13
 	nuget Microsoft.NETCore.Platforms ~> 3.0.0-preview9.19421.4
 
 group Tooling
@@ -71,7 +73,7 @@ group Tooling
 	nuget Microsoft.NETCore.Platforms ~> 3.0.0-preview9.19421.4
 
 	clitool dotnet-fable ~> 2.0.11
-	clitool dotnet-fake ~> 5.15.4
+	clitool dotnet-fake ~> 5.16.1
 	clitool Femto ~> 0.5.2
 
 group Formatting
@@ -83,23 +85,22 @@ group Formatting
 
 group FakeBuild
 	source https://api.nuget.org/v3/index.json
-	source https://www.myget.org/F/fantomas/api/v3/index.json
 
 	storage: none
 
-	nuget Fake.Core.Target ~> 5.16.1
-	nuget Fake.Core.ReleaseNotes  ~> 5.16.1
-	nuget Fake.DotNet.AssemblyInfoFile ~> 5.16.1
-	nuget Fake.DotNet.Cli ~> 5.16.1
-	nuget Fake.DotNet.FSFormatting  ~> 5.16.1
-	nuget Fake.DotNet.MSBuild ~> 5.16.1
-	nuget Fake.DotNet.Paket ~> 5.16.1
-	nuget Fake.IO.FileSystem ~> 5.16.1
-	nuget Fake.Tools.Git ~> 5.16.1
-	nuget Fake.JavaScript.Yarn ~> 5.16.1
-	nuget Fake.JavaScript.Npm ~> 5.16.1
+	nuget Fake.Core.Target
+	nuget Fake.Core.ReleaseNotes
+	nuget Fake.DotNet.AssemblyInfoFile
+	nuget Fake.DotNet.Cli
+	nuget Fake.DotNet.FSFormatting
+	nuget Fake.DotNet.MSBuild
+	nuget Fake.DotNet.Paket
+	nuget Fake.IO.FileSystem
+	nuget Fake.Tools.Git
+	nuget Fake.JavaScript.Yarn
+	nuget Fake.JavaScript.Npm
 	nuget FastRsyncNet ~> 2.3.0
-	nuget Fantomas ~> 3.0.0-beta-002-alpha-443
+	nuget Fantomas ~> 3.0.0-beta-003
 	nuget FSharp.Json ~> 0.3.7
 	nuget FSharpLint.Core ~> 0.12.2
 	

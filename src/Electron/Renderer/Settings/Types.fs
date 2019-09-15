@@ -17,12 +17,9 @@ module Types =
     type Msg =
         | ClientMsg of BridgeMsg
         | GetDefaultDir
-        | GetMapDir
         | SetConfigDir of string * Result<string, string list> * ConfigFile
-        | SetMapDir of string * Result<string, string list>
-        | RequestLoad of DirLoad
+        | RequestLoad of ConfigFile
         | LoadCanceled
-        | MapUpdateSetting of UpdateSettings option
         | BackupSetting of BackupSettings option
         | ToggleAutoLaunch
         | RunSetup
@@ -31,7 +28,5 @@ module Types =
         { EngineDir: ConfigDir
           GameDir: ConfigDir
           GameUserDir: ConfigDir
-          MapsDir: ConfigDir
-          MapUpdateSettings: UpdateSettings
           BackupSettings: BackupSettings
           AutoLaunch: bool }

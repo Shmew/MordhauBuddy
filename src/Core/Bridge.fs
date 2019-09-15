@@ -1,22 +1,26 @@
 namespace MordhauBuddy.Core
 
-module Bridge =
+module App =
+    open BridgeOperations
     open Elmish
     open Elmish.Bridge
-    open Saturn
+    open Helpers
     open INIReader
-    open BridgeOperations
+    open Saturn
     open MordhauBuddy.Shared.ElectronBridge
-    open System.Threading
+    
+    let logger = Logger "App"
 
     /// Websocket bridge
     [<AutoOpen>]
     module Bridge =
+        
+        let logger = Logger "Bridge"
+
         type Model =
             { Game: INIValue option
               Engine: INIValue option
               GameUserSettings: INIValue option
-              InstallingMaps: (string * CancellationTokenSource) list
               BackupSettings: BackupSettings
               UpdatePending: string option }
             member this.GetIVal(file: ConfigFile) =
@@ -27,14 +31,43 @@ module Bridge =
 
         type ServerMsg = ClientMsg of RemoteServerMsg
 
+        let private cDispatchWithLog (clientDispatch: Dispatch<RemoteClientMsg>) (msg: RemoteClientMsg) =
+            match msg with
+            | RemoteClientMsg.Resp(bMsg) when 
+                bMsg.BridgeResult = BridgeResult.Misc(MiscResult.MordhauRunning(true)) 
+                    || bMsg.BridgeResult = BridgeResult.Misc(MiscResult.MordhauRunning(false)) -> 
+                    
+                    logger.LogVerbose "%O" msg
+                    msg
+            | _ -> 
+                logger.LogInfo "%O" msg
+                msg
+            |> clientDispatch
+
+        let private modelUpdateWithLog (oldModel: Model) (model: Model) =
+            if oldModel <> model then
+                logger.LogInfo "%O" model
+                model
+            else model
+
+        let logInc (clientMsg: RemoteServerMsg) =
+            match clientMsg with
+            | BridgeOps(Misc(IsMordhauRunning),Caller.App) ->
+                logger.LogVerbose "New server message:\n%O" clientMsg
+            | _ ->
+                logger.LogInfo "New server message:\n%O" clientMsg
+
         let private init (clientDispatch: Dispatch<RemoteClientMsg>) () =
-            Connected |> clientDispatch
+            Connected |> cDispatchWithLog clientDispatch
             { Game = None
               GameUserSettings = None
               Engine = None
-              InstallingMaps = []
               BackupSettings = KeepAll
-              UpdatePending = None }, Cmd.none
+              UpdatePending = None }
+            |> fun iModel ->
+                logger.LogInfo "Init model:\n%O" iModel
+                iModel
+            |> fun m -> m, Cmd.none
 
         let private createClientResp (caller: Caller) (file: INIFile option) (br: BridgeResult) =
             { Caller = caller
@@ -56,7 +89,9 @@ module Bridge =
                 | ConfigFile.GameUserSettings -> { model with GameUserSettings = iOpt }
                 | ConfigFile.Engine -> { model with Engine = iOpt }
 
-            let model, remoteCMsg =
+            logInc clientMsg
+
+            let m, remoteCMsg =
                 match clientMsg with
                 | BridgeOps(ops, caller) ->
                     match ops with
@@ -114,15 +149,15 @@ module Bridge =
                             | ConfigFile.Game ->
                                 { cmd.Value with Caller = Caller.FaceTools }
                                 |> Resp
-                                |> clientDispatch
+                                |> cDispatchWithLog clientDispatch
                             | ConfigFile.Engine when model.GameUserSettings.IsSome ->
                                 { cmd.Value with Caller = Caller.MordhauConfig }
                                 |> Resp
-                                |> clientDispatch
+                                |> cDispatchWithLog clientDispatch
                             | ConfigFile.GameUserSettings when model.Engine.IsSome ->
                                 { cmd.Value with Caller = Caller.MordhauConfig }
                                 |> Resp
-                                |> clientDispatch
+                                |> cDispatchWithLog clientDispatch
                             | _ -> ()
                             m, cmd
                         | INIFileOperation.Backup fList ->
@@ -141,34 +176,6 @@ module Bridge =
                             |> List.forall id
                             |> INIOperationResult.CommitChanges
                             |> BridgeResult.INIOperation
-                            |> createClientResp caller None
-                    | MapOperation mCmd ->
-                        match mCmd with
-                        | MapFileOperation.DefaultDir ->
-                            model,
-                            Maps.defDir()
-                            |> MapOperationResult.DefaultDir
-                            |> BridgeResult.MapOperation
-                            |> createClientResp caller None
-                        | MapFileOperation.DirExists dir ->
-                            let result = Maps.dirExists dir
-
-                            let m, cmd =
-                                model,
-                                result
-                                |> MapOperationResult.DirExists
-                                |> BridgeResult.MapOperation
-                                |> createClientResp caller None
-                            if result then
-                                { cmd.Value with Caller = Caller.MapInstaller }
-                                |> Resp
-                                |> clientDispatch
-                            m, cmd
-                        | MapFileOperation.Delete(dir, fName) ->
-                            model,
-                            (fName, Maps.uninstallMap dir fName)
-                            |> MapOperationResult.Delete
-                            |> BridgeResult.MapOperation
                             |> createClientResp caller None
                     | Faces fCmd ->
                         let cResp br = createClientResp caller None br
@@ -209,46 +216,6 @@ module Bridge =
                             cr
                             |> BridgeResult.Config
                             |> cResp
-                    | Maps mCmd ->
-                        let cResp br = createClientResp caller None br
-                        match mCmd with
-                        | GetAvailableMaps ->
-                            model,
-                            Maps.getAvailableMaps()
-                            |> MapResult.AvailableMaps
-                            |> BridgeResult.Maps
-                            |> cResp
-                        | GetInstalledMaps dir ->
-                            model,
-                            Maps.getInstalledMaps dir
-                            |> MapResult.InstalledMaps
-                            |> BridgeResult.Maps
-                            |> cResp
-                        | InstallMap mCmd ->
-                            let cSource = new CancellationTokenSource()
-
-                            let dispatchWrapper (mr: MapResult) =
-                                BridgeResult.Maps(mr)
-                                |> createClientResp caller None
-                                |> Option.get
-                                |> Resp
-                                |> clientDispatch
-                            if Maps.installMap mCmd dispatchWrapper cSource.Token then
-                                { model with InstallingMaps = ((mCmd.Folder, cSource) :: model.InstallingMaps) }, None
-                            else
-                                model,
-                                (mCmd.Folder, Error("Unable to find map archive file."))
-                                |> MapResult.InstallMap
-                                |> BridgeResult.Maps
-                                |> cResp
-                        | ConfirmInstalled map ->
-                            { model with InstallingMaps = (model.InstallingMaps |> List.filter (fun (s, _) -> s <> map)) },
-                            None
-                        | CancelMap fName ->
-                            let toCancel, installing =
-                                model.InstallingMaps |> List.partition (fun (name, _) -> fName = name)
-                            toCancel |> List.iter (fun (_, cSource) -> cSource.Cancel())
-                            { model with InstallingMaps = installing }, None
                     | SettingsOperation sCmd ->
                         let cResp br = createClientResp caller None br
                         match sCmd with
@@ -274,7 +241,7 @@ module Bridge =
                         | Updates.Start ->
                             match model.UpdatePending with
                             | Some file -> Updating.installUpdates file
-                            | _ -> Error "No pending file"
+                            | _ -> Result.Error "No pending file"
                             |> function
                             | Ok(Some file) ->
                                 Updating.cleanUpdatingDir()
@@ -289,7 +256,7 @@ module Bridge =
                                 UpdateResult.Failed
                                 |> BridgeResult.Updates
                                 |> cResp
-                            | Error e ->
+                            | Result.Error e ->
 #if DEBUG
                                 System.Console.WriteLine e
 #endif
@@ -304,7 +271,7 @@ module Bridge =
                                     |> BridgeResult.Updates
                                     |> cResp
                                 | _ -> None
-                            | Error e ->
+                            | Result.Error e ->
 #if DEBUG
                                 System.Console.WriteLine e
 #endif
@@ -320,13 +287,13 @@ module Bridge =
                             |> cResp
 
             match remoteCMsg with
-            | Some rMsg -> Resp rMsg |> clientDispatch
+            | Some rMsg -> Resp rMsg |> cDispatchWithLog clientDispatch
             | _ -> ()
-            model, Cmd.none
+            
+            modelUpdateWithLog model m, Cmd.none
 
         let bridge =
             Bridge.mkServer BridgeOperations.Endpoint init update
-            |> Bridge.withConsoleTrace
             |> Bridge.run Giraffe.server
 
     let server = router { get BridgeOperations.Endpoint bridge }
@@ -341,6 +308,13 @@ module Bridge =
 
     [<EntryPoint>]
     let main _ =
-        printfn "Working directory - %s" (System.IO.Directory.GetCurrentDirectory())
-        run app
+        cleanUpLogging(logPath)
+        logger.LogInfo "Working directory - %s" <| System.IO.Directory.GetCurrentDirectory()
+
+        try
+            run app
+        with e ->
+            logger.LogFatal "Fatal exception occured:\n%O" e
+            reraise()
+
         0 // return an integer exit code

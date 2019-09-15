@@ -10,8 +10,6 @@ The main features that MordhauBuddy enables you to do is:
 
  - Keep up to date on community events
     - This is still on-going, stay tuned!
- - Install the latest community maps
-    - Auto updates based on your preferences
  - Manage custom settings not available in the UI
     - Things like Runescape mode, and disabling in-game fog.
  - Modify character faces with multiple options:

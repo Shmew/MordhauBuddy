@@ -63,20 +63,6 @@ module View =
                         FormControlProp.Variant FormControlVariant.Outlined
                         Style [ CSSProp.MinWidth "25em" ] ] [ inputL; selects ] ] ]
 
-    let private selectUpdate (classes: IClasses) model dispatch =
-        let inputL = inputLabel [] [ str "Map update settings" ]
-        select
-            [ HTMLAttr.Value model.MapUpdateSettings.Text
-              DOMAttr.OnChange <| fun ev ->
-                  ev.Value
-                  |> UpdateSettings.TryGetCaseFromText
-                  |> MapUpdateSetting
-                  |> dispatch
-              SelectProp.Variant SelectVariant.Outlined
-              SelectProp.Input <| outlinedInput [ OutlinedInputProp.LabelWidth 150 ] [] ]
-            (UpdateSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text))
-        |> selectForm classes model dispatch inputL
-
     let private selectBackup (classes: IClasses) model dispatch =
         let inputL = inputLabel [] [ str "Backup settings" ]
         select
@@ -92,11 +78,11 @@ module View =
         |> selectForm classes model dispatch inputL
 
     let private toggleAutoLaunch (classes: IClasses) model dispatch =
-        formControl [ Style [ CSSProp.Padding "0em 1em" ] ]
+        formControl [ Style [ CSSProp.Padding "1em 1em" ] ]
             [ formGroup []
                   [ formControlLabel
                       [ FormControlLabelProp.Control <| switch
-                                                            [ HTMLAttr.Checked(model.AutoLaunch)
+                                                            [ HTMLAttr.Checked <| model.AutoLaunch
                                                               DOMAttr.OnClick <| fun _ -> (dispatch ToggleAutoLaunch) ]
                         FormControlLabelProp.LabelPlacement FormControlLabelPlacement.Top
                         HTMLAttr.Label "Launch application on startup" ] [] ] ]
@@ -113,10 +99,7 @@ module View =
                   [ dConf model.GameDir
                     dConf model.EngineDir
                     dConf model.GameUserDir
-                    dConf model.MapsDir
-                    div [ Style [ CSSProp.Display DisplayOptions.InlineFlex ] ]
-                        [ selectUpdate classes model dispatch
-                          selectBackup classes model dispatch ]
+                    selectBackup classes model dispatch 
                     toggleAutoLaunch classes model dispatch ] ]
 
     /// Workaround for using JSS with Elmish

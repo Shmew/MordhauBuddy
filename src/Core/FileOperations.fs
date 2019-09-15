@@ -3,6 +3,7 @@ namespace MordhauBuddy.Core
 open Fake.Core
 open Fake.IO
 open Fake.IO.FileSystemOperators
+open Helpers
 open INIReader
 open System
 
@@ -12,6 +13,8 @@ module FileOps =
     module INI =
         open MordhauBuddy.Shared.ElectronBridge
 
+        let logger = Logger "FileOps.INI"
+
         /// Try to find the configuration directory
         let defaultDir =
             let bindDirectory (dir: string) =
@@ -19,7 +22,10 @@ module FileOps =
                 |> DirectoryInfo.exists
                 |> function
                 | true -> Some(dir)
-                | false -> None
+                | false -> 
+                    logger.LogWarn "Failed to find default directory: %s does not exist." dir
+                    None
+
             match Environment.isWindows with
             | true ->
                 Environment.SpecialFolder.LocalApplicationData
@@ -43,7 +49,9 @@ module FileOps =
             match workingDir, (fiPath = file && File.exists file) with
             | _, true -> Some(file)
             | Some(dir), _ when File.exists (dir @@ file) -> Some(dir @@ file)
-            | _ -> None
+            | _ -> 
+                logger.LogWarn "Unable to find INIFile %s in %O" file workingDir
+                None
 
         /// Create a backup of the given file into sub directory MordhauBuddy_backups
         let createBackup (file: string) =
@@ -55,7 +63,9 @@ module FileOps =
                 Directory.ensure backups
                 Shell.copyFile (backups @@ newName) file
                 File.exists (backups @@ newName)
-            | false -> false
+            | false -> 
+                logger.LogError "Tried to backup non-existant file: %s" file
+                false
 
         /// Clean backups directory based on given backup settings
         let cleanBackups (bSet: BackupSettings) (file: string) =
@@ -86,113 +96,39 @@ module FileOps =
                     FileInfo.ofPath(file).Directory.GetDirectories("*MordhauBuddy_backups*")
                     |> Array.map (fun d -> d.FullName)
                     |> Shell.cleanDirs
-            with e ->
-#if DEBUG
-                failwith e.Message
-#endif
-                ()
+            with e -> logger.LogError "Failed to clean backups:\n%O" e
 
         /// Write `INIValue` to file path
-        let writeINI (iVal: INIValue) (outFile: string) =
-            let fi = FileInfo.ofPath (outFile)
-            Directory.ensure fi.DirectoryName
-            File.writeString false fi.FullName (iVal.ToString())
-            tryGetFile outFile None
+        let tryWriteINI (iVal: INIValue) (outFile: string) =
+            try
+                let fi = FileInfo.ofPath (outFile)
+                Directory.ensure fi.DirectoryName
+                File.writeString false fi.FullName (iVal.ToString())
+                tryGetFile outFile None
+            with e ->
+                logger.LogError "Failed to write INI %O to %s:\n%O" iVal outFile e
+                None
 
         /// Try to read an INI file
         let tryReadINI (file: string) =
             if File.exists file then
                 try
                     File.readAsString file |> INIValue.TryParse
-                with _ -> None
+                with e ->
+                    logger.LogError "Failed to read INI file: %s\n%O" file e
+                    None
             else
+                logger.LogError "Tried to read INI file that does not exist: %s" file
                 None
-
-    /// File operations for maps
-    module Maps =
-        open Fake.IO.Globbing.Operators
-
-        /// Try to find the Map directory
-        let defaultDir =
-            try
-                let mapPath =
-                    match Environment.isWindows with
-                    | true ->
-                        [ @"C:\Program Files (x86)"; @"C:\Program Files" ]
-                        |> List.map (fun fol -> fol @@ @"Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps")
-                    | false ->
-                        [ ".steam/steam"; ".local/share/Steam" ]
-                        |> List.map
-                            ((fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
-                             >> (fun fol -> fol @@ @"steamapps/common/Mordhau/Mordhau/Content/Mordhau/Maps"))
-
-                let bindDirectory (dir: string) =
-                    IO.DirectoryInfo dir
-                    |> DirectoryInfo.exists
-                    |> function
-                    | true -> Some(dir)
-                    | false -> None
-
-                mapPath |> List.tryFind (bindDirectory >> Option.isSome)
-            with _ -> None
-
-        /// Determine if maps directory is valid
-        let tryFindMaps (dir: string) =
-            try
-                let di = IO.DirectoryInfo(dir)
-                di.Parent.Name = "Mordhau" && di.Exists && di.FullName.ToLower().Contains("steam") && di.Name = "Maps"
-            with _ -> false
-
-        /// Get all installed map metadata
-        let getInstalled (dir: string) =
-            !!(dir @@ "**/*.info.txt")
-            |> Seq.map (fun f ->
-                async {
-                    try
-                        return File.readAsString f |> Some
-                    with _ -> return None
-                })
-            |> Async.Parallel
-            |> Async.RunSynchronously
-            |> List.ofSeq
-            |> List.choose id
-
-        /// Try to get the Google Drive API key from embedded resource
-        let tryGetGDKey() =
-            try
-                use stream =
-                    new IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly()
-                                              .GetManifestResourceStream("Core.Key.json"))
-                stream.ReadToEnd() |> Some
-            with _ -> None
-
-        /// Try to delete the given map
-        let tryUninstall (dir: string) (fName: string) =
-            try
-                let folder = new IO.DirectoryInfo(dir @@ fName)
-                if DirectoryInfo.exists (folder) then Shell.deleteDir (folder.FullName)
-                Ok(true)
-            with e -> Error(e.Message)
-
-        /// Delete a zip if it exists
-        let asyncDeleteZip (path: string) =
-            async {
-                if File.exists (path) then Shell.rm path
-            }
-
-        /// Delete a directory if it exists
-        let deleteDir (path: string) = Shell.deleteDir path
-
-        /// Write an info
-        let writeFile (dir: string) (fName: string) (data: string) =
-            File.writeString false (dir @@ fName @@ (fName + ".info.txt")) data
 
     /// File operations for enabling auto launching
     module AutoLaunch =
         open Fake.Windows
         open FSharp.Json
-        open Helpers.Info
         open Helpers.Json
+        open Helpers.Info
+
+        let logger = Logger "FileOps.AutoLaunch"
 
         /// Linux DesktopFile
         type DesktopFile =
@@ -216,60 +152,33 @@ module FileOps =
                   "Icon=" + this.Icon ]
                 |> reduceNL
                 |> fun dFile -> "[Desktop Entry]" + nL + dFile
-
-        /// Try to get an env variable with increasing scope
-        let private tryGetEnvVar (s: string) =
-            let envOpt (envVar: string) =
-                if String.isNullOrEmpty envVar then None
-                else Some(envVar)
-
-            let procVar = Environment.GetEnvironmentVariable(s) |> envOpt
-            let userVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.User) |> envOpt
-            let machVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.Machine) |> envOpt
-
-            match procVar, userVar, machVar with
-            | Some(v), _, _
-            | _, Some(v), _
-            | _, _, Some(v) -> Some(v)
-            | _ -> None
+                |> fun s ->
+                    logger.LogInfo "Generated .desktop file:\n%s" s
+                    s
 
         let private withTimeout timeout action =
             async { let! child = Async.StartChild(action, timeout)
                     return! child }
 
-        /// Try to locate the current executable directory
-        let private appPath = Environment.CurrentDirectory
-
         [<RequireQualifiedAccess>]
         module Windows =
-
-            [<AutoOpen>]
-            module Utils =
-                let regBase = Registry.RegistryBaseKey.HKEYCurrentUser
-                let regKey = @"Software\Microsoft\Windows\CurrentVersion\Run"
-                let regSubValue = "MordhauBuddy"
-
-                /// Get Windows executable directory
-                let getWinExecDir() =
-                    Environment.SpecialFolder.LocalApplicationData
-                    |> Environment.GetFolderPath
-                    |> fun d -> (new IO.DirectoryInfo(d)).FullName @@ "mordhau-buddy-updater"
-
-                /// Get Windows executable path
-                let getWinExecPath() = getWinExecDir() @@ "installer.exe"
+            
+            let logger = Logger "FileOps.AutoLaunch.Windows"
 
             /// Try to enable auto launch
             let enableAutoLaunch() =
                 async {
                     return try
-                               use registryKey = Registry.getRegistryKey regBase regKey true
+                               use registryKey = Registry.getRegistryKey Windows.regBase Windows.regKey true
                                registryKey.SetValue
-                                   (regSubValue, getWinExecPath(), Microsoft.Win32.RegistryValueKind.String)
+                                   (Windows.regSubValue, sprintf "%s /S --force-run" <| Windows.getWinExecPath(), Microsoft.Win32.RegistryValueKind.String)
                                registryKey.Flush()
                                registryKey.Dispose()
                                Async.Sleep 1000 |> Async.RunSynchronously
-                               Registry.valueExistsForKey regBase regKey regSubValue
-                           with _ -> false
+                               Registry.valueExistsForKey Windows.regBase Windows.regKey Windows.regSubValue
+                           with e -> 
+                               logger.LogError "Error enabling auto launch:\n%O" e
+                               false
                 }
                 |> Async.RunSynchronously
 
@@ -277,46 +186,52 @@ module FileOps =
             let disableAutoLaunch() =
                 async {
                     return try
-                               Registry.deleteRegistryValue regBase regKey regSubValue
-                               Registry.valueExistsForKey regBase regKey regSubValue |> not
-                           with _ -> false
+                               Registry.deleteRegistryValue Windows.regBase Windows.regKey Windows.regSubValue
+                               Registry.valueExistsForKey Windows.regBase Windows.regKey Windows.regSubValue |> not
+                           with e -> 
+                               logger.LogError "Error disabling auto launch:\n%O" e
+                               false
                 }
                 |> Async.RunSynchronously
 
         [<RequireQualifiedAccess>]
         module Linux =
+
+            let logger = Logger "FileOps.AutoLaunch.Linux"
+
             [<AutoOpen>]
             module Utils =
-                /// Try to get home path
-                let homePath = tryGetEnvVar "HOME"
-
-                /// Get the name of the AppImage
-                let appImageName = sprintf "MordhauBuddy-%s.AppImage" version
-
-                /// Gets the home share falling back to `appPath` if necessary
-                let homeShare = defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
-
-                let homeName = sprintf "home-%s.json" version
-
                 /// Set the new MBHome path
                 let setMBHome (newFile: string) =
-                    { Path = newFile }
-                    |> Json.serializeEx config
-                    |> File.writeString false (homeShare @@ homeName)
+                    try
+                        { Path = newFile }
+                        |> Json.serializeEx config
+                        |> File.writeString false (Linux.homeShare @@ Linux.homeName)
+                    with e -> logger.LogError "Failed to set new MBHome path: %s\n%O" newFile e
 
                 /// Gets or sets the MordhauBuddy home json if necessary
                 let getMBHome() =
-                    match FileInfo.ofPath (homeShare @@ homeName) with
+                    match FileInfo.ofPath (Linux.homeShare @@ Linux.homeName) with
                     | hShare when hShare.Exists ->
-                        File.readAsString hShare.FullName
-                        |> Json.deserializeEx<HomeFile> config
-                        |> fun hf -> hf.Path
+                        try
+                            File.readAsString hShare.FullName
+                            |> Json.deserializeEx<HomeFile> config
+                            |> fun hf -> hf.Path
+                        with e -> 
+                            logger.LogError "Failed to get MordhauBuddy home.json:\n%O" e
+                            appPath @@ Linux.appImageName
                     | _ ->
-                        let ePath = appPath @@ appImageName
+                        let ePath = appPath @@ Linux.appImageName
                         { Path = ePath }
-                        |> Json.serializeEx config
-                        |> File.writeString false (homeShare @@ homeName)
-                        ePath
+                        |> fun homeFile ->
+                            try
+                                homeFile
+                                |> Json.serializeEx config
+                                |> File.writeString false (Linux.homeShare @@ Linux.homeName)
+                                ePath
+                            with e -> 
+                                logger.LogError "Failed to set MordhauBuddy home.json:\n%O" e
+                                ePath
 
                 /// Create desktop file string
                 let desktopFile() =
@@ -327,13 +242,13 @@ module FileOps =
                       Terminal = false
                       Exec = getMBHome()
                       Icon =
-                          (defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
+                          (defaultArg (Linux.homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
                            @@ "icon.png") }
                     |> fun dFile -> dFile.ToDesktopString()
 
                 /// Extracts the icon file from the AppImage and stores it in the linux .local folder
                 let extractIcon (path: string) =
-                    Shell.AsyncExec(appImageName, args = " --appimage-extract static/icon.png", dir = appPath)
+                    Shell.AsyncExec(Linux.appImageName, args = " --appimage-extract static/icon.png", dir = appPath)
                     |> withTimeout 5000
                     |> Async.Ignore
                     |> Async.RunSynchronously
@@ -343,24 +258,30 @@ module FileOps =
                                 { Shell.moveFile (path @@ "mordhau-buddy") (appPath @@ "squashfs-root/static/icon.png") }
                             |> withTimeout 5000
                             |> Async.RunSynchronously
-                        with _ -> ()
+                        with e -> logger.LogError "Failed to extract AppImage icon from: %s\n%O" path e
                     finally
-                        async { Shell.deleteDir (appPath @@ "squashfs-root") }
+                        async { 
+                            let squash = (appPath @@ "squashfs-root") 
+                            try
+                                Shell.deleteDir squash
+                            with e -> logger.LogError "Failed to delete %s after extracting AppImage icon:\n%O" squash e }
                         |> withTimeout 5000
                         |> Async.RunSynchronously
 
                 /// Create the autostart desktop file
                 let createAutoStartDeskFile dir =
                     async {
+                        let autoStart = (dir @@ "autostart")
+                        let desktopFilePath = autoStart @@ "mordhau-buddy.desktop"
                         try
-                            let autoStart = (dir @@ "autostart")
-                            let desktopFilePath = autoStart @@ "mordhau-buddy.desktop"
                             Directory.ensure autoStart
                             do! Async.Sleep 1000
                             File.writeString false desktopFilePath <| desktopFile()
                             do! Async.Sleep 1000
                             return File.exists desktopFilePath
-                        with _ -> return false
+                        with e -> 
+                            logger.LogError "Failed to create %s file in: %s\n%O" desktopFilePath autoStart e
+                            return false
                     }
                     |> Async.RunSynchronously
 
@@ -369,7 +290,7 @@ module FileOps =
                 async {
                     try
                         if Environment.isLinux then
-                            homePath
+                            Linux.homePath
                             |> Option.map (fun path -> path @@ ".local/share")
                             |> function
                             | Some(path) ->
@@ -377,7 +298,7 @@ module FileOps =
                                 File.writeString false (path @@ "applications/mordhau-buddy.desktop") <| desktopFile()
                                 if File.exists (path @@ "mordhau-buddy" @@ "icon.png") |> not then extractIcon path
                             | None -> ()
-                    with _ -> ()
+                    with e -> logger.LogError "Failed to register application:\n%O" e
                 }
                 |> Async.Start
 
@@ -385,10 +306,12 @@ module FileOps =
             let enableAutoLaunch() =
                 async {
                     return try
-                               homePath
+                               Linux.homePath
                                |> Option.map (fun path -> createAutoStartDeskFile (path @@ ".config"))
                                |> Option.isSome
-                           with _ -> false
+                           with e -> 
+                               logger.LogError "failed to enable AutoLaunch:\n%O" e
+                               false
                 }
                 |> Async.RunSynchronously
 
@@ -396,7 +319,7 @@ module FileOps =
             let disableAutoLaunch() =
                 async {
                     return try
-                               homePath
+                               Linux.homePath
                                |> Option.map (fun path -> path @@ ".config/autostart/mordhau-buddy.desktop")
                                |> function
                                | Some(path) ->
@@ -404,7 +327,9 @@ module FileOps =
                                    File.exists appPath
                                | None -> false
                                |> not
-                           with _ -> false
+                           with e -> 
+                               logger.LogError "Failed to disable AutoLaunch:\n%O" e
+                               false
                 }
                 |> Async.RunSynchronously
 
@@ -432,6 +357,8 @@ module FileOps =
         open Helpers.Info
         open Helpers.Http
         open System.IO
+
+        let logger = Logger "FileOps.Updating"
 
         type NewUpdate =
             { LatestRel: Github.Release
@@ -481,20 +408,26 @@ module FileOps =
                 |> getAssetOf (Some ".delta")
                 |> function
                 | Some res -> Ok <| One res
-                | _ -> Error "No available updates"
+                | _ -> 
+                    logger.LogError "No available updates, but detected behind one from current."
+                    Error "No available updates"
             | Some 0 -> Ok Zero
             | Some i when i > 1 ->
                 getRelAt 0
                 |> getAssetOf None
                 |> function
                 | Some res -> Ok <| Multiple res
-                | _ -> Error "Multiple updates behind, asset not found"
-            | _ -> Error "Unable to determine update position"
+                | _ -> 
+                    logger.LogError "Multiple updates behind, asset not found"
+                    Error "Multiple updates behind, asset not found"
+            | _ -> 
+                logger.LogError "Unable to determine update position"
+                Error "Unable to determine update position"
 
         /// Get base update path
         let private getBaseUpdatePath() =
-            if Environment.isLinux then Linux.Utils.homeShare
-            else Windows.Utils.getWinExecDir()
+            if Environment.isLinux then Linux.homeShare
+            else Windows.getWinExecDir()
             |> fun s -> s @@ "Updating"
 
         /// Get update path and ensure it exists
@@ -504,7 +437,9 @@ module FileOps =
         let private downloadAsset (asset: Github.Asset) (path: IO.DirectoryInfo) =
             try
                 downloadFile (path.FullName @@ asset.Name) asset.BrowserDownloadUrl |> Ok
-            with e -> Error(e.Message)
+            with e -> 
+                logger.LogError "failed to download asset to: %s\n%O\n%O" path.FullName asset e
+                raise e
 
         /// Downloads asset file to storage directory
         let getAsset (newUp: NewUpdate) =
@@ -522,14 +457,14 @@ module FileOps =
                     | _ -> Error("Error during preparation"))
             with e ->
                 try
-                    Shell.cleanDir (updatePath.Parent.FullName)
-                with _ -> ()
+                    Shell.cleanDir <| updatePath.Parent.FullName
+                with e -> logger.LogError "Failed to clean update path: %s\n%O" updatePath.Parent.FullName e
                 Error e.Message
 
         /// Get the file that will be patched
         let getOriginal() =
             if Environment.isLinux then Linux.Utils.getMBHome()
-            else Windows.Utils.getWinExecPath()
+            else Windows.getWinExecPath()
             |> FileInfo.ofPath
 
         /// See if file is already downloaded and patched
@@ -564,11 +499,11 @@ module FileOps =
 
                 Ok(newFile)
             with
-
-            e ->
+            | e ->
+                logger.LogError "Failed to generate patched file:\n\tDelta:\n\t%O\n\tNew file: %s\n%O" deltaFi newFile e
                 try
                     Shell.cleanDir <| getBaseUpdatePath()
-                with _ -> ()
+                with e -> logger.LogError "Failed to clean update path: %s\n%O" (getBaseUpdatePath()) e
                 Error(e.Message)
 
         /// Apply the new patch
@@ -588,22 +523,24 @@ module FileOps =
                     Shell.cleanDir <| getBaseUpdatePath()
                     Ok <| Some(origFile.Directory.FullName @@ newName)
                 else
-                    failwithf "Update file not found %s" path
-            with e -> Error e.Message
+                    logger.LogError "Update file not found %s" path
+                    Error <| sprintf "Update file not found %s" path
+            with e -> 
+                logger.LogError "Error applying patch:\n\tPatched file: %s\n\tNew name: %s\n%O" path newName e
+                Error e.Message
 
         /// Try to clean update path and dispose of errors
         let cleanBaseUpdatePath() =
-            try
-                Shell.cleanDir <| getBaseUpdatePath()
-            with e ->
-#if DEBUG
-                failwith e.Message
-#endif
-                ()
+            try Shell.cleanDir <| getBaseUpdatePath()
+            with e -> logger.LogError "Failed to clean base update path:\n%O" e
 
         /// Start the new application
         let startNewVersion (file: string) =
             async {
                 let fi = FileInfo.ofPath file
-                Process.shellExec { ExecParams.Empty with Program = fi.FullName } |> ignore
+                { ExecParams.Empty with 
+                    Program = fi.FullName
+                    CommandLine = "/S --force-run" }
+                |> Process.shellExec 
+                |> ignore
             }

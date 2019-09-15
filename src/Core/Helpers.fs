@@ -1,20 +1,29 @@
 namespace MordhauBuddy.Core
 
-module Helpers =
-    open System
-    open System.Net
+#nowarn "40"
+
+module rec Helpers =
+    open Fake.Core
+    open Fake.IO.FileSystemOperators
     open FSharp.Data
     open FSharp.Json
+    open Logary
+    open Logary.Message
     open MordhauBuddy.Shared.ElectronBridge
+    open Printf
+    open System
+    open System.Net
 
     /// Functions to gather information
     module Info =
-        open Fake.Core
         open System.Reflection
-
+        
         /// Get application version
         let version =
             Assembly.GetExecutingAssembly().GetName().Version |> (fun v -> sprintf "%i.%i.%i" v.Major v.Minor v.Build)
+
+        /// Current executable directory
+        let appPath = Environment.CurrentDirectory
 
         /// Get application name
         let appFile ver =
@@ -24,9 +33,186 @@ module Helpers =
         /// Check if Mordhau is running
         let isMordhauRunning() =
             Process.getAllByName "Mordhau"
-            |> Seq.filter (fun p -> p.ProcessName = "Mordhau-Win64-Shipping")
-            |> Seq.isEmpty
-            |> not
+            |> Seq.exists (fun p -> p.ProcessName = "Mordhau-Win64-Shipping")
+
+        /// Try to get an env variable with increasing scope
+        let tryGetEnvVar (s: string) =
+            let envOpt (envVar: string) =
+                if String.isNullOrEmpty envVar then None
+                else Some(envVar)
+
+            let procVar = Environment.GetEnvironmentVariable(s) |> envOpt
+            let userVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.User) |> envOpt
+            let machVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.Machine) |> envOpt
+
+            match procVar, userVar, machVar with
+            | Some(v), _, _
+            | _, Some(v), _
+            | _, _, Some(v) -> Some(v)
+            | _ -> None
+
+        [<RequireQualifiedAccess>]
+        module Windows =
+            open Fake.Windows
+
+            let regBase = Registry.RegistryBaseKey.HKEYCurrentUser
+            let regKey = @"Software\Microsoft\Windows\CurrentVersion\Run"
+            let regSubValue = "MordhauBuddy"
+
+            /// Get Windows executable directory
+            let getWinExecDir() =
+                Environment.SpecialFolder.LocalApplicationData
+                |> Environment.GetFolderPath
+                |> fun d -> (new IO.DirectoryInfo(d)).FullName @@ "mordhau-buddy-updater"
+
+            /// Get Windows executable path
+            let getWinExecPath() = 
+                getWinExecDir() @@ "installer.exe"
+
+        [<RequireQualifiedAccess>]
+        module Linux =
+            /// Try to get home path
+            let homePath = tryGetEnvVar "HOME"
+
+            /// Get the name of the AppImage
+            let appImageName = sprintf "MordhauBuddy-%s.AppImage" version
+
+            /// Gets the home share falling back to `appPath` if necessary
+            let homeShare = 
+                defaultArg (homePath |> Option.map (fun p -> p @@ ".local/share/mordhau-buddy")) appPath
+
+            /// Name of the home json file
+            let homeName = sprintf "home-%s.json" version
+
+    /// Logging helper functions and initialization
+    [<AutoOpen>]
+    module Logger =
+        open Logary.Targets.FileSystem
+
+        /// Determine logging directory path
+        let logPath : FolderPath = 
+            if Environment.isLinux then
+                Info.Linux.homeShare @@ "logging"
+            else Info.Windows.getWinExecDir() @@ "logging"
+
+        module private Impl =
+            open Logary.Targets
+            open Logary.Configuration
+            open Logary.Targets.File
+
+            /// Define logging file naming scheme
+            let fileConf =
+                File.FileConf.create logPath (Naming ("{service}-{host}-{datetime}", "log"))
+                |> fun f -> { f with policies = Rotation.Rotate([RotationPolicy.FileSize(MiB 5L)], [DeletionPolicies.maxNoOfFiles 5s]) }
+
+            /// Create logging targets
+            let targets =
+                [ File.create fileConf "test"
+                  LiterateConsole.create LiterateConsole.empty "console" ]
+
+            let service = "MordhauBuddy"
+            let host = "Core"
+
+            /// Create logary LogNManager
+            let logary =
+                Config.create service host
+                |> Config.targets targets
+                |> Config.ilogger (ILogger.Console Debug)
+                |> Config.buildAndRun
+
+            /// Create a logger
+            let getLogger (sOpt: string option) =
+                match sOpt with
+                | Some(s) ->
+                    sprintf "%s.%s.%s" Impl.service Impl.host s
+                | None ->
+                    sprintf "%s.%s" Impl.service Impl.host
+                |> PointName.parse
+                |> Impl.logary.getLogger
+
+        type IEvent =
+            abstract Event: value:string -> level:LogLevel -> Message
+
+        type Logger(?logSource: string, ?event: IEvent) =
+            let logger = Impl.getLogger logSource
+            let ev = defaultArg (event |> Option.map (fun iEv -> iEv.Event)) eventX
+            member this.Logger = logger
+
+            /// Accepts a `string` or `StringFormat`
+            ///
+            /// Log a verbose message and consume the input
+            member this.LogVerbose<'T> (format: StringFormat<'T, unit>) : 'T =
+                kprintf (ev >> logger.verbose) format
+
+            /// Accepts a `string` or `StringFormat`
+            ///
+            /// Log an info message and consume the input
+            member this.LogInfo<'T> (format: StringFormat<'T, unit>) : 'T =
+                kprintf (ev >> logger.info) format
+
+            /// Accepts a `string` or `StringFormat`
+            ///
+            /// Log a debug message and consume the input
+            member this.LogDebug<'T> (format: StringFormat<'T, unit>) : 'T =
+                kprintf (ev >> logger.debug) format
+
+            /// Accepts a `string` or `StringFormat`
+            ///
+            /// Log a warning message and consume the input
+            member this.LogWarn<'T> (format: StringFormat<'T, unit>) : 'T =
+                kprintf (ev >> logger.warn) format
+
+            /// Accepts a `string` or `StringFormat`
+            ///
+            /// Log an error message and consume the input
+            member this.LogError<'T> (format: StringFormat<'T, unit>) : 'T =
+                kprintf (ev >> logger.error) format
+
+            /// Accepts a `string` or `StringFormat`
+            ///
+            /// Log a fatal message and consume the input
+            member this.LogFatal<'T> (format: StringFormat<'T, unit>) : 'T =
+                kprintf (ev >> logger.fatal) format
+
+    /// Generic IO tasks
+    [<AutoOpen>]
+    module GenericIO =
+        open Fake.IO
+        open Fake.IO.Globbing.Operators
+        open System.IO
+
+        let logger = Logger "Helpers.GenericIO"
+
+        let deleteFileIgnore (filePath: string) =
+            try
+                async { File.Delete filePath } 
+                |> Async.RunSynchronously
+            with e -> 
+                logger.LogError "Error deleting file: %s\n%s\n%s" filePath e.Message e.StackTrace
+                ()
+
+        let deleteDir (dirPath: string) =
+            try
+                async {
+                    Shell.deleteDir dirPath    
+                }
+                |> Async.RunSynchronously
+            with e ->
+                logger.LogError "Error deleting directory: %s\n%s\n%s" dirPath e.Message e.StackTrace
+                ()
+
+        let cleanUpLogging (dir: string) =
+            let di = DirectoryInfo.ofPath dir
+
+            if di.Exists && di.GetFiles().Length > 5 then
+                !! (di.FullName @@ "*.log")
+                |> List.ofSeq
+                |> List.map (fun f -> FileInfo.ofPath (di.FullName @@ f))
+                |> List.sortByDescending (fun f -> f.LastWriteTimeUtc)
+                |> List.chunkBySize 5
+                |> List.tail
+                |> List.concat
+                |> List.iter (fun f -> deleteFileIgnore f.FullName)
 
     /// Http related helper fuctions
     module Http =
@@ -36,7 +222,7 @@ module Helpers =
         type DownloadFile =
             { Url: string
               FileName: string
-              MapName: string
+              Name: string
               Directory: IO.DirectoryInfo
               Size: float<MB>
               UpdateFun: int -> unit
@@ -188,12 +374,12 @@ module Helpers =
             | _ ->
                 httpErrorMsg resp
                 |> httpError resp.StatusCode
-                |> Error
+                |> Result.Error
 
         let httpStreamOk (resp: HttpResponseWithStream) =
             match resp.StatusCode with
             | e when e < 300 && e >= 200 -> resp.ResponseStream |> Ok
-            | _ -> "Error downloading file." |> Error
+            | _ -> "Error downloading file." |> Result.Error
 
     /// Json helpers
     module Json =

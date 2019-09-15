@@ -23,3 +23,10 @@
 * Adding checking to prohibit users from taking 
   certain actions while Mordhau is running
 * Fixed some issues with initial setup
+
+### 1.2.0 - Saturday, September 14, 2019
+* Removed Maps Installer functionality since it is
+  now natively supported within Mordhau
+* Added file logging so reporting issues is easier.
+  * See [here](https://shmew.github.io/MordhauBuddy/reporting-issues.html) 
+    for more information

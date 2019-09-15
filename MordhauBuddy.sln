@@ -30,8 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 		docsrc\content\contributing.fsx = docsrc\content\contributing.fsx
 		docsrc\content\face-tools.fsx = docsrc\content\face-tools.fsx
 		docsrc\content\index.fsx = docsrc\content\index.fsx
-		docsrc\content\map-installer.fsx = docsrc\content\map-installer.fsx
 		docsrc\content\mordhau-config.fsx = docsrc\content\mordhau-config.fsx
+		reporting-issues.fsx = reporting-issues.fsx
 		docsrc\content\settings.fsx = docsrc\content\settings.fsx
 	EndProjectSection
 EndProject
@@ -92,6 +92,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\labels.yml = .github\workflows\labels.yml
 		.github\workflows\secrets.yml = .github\workflows\secrets.yml
 		.github\workflows\stale.yml = .github\workflows\stale.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{4D93359E-5B28-4DAB-8223-BDA67167108E}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\installer.nsh = scripts\installer.nsh
 	EndProjectSection
 EndProject
 Global

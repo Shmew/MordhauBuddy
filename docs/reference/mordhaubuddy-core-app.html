@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Maps - MordhauBuddy</title>
+    <title>App - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,32 +34,54 @@
 
 
 
-<h1>Maps</h1>
+<h1>App</h1>
 <p>
-
-    <span>Namespace: MordhauBuddy.Shared</span><br />
-        <span>Parent Module: <a href="mordhaubuddy-shared-electronbridge.html">ElectronBridge</a></span><br />
-    </p>
+  <span>Namespace: MordhauBuddy.Core</span><br />
+  </p>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
+
+<!-- Render nested types and modules, if there are any -->
+  <h2>Nested types and modules</h2>
+  <div>
+      <table class="table table-bordered module-list">
+    <thead>
+      <tr><td>Module</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="module-name">
+            <a href="mordhaubuddy-core-app-bridge.html">Bridge</a>
+          </td>
+          <td class="xmldoc">
+          <p>Websocket bridge</p>
+
+
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '986', 986)" onmouseover="showTip(event, '986', 986)">
-            CancelMap(string)
+          <code onmouseout="hideTip(event, '152', 152)" onmouseover="showTip(event, '152', 152)">
+            app
           </code>
-          <div class="tip" id="986">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="152">
+            <strong>Signature:</strong> IWebHostBuilder<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L273-273" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L301-301" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -69,15 +91,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '987', 987)" onmouseover="showTip(event, '987', 987)">
-            ConfirmInstalled(string)
+          <code onmouseout="hideTip(event, '153', 153)" onmouseover="showTip(event, '153', 153)">
+            logger
           </code>
-          <div class="tip" id="987">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="153">
+            <strong>Signature:</strong> Logger<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L272-272" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L12-12" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -87,15 +109,19 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '988', 988)" onmouseover="showTip(event, '988', 988)">
-            GetAvailableMaps
+          <code onmouseout="hideTip(event, '154', 154)" onmouseover="showTip(event, '154', 154)">
+            main(arg1)
           </code>
-          <div class="tip" id="988">
-            <strong>Signature:</strong> <br />
-                                  </div>
+          <div class="tip" id="154">
+            <strong>Signature:</strong> string [] -&gt; int<br />
+                                    <span>
+            <strong>Attributes:</strong><br />
+[&lt;EntryPoint&gt;]<br />
+          </span>
+          </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L269-269" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L310-310" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -105,33 +131,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '989', 989)" onmouseover="showTip(event, '989', 989)">
-            GetInstalledMaps(string)
+          <code onmouseout="hideTip(event, '155', 155)" onmouseover="showTip(event, '155', 155)">
+            server
           </code>
-          <div class="tip" id="989">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="155">
+            <strong>Signature:</strong> HttpHandler<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L270-270" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '990', 990)" onmouseover="showTip(event, '990', 990)">
-            InstallMap(MapTarget)
-          </code>
-          <div class="tip" id="990">
-            <strong>Signature:</strong> MapTarget<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Shared/Types.fs#L271-271" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Bridge.fs#L299-299" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -150,12 +158,12 @@
             <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
             <li><a href="/MordhauBuddy/release-notes.html">Release Notes</a></li>
             <li><a href="/MordhauBuddy/contributing.html">Contributing</a></li>
+            <li><a href="/MordhauBuddy/reporting-issues.html">Reporting Issues</a></li>
             
             <li class="nav-header">Documentation</li>
             <li><a href="/MordhauBuddy/index.html">Introduction</a></li>
             <li class="divider"></li>
             <li><a href="/MordhauBuddy/community.html">Community</a></li>
-            <li><a href="/MordhauBuddy/map-installer.html">Map Installer</a></li>
             <li><a href="/MordhauBuddy/mordhau-config.html">Mordhau Configuration</a></li>
             <li><a href="/MordhauBuddy/face-tools.html">Face Tools</a></li>
             <li><a href="/MordhauBuddy/settings.html">MordhauBuddy Settings</a></li>

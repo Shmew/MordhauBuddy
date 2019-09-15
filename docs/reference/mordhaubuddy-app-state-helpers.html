@@ -48,37 +48,6 @@
 </div>
 
 <!-- Render nested types and modules, if there are any -->
-  <h2>Nested types and modules</h2>
-  <div>
-      <table class="table table-bordered type-list">
-    <thead>
-      <tr><td>Type</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td class="type-name">
-            <a href="mordhaubuddy-app-state-helpers-cmdir.html">CMDir</a>
-          </td>
-          <td class="xmldoc">
-          <p>Discriminated union to allow function reuse when working with map and config directories</p>
-
-
-          </td>
-        </tr>
-        <tr>
-          <td class="type-name">
-            <a href="mordhaubuddy-app-state-helpers-cmfile.html">CMFile</a>
-          </td>
-          <td class="xmldoc">
-          <p>Discriminated union to allow function reuse when working with map and config files</p>
-
-
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
 
   <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
@@ -89,15 +58,69 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '102', 102)" onmouseover="showTip(event, '102', 102)">
+          <code onmouseout="hideTip(event, '99', 99)" onmouseover="showTip(event, '99', 99)">
             appSender
           </code>
-          <div class="tip" id="102">
+          <div class="tip" id="99">
             <strong>Signature:</strong> AppBridgeSender<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L166-166" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L113-113" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '100', 100)" onmouseover="showTip(event, '100', 100)">
+            comSender
+          </code>
+          <div class="tip" id="100">
+            <strong>Signature:</strong> CommunityBridgeSender<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L112-112" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '101', 101)" onmouseover="showTip(event, '101', 101)">
+            setAttemptedLoad b cDir
+          </code>
+          <div class="tip" id="101">
+            <strong>Signature:</strong> b:bool -&gt; cDir:ConfigDir -&gt; ConfigDir<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L73-73" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '102', 102)" onmouseover="showTip(event, '102', 102)">
+            setExists b cDir
+          </code>
+          <div class="tip" id="102">
+            <strong>Signature:</strong> b:bool -&gt; cDir:ConfigDir -&gt; ConfigDir<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L72-72" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -108,14 +131,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '103', 103)" onmouseover="showTip(event, '103', 103)">
-            comSender
+            setFaceTools model fTool
           </code>
           <div class="tip" id="103">
-            <strong>Signature:</strong> CommunityBridgeSender<br />
+            <strong>Signature:</strong> model:Model -&gt; fTool:Model -&gt; Model<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L165-165" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L89-89" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -126,14 +149,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '104', 104)" onmouseover="showTip(event, '104', 104)">
-            setAttemptedLoad b arg2
+            setLoading b cDir
           </code>
           <div class="tip" id="104">
-            <strong>Signature:</strong> b:bool -&gt; ^?9068 -&gt; CMDir<br />
-                          <strong>Type parameters:</strong> ^?9068                      </div>
+            <strong>Signature:</strong> b:bool -&gt; cDir:ConfigDir -&gt; ConfigDir<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L115-115" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L74-74" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -144,14 +167,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '105', 105)" onmouseover="showTip(event, '105', 105)">
-            setExists b arg2
+            setMordConfig model mConf
           </code>
           <div class="tip" id="105">
-            <strong>Signature:</strong> b:bool -&gt; ^?9066 -&gt; CMDir<br />
-                          <strong>Type parameters:</strong> ^?9066                      </div>
+            <strong>Signature:</strong> model:Model -&gt; mConf:Model -&gt; Model<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L110-110" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L90-90" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -162,14 +185,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '106', 106)" onmouseover="showTip(event, '106', 106)">
-            setFaceTools model fTool
+            setMordRunning model b
           </code>
           <div class="tip" id="106">
-            <strong>Signature:</strong> model:Model -&gt; fTool:Model -&gt; Model<br />
+            <strong>Signature:</strong> model:Model -&gt; b:bool -&gt; Model<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L142-142" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L92-92" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -180,14 +203,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '107', 107)" onmouseover="showTip(event, '107', 107)">
-            setLoading b arg2
+            setParsed b cDir
           </code>
           <div class="tip" id="107">
-            <strong>Signature:</strong> b:bool -&gt; ^?9070 -&gt; CMDir<br />
-                          <strong>Type parameters:</strong> ^?9070                      </div>
+            <strong>Signature:</strong> b:bool -&gt; cDir:ConfigDir -&gt; ConfigDir<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L120-120" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L71-71" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -198,14 +221,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '108', 108)" onmouseover="showTip(event, '108', 108)">
-            setMapInstaller model mInstall
+            setPath s cDir
           </code>
           <div class="tip" id="108">
-            <strong>Signature:</strong> model:Model -&gt; mInstall:Model -&gt; Model<br />
+            <strong>Signature:</strong> s:string -&gt; cDir:ConfigDir -&gt; ConfigDir<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L140-140" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L70-70" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -216,14 +239,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '109', 109)" onmouseover="showTip(event, '109', 109)">
-            setMordConfig model mConf
+            setResLoaded cFile res cDir
           </code>
           <div class="tip" id="109">
-            <strong>Signature:</strong> model:Model -&gt; mConf:Model -&gt; Model<br />
+            <strong>Signature:</strong> cFile:ConfigFile -&gt; res:Loaded -&gt; cDir:ConfigDir -&gt; Loaded<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L143-143" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L76-76" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -234,14 +257,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '110', 110)" onmouseover="showTip(event, '110', 110)">
-            setMordRunning model b
+            setResource model res
           </code>
           <div class="tip" id="110">
-            <strong>Signature:</strong> model:Model -&gt; b:bool -&gt; Model<br />
+            <strong>Signature:</strong> model:Model -&gt; res:Loaded -&gt; Model<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L145-145" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L87-87" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -252,14 +275,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '111', 111)" onmouseover="showTip(event, '111', 111)">
-            setParsed b arg2
+            setSettings model set
           </code>
           <div class="tip" id="111">
-            <strong>Signature:</strong> b:bool -&gt; ^?9064 -&gt; CMDir<br />
-                          <strong>Type parameters:</strong> ^?9064                      </div>
+            <strong>Signature:</strong> model:Model -&gt; set:Model -&gt; Model<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L105-105" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L88-88" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -270,14 +293,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '112', 112)" onmouseover="showTip(event, '112', 112)">
-            setPath s arg2
+            settingsSender
           </code>
           <div class="tip" id="112">
-            <strong>Signature:</strong> s:string -&gt; ^?9062 -&gt; CMDir<br />
-                          <strong>Type parameters:</strong> ^?9062                      </div>
+            <strong>Signature:</strong> SettingBridgeSender<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L100-100" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L111-111" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -288,14 +311,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '113', 113)" onmouseover="showTip(event, '113', 113)">
-            setResLoaded arg1 res arg3
+            setUpdate model up
           </code>
           <div class="tip" id="113">
-            <strong>Signature:</strong> ^?9072 -&gt; res:Loaded -&gt; ^?9073 -&gt; Loaded<br />
-                          <strong>Type parameters:</strong> ^?9072, ^?9073                      </div>
+            <strong>Signature:</strong> model:Model -&gt; up:UpdatePending -&gt; Model<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L125-125" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L86-86" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -306,14 +329,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '114', 114)" onmouseover="showTip(event, '114', 114)">
-            setResource model res
+            setUpdateError b up
           </code>
           <div class="tip" id="114">
-            <strong>Signature:</strong> model:Model -&gt; res:Loaded -&gt; Model<br />
+            <strong>Signature:</strong> b:bool -&gt; up:UpdatePending -&gt; UpdatePending<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L138-138" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L84-84" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -324,14 +347,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '115', 115)" onmouseover="showTip(event, '115', 115)">
-            setSettings model set
+            setUpdateReady b up
           </code>
           <div class="tip" id="115">
-            <strong>Signature:</strong> model:Model -&gt; set:Model -&gt; Model<br />
+            <strong>Signature:</strong> b:bool -&gt; up:UpdatePending -&gt; UpdatePending<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L139-139" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L83-83" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -342,136 +365,18 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '116', 116)" onmouseover="showTip(event, '116', 116)">
-            settingsSender
-          </code>
-          <div class="tip" id="116">
-            <strong>Signature:</strong> SettingBridgeSender<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L164-164" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '117', 117)" onmouseover="showTip(event, '117', 117)">
-            setUpdate model up
-          </code>
-          <div class="tip" id="117">
-            <strong>Signature:</strong> model:Model -&gt; up:UpdatePending -&gt; Model<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L137-137" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '118', 118)" onmouseover="showTip(event, '118', 118)">
-            setUpdateError b up
-          </code>
-          <div class="tip" id="118">
-            <strong>Signature:</strong> b:bool -&gt; up:UpdatePending -&gt; UpdatePending<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L135-135" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '119', 119)" onmouseover="showTip(event, '119', 119)">
-            setUpdateReady b up
-          </code>
-          <div class="tip" id="119">
-            <strong>Signature:</strong> b:bool -&gt; up:UpdatePending -&gt; UpdatePending<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L134-134" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '120', 120)" onmouseover="showTip(event, '120', 120)">
             setUpdateRefreshing b up
           </code>
-          <div class="tip" id="120">
+          <div class="tip" id="116">
             <strong>Signature:</strong> b:bool -&gt; up:UpdatePending -&gt; UpdatePending<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L133-133" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L82-82" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <h3>Active patterns</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Active pattern</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '121', 121)" onmouseover="showTip(event, '121', 121)">
-            ( |CMDir| )(x)
-          </code>
-          <div class="tip" id="121">
-            <strong>Signature:</strong> x:^?9056 -&gt; ^_arg3<br />
-                          <strong>Type parameters:</strong> ^?9056, ^_arg3                      </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L97-97" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>|CMDir|</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '122', 122)" onmouseover="showTip(event, '122', 122)">
-            ( |CMFile| )(x)
-          </code>
-          <div class="tip" id="122">
-            <strong>Signature:</strong> x:^?9059 -&gt; ^_arg3<br />
-                          <strong>Type parameters:</strong> ^?9059, ^_arg3                      </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/App/State.fs#L98-98" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>|CMFile|</code></p>
         </td>
       </tr>
     </tbody>
@@ -486,12 +391,12 @@
             <li><a href="https://github.com/Shmew/MordhauBuddy">Source Code</a></li>
             <li><a href="/MordhauBuddy/release-notes.html">Release Notes</a></li>
             <li><a href="/MordhauBuddy/contributing.html">Contributing</a></li>
+            <li><a href="/MordhauBuddy/reporting-issues.html">Reporting Issues</a></li>
             
             <li class="nav-header">Documentation</li>
             <li><a href="/MordhauBuddy/index.html">Introduction</a></li>
             <li class="divider"></li>
             <li><a href="/MordhauBuddy/community.html">Community</a></li>
-            <li><a href="/MordhauBuddy/map-installer.html">Map Installer</a></li>
             <li><a href="/MordhauBuddy/mordhau-config.html">Mordhau Configuration</a></li>
             <li><a href="/MordhauBuddy/face-tools.html">Face Tools</a></li>
             <li><a href="/MordhauBuddy/settings.html">MordhauBuddy Settings</a></li>

@@ -108,12 +108,6 @@ module ElectronBridge =
         | CommitChanges of bool
 
     [<RequireQualifiedAccess>]
-    type MapOperationResult =
-        | DefaultDir of string option
-        | DirExists of bool
-        | Delete of string * Result<bool, string>
-
-    [<RequireQualifiedAccess>]
     type FaceResult =
         | Random of bool
         | Frankenstein of bool
@@ -124,16 +118,6 @@ module ElectronBridge =
     type ConfigResult =
         | GetConfigs of OptionGroup list
         | MapConfigs of bool
-
-    [<RequireQualifiedAccess>]
-    type MapResult =
-        | AvailableMaps of string list
-        | InstalledMaps of string list
-        | InstallMap of string * Result<bool, string>
-        | InstallMapCancelled of string * bool
-        | InstallMapProgress of string * int
-        | InstallMapComplete of string
-        | InstallMapError of string * string
 
     [<RequireQualifiedAccess>]
     type SettingResult =
@@ -153,10 +137,8 @@ module ElectronBridge =
     type BridgeResult =
         | Community of CommunityResult
         | INIOperation of INIOperationResult
-        | MapOperation of MapOperationResult
         | Faces of FaceResult
         | Config of ConfigResult
-        | Maps of MapResult
         | Settings of SettingResult
         | Updates of UpdateResult
         | Misc of MiscResult
@@ -164,7 +146,6 @@ module ElectronBridge =
     [<RequireQualifiedAccess>]
     type Caller =
         | Community
-        | MapInstaller
         | FaceTools
         | MordhauConfig
         | Settings
@@ -232,12 +213,6 @@ module ElectronBridge =
         | Backup of INIFile list
         | Commit of INIFile list
 
-    [<RequireQualifiedAccess>]
-    type MapFileOperation =
-        | DefaultDir
-        | DirExists of string
-        | Delete of string * string
-
     type Faces =
         | Random of string list
         | Frankenstein of string list
@@ -255,24 +230,6 @@ module ElectronBridge =
         | SetupLinux
 
     [<RequireQualifiedAccess>]
-    type GoogleDrive =
-        { ID: string
-          Size: float<MB> }
-
-    [<RequireQualifiedAccess>]
-    type MapTarget =
-        { Folder: string
-          Directory: string
-          GDrive: GoogleDrive option }
-
-    type Maps =
-        | GetAvailableMaps
-        | GetInstalledMaps of string
-        | InstallMap of MapTarget
-        | ConfirmInstalled of string
-        | CancelMap of string
-
-    [<RequireQualifiedAccess>]
     type Updates =
         | Start
         | Check
@@ -282,10 +239,8 @@ module ElectronBridge =
     type BridgeOperations =
         | CommunityOperation of CommunityOperation
         | INIOperation of INIFileOperation
-        | MapOperation of MapFileOperation
         | Faces of Faces
         | Configs of Configs
-        | Maps of Maps
         | SettingsOperation of SettingsOperation
         | Updates of Updates
         | Misc of MiscOperation

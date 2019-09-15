@@ -12,6 +12,7 @@
 	FSharp.Data
 	FSharp.Json
 	Giraffe
+    Logary
 	Microsoft.NETCore.Platforms
 	Saturn
 	

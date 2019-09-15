@@ -1,17 +1,17 @@
 namespace MordhauBuddy.Core
 
-open Fake.Core
-open Fake.IO
-open Fake.IO.FileSystemOperators
+open Helpers
 open INIReader
 open INIReader.INIExtensions.Options
 open MordhauBuddy.Shared.ElectronBridge
-open System
 
 /// Operations on Mordhau Game ini
 module INIConfiguration =
     /// Module for modifying character face values
     module Frankenstein =
+        
+        let logger = Logger "INIConfiguration.Frakenstein"
+
         [<RequireQualifiedAccess>]
         type FaceActions =
             | Frankenstein
@@ -186,10 +186,15 @@ module INIConfiguration =
                 profiles
                 |> List.fold (fun acc profile -> setCharacterProfileFace acc profile fAction) iVal
                 |> Some
-            with _ -> None
+            with e -> 
+                logger.LogError "Failed to apply changes of:\n\tProfiles: %O\n\tINIValue:\n\t%O\n\tAction: %O\n%O" profiles iVal fAction e
+                None
 
     /// Module for modifying Game and GameUserSettings ini files
     module MordhauConfig =
+
+        let logger = Logger "INIConfiguration.MordhauConfig"
+
         /// Try to cast an INIValue to KeyValue primative
         let castKV (def: KeyValues.Values) (iVal: INIValue option) =
             match def with
@@ -317,4 +322,6 @@ module INIConfiguration =
                     |> mapOptions gameUserFile [ @"/Script/Mordhau.MordhauGameUserSettings" ]
 
                 Some(engine), Some(gameUser)
-            with _ -> None, None
+            with e -> 
+                logger.LogError "Failed to map settings of:\n\tEngine file:\n\t%O\n\tGame user file:\n\t%O\n\tOptions:\n\t%O\n%O" engineFile gameUserFile options e
+                None, None

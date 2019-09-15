@@ -41,27 +41,6 @@ module BridgeUtils =
         /// Modify the configurations based on changes
         member this.MapConfigs oList = MapConfigs(oList) |> wrapConf
 
-    /// Send map operations
-    type MapBridgeSender(caller: Caller) =
-        let wrapOps mCmd = BridgeOps(MapOperation(mCmd), caller)
-        let wrapMaps mCmd = BridgeOps(Maps(mCmd), caller)
-        /// Try to locate the default Mordhau maps directory
-        member this.DefaultDir = MapFileOperation.DefaultDir |> wrapOps
-        /// See if a directory exists
-        member this.DirExists s = MapFileOperation.DirExists(s) |> wrapOps
-        /// Get available maps
-        member this.GetAvailable = Maps.GetAvailableMaps |> wrapMaps
-        /// Get installed maps
-        member this.GetInstalled s = Maps.GetInstalledMaps s |> wrapMaps
-        /// Install a map
-        member this.Install mt = Maps.InstallMap mt |> wrapMaps
-        /// Acknowledge that a map has been installed
-        member this.ConfirmInstall s = Maps.ConfirmInstalled s |> wrapMaps
-        /// Uninstall a map
-        member this.Uninstall dir fName = MapFileOperation.Delete(dir, fName) |> wrapOps
-        /// Cancel a map installation
-        member this.Cancel fName = Maps.CancelMap fName |> wrapMaps
-
     /// Send setting operations
     type SettingBridgeSender(caller: Caller) =
         let wrapSetting sCmd = BridgeOps(SettingsOperation(sCmd), caller)
@@ -159,120 +138,6 @@ module RenderUtils =
                 | Submit.Success _ -> true
                 | _ -> false
 
-        type UpdateSettings =
-            | InstalledAndNew
-            | OnlyInstalled
-            | NotifyOnly
-            | NoActions
-
-            member this.Text =
-                match this with
-                | InstalledAndNew -> "Update installed and get new maps"
-                | OnlyInstalled -> "Update only installed maps"
-                | NotifyOnly -> "Only notify me"
-                | NoActions -> "Do nothing"
-
-            static member private Cases = FSharpType.GetUnionCases typeof<UpdateSettings>
-
-            static member private Instantiate name =
-                UpdateSettings.Cases
-                |> Array.tryFind (fun uc -> uc.Name = name)
-                |> Option.map (fun uc -> Reflection.FSharpValue.MakeUnion(uc, [||]) :?> UpdateSettings)
-                |> Option.get
-
-            static member GetSettings =
-                UpdateSettings.Cases |> Array.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
-
-            member this.GetTag =
-                UpdateSettings.Cases
-                |> Seq.tryFind (fun uc -> uc.Name = this.ToString())
-                |> Option.map (fun uc -> uc.Tag)
-                |> Option.get
-
-            static member GetSettingFromTag(tag: int) =
-                UpdateSettings.Cases
-                |> Seq.tryFind (fun t -> t.Tag = tag)
-                |> Option.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
-                |> Option.get
-
-            static member TryGetCaseFromText(s: string) =
-                UpdateSettings.GetSettings
-                |> Array.filter (fun setting -> setting.Text = s)
-                |> Array.tryHead
-
-            static member TryGetSettingFromText(s: string) =
-                UpdateSettings.Cases
-                |> Seq.tryFind (fun t -> t.Name = s)
-                |> Option.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
-
-    module MapTypes =
-        open System
-
-        [<RequireQualifiedAccess>]
-        type MapVersion =
-            { Major: int
-              Minor: int
-              Patch: int }
-
-            static member Create(major, minor, patch) =
-                { MapVersion.Major = major
-                  MapVersion.Minor = minor
-                  MapVersion.Patch = patch }
-
-            member this.GetString() = sprintf "%i.%i.%i" this.Major this.Minor this.Patch
-
-        [<RequireQualifiedAccess>]
-        type PlayerRange =
-            { Min: int
-              Max: int }
-
-        [<RequireQualifiedAccess>]
-        type SuggestedPlayers =
-            | Range of PlayerRange
-            | Static of int
-
-        type CommunityMap =
-            { Name: string option
-              Folder: string
-              Description: string option
-              Author: string option
-              Version: MapVersion
-              ReleaseDate: DateTime option
-              FileSize: float<MB> option
-              Players: SuggestedPlayers option
-              Image: string option
-              GoogleDriveID: string option }
-
-            member this.GetName() =
-                match this.Name with
-                | Some(name) -> name
-                | None -> this.Folder
-
-            member this.GetPlayers() =
-                match this.Players with
-                | Some(p) ->
-                    match p with
-                    | SuggestedPlayers.Range range -> sprintf "%i - %i" range.Min range.Max |> Some
-                    | SuggestedPlayers.Static i -> sprintf "%i" i |> Some
-                | None -> None
-
-            member this.GetDate() = this.ReleaseDate |> Option.map (fun d -> d.ToString("dd-MM-yyyy"))
-
-            member this.GetMetaData() =
-                let desc = this.Description |> Option.map (fun s -> sprintf "%s%c" s '\n')
-                let author = this.Author |> Option.map (fun s -> sprintf "Author: %s" s)
-
-                let date =
-                    this.ReleaseDate
-                    |> Option.bind (fun d ->
-                        if d.ToString() = "Invalid Date" then None
-                        else (sprintf "Release Date: %s" <| d.ToString("dd-MM-yyyy")) |> Some)
-
-                let fileSize = this.FileSize |> Option.map (fun s -> sprintf "File size: %s MB" <| s.ToString())
-                let players = this.GetPlayers() |> Option.map (fun s -> sprintf "Players: %s" s)
-
-                [ desc; author; date; fileSize; players ] |> List.choose id
-
     module String =
         open System.Text.RegularExpressions
 
@@ -335,7 +200,6 @@ module RenderUtils =
         [<AutoOpen>]
         module private Helpers =
             open System
-            open MapTypes
 
             /// Remove all whitespace
             let removeAllWs (s: string) =
@@ -403,7 +267,8 @@ module RenderUtils =
                     match iList.Length with
                     | i when i >= 3 -> iList |> List.take 3
                     | i -> List.init (3 - i) (fun _ -> 0) |> List.append iList
-                    |> fun iL -> MapVersion.Create(iL.[0], iL.[1], iL.[2])
+                    |> fun iL -> 
+                        {| Major = iL.[0]; Minor = iL.[1]; Patch = iL.[2] |}
 
             let getDate (s: string) =
                 s.Split('/')
@@ -412,26 +277,6 @@ module RenderUtils =
                     match DateTime.TryParse(s) with
                     | (true, dt) -> dt |> Some
                     | _ -> None
-
-            /// Try to get player count
-            let getPlayers (s: string) =
-                applyRPattern RegPatterns.playersStatic s id
-                |> List.tryHead
-                |> Option.bind tryGetInt
-                |> fun tryStatic ->
-                    match Int32.TryParse s, tryStatic with
-                    | (true, i), _
-                    | _, Some(i) -> SuggestedPlayers.Static(i) |> Some
-                    | _ ->
-                        applyRPattern RegPatterns.playersRange s getInt
-                        |> fun pList ->
-                            match pList with
-                            | [ min; max ] when pList.Length = 2 ->
-                                { PlayerRange.Min = min
-                                  PlayerRange.Max = max }
-                                |> SuggestedPlayers.Range
-                                |> Some
-                            | _ -> None
 
             let getGDriveID (s: string) =
                 applyRPattern RegPatterns.gDrive s id
@@ -530,16 +375,6 @@ module RenderUtils =
                 |> t.IsSome ""
                 |> t.End
 
-        /// Validate players
-        let validatePlayers (s: string) =
-            Fable.Validation.Core.single <| fun t ->
-                t.TestOne s
-                |> t.Trim
-                |> t.NotBlank ""
-                |> t.Map getPlayers
-                |> t.IsSome ""
-                |> t.End
-
         /// Validate any string by trimming, and ensure is not empty
         let validateGeneric (s: string) =
             Fable.Validation.Core.single <| fun t ->
@@ -550,10 +385,6 @@ module RenderUtils =
 
     /// Directory helper functions
     module Directory =
-        type DirLoad =
-            | ConfigFiles of ConfigFile
-            | MapDir
-
         /// A type to represent the current directory state
         [<RequireQualifiedAccess>]
         type DirState =
@@ -583,7 +414,7 @@ module RenderUtils =
                 | _ -> false
 
         type ConfigDir =
-            { Dir: DirLoad
+            { Dir: ConfigFile
               Directory: string
               Label: string
               State: DirState }
@@ -617,7 +448,6 @@ module RenderUtils =
                 | Game
                 | Engine
                 | GameUser
-                | Maps
 
             let setDirError s (dir: ConfigDir) = { dir with State = DirState.Error s }
 
@@ -642,46 +472,6 @@ module RenderUtils =
             65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
 
         let typicalConfigDir = @"C:\Users\shmew\AppData\Local\Mordhau\Saved\Config\WindowsClient"
-        let typicalMapDir = @"C:\Program Files (x86)\Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps"
-
-    /// Module to deal with parsing external data sources
-    module WebParsing =
-        open System
-        open Validation
-        open MapTypes
-
-        /// Because Json is too complex
-        let getComMap (sInfoFile: string) =
-            let infoArr = sInfoFile.Split([| "\r\n"; "\r"; "\n" |], StringSplitOptions.None)
-
-            let mapResult res =
-                match res with
-                | Ok(s) -> Some(s)
-                | _ -> None
-
-            let validateInfo (i: int) (vFun: string -> Result<'t, string list>) =
-                if infoArr.Length - 1 < i then
-                    None
-                else
-                    infoArr.[i]
-                    |> vFun
-                    |> mapResult
-
-            let vGeneric (i: int) = validateInfo i validateGeneric
-
-            { Name = vGeneric 0
-              Folder = infoArr.[1].Trim()
-              Description = vGeneric 2
-              Author = vGeneric 3
-              Version =
-                  validateInfo 4 validateVer
-                  |> Option.orElse (MapTypes.MapVersion.Create(0, 0, 0) |> Some)
-                  |> Option.get
-              ReleaseDate = validateInfo 5 validateDate
-              FileSize = validateInfo 6 validateFileSize
-              Players = validateInfo 7 validatePlayers
-              Image = validateInfo 8 validateImg
-              GoogleDriveID = validateInfo 9 validateGDrive }
 
     /// Parsing rss feeds that return html
     module HtmlParsing =
@@ -765,7 +555,7 @@ module RenderUtils =
                         Mutable =
                             { KeyValues.Mutable.Min = KeyValues.MutableValues.MutFloat(0.)
                               KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(1.)
-                              KeyValues.Mutable.Step = 0.1 }
+                              KeyValues.Mutable.Step = 0.05 }
                             |> Some }
                       { Key = @"r.upscale.panini.s"
                         Default = KeyValues.Values.Float(0.025)

@@ -13,62 +13,35 @@ module State =
     open Types
     open Node.Api
 
-    let init (uSet: UpdateSettings, bSet: BackupSettings, autoL: bool) =
+    let init (bSet: BackupSettings, autoL: bool) =
         { GameDir =
-              { Dir = DirLoad.ConfigFiles(ConfigFile.Game)
+              { Dir = ConfigFile.Game
                 Directory = ""
                 Label = "Mordhau Game.ini directory"
                 State = DirState.Init "" }
           EngineDir =
-              { Dir = DirLoad.ConfigFiles(ConfigFile.Engine)
+              { Dir = ConfigFile.Engine
                 Directory = ""
                 Label = "Mordhau Engine.ini directory"
                 State = DirState.Init "" }
           GameUserDir =
-              { Dir = DirLoad.ConfigFiles(ConfigFile.GameUserSettings)
+              { Dir = ConfigFile.GameUserSettings
                 Directory = ""
                 Label = "Mordhau GameUserSettings.ini directory"
                 State = DirState.Init "" }
-          MapsDir =
-              { Dir = DirLoad.MapDir
-                Directory = ""
-                Label = "Mordhau maps directory"
-                State = DirState.Init "" }
-          MapUpdateSettings = uSet
           BackupSettings = bSet
           AutoLaunch = autoL }
 
     [<AutoOpen>]
     module private Helpers =
         let iniSender = new INIBridgeSender(Caller.Settings)
-        let mapSender = new MapBridgeSender(Caller.Settings)
-        let mapSenderMap = new MapBridgeSender(Caller.MapInstaller)
         let settingsSender = new SettingBridgeSender(Caller.Settings)
-
-        type Dirs =
-            | Game
-            | Engine
-            | GameUser
-            | Maps
-
-        let setDirError s (dir: ConfigDir) = { dir with State = DirState.Error s }
-
-        let setDirSuccess s (dir: ConfigDir) = { dir with State = DirState.Success s }
-
-        let setDirInit s (dir: ConfigDir) = { dir with State = DirState.Init s }
-
-        let setDirDirectory s (dir: ConfigDir) = { dir with Directory = s }
-
-        let iFileWithDir (cFile: ConfigFile) (dir: string) =
-            { File = cFile
-              WorkingDir = dir |> Some }
 
         let setDir (model: Model) (dirType: Dirs) (dir: ConfigDir) =
             match dirType with
             | Game -> { model with GameDir = dir }
             | Engine -> { model with EngineDir = dir }
             | GameUser -> { model with GameUserDir = dir }
-            | Maps -> { model with MapsDir = dir }
 
         let sendParse (cFile: ConfigFile) (dir: string) =
             match cFile with
@@ -177,44 +150,12 @@ module State =
                         let m = mList |> List.fold (fun acc o -> acc |> o.Func) model
                         m, Cmd.none
                 | _ -> model, Cmd.none
-            | BridgeResult.MapOperation mOp ->
-                match mOp with
-                | MapOperationResult.DefaultDir dOpt ->
-                    match dOpt with
-                    | Some(d) ->
-                        setDirInit "Mordhau map directory located" model.MapsDir
-                        |> setDirDirectory d
-                        |> setDir model Maps
-                        |> fun m ->
-                            m,
-                            m.MapsDir.Directory
-                            |> mapSender.DirExists
-                            |> Cmd.bridgeSend
-                    | None ->
-                        setDirError "Unable to automatically detect Mordhau map directory" model.MapsDir
-                        |> setDir model Maps
-                        |> fun m -> m, Cmd.none
-                | MapOperationResult.DirExists b ->
-                    if b then
-                        setDirSuccess "" model.MapsDir
-                        |> setDir model Maps
-                        |> fun m ->
-                            m,
-                            model.MapsDir.Directory
-                            |> mapSenderMap.GetInstalled
-                            |> Cmd.bridgeSend
-                    else
-                        setDirError "Maps directory not found" model.MapsDir
-                        |> setDir model Maps
-                        |> fun m -> m, Cmd.none
-                | _ -> model, Cmd.none
             | BridgeResult.Settings sOp ->
                 match sOp with
                 | SettingResult.EnabledAutoLaunch b -> { model with AutoLaunch = b }, Cmd.none
                 | SettingResult.DisabledAutoLaunch b -> { model with AutoLaunch = b |> not }, Cmd.none
             | _ -> model, Cmd.none
         | GetDefaultDir -> model, iniSender.DefaultDir |> Cmd.bridgeSend
-        | GetMapDir -> model, mapSender.DefaultDir |> Cmd.bridgeSend
         | SetConfigDir(s, res, cFile) ->
             let setConfigDir (res: Result<string, string list>) (cDir: ConfigDir) (dirType: Dirs) =
                 match res with
@@ -240,37 +181,13 @@ module State =
             | ConfigFile.Engine -> Engine, model.EngineDir
             | ConfigFile.GameUserSettings -> GameUser, model.GameUserDir
             |> fun (d, c) -> setConfigDir res c d
-        | SetMapDir(s, res) ->
-            match res with
-            | Ok s ->
-                setDirInit "" model.MapsDir
-                |> setDirDirectory s
-                |> setDir model Maps
-                |> fun m -> m, Cmd.bridgeSend (mapSender.DirExists s)
-            | Error _ ->
-                errorStrings res
-                |> setDirError
-                <| model.MapsDir
-                |> setDirDirectory s
-                |> setDir model Maps
-                |> fun m -> m, Cmd.none
-        | RequestLoad dirLoad ->
+        | RequestLoad cFile ->
             let handleLoaded =
-                match dirLoad with
-                | ConfigFiles(cFile) ->
                     function
                     | DirSelect.Selected s -> (s, validateDir s, cFile) |> SetConfigDir
                     | DirSelect.Canceled -> LoadCanceled
-                | MapDir ->
-                    function
-                    | DirSelect.Selected s -> (s, validateDir s) |> SetMapDir
-                    | DirSelect.Canceled -> LoadCanceled
             model, Cmd.OfPromise.perform selectDir () handleLoaded
         | LoadCanceled -> model, Cmd.none
-        | MapUpdateSetting newSets ->
-            match newSets with
-            | Some(s) -> { model with MapUpdateSettings = s }, Cmd.none
-            | _ -> model, Cmd.none
         | BackupSetting newSets ->
             match newSets with
             | Some(s) -> { model with BackupSettings = s }, Cmd.bridgeSend (settingsSender.BackupPolicy(s))
@@ -281,9 +198,6 @@ module State =
             |> fun sender -> { model with AutoLaunch = model.AutoLaunch |> not }, Cmd.bridgeSend sender
         | RunSetup ->
             let cmds =
-                [ yield if model.AutoLaunch then settingsSender.EnableAutoLaunch
-                        else settingsSender.DisableAutoLaunch
-                        |> Cmd.bridgeSend
-                  if ``process``.platform <> Node.Base.Platform.Win32 then
+                [ if ``process``.platform <> Node.Base.Platform.Win32 then
                       yield Cmd.bridgeSend (settingsSender.SetupLinux) ]
             model, Cmd.batch cmds

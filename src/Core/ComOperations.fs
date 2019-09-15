@@ -1,17 +1,24 @@
 namespace MordhauBuddy.Core
 
+open Helpers
 open System
-open System.Xml
 open System.Xml.Linq
-open MordhauBuddy.Shared.ElectronBridge
 
 /// Module for community related content
 module ComOperations =
+    
+    let logger = Logger "ComOperations"
+
     module private XML =
+        
+        let logger = Logger "ComOperations.XML"
+
         let tryParse s =
             try
                 XDocument.Parse s |> Some
-            with _ -> None
+            with e -> 
+                logger.LogError "Failed to parse XML: %s\n%O" s e
+                None
 
         let xn s = XName.Get s
 

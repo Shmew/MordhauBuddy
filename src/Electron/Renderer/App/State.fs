@@ -10,7 +10,6 @@ module State =
     let pageTitle =
         function
         | Community -> "Community"
-        | MapsInstaller -> "Map Installer"
         | FaceTools -> "Face Tools"
         | MordhauConfig -> "Mordhau Configuration"
         | Settings -> "Settings"
@@ -20,10 +19,6 @@ module State =
     let private store = Store.init()
 
     let init() =
-        let updateSettings =
-            UpdateSettings.TryGetSettingFromText store.UpdateSettings
-            |> defaultArg
-            <| NoActions
         let backupSettings =
             BackupSettings.TryGetSettingFromText store.BackupSettings
             |> defaultArg
@@ -60,75 +55,29 @@ module State =
                           Exists = false
                           Parsed = false
                           AttemptedLoad = false
-                          Loading = false }
-                    Maps =
-                        { Path = defaultArg store.MapsLocation ""
-                          Exists = false
-                          AttemptedLoad = false
                           Loading = false } }
               ContextMenu = ContextMenu.State.init()
               Community = Community.State.init()
-              MapsInstaller = MapsInstaller.State.init (updateSettings)
               FaceTools = FaceTools.State.init()
               MordhauConfig = MordhauConfig.State.init()
-              Settings = Settings.State.init (updateSettings, backupSettings, store.AutoLaunch)
+              Settings = Settings.State.init (backupSettings, store.AutoLaunch)
               About = About.State.init() }
         m, Cmd.none
 
     [<AutoOpen>]
     module Helpers =
 
-        /// Discriminated union to allow function reuse when working with map and config directories
-        type CMDir =
-            | CDir of ConfigDir
-            | MDir of MapDir
-            static member ($) (_, x: ConfigDir) = CDir(x)
-            static member ($) (_, x: MapDir) = MDir(x)
-            static member ($) (_, x: CMDir) = x
+        let inline setPath s (cDir: ConfigDir) = { cDir with Path = s }
+        let inline setParsed b (cDir: ConfigDir) = { cDir with Parsed = b }
+        let inline setExists b (cDir: ConfigDir) = { cDir with Exists = b }
+        let inline setAttemptedLoad b (cDir: ConfigDir) = { cDir with AttemptedLoad = b }
+        let inline setLoading b (cDir: ConfigDir) = { cDir with Loading = b }
 
-        /// Discriminated union to allow function reuse when working with map and config files
-        type CMFile =
-            | CFile of ConfigFile
-            | MFile
-            static member ($) (_, x: ConfigFile) = CFile(x)
-            static member ($) (_, ()) = MFile
-            static member ($) (_, x: CMDir) = x
-
-        let inline (|CMDir|) x = Unchecked.defaultof<CMDir> $ x
-        let inline (|CMFile|) x = Unchecked.defaultof<CMFile> $ x
-
-        let inline setPath s (CMDir inp) =
-            match inp with
-            | CDir(cDir) -> { cDir with Path = s } |> CDir
-            | MDir(mDir) -> { mDir with Path = s } |> MDir
-
-        let inline setParsed b (CMDir inp) =
-            match inp with
-            | CDir cDir -> { cDir with Parsed = b } |> CDir
-            | _ -> inp
-
-        let inline setExists b (CMDir inp) =
-            match inp with
-            | CDir(cDir) -> { cDir with Exists = b } |> CDir
-            | MDir(mDir) -> { mDir with Exists = b } |> MDir
-
-        let inline setAttemptedLoad b (CMDir inp) =
-            match inp with
-            | CDir(cDir) -> { cDir with AttemptedLoad = b } |> CDir
-            | MDir(mDir) -> { mDir with AttemptedLoad = b } |> MDir
-
-        let inline setLoading b (CMDir inp) =
-            match inp with
-            | CDir(cDir) -> { cDir with Loading = b } |> CDir
-            | MDir(mDir) -> { mDir with Loading = b } |> MDir
-
-        let inline setResLoaded (CMFile cmFile) (res: Loaded) (CMDir inp) =
-            match cmFile, inp with
-            | CFile ConfigFile.Game, CDir cDir -> { res with GameConfig = cDir }
-            | CFile ConfigFile.Engine, CDir cDir -> { res with EngineConfig = cDir }
-            | CFile ConfigFile.GameUserSettings, CDir cDir -> { res with GameUserConfig = cDir }
-            | MFile, MDir mDir -> { res with Maps = mDir }
-            | _ -> res
+        let inline setResLoaded (cFile: ConfigFile) (res: Loaded) (cDir: ConfigDir) =
+            match cFile with
+            | ConfigFile.Game-> { res with GameConfig = cDir }
+            | ConfigFile.Engine -> { res with EngineConfig = cDir }
+            | ConfigFile.GameUserSettings-> { res with GameUserConfig = cDir }
 
         let inline setUpdateRefreshing (b: bool) (up: UpdatePending) = { up with Refreshing = b }
         let inline setUpdateReady (b: bool) (up: UpdatePending) = { up with Ready = b }
@@ -137,8 +86,6 @@ module State =
         let setUpdate (model: Model) (up: UpdatePending) = { model with UpdatePending = up }
         let setResource (model: Model) (res: Loaded) = { model with Resources = res }
         let setSettings (model: Model) (set: Settings.Types.Model) = { model with Settings = set }
-        let setMapInstaller (model: Model) (mInstall: MapsInstaller.Types.Model) =
-            { model with MapsInstaller = mInstall }
         let setFaceTools (model: Model) (fTool: FaceTools.Types.Model) = { model with FaceTools = fTool }
         let setMordConfig (model: Model) (mConf: MordhauConfig.Types.Model) = { model with MordhauConfig = mConf }
 
@@ -215,11 +162,6 @@ module State =
                 |> setResLoaded cFile m.Resources
                 |> setResource m
                 |> fun m' -> m', Cmd.ofMsg <| LoadConfig(cFile)
-            | LoadMap ->
-                setLoading true m.Resources.Maps
-                |> setResLoaded () m.Resources
-                |> setResource m
-                |> fun m' -> m', Cmd.ofMsg LoadMap
             | _ -> m, Cmd.none
         | ResourcesLoaded ->
             { m with Community = { m.Community with LoadingElem = false } },
@@ -258,30 +200,7 @@ module State =
             | _ ->
                 resource
                 |> setAttemptedLoad true
-                |> setResLoaded () m.Resources
-                |> setResource m, Cmd.none
-        | LoadMap ->
-            let loadMap m' cmd (cmDir: CMDir) =
-                cmDir
-                |> setAttemptedLoad true
-                |> setResLoaded () m.Resources
-                |> setResource m
-                |> setSettings
-                <| m'
-                |> fun m -> m, Cmd.map SettingsMsg cmd
-            match m.Resources.Maps.Path with
-            | "" when m.Resources.Maps.AttemptedLoad |> not ->
-                let m', cmd = Settings.State.update (Settings.Types.GetMapDir) m.Settings
-                setPath m'.MapsDir.Directory m.Resources.Maps |> loadMap m' cmd
-            | s when m.Resources.Maps.Exists
-                     |> not
-                     && m.Settings.MapsDir.State.IsDirError |> not ->
-                let m', cmd = Settings.State.update (Settings.Types.SetMapDir(s, Ok s)) m.Settings
-                setPath m'.MapsDir.Directory m.Resources.Maps |> loadMap m' cmd
-            | _ ->
-                m.Resources.Maps
-                |> setAttemptedLoad true
-                |> setResLoaded () m.Resources
+                |> setResLoaded cFile m.Resources
                 |> setResource m, Cmd.none
         | InitSetup ->
             let m', cmd = Settings.State.update (Settings.Types.RunSetup) m.Settings
@@ -291,9 +210,11 @@ module State =
             else { m with MordhauChecking = true }, Cmd.ofSub checkForMordhau
         | CheckMordhau -> m, Cmd.bridgeSend (appSender.CheckMordhau)
         | StartCheckUpdates ->
-            setUpdateRefreshing true m.UpdatePending |> setUpdate m, (
-            if m.UpdatePending.Refreshing then Cmd.none
-            else Cmd.ofSub checkForUpdates)
+            setUpdateRefreshing true m.UpdatePending 
+            |> setUpdate m
+            |> fun m' ->
+                if m.UpdatePending.Refreshing then m', Cmd.none
+                else m', Cmd.ofSub checkForUpdates
         | CheckUpdates -> m, Cmd.bridgeSend (appSender.CheckUpdate)
         | StartPatch -> m, Cmd.bridgeSend (appSender.StartUpdate)
         | StoreMsg msg' ->
@@ -305,9 +226,6 @@ module State =
         | CommunityMsg msg' ->
             let m', cmd = Community.State.update msg' m.Community
             { m with Community = m' }, Cmd.map CommunityMsg cmd
-        | MapsInstallerMsg msg' ->
-            let m', cmd = MapsInstaller.State.update msg' m.MapsInstaller
-            { m with MapsInstaller = m' }, Cmd.map MapsInstallerMsg cmd
         | FaceToolsMsg msg' ->
             let m', cmd = FaceTools.State.update msg' m.FaceTools
             { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
@@ -317,34 +235,10 @@ module State =
         | SettingsMsg msg' ->
             Settings.State.update msg' m.Settings
             |> fun (newM, cmd) ->
-                let appendMapUpdate (cList: Cmd<Msg> list) =
-                    if m.Settings.MapUpdateSettings <> newM.MapUpdateSettings then
-                        let newMsg =
-                            newM.MapUpdateSettings
-                            |> MapsInstaller.Types.Msg.Update
-                            |> MapsInstallerMsg
-                        [ Cmd.ofMsg newMsg
-                          newM.MapUpdateSettings
-                          |> Store.Msg.SetUpdateSettings
-                          |> StoreMsg
-                          |> Cmd.ofMsg ]
-                        |> List.append cList
-                    else
-                        cList
-
                 let appendBackup (cList: Cmd<Msg> list) =
                     if m.Settings.BackupSettings <> newM.BackupSettings then
                         newM.BackupSettings
                         |> Store.Msg.SetBackupSettings
-                        |> StoreMsg
-                        |> Cmd.ofMsg
-                        |> fun newCmd -> newCmd :: cList
-                    else
-                        cList
-
-                let appendAutoLaunch (cList: Cmd<Msg> list) =
-                    if m.Settings.AutoLaunch <> newM.AutoLaunch then
-                        Store.Msg.ToggleAutoLaunch
                         |> StoreMsg
                         |> Cmd.ofMsg
                         |> fun newCmd -> newCmd :: cList
@@ -363,10 +257,6 @@ module State =
                         if m.Settings.GameUserDir <> newM.GameUserDir then
                             Some(newM.GameUserDir.Directory |> Store.Msg.SetGameUserLocation) :: dList
                         else dList
-                    |> fun dList ->
-                        if m.Settings.MapsDir <> newM.MapsDir then
-                            Some(newM.MapsDir.Directory |> Store.Msg.SetMapsLocation) :: dList
-                        else dList
                     |> List.choose id
                     |> List.map (fun msg' ->
                         msg'
@@ -375,9 +265,7 @@ module State =
                     |> List.append cList
 
                 [ Cmd.map SettingsMsg cmd ]
-                |> appendMapUpdate
                 |> appendBackup
-                |> appendAutoLaunch
                 |> appendDirs
                 |> Cmd.batch
                 |> fun cmd' -> setSettings m newM, cmd'
@@ -400,8 +288,8 @@ module State =
                                 | _ -> setPath "" res |> setLoading false
                             | INIOperationResult.Exists b -> setExists b res |> setLoading b
                             | INIOperationResult.Parse b -> setParsed b res |> setLoading false
-                            | _ -> CDir res
-                        | _ -> CDir res
+                            | _ -> res
+                        | _ -> res
                         |> setResLoaded cFile model.Resources
                         |> setResource model
 
@@ -432,9 +320,6 @@ module State =
                 | Caller.Community ->
                     let m', cmd = Community.State.update (Community.Types.ClientMsg bMsg) m.Community
                     { m with Community = m' }, Cmd.map CommunityMsg cmd
-                | Caller.MapInstaller ->
-                    let m', cmd = MapsInstaller.State.update (MapsInstaller.Types.ClientMsg bMsg) m.MapsInstaller
-                    { m with MapsInstaller = m' }, Cmd.map MapsInstallerMsg cmd
                 | Caller.FaceTools ->
                     let m', cmd = FaceTools.State.update (FaceTools.Types.ClientMsg bMsg.BridgeResult) m.FaceTools
                     { m with FaceTools = m' }, Cmd.map FaceToolsMsg cmd
@@ -445,31 +330,6 @@ module State =
                     let m', cmd = Settings.State.update (Settings.Types.ClientMsg bMsg) m.Settings
                     match bMsg.File, bMsg.BridgeResult with
                     | Some(iFile), _ -> { m with Settings = m' } |> setResource' bMsg (iFile.File), []
-                    | None, BridgeResult.MapOperation(mResult) ->
-                        match mResult with
-                        | MapOperationResult.DirExists b ->
-                            setExists b m.Resources.Maps
-                            |> setLoading false
-                            |> setResLoaded () m.Resources
-                            |> setResource m
-                            |> setSettings
-                            <| m'
-                            |> (fun model ->
-                            { model.MapsInstaller with
-                                  MapsDir =
-                                      { model.MapsInstaller.MapsDir with
-                                            Directory =
-                                                if b then m'.MapsDir.Directory
-                                                else ""
-                                            State = Directory.DirState.Success "Maps directory located" } }
-                            |> setMapInstaller model), []
-                        | MapOperationResult.DefaultDir _ ->
-                            setPath m'.MapsDir.Directory m.Resources.Maps
-                            |> setResLoaded () m.Resources
-                            |> setResource m
-                            |> setSettings
-                            <| m', []
-                        | _ -> setSettings m m', []
                     | None, BridgeResult.INIOperation(INIOperationResult.DefaultDir _) ->
                         [ (m.Resources.GameConfig.Loading, ConfigFile.Game)
                           (m.Resources.EngineConfig.Loading, ConfigFile.Engine)
@@ -479,9 +339,9 @@ module State =
                         | Some(res) -> setSettings m m' |> setResource' bMsg (res |> snd), []
                         | _ -> setSettings m m', []
                     | None, BridgeResult.Settings(SettingResult.DisabledAutoLaunch true) ->
-                        setSettings m m', [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet false)) ]
+                        setSettings m m', [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet false)); Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunch false)) ]
                     | None, BridgeResult.Settings(SettingResult.EnabledAutoLaunch true) ->
-                        setSettings m m', [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet true)) ]
+                        setSettings m m', [ Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunchSet true)); Cmd.ofMsg (StoreMsg(Store.Msg.AutoLaunch true)) ]
                     | _ -> setSettings m m', []
                     |> fun (newM, cmds) -> newM, Cmd.batch ([ Cmd.map SettingsMsg cmd ] |> List.append cmds)
                 | Caller.App ->
@@ -510,7 +370,7 @@ module State =
                             | _ -> Cmd.none
                     | _ -> m, Cmd.none
             | Connected ->
-                if m.Settings.AutoLaunch && (store.AutoLaunchSet |> not) then
+                if m.Store.AutoLaunch && (m.Store.AutoLaunchSet |> not) then
                     Cmd.bridgeSend <| settingsSender.EnableAutoLaunch
                 else Cmd.none
                 |> fun cmd -> { m with IsBridgeConnected = true }, cmd

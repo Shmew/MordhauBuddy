@@ -14,19 +14,24 @@ module Store =
           GameLocation: string option
           EngineLocation: string option
           GameUserLocation: string option
-          MapsLocation: string option
-          UpdateSettings: string
           BackupSettings: string }
+        //member this.ToPojo () =
+        //    {| AutoLaunch = this.AutoLaunch |> string
+        //       AutoLaunchSet = this.AutoLaunchSet |> string
+        //       DarkTheme = this.DarkTheme |> string
+        //       GameLocation = this.GameLocation
+        //       EngineLocation = this.EngineLocation
+        //       GameUserLocation = this.GameUserLocation
+        //       BackupSettings = this.BackupSettings |}
+        //    |> toPlainJsObj
 
     type Msg =
-        | ToggleAutoLaunch
+        | AutoLaunch of bool
         | AutoLaunchSet of bool
         | ToggleDarkTheme
         | SetGameLocation of string
         | SetEngineLocation of string
         | SetGameUserLocation of string
-        | SetMapsLocation of string
-        | SetUpdateSettings of UpdateSettings
         | SetBackupSettings of BackupSettings
 
     /// Bindings for electron-store
@@ -99,43 +104,34 @@ module Store =
         let private getStore: StoreStatic = importDefault "electron-store"
 
         let private defaults =
-            { AutoLaunch = true
-              AutoLaunchSet = false
-              DarkTheme = true
-              GameLocation = None
-              EngineLocation = None
-              GameUserLocation = None
-              MapsLocation = None
-              UpdateSettings = "OnlyInstalled"
-              BackupSettings = "KeepLast10" }
+            {| AutoLaunch = true
+               AutoLaunchSet = false
+               DarkTheme = true
+               GameLocation = None
+               EngineLocation = None
+               GameUserLocation = None
+               BackupSettings = "KeepLast10" |}
             |> toPlainJsObj
 
         /// Create store object
         let store = getStore.Create(jsOptions<Options> (fun o -> o.defaults <- defaults))
 
-    let init() =
-        //#if DEBUG
-        //        ElectronStore.store.openInEditor()
-        //#endif
-        ElectronStore.store.store
+    let init() = ElectronStore.store.store
 
-    let private set m =
-        ElectronStore.store.set (m |> toPlainJsObj)
+    let private set (m: Model) =
+        ElectronStore.store.set m
         m
 
     let setGameLocation s = Cmd.ofMsg (SetGameLocation s)
     let setEngineLocation s = Cmd.ofMsg (SetEngineLocation s)
     let setGameUserLocation s = Cmd.ofMsg (SetGameUserLocation s)
-    let setMapsLocation s = Cmd.ofMsg (SetMapsLocation s)
 
     let update msg m =
         match msg with
-        | ToggleAutoLaunch -> set { m with AutoLaunch = (m.AutoLaunch |> not) }
+        | AutoLaunch b -> set { m with AutoLaunch = b }
         | AutoLaunchSet b -> set { m with AutoLaunchSet = b }
         | ToggleDarkTheme -> set { m with DarkTheme = (m.DarkTheme |> not) }
         | SetGameLocation s -> set { m with GameLocation = Some(s) }
         | SetEngineLocation s -> set { m with EngineLocation = Some(s) }
         | SetGameUserLocation s -> set { m with GameUserLocation = Some(s) }
-        | SetMapsLocation s -> set { m with MapsLocation = Some(s) }
-        | SetUpdateSettings uSet -> set { m with UpdateSettings = uSet.ToString() }
         | SetBackupSettings bSet -> set { m with BackupSettings = bSet.ToString() }

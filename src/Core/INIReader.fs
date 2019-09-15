@@ -2,12 +2,16 @@ namespace MordhauBuddy.Core
 
 open FParsec
 open FSharp.Data
+open Helpers
 open System
 open System.ComponentModel
 open System.Globalization
 open System.IO
 
 module rec INIReader =
+    
+    let logger = Logger "INIReader"
+
     [<RequireQualifiedAccess>]
     [<StructuredFormatDisplay("{_Print}")>]
     type INIValue =
@@ -146,31 +150,41 @@ module rec INIReader =
             match run ini iniText with
             | Success(result, _, _) ->
                 match result with
-                | INIValue.File([]) -> failwith "No sections found in file"
+                | INIValue.File([]) -> failwith "No sections found in file."
                 | _ -> result
-            | Failure(msg, _, _) -> failwith msg
+            | Failure(msg, _, _) -> 
+                logger.LogWarn "Failed to parse INI file: %s" msg
+                raise <| System.Exception()
 
         /// Parses text and returns an option
         member this.TryParse() =
             match run ini iniText with
             | Success(result, _, _) ->
                 match result with
-                | INIValue.File([]) -> None
+                | INIValue.File([]) -> 
+                    logger.LogWarn "Parsed empty INI File."
+                    None
                 | _ -> result |> Some
-            | Failure(msg, _, _) -> None
+            | Failure(msg, _, _) -> 
+                logger.LogWarn "Failed to parse INI file: %s" msg
+                None
 
         /// Parses an ini snippet and fails on error
         /// If this gets passed an ini with section headers it will fail
         member this.ParseSnippet() =
             match run iValue iniText with
             | Success(result, _, _) -> result
-            | Failure(_) -> failwith "Error parsing snippet"
+            | Failure(s,parseError, _) -> 
+                logger.LogError "Error parsing snippet: %s\n%O" s parseError
+                raise <| System.Exception()
 
         /// Parses an ini snippet and returns an option
         member this.TryParseSnippet() =
             match run iValue iniText with
             | Success(result, _, _) -> result |> Some
-            | Failure(_) -> None
+            | Failure(s,parseError, _) -> 
+                logger.LogError "Error parsing snippet: %s\n%O" s parseError
+                None
 
     type INIValue with
 
@@ -260,9 +274,11 @@ module rec INIReader =
                 match INIExtensions.Properties x with
                 | (s, pList) when pList.Length > 0 && s = propertyName -> pList
                 | (_, pList) when pList.Length > 0 ->
-                    failwithf "Didn't find property '%s' in %s" propertyName <| x.ToString()
-                | _ -> failwithf "Not an object: %s" <| x.ToString()
-
+                    logger.LogError "Didn't find property '%s' in %s" propertyName <| x.ToString()
+                    raise <| System.Exception()
+                | _ -> 
+                    logger.LogError "Not an object: %s" <| x.ToString()
+                    raise <| System.Exception()
 
             /// Try to get a property of a INI value.
             /// Returns None if the value is not an object or if the property is not present.
@@ -272,11 +288,9 @@ module rec INIReader =
                 | (s, pList) when pList.Length > 0 && s = propertyName -> Some(pList)
                 | _ -> None
 
-
             /// Assuming the value is an object, get value with the specified name
             [<Extension>]
             static member inline Item(x, propertyName) = INIExtensions.GetProperty(x, propertyName)
-
 
             /// Get all the elements of an INI value.
             /// Returns an empty list if the value is not an INI.
@@ -293,7 +307,6 @@ module rec INIReader =
                 | INIValue.FieldText(_, v) -> [ v ]
                 | _ -> []
 
-
             /// Get all the elements of a INI value (assuming that the value is an array)
             [<Extension>]
             static member inline GetEnumerator(x) =
@@ -301,20 +314,18 @@ module rec INIReader =
                 |> Array.ofList
                 |> (fun a -> a.GetEnumerator())
 
-
             /// Try to get the value at the specified index, if the value is a INI array.
             [<Extension>]
             static member inline Item(x, index) = INIExtensions.AsList(x).[index]
 
-
             /// Get the string value of an element (assuming that the value is a scalar)
-            /// Returns the empty string for INIValue.Null
             [<Extension>]
             static member AsString(x) =
                 match INIConversions.AsString x with
                 | Some s -> s
-                | _ -> failwithf "Not a string: %s" <| x.ToString()
-
+                | _ -> 
+                    logger.LogError "Not a string: %s" <| x.ToString()
+                    raise <| System.Exception()
 
             /// Get a number as an integer (assuming that the value fits in integer)
             [<Extension>]
@@ -322,8 +333,9 @@ module rec INIReader =
                 let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                 match INIConversions.AsInteger cultureInfo x with
                 | Some i -> i
-                | _ -> failwithf "Not an int: %s" <| x.ToString()
-
+                | _ -> 
+                    logger.LogError "Not an int: %s" <| x.ToString()
+                    raise <| System.Exception()
 
             /// Get a number as a 64-bit integer (assuming that the value fits in 64-bit integer)
             [<Extension>]
@@ -331,8 +343,9 @@ module rec INIReader =
                 let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                 match INIConversions.AsInteger64 cultureInfo x with
                 | Some i -> i
-                | _ -> failwithf "Not an int64: %s" <| x.ToString()
-
+                | _ -> 
+                    logger.LogError "Not an int64: %s" <| x.ToString()
+                    raise <| System.Exception()
 
             /// Get a number as a decimal (assuming that the value fits in decimal)
             [<Extension>]
@@ -340,8 +353,9 @@ module rec INIReader =
                 let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                 match INIConversions.AsDecimal cultureInfo x with
                 | Some d -> d
-                | _ -> failwithf "Not a decimal: %s" <| x.ToString()
-
+                | _ -> 
+                    logger.LogError "Not a decimal: %s" <| x.ToString()
+                    raise <| System.Exception()
 
             /// Get a number as a float (assuming that the value is convertible to a float)
             [<Extension>]
@@ -350,16 +364,18 @@ module rec INIReader =
                 let missingValues = defaultArg missingValues TextConversions.DefaultMissingValues
                 match INIConversions.AsFloat missingValues false cultureInfo x with
                 | Some f -> f
-                | _ -> failwithf "Not a float: %s" <| x.ToString()
-
+                | _ -> 
+                    logger.LogError "Not a float: %s" <| x.ToString()
+                    raise <| System.Exception()
 
             /// Get the boolean value of an element (assuming that the value is a boolean)
             [<Extension>]
             static member AsBoolean(x) =
                 match INIConversions.AsBoolean x with
                 | Some b -> b
-                | _ -> failwithf "Not a boolean: %s" <| x.ToString()
-
+                | _ -> 
+                    logger.LogError "Not a boolean: %s" <| x.ToString()
+                    raise <| System.Exception()
 
             /// Get inner text of an element
             [<Extension>]
@@ -370,7 +386,6 @@ module rec INIReader =
                     INIExtensions.AsList(x)
                     |> List.map (fun e -> INIExtensions.InnerText(e))
                     |> String.Concat
-
 
             /// Map INIValue based on matching conditions
             [<Extension>]
@@ -461,8 +476,11 @@ module rec INIReader =
                     match INIExtensions.Properties this with
                     | (s, pList) when pList.Length > 0 && s = propertyName -> pList
                     | (_, pList) when pList.Length > 0 ->
-                        failwithf "Didn't find property '%s' in %s" propertyName <| this.ToString()
-                    | _ -> failwithf "Not an object: %s" <| this.ToString()
+                        logger.LogError "Didn't find property '%s' in %s" propertyName <| this.ToString()
+                        raise <| System.Exception()
+                    | _ -> 
+                        logger.LogError "Not an object: %s" <| this.ToString()
+                        raise <| System.Exception()
 
                 /// Try to get a property of a INI value.
                 /// Returns None if the value is not an object or if the property is not present.
@@ -502,28 +520,36 @@ module rec INIReader =
                 member this.AsString() =
                     match INIConversions.AsString this with
                     | Some s -> s
-                    | _ -> failwithf "Not a string: %s" <| this.ToString()
+                    | _ -> 
+                        logger.LogError "Not a string: %s" <| this.ToString()
+                        raise <| System.Exception()
 
                 /// Get a number as an integer (assuming that the value fits in integer)
                 member this.AsInteger([<Optional>] ?cultureInfo) =
                     let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                     match INIConversions.AsInteger cultureInfo this with
                     | Some i -> i
-                    | _ -> failwithf "Not an int: %s" <| this.ToString()
+                    | _ -> 
+                        logger.LogError "Not an int: %s" <| this.ToString()
+                        raise <| System.Exception()
 
                 /// Get a number as a 64-bit integer (assuming that the value fits in 64-bit integer)
                 member this.AsInteger64([<Optional>] ?cultureInfo) =
                     let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                     match INIConversions.AsInteger64 cultureInfo this with
                     | Some i -> i
-                    | _ -> failwithf "Not an int64: %s" <| this.ToString()
+                    | _ -> 
+                        logger.LogError "Not an int64: %s" <| this.ToString()
+                        raise <| System.Exception()
 
                 /// Get a number as a decimal (assuming that the value fits in decimal)
                 member this.AsDecimal([<Optional>] ?cultureInfo) =
                     let cultureInfo = defaultArg cultureInfo CultureInfo.InvariantCulture
                     match INIConversions.AsDecimal cultureInfo this with
                     | Some d -> d
-                    | _ -> failwithf "Not a decimal: %s" <| this.ToString()
+                    | _ -> 
+                        logger.LogError "Not a decimal: %s" <| this.ToString()
+                        raise <| System.Exception()
 
                 /// Get a number as a float (assuming that the value is convertible to a float)
                 member this.AsFloat([<Optional>] ?cultureInfo, [<Optional>] ?missingValues) =
@@ -531,13 +557,17 @@ module rec INIReader =
                     let missingValues = defaultArg missingValues TextConversions.DefaultMissingValues
                     match INIConversions.AsFloat missingValues false cultureInfo this with
                     | Some f -> f
-                    | _ -> failwithf "Not a float: %s" <| this.ToString()
+                    | _ -> 
+                        logger.LogError "Not a float: %s" <| this.ToString()
+                        raise <| System.Exception()
 
                 /// Get the boolean value of an element (assuming that the value is a boolean)
                 member this.AsBoolean() =
                     match INIConversions.AsBoolean this with
                     | Some b -> b
-                    | _ -> failwithf "Not a boolean: %s" <| this.ToString()
+                    | _ -> 
+                        logger.LogError "Not a boolean: %s" <| this.ToString()
+                        raise <| System.Exception()
 
                 /// Get inner text of an element
                 member this.InnerText() =
