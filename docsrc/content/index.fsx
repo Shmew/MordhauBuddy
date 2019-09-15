@@ -35,7 +35,7 @@ With Windows:
 <div class="row">
   <div class="span1"></div>
   <div class="span6">
-    <img src="img/mapInstallerAvailable.png"/>
+    <img src="img/communityAnnouncements.png"/>
   </div>
 </div>
 
