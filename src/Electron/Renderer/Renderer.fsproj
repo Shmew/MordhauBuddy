@@ -3,8 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0; net462</TargetFrameworks>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
-    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
-
   </PropertyGroup>
   <ItemGroup>
     <None Include="scss/main.scss" />
@@ -41,9 +39,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.fsproj" />
     <ProjectReference Include="..\Main\Main.fsproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="MapsInstaller\" />
   </ItemGroup>
   <Import Project="..\..\..\.paket\Paket.Restore.targets" />
 </Project>

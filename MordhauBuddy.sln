@@ -31,7 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 		docsrc\content\face-tools.fsx = docsrc\content\face-tools.fsx
 		docsrc\content\index.fsx = docsrc\content\index.fsx
 		docsrc\content\mordhau-config.fsx = docsrc\content\mordhau-config.fsx
-		reporting-issues.fsx = reporting-issues.fsx
+		docsrc\content\reporting-issues.fsx = docsrc\content\reporting-issues.fsx
 		docsrc\content\settings.fsx = docsrc\content\settings.fsx
 	EndProjectSection
 EndProject
