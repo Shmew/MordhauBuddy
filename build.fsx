@@ -670,7 +670,6 @@ Target.create "All" ignore
   ==> "Restore"
   ==> "PackageJson"
   ==> "YarnInstall"
-  ==> "BuildKeys"
   ==> "Build"
   ==> "BuildElectron"
   ==> "PostBuildClean" 

@@ -16,8 +16,6 @@ module Types =
 
     type Tab =
         | Announcements
-        | Venatus
-        | MCL
         member this.Text = this.ToString() |> String.duToTitle
 
         static member private Cases = FSharpType.GetUnionCases typeof<Tab>

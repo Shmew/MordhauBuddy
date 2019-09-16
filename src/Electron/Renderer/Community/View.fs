@@ -9,13 +9,6 @@ module View =
     open Fable.MaterialUI.MaterialDesignIcons
     open Fable.MaterialUI.Icons
     open FSharp.Core /// To avoid shadowing Result<_,_>
-    open MordhauBuddy.App
-    open MordhauBuddy.Shared.ElectronBridge
-    open RenderUtils
-    open RenderUtils.Validation
-    open RenderUtils.Directory
-    open Elmish.React
-    open Electron
     open Types
 
     let private styles (theme: ITheme): IStyles list = []
@@ -69,8 +62,6 @@ module View =
                        [ TypographyProp.Align TypographyAlign.Center
                          TypographyProp.Variant TypographyVariant.H6 ] [ str "No announcements found." ] ]
                | rList -> rList
-           | Venatus -> []
-           | MCL -> []
 
     let private tabs (classes: IClasses) model dispatch =
         [ tabs
@@ -81,13 +72,7 @@ module View =
               TabsProp.TextColor TabsTextColor.Secondary
               TabsProp.Centered true
               TabsProp.OnChange(fun _ tabPicked -> dispatch <| TabSelected(Tab.GetTabFromTag(tabPicked))) ]
-              [ tab [ HTMLAttr.Label <| Announcements.Text ]
-                tab
-                    [ HTMLAttr.Label <| Venatus.Text
-                      HTMLAttr.Disabled true ]
-                tab
-                    [ HTMLAttr.Label <| MCL.Text
-                      HTMLAttr.Disabled true ] ]
+              [ tab [ HTMLAttr.Label <| Announcements.Text ] ]
           divider []
           div
               [ Style

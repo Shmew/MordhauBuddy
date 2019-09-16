@@ -30,3 +30,6 @@
 * Added file logging so reporting issues is easier.
   * See [here](https://shmew.github.io/MordhauBuddy/reporting-issues.html) 
     for more information
+
+### 1.2.1 - Sunday, September 15, 2019
+* Removed extra tabs on community page

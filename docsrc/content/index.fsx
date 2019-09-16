@@ -3,13 +3,13 @@
 
 MordhauBuddy is a collection of tools that the community already has in piecemeal or not at all, and tries to 
 not only bring them all into a convenient package, but to also allow for cross platform functionality, and reduce 
-the burden of keeping track and updating each separate piece of software. MordhauBuddy will automatically update 
-when a new version is released.
+the burden of keeping track and updating each separate piece of software. MordhauBuddy notify you and update with
+a single click when a new release is available.
 
 The main features that MordhauBuddy enables you to do is:
 
- - Keep up to date on community events
-    - This is still on-going, stay tuned!
+ - Keep up to date on community news
+    - Displays latest Mordhau announcements.
  - Manage custom settings not available in the UI
     - Things like Runescape mode, and disabling in-game fog.
  - Modify character faces with multiple options:

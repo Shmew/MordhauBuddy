@@ -42,7 +42,7 @@
 <ul>
 <li>Follow <a href="https://docs.microsoft.com/en-us/dotnet/fsharp/style-guide/formatting">F# Coding Guidelines</a>.</li>
 <li>Take into consideration <a href="https://github.com/fsprojects/FSharpLint">FSharpLint</a> output.</li>
-<li><a href="https://github.com/fsprojects/fantomas">Fantomas</a> is automatically run, so code formatting will be consistent.</li>
+<li><a href="https://github.com/fsprojects/fantomas">Fantomas</a> should be run to ensure formatting is consistent.</li>
 </ul>
 <h2><a name="Testing" class="anchor" href="#Testing">Testing</a></h2>
 <p>Testing is done in the tests libraries using <a href="https://github.com/haf/expecto">Expecto</a> which is able to load in any
@@ -70,6 +70,13 @@ for more information.</p>
 When you're ready to commit the code use <code>build.cmd/sh -t "Release" --Msg="my commit message"</code>. This will clean up directories, stage,
 and commit all the changes with the given message. If you don't specify a commit message it will default to <code>Bump version to *.*.*</code> which pulls the
 version from the RELEASE_NOTES.md. Do note that this will enforce that your versioning is updated every release.
+</li>
+</ul>
+<h2><a name="Releasing" class="anchor" href="#Releasing">Releasing</a></h2>
+<ul>
+<li>
+Create the distributables via the <code>Dist</code> build task, then create the delta and sig files with the <code>CreateDiffs</code> task. Upload all of the files 
+related to the new version to the release.
 </li>
 </ul>
 <div class="row">
