@@ -1,9 +1,9 @@
 (**
 # What is MordhauBuddy? #
 
-MordhauBuddy is a collection of tools that the community already has in piecemeal or not at all, and tries to 
+MordhauBuddy is a collection of tools that the community already has in piecemeal or not at all. The goal is
 not only bring them all into a convenient package, but to also allow for cross platform functionality, and reduce 
-the burden of keeping track and updating each separate piece of software. MordhauBuddy notify you and update with
+the burden of keeping track and updating each separate piece of software. MordhauBuddy will notify you and update with
 a single click when a new release is available.
 
 The main features that MordhauBuddy enables you to do is:
@@ -25,12 +25,19 @@ The main features that MordhauBuddy enables you to do is:
 Go to the [releases](https://github.com/Shmew/MordhauBuddy/releases) page on the Github repo and download the 
 package most applicable to your operating system. 
 
+You <b>only</b> need to download the `.exe` for Windows or `.AppImage` for Linux. The other files are for auto-updating
+which is handled by the application. (You will see an update button pop up in the top right-hand corner.)
+
 With Linux:
+
  - Most distributions are supported, if you have an issue please let me know and I will try to fix it.
  - It is distributed in [AppImage](https://appimage.org/) format, which is plug and play for most popular distros.
- 
+   - You may need to right click and go to properties to give it permissions to execute.
+
 With Windows:
+
  - The installer is easy to install, a single click in fact.
+
 
 <div class="row">
   <div class="span1"></div>

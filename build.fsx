@@ -369,8 +369,6 @@ Target.create "PullDockerImage" <| fun _ ->
 
 // Build artifacts
 Target.create "DistLinux" <| fun _ ->
-    //docker run --rm -v ${PWD}:/project -v electron:/root/.cache/electron -v electron-builder:/root/.cache/electron-builder electronuserland/builder /bin/bash -c "yarn --link-duplicates --pure-lockfile && yarn dist"
-    
     CmdLine.Empty
     |> CmdLine.append "run"
     |> CmdLine.append "--rm"
@@ -688,6 +686,7 @@ Target.create "GitTag" <| fun _ ->
 
 Target.create "All" ignore
 Target.create "Release" ignore
+Target.create "UpdateDocs" ignore
 
 "Clean"
   ==> "AssemblyInfo"
@@ -750,5 +749,6 @@ Target.create "Release" ignore
 "DistWin" <== ["All"; "ReleaseDocs"; "ConfigRelease"]
 "DistLinux" <== ["All"; "ReleaseDocs"; "ConfigRelease"]
 "Release" <== ["All"; "ReleaseDocs"; "ConfigRelease"; "DistWin"; "DistLinux"; "CreateDiffs"]
+"UpdateDocs" <== ["All"; "ReleaseDocs"; "ConfigRelease"]
 
 Target.runOrDefaultWithArguments "Dev"
