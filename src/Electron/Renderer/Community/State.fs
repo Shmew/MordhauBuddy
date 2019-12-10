@@ -42,6 +42,7 @@ module State =
             | _ -> model, Cmd.none
         | TabSelected tab -> { model with TabSelected = tab }, Cmd.ofMsg Refresh
         | StartRefresh ->
-            if model.Refreshing then model, Cmd.none
+            if model.Refreshing
+            then model, Cmd.none
             else { model with Refreshing = true }, Cmd.ofSub autoRefresh
         | Refresh -> model, Cmd.bridgeSend (sender.GetSteamAnnouncements())

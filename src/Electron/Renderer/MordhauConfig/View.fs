@@ -118,7 +118,8 @@ module View =
                                                 DOMAttr.OnChange <| fun _ -> dispatch (ToggleOption(oGroup)) ] ] [] ] ]
                           div [ Style [ CSSProp.Width "50%" ] ]
                               [ typography [ TypographyProp.Variant TypographyVariant.Caption ] [ str oGroup.Caption ] ] ]
-              if subPanel.IsSome then yield subPanel.Value
+              if subPanel.IsSome
+              then yield subPanel.Value
               else yield div [ Style [ CSSProp.PaddingBottom "1em" ] ] []
               if oGroups.Length > ind + 1 then yield divider [] ])
         |> List.concat

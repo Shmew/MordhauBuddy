@@ -58,8 +58,7 @@ module State =
             |> Cmd.bridgeSend
 
         let sendParseIf (cFile: ConfigFile) (dir: string) (b: bool) =
-            if b then sendParse cFile dir
-            else Cmd.none
+            if b then sendParse cFile dir else Cmd.none
 
     let update (msg: Msg) (model: Model) =
         match msg with
@@ -75,7 +74,8 @@ module State =
                         | ConfigFile.Engine ->
                             setDir model Engine <| setDirError "Error parsing Engine.ini" model.EngineDir
                         | ConfigFile.GameUserSettings ->
-                            setDir model GameUser <| setDirError "Error parsing GameUserSettings.ini" model.GameUserDir
+                            setDir model GameUser
+                            <| setDirError "Error parsing GameUserSettings.ini" model.GameUserDir
                         |> fun m -> m, Cmd.none
                     | Some(f), true ->
                         match f.File with
@@ -92,15 +92,18 @@ module State =
                     | Some(f) ->
                         match f.File with
                         | ConfigFile.Game ->
-                            if b then setDirSuccess "Game.ini located" model.GameDir
+                            if b
+                            then setDirSuccess "Game.ini located" model.GameDir
                             else setDirError (setNotFound "Game") model.GameDir
                             |> fun cDir -> setDir model Game cDir, model.GameDir.Directory
                         | ConfigFile.Engine ->
-                            if b then setDirSuccess "Engine.ini located" model.EngineDir
+                            if b
+                            then setDirSuccess "Engine.ini located" model.EngineDir
                             else setDirError (setNotFound "Engine") model.EngineDir
                             |> fun cDir -> setDir model Engine cDir, model.EngineDir.Directory
                         | ConfigFile.GameUserSettings ->
-                            if b then setDirSuccess "GameUserSettings.ini located" model.GameUserDir
+                            if b
+                            then setDirSuccess "GameUserSettings.ini located" model.GameUserDir
                             else setDirError (setNotFound "GameUserSettings") model.GameUserDir
                             |> fun cDir -> setDir model GameUser cDir, model.GameUserDir.Directory
                         |> fun (m, dir) -> m, sendParseIf f.File dir b
@@ -194,8 +197,7 @@ module State =
             | Some(s) -> { model with BackupSettings = s }, Cmd.bridgeSend (settingsSender.BackupPolicy(s))
             | _ -> model, Cmd.none
         | ToggleAutoLaunch ->
-            if model.AutoLaunch then settingsSender.DisableAutoLaunch
-            else settingsSender.EnableAutoLaunch
+            if model.AutoLaunch then settingsSender.DisableAutoLaunch else settingsSender.EnableAutoLaunch
             |> fun sender -> { model with AutoLaunch = model.AutoLaunch |> not }, Cmd.bridgeSend sender
         | RunSetup ->
             let cmds =

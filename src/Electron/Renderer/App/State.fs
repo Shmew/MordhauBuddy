@@ -93,14 +93,16 @@ module State =
             let mRunningMC (model: Model) =
                 { model.MordhauConfig with
                       Submit =
-                          if b then RenderTypes.Submit.Error "Mordhau is running"
+                          if b
+                          then RenderTypes.Submit.Error "Mordhau is running"
                           else RenderTypes.Submit.Init }
                 |> setMordConfig model
 
             let mRunningFT (model: Model) =
                 { model.FaceTools with
                       Submit =
-                          if b then RenderTypes.Submit.Error "Mordhau is running"
+                          if b
+                          then RenderTypes.Submit.Error "Mordhau is running"
                           else RenderTypes.Submit.Init }
                 |> setFaceTools model
 
@@ -181,7 +183,7 @@ module State =
                 | ConfigFile.GameUserSettings ->
                     m.Resources.GameUserConfig, m.Settings.GameUserDir.State.IsDirError,
                     (fun (sModel: Settings.Types.Model) ->
-                    setPath sModel.GameUserDir.Directory m.Resources.GameUserConfig)
+                        setPath sModel.GameUserDir.Directory m.Resources.GameUserConfig)
 
             let loadConfig m (m', cmd) =
                 setResPath m'
@@ -206,15 +208,15 @@ module State =
             let m', cmd = Settings.State.update (Settings.Types.RunSetup) m.Settings
             { m with Settings = m' }, Cmd.map SettingsMsg cmd
         | StartCheckMordhau ->
-            if m.MordhauChecking then m, Cmd.none
+            if m.MordhauChecking
+            then m, Cmd.none
             else { m with MordhauChecking = true }, Cmd.ofSub checkForMordhau
         | CheckMordhau -> m, Cmd.bridgeSend (appSender.CheckMordhau)
         | StartCheckUpdates ->
             setUpdateRefreshing true m.UpdatePending
             |> setUpdate m
             |> fun m' ->
-                if m.UpdatePending.Refreshing then m', Cmd.none
-                else m', Cmd.ofSub checkForUpdates
+                if m.UpdatePending.Refreshing then m', Cmd.none else m', Cmd.ofSub checkForUpdates
         | CheckUpdates -> m, Cmd.bridgeSend (appSender.CheckUpdate)
         | StartPatch -> m, Cmd.bridgeSend (appSender.StartUpdate)
         | StoreMsg msg' ->
@@ -246,16 +248,16 @@ module State =
                         cList
 
                 let appendDirs (cList: Cmd<Msg> list) =
-                    if m.Settings.GameDir <> newM.GameDir then
-                        [ Some(newM.GameDir.Directory |> Store.Msg.SetGameLocation) ]
+                    if m.Settings.GameDir <> newM.GameDir
+                    then [ Some(newM.GameDir.Directory |> Store.Msg.SetGameLocation) ]
                     else [ None ]
                     |> fun dList ->
-                        if m.Settings.EngineDir <> newM.EngineDir then
-                            Some(newM.EngineDir.Directory |> Store.Msg.SetEngineLocation) :: dList
+                        if m.Settings.EngineDir <> newM.EngineDir
+                        then Some(newM.EngineDir.Directory |> Store.Msg.SetEngineLocation) :: dList
                         else dList
                     |> fun dList ->
-                        if m.Settings.GameUserDir <> newM.GameUserDir then
-                            Some(newM.GameUserDir.Directory |> Store.Msg.SetGameUserLocation) :: dList
+                        if m.Settings.GameUserDir <> newM.GameUserDir
+                        then Some(newM.GameUserDir.Directory |> Store.Msg.SetGameUserLocation) :: dList
                         else dList
                     |> List.choose id
                     |> List.map (fun msg' ->
@@ -297,23 +299,23 @@ module State =
                 | ConfigFile.Game ->
                     (fun (model: Model) -> model.Resources.GameConfig |> setResource model)
                     >> (fun model ->
-                    { model.FaceTools with
-                          GameDir = { model.FaceTools.GameDir with Directory = model.Resources.GameConfig.Path } }
-                    |> setFaceTools model)
+                        { model.FaceTools with
+                              GameDir = { model.FaceTools.GameDir with Directory = model.Resources.GameConfig.Path } }
+                        |> setFaceTools model)
                 | ConfigFile.Engine ->
                     (fun (model: Model) -> model.Resources.EngineConfig |> setResource model)
                     >> (fun model ->
-                    { model.MordhauConfig with
-                          EngineDir =
-                              { model.MordhauConfig.EngineDir with Directory = model.Resources.EngineConfig.Path } }
-                    |> setMordConfig model)
+                        { model.MordhauConfig with
+                              EngineDir =
+                                  { model.MordhauConfig.EngineDir with Directory = model.Resources.EngineConfig.Path } }
+                        |> setMordConfig model)
                 | ConfigFile.GameUserSettings ->
                     (fun (model: Model) -> model.Resources.GameUserConfig |> setResource model)
                     >> (fun model ->
-                    { model.MordhauConfig with
-                          GameUserDir =
-                              { model.MordhauConfig.GameUserDir with Directory = model.Resources.GameUserConfig.Path } }
-                    |> setMordConfig model)
+                        { model.MordhauConfig with
+                              GameUserDir =
+                                  { model.MordhauConfig.GameUserDir with Directory = model.Resources.GameUserConfig.Path } }
+                        |> setMordConfig model)
             match msg' with
             | Resp(bMsg) ->
                 match bMsg.Caller with
@@ -374,8 +376,8 @@ module State =
                             | _ -> Cmd.none
                     | _ -> m, Cmd.none
             | Connected ->
-                if m.Store.AutoLaunch && (m.Store.AutoLaunchSet |> not) then
-                    Cmd.bridgeSend <| settingsSender.EnableAutoLaunch
+                if m.Store.AutoLaunch && (m.Store.AutoLaunchSet |> not)
+                then Cmd.bridgeSend <| settingsSender.EnableAutoLaunch
                 else Cmd.none
                 |> fun cmd -> { m with IsBridgeConnected = true }, cmd
             | Disconnected -> { m with IsBridgeConnected = false }, Cmd.none

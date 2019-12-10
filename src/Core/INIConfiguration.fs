@@ -12,10 +12,6 @@ module INIConfiguration =
 
         let logger = Logger "INIConfiguration.Frakenstein"
 
-
-
-
-
         [<RequireQualifiedAccess>]
         type FaceActions =
             | Frankenstein
@@ -50,8 +46,7 @@ module INIConfiguration =
             /// Randomly assign max or min values over `int list`
             let frankensteinFaces() =
                 genFaces (fun i ->
-                    if i = 1 then max
-                    else min) min 2
+                    if i = 1 then max else min) min 2
 
             /// Collects all properties matching the input string
             let mapProps (s: string) (iList: INIValue list) =
@@ -120,31 +115,32 @@ module INIConfiguration =
             profiles
             |> List.map
                 ((fun profile ->
-                 let exportList =
-                     characterIVals
-                     |> List.choose (fun iElem ->
-                         match iElem with
-                         | INIValue.KeyValue("CharacterProfiles", INIValue.Tuple(vList)) when checkVList vList profile ->
-                             Some(iElem)
-                         | _ -> None)
-                 match exportList with
-                 | [ charIVal ] -> profile, Some(charIVal)
-                 | _ -> profile, Some(INIValue.String(None)))
+                    let exportList =
+                        characterIVals
+                        |> List.choose (fun iElem ->
+                            match iElem with
+                            | INIValue.KeyValue("CharacterProfiles", INIValue.Tuple(vList)) when checkVList vList
+                                                                                                     profile ->
+                                Some(iElem)
+                            | _ -> None)
+                    match exportList with
+                    | [ charIVal ] -> profile, Some(charIVal)
+                    | _ -> profile, Some(INIValue.String(None)))
                  >> (fun (pName, iValOpt) ->
-                 match iValOpt with
-                 | Some(iVal) ->
-                     match iVal with
-                     | INIValue.KeyValue("CharacterProfiles", INIValue.Tuple(tList)) ->
-                         tList
-                         |> List.choose (fun tElem ->
-                             match tElem with
-                             | INIValue.KeyValue("FaceCustomization", fVal) -> Some(pName, fVal.ToString())
-                             | _ -> None)
-                         |> function
-                         | [ single ] -> single
+                     match iValOpt with
+                     | Some(iVal) ->
+                         match iVal with
+                         | INIValue.KeyValue("CharacterProfiles", INIValue.Tuple(tList)) ->
+                             tList
+                             |> List.choose (fun tElem ->
+                                 match tElem with
+                                 | INIValue.KeyValue("FaceCustomization", fVal) -> Some(pName, fVal.ToString())
+                                 | _ -> None)
+                             |> function
+                             | [ single ] -> single
+                             | _ -> (pName, "")
                          | _ -> (pName, "")
-                     | _ -> (pName, "")
-                 | None -> (pName, "")))
+                     | None -> (pName, "")))
 
         /// Set the profile's face customization by applying the given `FaceActions`,
         /// then merge the result into the game file
@@ -173,9 +169,9 @@ module INIConfiguration =
             |> List.map
                 ((fun iList -> INIValue.KeyValue("CharacterProfiles", INIValue.Tuple(iList)))
                  >> (fun iVal ->
-                 match iVal?CharacterProfiles?Name?INVTEXT.AsString() with
-                 | Some(s) when s.Trim('"') = profile -> newFace iVal
-                 | _ -> iVal))
+                     match iVal?CharacterProfiles?Name?INVTEXT.AsString() with
+                     | Some(s) when s.Trim('"') = profile -> newFace iVal
+                     | _ -> iVal))
             |> fun cProfs ->
                 let h, t = otherItems |> List.splitAt 1
                 List.append cProfs t |> List.append h
@@ -229,14 +225,17 @@ module INIConfiguration =
         let getSettings (engineFile: INIValue) (gameUserFile: INIValue) (options: OptionGroup list) =
             let engineSettings =
                 engineFile.TryGetProperty("File")
-                |> Option.map (List.choose (fun iVal -> iVal.TryGetProperty("SystemSettings")))
-                |> Option.map (List.concat)
+                |> Option.map (
+                    List.choose (fun iVal -> iVal.TryGetProperty("SystemSettings"))
+                    >> List.concat
+                )
 
             let gameUserSettings =
                 gameUserFile.TryGetProperty("File")
-                |> Option.map
-                    (List.choose (fun iVal -> iVal.TryGetProperty(@"/Script/Mordhau.MordhauGameUserSettings")))
-                |> Option.map (List.concat)
+                |> Option.map (
+                    List.choose (fun iVal -> iVal.TryGetProperty(@"/Script/Mordhau.MordhauGameUserSettings"))
+                    >> List.concat
+                )
 
             options
             |> List.map (fun oGroup ->
@@ -245,7 +244,7 @@ module INIConfiguration =
                 | ConfigFile.GameUserSettings -> gameUserSettings |> Option.map (mapOptGroup oGroup)
                 | _ -> None
                 |> function
-                | Some(newOGroup) -> newOGroup
+                | Some newOGroup -> newOGroup
                 | None -> oGroup)
 
         /// Filter the `OptionGroup list` based on `File` given
@@ -258,11 +257,13 @@ module INIConfiguration =
                 iVal.TryGetProperty("File")
                 |> Option.map (fun iList ->
                     iList
-                    |> List.tryPick (fun i -> i.TryGetProperty(selectors.Head))
-                    |> Option.map action)
-                |> Option.flatten
-                |> Option.map
-                    (fun res -> INIValue.Section(selectors.Head, res) |> fun nVal -> iVal.Map([ selectors.Head ], nVal))
+                    |> List.tryPick (fun i -> selectors |> List.tryHead |> Option.bind (i.TryGetProperty))
+                    |> function
+                    | Some resList -> resList
+                    | None -> []
+                    |> action)
+                |> Option.map (fun res ->
+                    INIValue.Section(selectors.Head, res) |> fun nVal -> iVal.Map([ selectors.Head ], nVal))
 
             let isPropAdded =
                 let res =
@@ -286,47 +287,58 @@ module INIConfiguration =
 
             match isPropAdded, setting.Value.IsNone with
             | _, true ->
-                let result =
-                    (List.filter (fun (iVal: INIValue) -> iVal.Properties
-                                                          |> fst
-                                                          <> setting.Key)) |> propMapper
-                match result with
-                | Some(nVal) -> nVal
-                | None -> iVal.Map(selectors, iStr)
+                List.filter (fun (iVal: INIValue) ->
+                    iVal.Properties
+                    |> fst
+                    <> setting.Key) 
+                |> propMapper
             | false, _ ->
-                let result =
-                    (List.append
-                        ([ INIValue.KeyValue(setting.Key, INIValue.String(setting.Value |> Option.map string)) ]))
-                    |> propMapper
-                match result with
-                | Some(nVal) -> nVal
-                | None -> iVal.Map(selectors, iStr)
-            | _ -> iVal.Map(selectors, iStr)
+                List.append
+                    [ INIValue.KeyValue(setting.Key, INIValue.String(setting.Value |> Option.map string)) ]
+                |> propMapper
+            | _ -> iVal.Map(selectors, iStr) |> Some
+            |> function
+            | Some res -> res
+            | None -> iVal
 
         /// Applies the `OptionGroup list` `Settings` to the given `INIValue` based on the selectors
         let mapOptions (iFile: INIValue) (selectors: string list) (options: OptionGroup list) =
-            options
-            |> List.fold
-                (fun acc elem ->
-                elem.Settings
-                |> List.fold
-                    (fun subElem setting -> List.append selectors [ setting.Key ] |> mapOptionToINIValue subElem setting)
-                       acc) iFile
+            (iFile, options)
+            ||> List.fold (fun acc elem ->
+                (acc, elem.Settings)
+                ||> List.fold (fun subElem setting ->
+                    List.append selectors [ setting.Key ] |> mapOptionToINIValue subElem setting))
 
         /// Map the `OptionGroup list` values to the Engine.ini and GameUserSettings.ini if present
         let tryMapSettings (engineFile: INIValue) (gameUserFile: INIValue) (options: OptionGroup list) =
             try
+                let withGetOrAddSelector (original: INIValue) (selector: string) =
+                    original.TryGetProperty("File")
+                    |> Option.map (fun iVals ->
+                        iVals
+                        |> List.tryFind (fun iVal -> iVal.Properties |> fst |> (=) selector)
+                        |> function
+                        | None -> iVals @ [ INIValue.Section(selector,[]) ]
+                        | Some _ -> iVals)
+                    |> function
+                    | Some eFile -> INIValue.File eFile
+                    | None -> original
+
                 let engine =
+                    let selector = "SystemSettings"
+
                     ConfigFile.Engine
                     |> filterFile options
-                    |> mapOptions engineFile [ "SystemSettings" ]
+                    |> mapOptions (withGetOrAddSelector engineFile selector) [ selector ]
 
                 let gameUser =
+                    let selector = @"/Script/Mordhau.MordhauGameUserSettings"
+
                     ConfigFile.GameUserSettings
                     |> filterFile options
-                    |> mapOptions gameUserFile [ @"/Script/Mordhau.MordhauGameUserSettings" ]
+                    |> mapOptions (withGetOrAddSelector gameUserFile selector) [ selector ]
 
-                Some(engine), Some(gameUser)
+                Some engine, Some gameUser
             with e ->
                 logger.LogError
                     "Failed to map settings of:\n\tEngine file:\n\t%O\n\tGame user file:\n\t%O\n\tOptions:\n\t%O\n%O"

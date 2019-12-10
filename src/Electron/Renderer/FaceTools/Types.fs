@@ -151,17 +151,14 @@ module rec Types =
                         ButtonProp.Variant ButtonVariant.Contained
                         MaterialProp.Color ComponentColor.Primary
                         DOMAttr.OnClick <| fun _ ->
-                            dispatch
-                                (if this.Last then StepperSubmit
-                                 else StepperNext)
+                            dispatch (if this.Last then StepperSubmit else StepperNext)
                         Style [ CSSProp.MaxHeight "2.6em" ] ]
                       [ if model.Submit.IsSubmitWaiting then
                           yield circularProgress
                                     [ CircularProgressProp.Size(CircularProgressSize.Case1(20))
                                       Style [ CSSProp.MaxHeight "2.6em" ] ]
                         else
-                            yield str <| if this.Last then "Submit"
-                                         else "Next" ] ]
+                            yield str <| if this.Last then "Submit" else "Next" ] ]
             | true -> [ button [ DOMAttr.OnClick <| fun _ -> dispatch (StepperRestart) ] [ str "Restart" ] ]
             |> div
                 [ Style
@@ -178,7 +175,7 @@ module rec Types =
             Steps.GetSteps
             |> Array.map
                 (fun stepCase ->
-                step [ StepProp.Completed <| isComplete stepCase.GetTag ] [ stepLabel [] [ str stepCase.Text ] ])
+                    step [ StepProp.Completed <| isComplete stepCase.GetTag ] [ stepLabel [] [ str stepCase.Text ] ])
 
     type Profile =
         { Name: string

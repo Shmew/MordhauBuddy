@@ -95,7 +95,8 @@ module State =
                 | FaceResult.Frankenstein b
                 | FaceResult.Random b
                 | FaceResult.Custom b ->
-                    if b then model, Cmd.bridgeSend (sender.Commit([ fileWrap (model.GameDir.Directory) ]))
+                    if b
+                    then model, Cmd.bridgeSend (sender.Commit([ fileWrap (model.GameDir.Directory) ]))
                     else { model with Submit = Submit.Error "Modifying INI failed" }, Cmd.ofMsg SnackDismissMsg
             | _ -> model, Cmd.none
         | StepperSubmit ->
@@ -116,8 +117,7 @@ module State =
                           { model.TransferList with
                                 LeftProfiles = toggles
                                 LeftChecked =
-                                    if b then toggles.Length
-                                    else 0 } }, Cmd.none
+                                    if b then toggles.Length else 0 } }, Cmd.none
             | Right ->
                 let toggles = model.TransferList.RightProfiles |> toggleAll
                 { model with
@@ -125,13 +125,13 @@ module State =
                           { model.TransferList with
                                 RightProfiles = toggles
                                 RightChecked =
-                                    if b then toggles.Length
-                                    else 0 } }, Cmd.none
+                                    if b then toggles.Length else 0 } }, Cmd.none
         | Toggle(dir, pItem) ->
             let toggle (iList: Profile list) =
                 iList
                 |> List.map (fun p ->
-                    if p = pItem then { pItem with Checked = not pItem.Checked }
+                    if p = pItem
+                    then { pItem with Checked = not pItem.Checked }
                     else p)
 
             let findChecked (model: Model) =
@@ -171,19 +171,19 @@ module State =
                 model.TransferList.RightProfiles
                 |> List.partition (fun pItem -> pItem.Checked)
                 |> (fun (newLeft, remainRight) ->
-                remainRight, model.TransferList.LeftProfiles |> List.append (newLeft |> unCheck))
+                    remainRight, model.TransferList.LeftProfiles |> List.append (newLeft |> unCheck))
             | Right ->
                 model.TransferList.LeftProfiles
                 |> List.partition (fun pItem -> pItem.Checked)
                 |> (fun (newRight, remainLeft) ->
-                model.TransferList.RightProfiles |> List.append (newRight |> unCheck), remainLeft)
+                    model.TransferList.RightProfiles |> List.append (newRight |> unCheck), remainLeft)
             |> (fun (rList, lList) ->
-            { model with
-                  TransferList =
-                      { model.TransferList with
-                            LeftProfiles = lList
-                            RightProfiles = rList } }
-            |> checkedCount, Cmd.none)
+                { model with
+                      TransferList =
+                          { model.TransferList with
+                                LeftProfiles = lList
+                                RightProfiles = rList } }
+                |> checkedCount, Cmd.none)
         | TabSelected(tabPicked) -> { model with TabSelected = tabPicked }, Cmd.none
         | ImgSkeleton -> { model with ImgLoaded = true }, Cmd.none
         | SetImportString s ->

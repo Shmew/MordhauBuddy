@@ -4,7 +4,6 @@ module State =
     open FSharp.Core // To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open RenderUtils
-    open RenderUtils.Validation
     open Elmish
     open Elmish.Bridge
     open MordhauBuddy.Shared.ElectronBridge
@@ -45,7 +44,8 @@ module State =
                     else
                         { model with Submit = Submit.Error "Error creating backup" }, Cmd.ofMsg SnackDismissMsg
                 | INIOperationResult.CommitChanges b ->
-                    (if b then { model with Submit = Submit.Success "Changes successfully completed!" }
+                    (if b
+                     then { model with Submit = Submit.Success "Changes successfully completed!" }
                      else { model with Submit = Submit.Error "Error commiting changes to the file" }),
                     Cmd.ofMsg SnackDismissMsg
                 | _ -> model, Cmd.none
@@ -66,9 +66,9 @@ module State =
                                       | Some(nOptGroup) -> nOptGroup
                                       | _ -> optGroup
                                       |> (fun mods ->
-                                      match mods.Settings |> List.forall (fun setting -> setting.Value.IsSome) with
-                                      | true -> { mods with Enabled = true }
-                                      | false -> mods))
+                                          match mods.Settings |> List.forall (fun setting -> setting.Value.IsSome) with
+                                          | true -> { mods with Enabled = true }
+                                          | false -> mods))
                                   |> fun mods -> { p with Items = mods }) }, Cmd.none
                 | ConfigResult.MapConfigs b ->
                     if b then
@@ -86,22 +86,23 @@ module State =
             model.Panels
             |> List.map
                 ((fun oPanel ->
-                 if oPanel.Panel.GetTag = p.Panel.GetTag then { p with Expanded = not p.Expanded }
-                 else { oPanel with Expanded = false })
+                    if oPanel.Panel.GetTag = p.Panel.GetTag then
+                        { p with Expanded = not p.Expanded }
+                    else
+                        { oPanel with Expanded = false })
                  >> (fun oPanel ->
-                 { oPanel with
-                       Items =
-                           oPanel.Items
-                           |> List.map (fun i ->
-                               if i.Expanded then { i with Expanded = false }
-                               else i) }))
+                     { oPanel with
+                           Items =
+                               oPanel.Items
+                               |> List.map (fun i ->
+                                   if i.Expanded then { i with Expanded = false } else i) }))
             |> fun newPanels -> { model with Panels = newPanels }, Cmd.none
         | ExpandSubPanel(oGroup) ->
             let mapItems (oList: OptionGroup list) =
                 oList
-                |> List.map (fun i ->
-                    if oGroup.Title = i.Title || i.Expanded then { i with Expanded = i.Expanded |> not }
-                    else i)
+                |> List.map
+                    (fun i ->
+                        if oGroup.Title = i.Title || i.Expanded then { i with Expanded = i.Expanded |> not } else i)
 
             let mapPanels (pList: Panel list) = pList |> List.map (fun p -> { p with Items = mapItems p.Items })
 
@@ -115,18 +116,15 @@ module State =
                           if toggle then
                               oGroup.Settings
                               |> List.map (fun s ->
-                                  if s.Value.IsNone then { s with Value = s.Default |> Some }
-                                  else s)
+                                  if s.Value.IsNone then { s with Value = s.Default |> Some } else s)
                           else
                               oGroup.Settings
                               |> List.map (fun s ->
-                                  if s.Value.IsNone then s
-                                  else { s with Value = None })
+                                  if s.Value.IsNone then s else { s with Value = None })
                       Enabled = toggle }
             { model with
                   Submit =
-                      if model.Submit.IsSubmitError then model.Submit
-                      else Submit.Init
+                      if model.Submit.IsSubmitError then model.Submit else Submit.Init
                   Panels =
                       model.Panels
                       |> List.map (fun p ->
@@ -134,8 +132,7 @@ module State =
                                 Items =
                                     p.Items
                                     |> List.map (fun s ->
-                                        if s.Title = oGroup.Title then newValues
-                                        else s) }) }, Cmd.none
+                                        if s.Title = oGroup.Title then newValues else s) }) }, Cmd.none
         | MoveSlider(key, value) ->
             let tryGetValue (f: float) (kValue: KeyValues.Values) =
                 match kValue with
@@ -153,7 +150,8 @@ module State =
                 sList
                 |> List.map (fun s ->
                     let res = tryGetValue value s.Default
-                    if res.IsSome && s.Mutable.IsSome && s.Key = key then { s with Value = res }
+                    if res.IsSome && s.Mutable.IsSome && s.Key = key
+                    then { s with Value = res }
                     else s)
 
             let mapOGroups (oList: OptionGroup list) =
@@ -162,8 +160,8 @@ module State =
             let newPanels =
                 model.Panels
                 |> List.map (fun p ->
-                    if p.Expanded && (p.Items |> List.exists (fun o -> o.Expanded)) then
-                        { p with Items = mapOGroups p.Items }
+                    if p.Expanded && (p.Items |> List.exists (fun o -> o.Expanded))
+                    then { p with Items = mapOGroups p.Items }
                     else p)
             { model with
                   Submit = Submit.Init

@@ -54,7 +54,8 @@ module View =
                                 HTMLAttr.Height "256px"
                                 SkeletonProp.DisableAnimate true
                                 Style [ CSSProp.PaddingBottom "2em" ] ]
-                          typography [ Class classes?padBottom ] [ str (sprintf "Version: %s" (Bindings.Info.version)) ]
+                          typography [ Class classes?padBottom ]
+                              [ str (sprintf "Version: %s" (Bindings.Info.version)) ]
                           typography [ Class classes?padBottom ]
                               [ str (sprintf "Electron: %s" (Bindings.Info.electronVersion)) ]
                           typography [ Class classes?padBottom ]
@@ -63,8 +64,10 @@ module View =
                               [ str (sprintf "Node: %s" (Bindings.Info.nodeVersion)) ]
                           typography [ Class classes?padBottom ] [ str (sprintf "V8: %s" (Bindings.Info.v8Version)) ]
                           typography [ Class classes?padBottom ] [ str ".NET Core: 3.0" ]
-                          typography [ Class classes?padBottom ] [ str (sprintf "License: %s" (Bindings.Info.license)) ]
-                          typography [ Class classes?padBottom ] [ str (sprintf "Author: %s" (Bindings.Info.author)) ]
+                          typography [ Class classes?padBottom ]
+                              [ str (sprintf "License: %s" (Bindings.Info.license)) ]
+                          typography [ Class classes?padBottom ]
+                              [ str (sprintf "Author: %s" (Bindings.Info.author)) ]
                           link
                               [ Class classes?padBottom
                                 DOMAttr.OnClick <| fun _ -> dispatch (OpenLink(Bindings.Info.homepage)) ]

@@ -15,9 +15,6 @@ module View =
     open State
     open RenderUtils
     open RenderUtils.MaterialUI
-    open RenderUtils.MaterialUI.Core
-    open RenderUtils.MaterialUI.Themes
-    open RenderUtils.MaterialUI.Props
     open MordhauBuddy.Shared.ElectronBridge
 
     let private styles (theme: ITheme): IStyles list =
@@ -235,8 +232,7 @@ module View =
                                         CSSProp.MarginLeft "-1em" ] ] ] ]
             |> ProviderTheme.Theme
 
-        if m.Store.DarkTheme then createTheme dark
-        else createTheme light
+        if m.Store.DarkTheme then createTheme dark else createTheme light
 
     let private view' (classes: IClasses) model dispatch =
         let hideIfMax (b: bool) =
@@ -260,16 +256,11 @@ module View =
                     appBar
                         [ Class classes?appBar
                           AppBarProp.Position AppBarPosition.Fixed
-                          Style
-                              [ CSSProp.BackgroundColor
-                                  (if model.Store.DarkTheme then "#424242"
-                                   else "#6200EE") ] ]
+                          Style [ CSSProp.BackgroundColor(if model.Store.DarkTheme then "#424242" else "#6200EE") ] ]
                         [ toolbar
                             [ Style
                                 [ CSSProp.Padding "0px"
-                                  CSSProp.BackgroundColor
-                                      (if model.Store.DarkTheme then "#212121"
-                                       else "#3700B3")
+                                  CSSProp.BackgroundColor(if model.Store.DarkTheme then "#212121" else "#3700B3")
                                   CSSProp.MinHeight "0px"
                                   CSSProp.Custom("WebkitAppRegion", "drag") ] ]
                               [ div
@@ -328,9 +319,11 @@ module View =
                                         [ Class classes?titleButton
                                           DOMAttr.OnClick <| fun _ -> dispatch StartPatch
                                           Style
-                                              [ CSSProp.Display <| if model.UpdatePending.Ready then
-                                                                       DisplayOptions.Inherit
-                                                                   else DisplayOptions.None
+                                              [ CSSProp.Display
+                                                <| if model.UpdatePending.Ready then
+                                                    DisplayOptions.Inherit
+                                                   else
+                                                       DisplayOptions.None
                                                 CSSProp.Color "#15cf46"
                                                 CSSProp.BorderRadius "20%" ] ] [ downloadIcon [] ] ]
                                 iconButton

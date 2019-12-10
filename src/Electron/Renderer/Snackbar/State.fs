@@ -46,8 +46,7 @@ module State =
         match m.State, msg with
         | _, Add snack ->
             let cmd =
-                if m.State = Inert then Cmd.ofMsg (NextState m.CurrentSnackId)
-                else Cmd.none
+                if m.State = Inert then Cmd.ofMsg (NextState m.CurrentSnackId) else Cmd.none
             { m with Queue = m.Queue @ [ snack ] }, cmd, Cmd.none
         | _, NextState i when i <> m.CurrentSnackId -> m, Cmd.none, Cmd.none
         | Inert, NextState _ ->

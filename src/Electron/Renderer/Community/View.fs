@@ -90,8 +90,7 @@ module View =
                     CSSProp.Display DisplayOptions.Flex
                     CSSProp.Height "inherit"
                     CSSProp.OverflowX OverflowOptions.Hidden ] ]
-        <| if model.LoadingElem then [ loading classes model dispatch ]
-           else tabs classes model dispatch
+        <| if model.LoadingElem then [ loading classes model dispatch ] else tabs classes model dispatch
 
     /// Workaround for using JSS with Elmish
     /// https://github.com/mvsmal/fable-material-ui/issues/4#issuecomment-422781471

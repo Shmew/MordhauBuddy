@@ -11,7 +11,6 @@ module App =
 
     let logger = Logger "App"
 
-
     /// Websocket bridge
     [<AutoOpen>]
     module Bridge =

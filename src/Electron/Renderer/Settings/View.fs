@@ -81,9 +81,10 @@ module View =
         formControl [ Style [ CSSProp.Padding "1em 1em" ] ]
             [ formGroup []
                   [ formControlLabel
-                      [ FormControlLabelProp.Control <| switch
-                                                            [ HTMLAttr.Checked <| model.AutoLaunch
-                                                              DOMAttr.OnClick <| fun _ -> (dispatch ToggleAutoLaunch) ]
+                      [ FormControlLabelProp.Control
+                        <| switch
+                            [ HTMLAttr.Checked <| model.AutoLaunch
+                              DOMAttr.OnClick <| fun _ -> (dispatch ToggleAutoLaunch) ]
                         FormControlLabelProp.LabelPlacement FormControlLabelPlacement.Top
                         HTMLAttr.Label "Launch application on startup" ] [] ] ]
 

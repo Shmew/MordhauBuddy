@@ -20,14 +20,16 @@ module rec Helpers =
 
         /// Get application version
         let version =
-            Assembly.GetExecutingAssembly().GetName().Version |> (fun v -> sprintf "%i.%i.%i" v.Major v.Minor v.Build)
+            Assembly.GetExecutingAssembly().GetName().Version
+            |> (fun v -> sprintf "%i.%i.%i" v.Major v.Minor v.Build)
 
         /// Current executable directory
         let appPath = Environment.CurrentDirectory
 
         /// Get application name
         let appFile ver =
-            if Environment.isLinux then sprintf "MordhauBuddy-%s.AppImage" ver
+            if Environment.isLinux
+            then sprintf "MordhauBuddy-%s.AppImage" ver
             else sprintf "MordhauBuddy.Setup.%s.exe" ver
 
         /// Check if Mordhau is running
@@ -37,8 +39,7 @@ module rec Helpers =
         /// Try to get an env variable with increasing scope
         let tryGetEnvVar (s: string) =
             let envOpt (envVar: string) =
-                if String.isNullOrEmpty envVar then None
-                else Some(envVar)
+                if String.isNullOrEmpty envVar then None else Some(envVar)
 
             let procVar = Environment.GetEnvironmentVariable(s) |> envOpt
             let userVar = Environment.GetEnvironmentVariable(s, EnvironmentVariableTarget.User) |> envOpt
@@ -88,7 +89,8 @@ module rec Helpers =
 
         /// Determine logging directory path
         let logPath: FolderPath =
-            if Environment.isLinux then Info.Linux.homeShare @@ "logging"
+            if Environment.isLinux
+            then Info.Linux.homeShare @@ "logging"
             else Info.Windows.getWinExecDir() @@ "logging"
 
         module private Impl =
@@ -317,12 +319,12 @@ module rec Helpers =
                 | Param(a, b) -> urlify (a, b.Value) |> (fun (k, v) -> sprintf "%s=%s" k v)
                 | Flag(a, _) -> a)
             |> (fun p ->
-            match p with
-            | _ when p |> List.isEmpty -> ""
-            | pList ->
-                pList
-                |> List.reduce (fun acc elem -> acc + "&" + elem)
-                |> (+) "?")
+                match p with
+                | _ when p |> List.isEmpty -> ""
+                | pList ->
+                    pList
+                    |> List.reduce (fun acc elem -> acc + "&" + elem)
+                    |> (+) "?")
 
         /// Converts a text `HttpResponseBody` to string
         let unwrapTextBody (body: HttpResponseBody) =

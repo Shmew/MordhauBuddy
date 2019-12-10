@@ -15,15 +15,6 @@ module Store =
           EngineLocation: string option
           GameUserLocation: string option
           BackupSettings: string }
-    //member this.ToPojo () =
-    //    {| AutoLaunch = this.AutoLaunch |> string
-    //       AutoLaunchSet = this.AutoLaunchSet |> string
-    //       DarkTheme = this.DarkTheme |> string
-    //       GameLocation = this.GameLocation
-    //       EngineLocation = this.EngineLocation
-    //       GameUserLocation = this.GameUserLocation
-    //       BackupSettings = this.BackupSettings |}
-    //    |> toPlainJsObj
 
     type Msg =
         | AutoLaunch of bool
@@ -95,8 +86,10 @@ module Store =
 
         type StoreStatic =
 
+
             [<EmitConstructor>]
             abstract Create: unit -> Store
+
 
             [<EmitConstructor>]
             abstract Create: Options -> Store

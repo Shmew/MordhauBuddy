@@ -35,6 +35,7 @@ module BridgeOperations =
 
         /// Try to locate the default Mordhau configuration directory
         let defDir() = FileOps.INI.defaultDir
+
         /// Replace the oVal with iVal based on selectors
         let replace (oVal: INIValue) (iVal: INIValue) (selectors: string list) = oVal.Map(selectors, iVal)
 

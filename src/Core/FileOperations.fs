@@ -36,8 +36,7 @@ module FileOps =
                 [ ".steam/steam"; ".local/share/Steam" ]
                 |> List.map (fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
                 |> List.tryFind (bindDirectory >> Option.isSome)
-                |> Option.bind
-                    (fun dir ->
+                |> Option.bind (fun dir ->
                     dir
                     @@ "steamapps/compatdata/629760/pfx/drive_c/users/steamuser/AppData/Local"
                        @@ "Mordhau/Saved/Config/WindowsClient" |> Some)
@@ -158,9 +157,9 @@ module FileOps =
                     s
 
         let private withTimeout timeout action =
-            async { let! child = Async.StartChild(action, timeout)
-                    return! child }
-
+            async {
+                let! child = Async.StartChild(action, timeout)
+                return! child }
 
         [<RequireQualifiedAccess>]
         module Windows =
@@ -201,7 +200,6 @@ module FileOps =
         module Linux =
 
             let logger = Logger "FileOps.AutoLaunch.Linux"
-
 
             [<AutoOpen>]
             module Utils =
@@ -260,7 +258,8 @@ module FileOps =
                     try
                         try
                             async
-                                { Shell.moveFile (path @@ "mordhau-buddy") (appPath @@ "squashfs-root/static/icon.png") }
+                                {
+                                Shell.moveFile (path @@ "mordhau-buddy") (appPath @@ "squashfs-root/static/icon.png") }
                             |> withTimeout 5000
                             |> Async.RunSynchronously
                         with e ->
@@ -344,18 +343,15 @@ module FileOps =
 
         /// Enable auto launch by calling OS respective function
         let enableAutoLaunch() =
-            if Environment.isLinux then Linux.enableAutoLaunch()
-            else Windows.enableAutoLaunch()
+            if Environment.isLinux then Linux.enableAutoLaunch() else Windows.enableAutoLaunch()
 
         /// Disable auto launch by calling OS respective function
         let disableAutoLaunch() =
-            if Environment.isLinux then Linux.disableAutoLaunch()
-            else Windows.disableAutoLaunch()
+            if Environment.isLinux then Linux.disableAutoLaunch() else Windows.disableAutoLaunch()
 
         /// Perform additional Linux installation steps
         let registerLinuxApp() =
-            if Environment.isLinux then Linux.registerLinuxApp()
-            else ()
+            if Environment.isLinux then Linux.registerLinuxApp() else ()
 
     /// Fetch and patch new updates
     module Updating =
@@ -435,8 +431,7 @@ module FileOps =
 
         /// Get base update path
         let private getBaseUpdatePath() =
-            if Environment.isLinux then Linux.homeShare
-            else Windows.getWinExecDir()
+            if Environment.isLinux then Linux.homeShare else Windows.getWinExecDir()
             |> fun s -> s @@ "Updating"
 
         /// Get update path and ensure it exists
@@ -473,8 +468,7 @@ module FileOps =
 
         /// Get the file that will be patched
         let getOriginal() =
-            if Environment.isLinux then Linux.Utils.getMBHome()
-            else Windows.getWinExecPath()
+            if Environment.isLinux then Linux.Utils.getMBHome() else Windows.getWinExecPath()
             |> FileInfo.ofPath
 
         /// See if file is already downloaded and patched
@@ -484,8 +478,7 @@ module FileOps =
             getUpdatePath (tagName) @@ newName
             |> FileInfo.ofPath
             |> fun fi ->
-                if fi.Exists then Some(fi.FullName)
-                else None
+                if fi.Exists then Some(fi.FullName) else None
 
         /// Try to generate a new patch file
         let tryGeneratePatch (deltaFi: FileInfo) =
@@ -509,7 +502,8 @@ module FileOps =
 
                 Ok newFile
             with e ->
-                logger.LogError "Failed to generate patched file:\n\tDelta:\n\t%O\n\tNew file: %s\n%O" deltaFi newFile e
+                logger.LogError "Failed to generate patched file:\n\tDelta:\n\t%O\n\tNew file: %s\n%O" deltaFi newFile
+                    e
                 try
                     Shell.cleanDir <| getBaseUpdatePath()
                 with e ->
@@ -521,8 +515,7 @@ module FileOps =
             let fi = FileInfo.ofPath path
 
             let newName =
-                if Environment.isLinux then fi.Name
-                else "installer.exe"
+                if Environment.isLinux then fi.Name else "installer.exe"
 
             try
                 if fi.Exists then

@@ -32,10 +32,12 @@ module Main =
         let installAllDevTools (win: BrowserWindow) =
             installDevTool REACT_DEVELOPER_TOOLS
             installDevTool REDUX_DEVTOOLS
+            win.webContents.executeJavaScript ("require('devtron').install()")
 
         let uninstallAllDevTools (win: BrowserWindow) =
             main.BrowserWindow.removeDevToolsExtension ("React Developer Tools")
             main.BrowserWindow.removeDevToolsExtension ("Redux DevTools")
+            win.webContents.executeJavaScript ("require('devtron').uninstall()")
 
         let connectRemoteDevViaExtension: unit -> unit = import "connectViaExtension" "remotedev"
 
@@ -49,7 +51,7 @@ module Main =
 
             let args =
                 let init = ResizeArray<string>()
-                [ "watch"; "run"; "-f"; "netcoreapp3.0"; "--project"; bridgePath ] |> List.iter init.Add
+                [ "watch"; "run"; "-f"; "netcoreapp3.1"; "--project"; bridgePath ] |> List.iter init.Add
                 init
 
             let options =

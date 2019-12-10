@@ -37,8 +37,7 @@ module ComOperations =
                     | [ l1; l2 ] when wList.Length = 2 ->
                         match l1, l2 with
                         | (t1, b1), (t2, b2) when t1 = t2 ->
-                            if b1.Length > b2.Length then [ (t1, b1) ]
-                            else [ (t2, b2) ]
+                            if b1.Length > b2.Length then [ (t1, b1) ] else [ (t2, b2) ]
                             |> Some
                         | _ -> [ l1; l2 ] |> Some
                     | _ -> None))

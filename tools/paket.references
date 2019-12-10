@@ -6,4 +6,3 @@ group Tooling
 	FSharpLint.Core
 	dotnet-fable
 	dotnet-fake
-    dotnet-fantomas

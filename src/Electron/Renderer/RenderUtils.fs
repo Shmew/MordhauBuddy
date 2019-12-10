@@ -109,7 +109,6 @@ module RenderUtils =
 
     [<AutoOpen>]
     module RenderTypes =
-        open FSharp.Reflection
 
         [<RequireQualifiedAccess>]
         type Submit =
@@ -143,8 +142,7 @@ module RenderUtils =
 
         /// Ensures that the string ends with a given suffix
         let ensureEndsWith (suffix: string) (str: string) =
-            if str.EndsWith suffix then str
-            else str + suffix
+            if str.EndsWith suffix then str else str + suffix
 
         /// Converts a disciminated union string to a title
         let duToTitle (s: string) =
@@ -205,8 +203,7 @@ module RenderUtils =
             let removeAllWs (s: string) =
                 s.Trim().ToCharArray()
                 |> Array.choose (fun c ->
-                    if c = ' ' then None
-                    else Some(string c))
+                    if c = ' ' then None else Some(string c))
                 |> Array.reduce (+)
 
             /// Apply a pattern and if there is a match apply f
@@ -495,8 +492,7 @@ module RenderUtils =
         let private stripSteamRedirects (s: string) = Regex(steamLinkFilter, RegexOptions.IgnoreCase).Replace(s, "")
 
         let rec private trimEndBr (s: string) =
-            if s.EndsWith(@"<br>") then trimEndBr (s.Substring(0, s.Length - 4))
-            else s
+            if s.EndsWith(@"<br>") then trimEndBr (s.Substring(0, s.Length - 4)) else s
 
         /// Formats an rss feed by stripping classes and adding new ones
         let formatRawHtml (newClass: string) (sList: (string * string) list) =
@@ -574,6 +570,16 @@ module RenderUtils =
                 Caption = "Removes additional fog effects from maps."
                 Settings =
                     [ { Key = @"r.Fog"
+                        Default = KeyValues.Values.Int(0)
+                        Value = None
+                        Mutable = None } ]
+                File = ConfigFile.Engine
+                Enabled = false
+                Expanded = false }
+              { Title = "Disable character shadows"
+                Caption = "Removes characer object shadow casting on world."
+                Settings =
+                    [ { Key = @"r.Shadow.perObject"
                         Default = KeyValues.Values.Int(0)
                         Value = None
                         Mutable = None } ]
@@ -699,22 +705,26 @@ module RenderUtils =
 
         let success (msg: ToastrMsg): Cmd<_> =
             [ fun _ ->
-                if System.String.IsNullOrEmpty(msg.Title) then successToast msg.Message
+                if System.String.IsNullOrEmpty(msg.Title)
+                then successToast msg.Message
                 else successToastWithTitle msg.Message msg.Title ]
 
         let error (msg: ToastrMsg): Cmd<_> =
             [ fun _ ->
-                if System.String.IsNullOrEmpty(msg.Title) then errorToast msg.Message
+                if System.String.IsNullOrEmpty(msg.Title)
+                then errorToast msg.Message
                 else errorToastWithTitle msg.Message msg.Title ]
 
         let info (msg: ToastrMsg): Cmd<_> =
             [ fun _ ->
-                if System.String.IsNullOrEmpty(msg.Title) then infoToast msg.Message
+                if System.String.IsNullOrEmpty(msg.Title)
+                then infoToast msg.Message
                 else infoToastWithTitle msg.Message msg.Title ]
 
         let warning (msg: ToastrMsg): Cmd<_> =
             [ fun _ ->
-                if System.String.IsNullOrEmpty(msg.Title) then warningToast msg.Message
+                if System.String.IsNullOrEmpty(msg.Title)
+                then warningToast msg.Message
                 else warningToastWithTitle msg.Message msg.Title ]
 
     /// MaterialUI library extensions

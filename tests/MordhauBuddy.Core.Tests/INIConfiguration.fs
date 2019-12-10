@@ -14,6 +14,10 @@ module INIConfiguration =
     module Utils =
         let gameFile = IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/Game.ini") |> INIValue.Parse
         let engineFile = IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/Engine.ini") |> INIValue.Parse
+        let engineBlankFile =
+            IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/EngineBlank.ini") |> INIValue.Parse
+        let engineEmptySystemSettingsFile =
+            IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/EngineEmptySystemSettings.ini") |> INIValue.Parse
         let gameUserFile =
             IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/GameUserSettings.ini") |> INIValue.Parse
         let profileNames =
@@ -199,6 +203,46 @@ module INIConfiguration =
                   (eFile
                    |> Option.get
                    |> string)
+              |> Expect.isTrue
+              <| ""
+          testCase "Creates a [SystemSettings] tag if none is present" <| fun () ->
+              let disableFog =
+                  [ { Title = "Disable fog"
+                      Caption = "Removes additional fog effects from maps."
+                      Settings =
+                          [ { Key = @"r.Fog"
+                              Default = KeyValues.Values.Int(0)
+                              Value = Some(KeyValues.Values.Int(0))
+                              Mutable = None } ]
+                      File = ConfigFile.Engine
+                      Enabled = true
+                      Expanded = false } ]
+
+              tryMapSettings engineBlankFile gameUserFile disableFog
+              |> fst
+              |> Option.map string
+              |> Option.get
+              |> fun eFile -> notOrigAndParses engineBlankFile eFile && eFile.Contains("[SystemSettings]")
+              |> Expect.isTrue
+              <| ""
+          testCase "Adds values even if [SystemSettings] has no children" <| fun () ->
+              let disableFog =
+                  [ { Title = "Disable fog"
+                      Caption = "Removes additional fog effects from maps."
+                      Settings =
+                          [ { Key = @"r.Fog"
+                              Default = KeyValues.Values.Int(0)
+                              Value = Some(KeyValues.Values.Int(0))
+                              Mutable = None } ]
+                      File = ConfigFile.Engine
+                      Enabled = true
+                      Expanded = false } ]
+
+              tryMapSettings engineEmptySystemSettingsFile gameUserFile disableFog
+              |> fst
+              |> Option.map string
+              |> Option.get
+              |> fun eFile -> notOrigAndParses engineEmptySystemSettingsFile eFile && eFile.Contains("r.Fog=0")
               |> Expect.isTrue
               <| "" ]
         |> testList "Mordhau Config"

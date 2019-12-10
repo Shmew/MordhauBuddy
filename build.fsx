@@ -17,6 +17,8 @@ open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 open Fake.Net.Http
 open Fake.Tools
+open Fantomas.FakeHelpers
+open Fantomas.FormatConfig
 open Tools.Electron
 open Tools.Linting
 open Tools.Updating
@@ -48,8 +50,7 @@ let repo = @"https://github.com/Shmew/MordhauBuddy"
 let relaxedNameLinting = 
     [ (__SOURCE_DIRECTORY__ @@ "src/Electron/**/*.fs") ]
 
-let netCoreVersions = [ "netcoreapp3.0" ]
-let netFrameworkVersions = [ "net462" ]
+let netCoreVersions = [ "netcoreapp3.1" ]
 
 // OS runtime targets
 let runTimes = ["win-x64";"linux-x64"]
@@ -110,9 +111,6 @@ module dotnet =
     let tool optionConfig command args =
         DotNet.exec (fun p -> { p with WorkingDirectory = tools} |> optionConfig ) (sprintf "%s" command) args
         |> failOnBadExitAndPrint
-
-    let fantomas optionConfig args =
-        tool optionConfig "fantomas" args
 
     let femto optionConfig args =
         tool optionConfig (!!(__SOURCE_DIRECTORY__ @@ "packages/tooling/Femto/tools/**/**/Femto.dll") |> Seq.head) args
@@ -259,10 +257,6 @@ Target.create "PostPublishClean" <| fun _ ->
     TaskRunner.runWithRetries clean 99
 
 Target.create "CleanElectronBin"  <| fun _ ->
-    let netFrames =
-        netFrameworkVersions
-        |> List.map (fun s -> __SOURCE_DIRECTORY__ @@ "bin/Core" @@ s)
-
     let netCores =
         netCoreVersions
         |> List.map (fun s -> __SOURCE_DIRECTORY__ @@ "bin/Core" @@ s)
@@ -271,7 +265,6 @@ Target.create "CleanElectronBin"  <| fun _ ->
         !! (__SOURCE_DIRECTORY__  @@ "bin/Main")
         ++ (__SOURCE_DIRECTORY__  @@ "bin/Renderer")
         ++ (__SOURCE_DIRECTORY__  @@ "bin/Shared")
-        |> (fun src -> List.fold foldIncludeGlobs src netFrames)
         |> List.ofSeq
         |> Shell.deleteDirs
 
@@ -363,9 +356,13 @@ Target.create "Dist" <| fun _ ->
     Yarn.exec "distWin" id
     Yarn.exec "distLinux" id
 
-// Build to unpacked directory
-Target.create "DistDir" <| fun _ ->
-    Yarn.exec "dist:dir" id
+// Build artifacts
+Target.create "DistWin" <| fun _ ->
+    Yarn.exec "distWin" id
+
+// Build artifacts
+Target.create "DistLinux" <| fun _ ->
+    Yarn.exec "distLinux" id
 
 // --------------------------------------------------------------------------------------
 // Create differentials for updating
@@ -441,10 +438,16 @@ Target.create "PublishDotNet" <| fun _ ->
 // Lint and format source code to ensure consistency
 
 Target.create "Format" <| fun _ ->
+    let config =
+        { FormatConfig.Default with
+            PageWidth = 120
+            SpaceBeforeColon = false }
+        
     fsSrcAndTest
-    |> Seq.iter (fun file ->
-        dotnet.fantomas id
-            (sprintf "%s --pageWidth 120 --noSpaceBeforeColon" file))
+    |> List.ofSeq
+    |> formatCode config
+    |> Async.RunSynchronously
+    |> printfn "Formatted files: %A"
 
 Target.create "Lint" <| fun _ ->
     fsSrcAndTest
@@ -686,8 +689,7 @@ Target.create "All" ignore
 "Restore" ==> "Lint"
 "Restore" ==> "Format"
 
-"Format"
-  ?=> "Lint" 
+"Lint" 
   ?=> "Build"
   ?=> "RunTests"
   ?=> "CleanDocs"
@@ -708,7 +710,6 @@ Target.create "All" ignore
 
 "All" 
   ?=> "Dist"
-  ?=> "DistDir"
 
 "LocalDocs" ?=> "All"
 "ReleaseDocs" ?=> "All"
@@ -719,7 +720,8 @@ Target.create "All" ignore
 "Dev" <== ["All"; "LocalDocs"; "ConfigDebug"]
 
 "Dist" <== ["All"; "ReleaseDocs"; "ConfigRelease"]
+"DistWin" <== ["All"; "ReleaseDocs"; "ConfigRelease"]
+"DistLinux" <== ["All"; "ReleaseDocs"; "ConfigRelease"]
 
-"DistDir" <== ["All"; "ReleaseDocs"; "ConfigDebug"]
 
 Target.runOrDefaultWithArguments "Dev"
