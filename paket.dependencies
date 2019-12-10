@@ -8,7 +8,7 @@ source https://api.nuget.org/v3/index.json
 group Core
 	source https://nuget.org/api/v2
 	source https://api.nuget.org/v3/index.json
-
+   
 	nuget Elmish.Bridge.Giraffe ~> 3.0
 	nuget Fable.Elmish ~> 3.0
 	nuget Fake.Core.Environment ~> 5.18
