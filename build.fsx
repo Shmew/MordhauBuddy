@@ -744,6 +744,8 @@ Target.create "UpdateDocs" ignore
   ==> "DistWin"
   ?=> "CreateDiffs"
 
+"DistWin" ?=> "DistLinux"
+
 "Dev" <== ["All"; "LocalDocs"; "ConfigDebug"]
 
 "DistWin" <== ["All"; "ReleaseDocs"; "ConfigRelease"]

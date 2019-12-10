@@ -1,3 +1,6 @@
+### 1.3.1 - Tuesday, December 10, 2019
+* Fixed graphical bug
+
 ### 1.3.0 - Tuesday, December 10, 2019
 * Added option to disable character shadows
 
