@@ -1270,6 +1270,9 @@ GROUP FakeBuild
 STORAGE: NONE
 NUGET
   remote: https://api.nuget.org/v3/index.json
+    BlackFox.CommandLine (1.0)
+      FSharp.Core (>= 4.0.0.1) - restriction: >= net45
+      FSharp.Core (>= 4.2.3) - restriction: && (< net45) (>= netstandard2.0)
     BlackFox.VsWhere (1.0) - restriction: || (>= net462) (>= netstandard2.0)
       FSharp.Core (>= 4.0.0.1) - restriction: >= net45
       FSharp.Core (>= 4.2.3) - restriction: && (< net45) (>= netstandard2.0)
@@ -1433,7 +1436,7 @@ NUGET
     FSharp.Control.Reactive (4.2) - restriction: || (>= net462) (>= netstandard2.0)
       FSharp.Core (>= 4.2.3) - restriction: || (>= net46) (>= netstandard2.0)
       System.Reactive (>= 4.0) - restriction: || (>= net46) (>= netstandard2.0)
-    FSharp.Core (4.7) - restriction: || (>= net461) (>= netstandard2.0)
+    FSharp.Core (4.7) - restriction: || (>= net45) (>= netstandard2.0)
     FSharp.Json (0.4)
       FSharp.Core (>= 4.6.2) - restriction: >= netstandard2.0
     FSharpLint.Core (0.12.6)

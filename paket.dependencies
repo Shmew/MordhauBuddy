@@ -88,6 +88,7 @@ group FakeBuild
 
 	storage: none
 
+    nuget BlackFox.CommandLine ~> 1.0
 	nuget Fake.Core.Target ~> 5.18
 	nuget Fake.Core.ReleaseNotes ~> 5.18
 	nuget Fake.DotNet.AssemblyInfoFile ~> 5.18

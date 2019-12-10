@@ -8,6 +8,7 @@
 #load "./tools/Updating.fs"
 #load "./.fake/build.fsx/intellisense.fsx"
 
+open BlackFox.CommandLine
 open Fake.Core
 open Fake.Core.TargetOperators
 open Fake.DotNet
@@ -352,17 +353,36 @@ Target.create "Dev" <| fun _ ->
     Yarn.exec "dev" id
 
 // Build artifacts
-Target.create "Dist" <| fun _ ->
-    Yarn.exec "distWin" id
-    Yarn.exec "distLinux" id
-
-// Build artifacts
 Target.create "DistWin" <| fun _ ->
     Yarn.exec "distWin" id
 
+// Gets latest docker image to build for linux
+Target.create "PullDockerImage" <| fun _ ->
+    CmdLine.Empty
+    |> CmdLine.append "pull"
+    |> CmdLine.append "electronuserland/builder"
+    |> CmdLine.toString
+    |> CreateProcess.fromRawCommandLine "docker"
+    |> CreateProcess.ensureExitCodeWithMessage "Pulling electronuserland/builder docker container failed."
+    |> Proc.run
+    |> ignore
+
 // Build artifacts
 Target.create "DistLinux" <| fun _ ->
-    Yarn.exec "distLinux" id
+    //docker run --rm -v ${PWD}:/project -v electron:/root/.cache/electron -v electron-builder:/root/.cache/electron-builder electronuserland/builder /bin/bash -c "yarn --link-duplicates --pure-lockfile && yarn dist"
+    
+    CmdLine.Empty
+    |> CmdLine.append "run"
+    |> CmdLine.append "--rm"
+    |> CmdLine.appendRaw (sprintf "-v %s:/project" __SOURCE_DIRECTORY__)
+    |> CmdLine.appendRaw "-v electron:/root/.cache/electron"
+    |> CmdLine.appendRaw "-v electron-builder:/root/.cache/electron-builder electronuserland/builder"
+    |> CmdLine.appendRaw "/bin/bash -c \"yarn --link-duplicates --pure-lockfile && yarn distLinux\""
+    |> CmdLine.toString
+    |> CreateProcess.fromRawCommandLine "docker"
+    |> CreateProcess.ensureExitCodeWithMessage "Failed to build linux image."
+    |> Proc.run
+    |> ignore
 
 // --------------------------------------------------------------------------------------
 // Create differentials for updating
@@ -667,6 +687,7 @@ Target.create "GitTag" <| fun _ ->
 // Run all targets by default. Invoke 'build -t <Target>' to override
 
 Target.create "All" ignore
+Target.create "Release" ignore
 
 "Clean"
   ==> "AssemblyInfo"
@@ -708,8 +729,7 @@ Target.create "All" ignore
 
 "All" <== ["RunTests"; "GenerateDocs"; "CleanElectronBin"]
 
-"All" 
-  ?=> "Dist"
+"All" ?=> "Release"
 
 "LocalDocs" ?=> "All"
 "ReleaseDocs" ?=> "All"
@@ -717,11 +737,18 @@ Target.create "All" ignore
 "ConfigDebug" ?=> "Clean"
 "ConfigRelease" ?=> "Clean"
 
+"PullDockerImage"
+  ==> "DistLinux"
+  ?=> "CreateDiffs"
+
+"YarnInstall"
+  ==> "DistWin"
+  ?=> "CreateDiffs"
+
 "Dev" <== ["All"; "LocalDocs"; "ConfigDebug"]
 
-"Dist" <== ["All"; "ReleaseDocs"; "ConfigRelease"]
 "DistWin" <== ["All"; "ReleaseDocs"; "ConfigRelease"]
 "DistLinux" <== ["All"; "ReleaseDocs"; "ConfigRelease"]
-
+"Release" <== ["All"; "ReleaseDocs"; "ConfigRelease"; "DistWin"; "DistLinux"; "CreateDiffs"]
 
 Target.runOrDefaultWithArguments "Dev"

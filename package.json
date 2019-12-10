@@ -16,8 +16,7 @@
     "compile": "electron-webpack",
     "dev": "electron-webpack dev",
     "distLinux": "yarn compile && electron-builder --linux --x64",
-    "distWin": "yarn compile && electron-builder --win --x64",
-    "dist": "yarn compile && electron-builder -wl --x64"
+    "distWin": "yarn compile && electron-builder --win --x64"
   },
   "electronWebpack": {
     "main": {
