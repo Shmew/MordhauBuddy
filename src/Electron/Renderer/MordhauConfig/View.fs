@@ -40,6 +40,30 @@ module View =
                  CSSProp.PaddingBottom "0em" ]) ]
 
     let mutableKeyValue (classes: IClasses) model dispatch (oGroup: OptionGroup) =
+        
+        let getControl (kv: KeyValues) =
+            match kv.Mutable.Value with
+            | KeyValues.MutableStep(s) ->
+                slider
+                    [ HTMLAttr.DefaultValue(kv.GetDefault())
+                      HTMLAttr.Disabled(oGroup.Enabled |> not)
+                      SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto
+                      SliderProp.Step <| s.Step
+                      SliderProp.Marks <| Fable.Core.Case1(true)
+                      SliderProp.Min <| s.Min.ToFloat()
+                      SliderProp.Max <| s.Max.ToFloat()
+                      SliderProp.OnChangeCommitted <| fun _ newValue ->
+                          dispatch(MoveSlider (kv.Key,newValue |> string |> float))
+                      Style [ CSSProp.MinWidth "20em" ] ] []
+            | KeyValues.MutableString ->
+                textField
+                    [ TextFieldProp.Variant TextFieldVariant.Outlined
+                      MaterialProp.FullWidth true
+                      HTMLAttr.Disabled(oGroup.Enabled |> not)
+                      HTMLAttr.Placeholder "Set console key binding"
+                      MaterialProp.Color ComponentColor.Secondary
+                      DOMAttr.OnChange(fun ev -> dispatch <| ModifyText(kv.Key, ev.Value)) ] []
+
         let subPanelDetails (kvList: KeyValues list) =
             kvList
             |> List.mapi (fun ind s ->
@@ -48,23 +72,7 @@ module View =
                               formControl []
                                   [ formGroup [ Style [ CSSProp.FlexGrow "1" ] ]
                                         [ formControlLabel
-                                            [ FormControlLabelProp.Control
-                                              <| slider
-                                                  [ HTMLAttr.DefaultValue(s.GetDefault())
-                                                    HTMLAttr.Disabled(oGroup.Enabled |> not)
-                                                    SliderProp.ValueLabelDisplay SliderLabelDisplay.Auto
-                                                    SliderProp.Step <| s.Mutable.Value.Step
-                                                    SliderProp.Marks <| Fable.Core.Case1(true)
-                                                    SliderProp.Min <| s.Mutable.Value.Min.ToFloat()
-                                                    SliderProp.Max <| s.Mutable.Value.Max.ToFloat()
-                                                    SliderProp.OnChangeCommitted <| fun _ newValue ->
-                                                        dispatch
-                                                            (MoveSlider
-                                                                (s.Key,
-                                                                 newValue
-                                                                 |> string
-                                                                 |> float))
-                                                    Style [ CSSProp.MinWidth "20em" ] ] [] ] [] ] ] ]
+                                            [ FormControlLabelProp.Control (getControl s) ] [] ] ] ]
                   if kvList.Length > ind + 1 then yield divider [] ])
             |> List.concat
 
@@ -174,7 +182,7 @@ module View =
                         [ TypographyProp.Variant TypographyVariant.Caption
                           TypographyProp.Color TypographyColor.Error
                           TypographyProp.Align TypographyAlign.Right
-                          Style [ CSSProp.MarginBottom "-1em" ] ] [ str "Mordhau is running" ] ]
+                          Style [ CSSProp.MarginBottom "-1em" ] ] [ str (Option.defaultValue "" model.Submit.TryErrorMsg) ] ]
 
     let private view' (classes: IClasses) model dispatch =
         div

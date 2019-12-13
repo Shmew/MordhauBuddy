@@ -9,6 +9,7 @@ module Types =
     open Fable.MaterialUI.Core
     open FSharp.Core /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
+    open BridgeUtils
     open RenderUtils
     open RenderUtils.Directory
     open MordhauBuddy.Shared.ElectronBridge
@@ -17,9 +18,12 @@ module Types =
     type Msg =
         | ClientMsg of BridgeMsg
         | GetDefaultDir
+        | GetModDir
         | SetConfigDir of string * Result<string, string list> * ConfigFile
-        | RequestLoad of ConfigFile
+        | SetModDir of string * Result<string, string list>
+        | RequestLoad of DirLoad
         | LoadCanceled
+        | ModUpdateSettings of UpdateSettings option
         | BackupSetting of BackupSettings option
         | ToggleAutoLaunch
         | RunSetup
@@ -28,5 +32,8 @@ module Types =
         { EngineDir: ConfigDir
           GameDir: ConfigDir
           GameUserDir: ConfigDir
+          InputDir: ConfigDir
+          ModsDir: ConfigDir
+          ModUpdateSettings: UpdateSettings
           BackupSettings: BackupSettings
           AutoLaunch: bool }

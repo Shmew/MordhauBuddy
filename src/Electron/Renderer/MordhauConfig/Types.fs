@@ -17,6 +17,7 @@ module rec Types =
         | ExpandSubPanel of OptionGroup
         | ToggleOption of OptionGroup
         | MoveSlider of string * float
+        | ModifyText of string * string
         | Submit
         | SnackMsg of Snackbar.Types.Msg<Msg>
         | SnackDismissMsg
@@ -76,5 +77,6 @@ module rec Types =
           Panels: Panel list
           EngineDir: ConfigDir
           GameUserDir: ConfigDir
+          InputDir: ConfigDir
           Submit: Submit
           Snack: Snackbar.Types.Model<Msg> }

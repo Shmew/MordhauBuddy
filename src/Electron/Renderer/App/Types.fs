@@ -6,11 +6,12 @@ module Types =
 
     type Page =
         | Community
+        | ModsInstaller
         | FaceTools
         | MordhauConfig
         | Settings
         | About
-        static member All = [ Community; FaceTools; MordhauConfig; Settings; About ]
+        static member All = [ Community; ModsInstaller; FaceTools; MordhauConfig; Settings; About ]
 
     type Msg =
         | Navigate of Page
@@ -19,6 +20,7 @@ module Types =
         | ResourcesLoaded
         | LoadCom
         | LoadConfig of ConfigFile
+        | LoadMod
         | InitSetup
         | StartCheckMordhau
         | CheckMordhau
@@ -28,6 +30,7 @@ module Types =
         | StoreMsg of Store.Msg
         | ContextMenuMsg of ContextMenu.Types.Msg
         | CommunityMsg of Community.Types.Msg
+        | ModsInstallerMsg of ModsInstaller.Types.Msg
         | FaceToolsMsg of FaceTools.Types.Msg
         | MordhauConfigMsg of MordhauConfig.Types.Msg
         | SettingsMsg of Settings.Types.Msg
@@ -38,6 +41,12 @@ module Types =
         { Path: string
           Exists: bool
           Parsed: bool
+          AttemptedLoad: bool
+          Loading: bool }
+
+    type ModDir =
+        { Path: string
+          Exists: bool
           AttemptedLoad: bool
           Loading: bool }
 
@@ -52,7 +61,9 @@ module Types =
           Community: ComResources
           GameConfig: ConfigDir
           EngineConfig: ConfigDir
-          GameUserConfig: ConfigDir }
+          GameUserConfig: ConfigDir
+          InputConfig: ConfigDir
+          Mods: ModDir }
 
     type UpdatePending =
         { Refreshing: bool
@@ -70,6 +81,7 @@ module Types =
           Resources: Loaded
           ContextMenu: ContextMenu.Types.Model
           Community: Community.Types.Model
+          ModsInstaller: ModsInstaller.Types.Model
           FaceTools: FaceTools.Types.Model
           MordhauConfig: MordhauConfig.Types.Model
           Settings: Settings.Types.Model

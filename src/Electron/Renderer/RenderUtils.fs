@@ -3,6 +3,7 @@ namespace MordhauBuddy.App
 /// Helper types for sending bridge messages
 module BridgeUtils =
     open MordhauBuddy.Shared.ElectronBridge
+    open FSharp.Reflection
 
     /// Send community operations
     type CommunityBridgeSender(caller: Caller) =
@@ -41,6 +42,31 @@ module BridgeUtils =
         /// Modify the configurations based on changes
         member this.MapConfigs oList = MapConfigs(oList) |> wrapConf
 
+    /// Send map operations
+    type ModBridgeSender(caller: Caller) =
+        let wrapOps mCmd = BridgeOps(ModOperation(mCmd), caller)
+        let wrapMaps mCmd = BridgeOps(Mods(mCmd), caller)
+        /// Try to locate the default Mordhau mods directory
+        member this.DefaultDir = ModFileOperation.DefaultDir |> wrapOps
+        /// See if a directory exists
+        member this.DirExists s = ModFileOperation.DirExists(s) |> wrapOps
+        /// Get available mods
+        member this.GetAvailable = Mods.GetAvailableMods |> wrapMaps
+        /// Get installed mods
+        member this.GetInstalled s = Mods.GetInstalledMods s |> wrapMaps
+        /// Install a mod
+        member this.Install mt = Mods.InstallMod mt |> wrapMaps
+        /// Acknowledge that a mod has been installed
+        member this.ConfirmInstall s = Mods.ConfirmInstalled s |> wrapMaps
+        /// Uninstall a mod
+        member this.Uninstall dir modId = ModFileOperation.Delete(dir, modId) |> wrapOps
+        /// Disable a mod
+        member this.Disable dir modId = ModFileOperation.Disable(dir, modId) |> wrapOps
+        /// Enable a mod
+        member this.Enable dir modId = ModFileOperation.Enable(dir, modId) |> wrapOps
+        /// Cancel a mod installation
+        member this.Cancel fName = Mods.CancelMod fName |> wrapMaps
+
     /// Send setting operations
     type SettingBridgeSender(caller: Caller) =
         let wrapSetting sCmd = BridgeOps(SettingsOperation(sCmd), caller)
@@ -52,6 +78,50 @@ module BridgeUtils =
         member this.BackupPolicy bSet = SettingsOperation.BackupPolicy(bSet) |> wrapSetting
         /// Setup initial Linux configuration
         member this.SetupLinux = SettingsOperation.SetupLinux |> wrapSetting
+
+    type UpdateSettings =
+        | Installed
+        | NotifyOnly
+        | NoActions
+
+        member this.Text =
+            match this with
+            | Installed -> "Update installed mods automatically"
+            | NotifyOnly -> "Only notify me"
+            | NoActions -> "Do nothing"
+
+        static member private Cases = FSharpType.GetUnionCases typeof<UpdateSettings>
+
+        static member private Instantiate name =
+            UpdateSettings.Cases
+            |> Array.tryFind (fun uc -> uc.Name = name)
+            |> Option.map (fun uc -> Reflection.FSharpValue.MakeUnion(uc, [||]) :?> UpdateSettings)
+            |> Option.get
+
+        static member GetSettings =
+            UpdateSettings.Cases |> Array.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
+
+        member this.GetTag =
+            UpdateSettings.Cases
+            |> Seq.tryFind (fun uc -> uc.Name = this.ToString())
+            |> Option.map (fun uc -> uc.Tag)
+            |> Option.get
+
+        static member GetSettingFromTag(tag: int) =
+            UpdateSettings.Cases
+            |> Seq.tryFind (fun t -> t.Tag = tag)
+            |> Option.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
+            |> Option.get
+
+        static member TryGetCaseFromText(s: string) =
+            UpdateSettings.GetSettings
+            |> Array.filter (fun setting -> setting.Text = s)
+            |> Array.tryHead
+
+        static member TryGetSettingFromText(s: string) =
+            UpdateSettings.Cases
+            |> Seq.tryFind (fun t -> t.Name = s)
+            |> Option.map (fun uc -> uc.Name |> UpdateSettings.Instantiate)
 
     /// Send app operations
     type AppBridgeSender(caller: Caller) =
@@ -116,6 +186,11 @@ module RenderUtils =
             | Init
             | Error of string
             | Success of string
+
+            member this.TryErrorMsg =
+                match this with
+                | Submit.Error errMsg -> Some errMsg
+                | _ -> None
 
             member this.IsSubmitWaiting =
                 match this with
@@ -252,23 +327,6 @@ module RenderUtils =
                 | (true, i) -> i
                 | _ -> 0
 
-            let private tryGetInt (s: string) =
-                match Int32.TryParse s with
-                | (true, i) -> i |> Some
-                | _ -> None
-
-            /// Map string to `MapVersion`
-            let getVer (vStr: string) =
-                applyRPattern RegPatterns.semVersion vStr getInt
-                |> fun iList ->
-                    match iList.Length with
-                    | i when i >= 3 -> iList |> List.take 3
-                    | i -> List.init (3 - i) (fun _ -> 0) |> List.append iList
-                    |> fun iL ->
-                        {| Major = iL.[0]
-                           Minor = iL.[1]
-                           Patch = iL.[2] |}
-
             let getDate (s: string) =
                 s.Split('/')
                 |> fun sArr -> sprintf "%s/%s/%s" sArr.[1] sArr.[0] sArr.[2]
@@ -276,28 +334,6 @@ module RenderUtils =
                     match DateTime.TryParse(s) with
                     | (true, dt) -> dt |> Some
                     | _ -> None
-
-            let getGDriveID (s: string) =
-                applyRPattern RegPatterns.gDrive s id
-                |> List.filter (fun s -> s <> "")
-                |> List.tryHead
-
-            /// Fix imgur links that lack fully qualified paths
-            let fixImgur (s: string) =
-                Regex(RegPatterns.imgur, RegexOptions.IgnoreCase).Replace(s, @"https://i.imgur.com")
-                |> fun s -> Regex(RegPatterns.imgurExt, RegexOptions.IgnoreCase).Replace(s, @"$&.png")
-
-            /// Fix Google Drive links that don't properly export images
-            let fixGDImg (s: string) =
-                if Regex(RegPatterns.gdImgBad, RegexOptions.IgnoreCase).IsMatch(s) then
-                    applyRPattern RegPatterns.gdImgId s id
-                    |> List.tryHead
-                    |> Option.map
-                        (fun s -> sprintf "%s%s%s" @"https://drive.google.com/uc?authuser=0&" s @"&export=download")
-                    |> defaultArg
-                    <| s
-                else
-                    s
 
         /// Validate a directory
         let validateDir (s: string) =
@@ -331,27 +367,6 @@ module RenderUtils =
                 |> t.Trim
                 |> t.NotBlank ""
                 |> t.IsUrl s
-                |> t.Map fixImgur
-                |> t.Map fixGDImg
-                |> t.End
-
-        /// Validate Google Drive link
-        let validateGDrive (s: string) =
-            Fable.Validation.Core.single <| fun t ->
-                t.TestOne s
-                |> t.Trim
-                |> t.NotBlank ""
-                |> t.IsUrl s
-                |> t.Map getGDriveID
-                |> t.IsSome ""
-                |> t.End
-
-        /// Validate version
-        let validateVer (s: string) =
-            Fable.Validation.Core.single <| fun t ->
-                t.TestOne s
-                |> t.Trim
-                |> t.Map getVer
                 |> t.End
 
         /// Validate file size
@@ -384,6 +399,10 @@ module RenderUtils =
 
     /// Directory helper functions
     module Directory =
+        type DirLoad =
+            | ConfigFiles of ConfigFile
+            | ModDir
+
         /// A type to represent the current directory state
         [<RequireQualifiedAccess>]
         type DirState =
@@ -413,7 +432,7 @@ module RenderUtils =
                 | _ -> false
 
         type ConfigDir =
-            { Dir: ConfigFile
+            { Dir: DirLoad
               Directory: string
               Label: string
               State: DirState }
@@ -447,6 +466,8 @@ module RenderUtils =
                 | Game
                 | Engine
                 | GameUser
+                | Input
+                | Mods
 
             let setDirError s (dir: ConfigDir) = { dir with State = DirState.Error s }
 
@@ -471,6 +492,7 @@ module RenderUtils =
             65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
 
         let typicalConfigDir = @"C:\Users\shmew\AppData\Local\Mordhau\Saved\Config\WindowsClient"
+        let typicalModDir = @"C:\Program Files (x86)\Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps"
 
     /// Parsing rss feeds that return html
     module HtmlParsing =
@@ -517,9 +539,10 @@ module RenderUtils =
                         Default = KeyValues.Values.Float(2.)
                         Value = None
                         Mutable =
-                            { KeyValues.Mutable.Min = KeyValues.MutableValues.MutFloat(0.)
-                              KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(3.)
-                              KeyValues.Mutable.Step = 0.25 }
+                            { KeyValues.MutableStep.Min = KeyValues.MutableValues.MutFloat(0.)
+                              KeyValues.MutableStep.Max = KeyValues.MutableValues.MutFloat(3.)
+                              KeyValues.MutableStep.Step = 0.25 }
+                            |> KeyValues.Mutable.MutableStep
                             |> Some } ]
                 File = ConfigFile.Engine
                 Enabled = false
@@ -551,17 +574,19 @@ module RenderUtils =
                         Default = KeyValues.Values.Float(0.1)
                         Value = None
                         Mutable =
-                            { KeyValues.Mutable.Min = KeyValues.MutableValues.MutFloat(0.)
-                              KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(1.)
-                              KeyValues.Mutable.Step = 0.05 }
+                            { KeyValues.MutableStep.Min = KeyValues.MutableValues.MutFloat(0.)
+                              KeyValues.MutableStep.Max = KeyValues.MutableValues.MutFloat(1.)
+                              KeyValues.MutableStep.Step = 0.05 }
+                            |> KeyValues.Mutable.MutableStep
                             |> Some }
                       { Key = @"r.upscale.panini.s"
                         Default = KeyValues.Values.Float(0.025)
                         Value = None
                         Mutable =
-                            { KeyValues.Mutable.Min = KeyValues.MutableValues.MutFloat(0.)
-                              KeyValues.Mutable.Max = KeyValues.MutableValues.MutFloat(0.25)
-                              KeyValues.Mutable.Step = 0.025 }
+                            { KeyValues.MutableStep.Min = KeyValues.MutableValues.MutFloat(0.)
+                              KeyValues.MutableStep.Max = KeyValues.MutableValues.MutFloat(0.25)
+                              KeyValues.MutableStep.Step = 0.025 }
+                            |> KeyValues.Mutable.MutableStep
                             |> Some } ]
                 File = ConfigFile.Engine
                 Enabled = false
@@ -618,6 +643,16 @@ module RenderUtils =
                         Value = None
                         Mutable = None } ]
                 File = ConfigFile.GameUserSettings
+                Enabled = false
+                Expanded = false }
+              { Title = "Console key binding"
+                Caption = "Sets the console key binding."
+                Settings =
+                    [ { Key = @"ConsoleKey"
+                        Default = KeyValues.Values.String("")
+                        Value = None
+                        Mutable = Some KeyValues.Mutable.MutableString } ]
+                File = ConfigFile.Input
                 Enabled = false
                 Expanded = false } ]
 

@@ -4,6 +4,7 @@ module Store =
     open Fable.Core
     open Fable.Core.JsInterop
     open Elmish
+    open BridgeUtils
     open RenderUtils
     open MordhauBuddy.Shared.ElectronBridge
 
@@ -14,6 +15,9 @@ module Store =
           GameLocation: string option
           EngineLocation: string option
           GameUserLocation: string option
+          ModsLocation: string option
+          InputLocation: string option
+          UpdateSettings: string
           BackupSettings: string }
 
     type Msg =
@@ -23,6 +27,9 @@ module Store =
         | SetGameLocation of string
         | SetEngineLocation of string
         | SetGameUserLocation of string
+        | SetInputLocation of string
+        | SetModsLocation of string
+        | SetUpdateSettings of UpdateSettings
         | SetBackupSettings of BackupSettings
 
     /// Bindings for electron-store
@@ -86,10 +93,8 @@ module Store =
 
         type StoreStatic =
 
-
             [<EmitConstructor>]
             abstract Create: unit -> Store
-
 
             [<EmitConstructor>]
             abstract Create: Options -> Store
@@ -103,6 +108,8 @@ module Store =
                GameLocation = None
                EngineLocation = None
                GameUserLocation = None
+               InputLocation = None
+               ModsLocation = None
                BackupSettings = "KeepLast10" |} |> toPlainJsObj
 
         /// Create store object
@@ -114,10 +121,6 @@ module Store =
         ElectronStore.store.set m
         m
 
-    let setGameLocation s = Cmd.ofMsg (SetGameLocation s)
-    let setEngineLocation s = Cmd.ofMsg (SetEngineLocation s)
-    let setGameUserLocation s = Cmd.ofMsg (SetGameUserLocation s)
-
     let update msg m =
         match msg with
         | AutoLaunch b -> set { m with AutoLaunch = b }
@@ -126,4 +129,7 @@ module Store =
         | SetGameLocation s -> set { m with GameLocation = Some(s) }
         | SetEngineLocation s -> set { m with EngineLocation = Some(s) }
         | SetGameUserLocation s -> set { m with GameUserLocation = Some(s) }
+        | SetInputLocation s -> set { m with InputLocation = Some(s) }
+        | SetModsLocation s -> set { m with ModsLocation = Some(s) }
+        | SetUpdateSettings uSet -> set { m with UpdateSettings = uSet.ToString() }
         | SetBackupSettings bSet -> set { m with BackupSettings = bSet.ToString() }

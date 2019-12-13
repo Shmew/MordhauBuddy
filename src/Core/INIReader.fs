@@ -28,7 +28,7 @@ module rec INIReader =
                                    IsError = false)>]
         member x._Print =
             match x.ToString() with
-            | str when str.Length > 512 -> str.Substring(0, 509) + "..."
+            | str when str.Length > 2048 -> str.Substring(0, 2045) + "..."
             | str -> str
 
         /// Serializes INIValue to TextWriter

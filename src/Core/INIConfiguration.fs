@@ -222,7 +222,7 @@ module INIConfiguration =
             { oGroup with Settings = oGroup.Settings |> mapGroupSettings props }
 
         /// Get current settings of the `OptionGroup list` if present in the configuration files
-        let getSettings (engineFile: INIValue) (gameUserFile: INIValue) (options: OptionGroup list) =
+        let getSettings (engineFile: INIValue) (gameUserFile: INIValue) (inputFile: INIValue) (options: OptionGroup list) =
             let engineSettings =
                 engineFile.TryGetProperty("File")
                 |> Option.map (
@@ -237,11 +237,19 @@ module INIConfiguration =
                     >> List.concat
                 )
 
+            let inputSettings =
+                inputFile.TryGetProperty("File")
+                |> Option.map (
+                    List.choose (fun iVal -> iVal.TryGetProperty(@"/Script/Engine.InputSettings"))
+                    >> List.concat
+                )
+
             options
             |> List.map (fun oGroup ->
                 match oGroup.File with
                 | ConfigFile.Engine -> engineSettings |> Option.map (mapOptGroup oGroup)
                 | ConfigFile.GameUserSettings -> gameUserSettings |> Option.map (mapOptGroup oGroup)
+                | ConfigFile.Input -> inputSettings |> Option.map (mapOptGroup oGroup)
                 | _ -> None
                 |> function
                 | Some newOGroup -> newOGroup
@@ -309,8 +317,8 @@ module INIConfiguration =
                 ||> List.fold (fun subElem setting ->
                     List.append selectors [ setting.Key ] |> mapOptionToINIValue subElem setting))
 
-        /// Map the `OptionGroup list` values to the Engine.ini and GameUserSettings.ini if present
-        let tryMapSettings (engineFile: INIValue) (gameUserFile: INIValue) (options: OptionGroup list) =
+        /// Map the `OptionGroup list` values to the Engine.ini, GameUserSettings.ini, and Input.ini if present
+        let tryMapSettings (engineFile: INIValue) (gameUserFile: INIValue) (inputFile: INIValue) (options: OptionGroup list) =
             try
                 let withGetOrAddSelector (original: INIValue) (selector: string) =
                     original.TryGetProperty("File")
@@ -324,12 +332,23 @@ module INIConfiguration =
                     | Some eFile -> INIValue.File eFile
                     | None -> original
 
+                let purgeEmptySelector (selector: string) (result: INIValue) =
+                    result.TryGetProperty("File")
+                    |> Option.map (fun resList -> 
+                        resList 
+                        |> List.filter (fun section -> 
+                            (fst section.Properties = selector &&
+                             section.Properties |> snd |> List.isEmpty) 
+                            |> not)
+                        |> INIValue.File)
+
                 let engine =
                     let selector = "SystemSettings"
 
                     ConfigFile.Engine
                     |> filterFile options
                     |> mapOptions (withGetOrAddSelector engineFile selector) [ selector ]
+                    |> purgeEmptySelector selector
 
                 let gameUser =
                     let selector = @"/Script/Mordhau.MordhauGameUserSettings"
@@ -337,10 +356,20 @@ module INIConfiguration =
                     ConfigFile.GameUserSettings
                     |> filterFile options
                     |> mapOptions (withGetOrAddSelector gameUserFile selector) [ selector ]
+                    |> purgeEmptySelector selector
 
-                Some engine, Some gameUser
+                let input =
+                    let selector = @"/Script/Engine.InputSettings"
+
+                    ConfigFile.Input
+                    |> filterFile options
+                    |> mapOptions (withGetOrAddSelector inputFile selector) [ selector ]
+                    |> purgeEmptySelector selector
+                        
+
+                engine, gameUser, input
             with e ->
                 logger.LogError
-                    "Failed to map settings of:\n\tEngine file:\n\t%O\n\tGame user file:\n\t%O\n\tOptions:\n\t%O\n%O"
-                    engineFile gameUserFile options e
-                None, None
+                    "Failed to map settings of:\n\tEngine file:\n\t%O\n\tGame user file:\n\t%O\n\tInput file:\n\t%O\n\tOptions:\n\t%O\n%O"
+                    engineFile gameUserFile inputFile options e
+                None, None, None

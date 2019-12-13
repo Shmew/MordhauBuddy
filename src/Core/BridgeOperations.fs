@@ -84,12 +84,71 @@ module BridgeOperations =
         let profileList (iVal: INIValue) = getCharacterProfileNames iVal |> getCharacterProfileExports iVal
 
         /// Get the configurations set in the two INIValues if present
-        let getConfigs (engine: INIValue) (gameUser: INIValue) (options: OptionGroup list) =
-            getSettings engine gameUser options
+        let getConfigs (engine: INIValue) (gameUser: INIValue) (input: INIValue) (options: OptionGroup list) =
+            getSettings engine gameUser input options
 
         /// Apply the new values into the two INIValues or add them
-        let mapConfigs (engine: INIValue) (gameUser: INIValue) (options: OptionGroup list) =
-            tryMapSettings engine gameUser options
+        let mapConfigs (engine: INIValue) (gameUser: INIValue) (input: INIValue) (options: OptionGroup list) =
+            tryMapSettings engine gameUser input options
+
+    /// Mod related bridge commands
+    [<RequireQualifiedAccess>]
+    module Mods =
+        open Fake.IO.FileSystemOperators
+        open Helpers
+        open Http
+        open Http.WebRequests
+        open System
+        open System.Threading
+               
+        /// Try to locate the default Mordhau mods directory
+        let defDir() = FileOps.Mods.defaultDir
+
+        /// Determine if input is valid maps directory
+        let dirExists (dir: string) = FileOps.Mods.tryFindMods dir
+
+        /// Get the list of valid community maps based on info files
+        let getAvailableMods() = getInfoFiles()
+
+        /// Get all installed maps
+        let getInstalledMods (dir: string) = FileOps.Mods.getInstalled dir
+
+        /// Download map if available
+        let installMod (mCmd: ModTarget) (dispatchWrapper: ModResult -> unit) (cToken: CancellationToken) =
+            let cacheFolder = Info.updaterPath "Mods" @@ (string mCmd.ModInfo.ModId)
+            let fName = (string mCmd.ModInfo.ModId)  + ".zip"
+            let diDir = IO.DirectoryInfo(mCmd.Directory)
+            
+            async {
+                { Url = mCmd.ModInfo.FileUrl
+                  FileName = fName
+                  Name = cacheFolder
+                  CacheDirectory = IO.DirectoryInfo(cacheFolder)
+                  Directory = diDir
+                  ModInfo = mCmd.ModInfo
+                  Size =
+                      mCmd.ModInfo.Size
+                      |> Option.defaultValue 0
+                      |> float
+                      |> (*) 1.0<B>
+                      |> convertBtoMB
+                  UpdateFun = fun i -> ModResult.InstallModProgress(mCmd.ModInfo.ModId, i) |> dispatchWrapper
+                  CompleteFun = fun () -> ModResult.InstallModComplete(mCmd.ModInfo.ModId) |> dispatchWrapper
+                  ErrorFun = fun e -> ModResult.InstallModError(mCmd.ModInfo.ModId, e) |> dispatchWrapper
+                  CancelFun = fun c -> ModResult.InstallModCancelled(mCmd.ModInfo.ModId, true) |> dispatchWrapper }
+                |> downloadZipFile cToken
+            }
+            |> Async.Start
+            true
+
+        /// Remove a mod
+        let uninstallMod (dir: string) (modId: int) = FileOps.Mods.tryUninstall dir modId
+
+        /// Disable a mod
+        let disableMod (dir: string) (modId: int) = FileOps.Mods.tryDisable dir modId
+
+        /// Enable a mod
+        let enableMod (dir: string) (modId: int) = FileOps.Mods.tryEnable dir modId
 
     /// Settings related bridge commands
     [<RequireQualifiedAccess>]

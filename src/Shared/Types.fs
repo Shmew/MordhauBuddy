@@ -63,10 +63,14 @@ module ElectronBridge =
                 | MutFloat(f) -> f
 
         [<RequireQualifiedAccess>]
-        type Mutable =
+        type MutableStep =
             { Min: MutableValues
               Max: MutableValues
               Step: float }
+
+        type Mutable =
+            | MutableStep of MutableStep
+            | MutableString
 
     type KeyValues =
         { Key: string
@@ -84,6 +88,7 @@ module ElectronBridge =
         | Game
         | Engine
         | GameUserSettings
+        | Input
         member this.Name = this.ToString() + ".ini"
 
     type OptionGroup =
@@ -107,6 +112,52 @@ module ElectronBridge =
         | Backup of bool
         | CommitChanges of bool
 
+    type ModInfoFile =
+        { ModId: int
+          Name: string
+          Author: string
+          Version: string
+          FileId: int
+          FileUrl: string
+          ImageUrl: string
+          ModPage: string
+          Replaces: string
+          Size: int option
+          Info: string option }
+
+        member this.GetMetaData() =
+            let desc = this.Replaces |> sprintf "Replaces: %s"
+            let author = sprintf "Author: %s" this.Author 
+
+            let fileSize = 
+                this.Size 
+                |> Option.map (fun s ->
+                    (float s) * (1.<B>)
+                    |> convertBtoMB
+                    |> sprintf "File size: %.1f MB")
+
+            let info = this.Info |> Option.map (sprintf "Info: %s")
+
+            [ desc
+              author
+              if fileSize.IsSome then fileSize.Value
+              if info.IsSome then info.Value ]
+
+    module ModInfoFile =
+        let getSize (mi: ModInfoFile) =
+            mi.Size
+            |> Option.map (fun s ->
+                (float s) * (1.<B>)
+                |> convertBtoMB)
+
+    [<RequireQualifiedAccess>]
+    type ModOperationResult =
+        | DefaultDir of string option
+        | DirExists of bool
+        | Delete of int * Result<bool, string>
+        | Disable of int * Result<bool, string>
+        | Enable of int * Result<bool, string>
+
     [<RequireQualifiedAccess>]
     type FaceResult =
         | Random of bool
@@ -118,6 +169,16 @@ module ElectronBridge =
     type ConfigResult =
         | GetConfigs of OptionGroup list
         | MapConfigs of bool
+
+    [<RequireQualifiedAccess>]
+    type ModResult =
+        | AvailableMods of ModInfoFile list
+        | InstalledMods of (ModInfoFile list * ModInfoFile list)
+        | InstallMod of int * Result<bool, string>
+        | InstallModCancelled of int * bool
+        | InstallModProgress of int * int
+        | InstallModComplete of int
+        | InstallModError of int * string
 
     [<RequireQualifiedAccess>]
     type SettingResult =
@@ -137,8 +198,10 @@ module ElectronBridge =
     type BridgeResult =
         | Community of CommunityResult
         | INIOperation of INIOperationResult
+        | ModOperation of ModOperationResult
         | Faces of FaceResult
         | Config of ConfigResult
+        | Mods of ModResult
         | Settings of SettingResult
         | Updates of UpdateResult
         | Misc of MiscResult
@@ -146,6 +209,7 @@ module ElectronBridge =
     [<RequireQualifiedAccess>]
     type Caller =
         | Community
+        | ModInstaller
         | FaceTools
         | MordhauConfig
         | Settings
@@ -213,6 +277,14 @@ module ElectronBridge =
         | Backup of INIFile list
         | Commit of INIFile list
 
+    [<RequireQualifiedAccess>]
+    type ModFileOperation =
+        | DefaultDir
+        | DirExists of string
+        | Delete of string * int
+        | Disable of string * int
+        | Enable of string * int
+
     type Faces =
         | Random of string list
         | Frankenstein of string list
@@ -230,6 +302,18 @@ module ElectronBridge =
         | SetupLinux
 
     [<RequireQualifiedAccess>]
+    type ModTarget =
+        { Directory: string
+          ModInfo: ModInfoFile }
+
+    type Mods =
+        | GetAvailableMods
+        | GetInstalledMods of string
+        | InstallMod of ModTarget
+        | ConfirmInstalled of int
+        | CancelMod of int
+
+    [<RequireQualifiedAccess>]
     type Updates =
         | Start
         | Check
@@ -239,8 +323,10 @@ module ElectronBridge =
     type BridgeOperations =
         | CommunityOperation of CommunityOperation
         | INIOperation of INIFileOperation
+        | ModOperation of ModFileOperation
         | Faces of Faces
         | Configs of Configs
+        | Mods of Mods
         | SettingsOperation of SettingsOperation
         | Updates of Updates
         | Misc of MiscOperation

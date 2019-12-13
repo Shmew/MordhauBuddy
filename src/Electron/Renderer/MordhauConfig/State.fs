@@ -15,12 +15,17 @@ module State =
         { Complete = false
           Panels = ExpansionPanels.Init()
           EngineDir =
-              { Dir = ConfigFile.Engine
+              { Dir = DirLoad.ConfigFiles ConfigFile.Engine
                 Directory = ""
                 Label = ""
                 State = DirState.Init "" }
           GameUserDir =
-              { Dir = ConfigFile.GameUserSettings
+              { Dir = DirLoad.ConfigFiles ConfigFile.GameUserSettings
+                Directory = ""
+                Label = ""
+                State = DirState.Init "" }
+          InputDir =
+              { Dir = DirLoad.ConfigFiles ConfigFile.Input
                 Directory = ""
                 Label = ""
                 State = DirState.Init "" }
@@ -55,6 +60,7 @@ module State =
                     { model with
                           EngineDir = { model.EngineDir with State = DirState.Init "" }
                           GameUserDir = { model.GameUserDir with State = DirState.Init "" }
+                          InputDir = { model.InputDir with State = DirState.Init "" }
                           Panels =
                               model.Panels
                               |> List.map (fun (p: Panel) ->
@@ -78,7 +84,9 @@ module State =
                                 [ { File = ConfigFile.Engine
                                     WorkingDir = model.EngineDir.Directory |> Some }
                                   { File = ConfigFile.GameUserSettings
-                                    WorkingDir = model.GameUserDir.Directory |> Some } ])
+                                    WorkingDir = model.GameUserDir.Directory |> Some } 
+                                  { File = ConfigFile.Input
+                                    WorkingDir = model.InputDir.Directory |> Some } ])
                     else
                         { model with Submit = Submit.Error "Modifying INI failed" }, Cmd.ofMsg SnackDismissMsg
             | _ -> model, Cmd.none
@@ -166,6 +174,34 @@ module State =
             { model with
                   Submit = Submit.Init
                   Panels = newPanels }, Cmd.none
+        | ModifyText(key, value) ->
+            let tryGetValue (str: string) (kValue: KeyValues.Values) =
+                match kValue with
+                | KeyValues.Values.String(_) ->
+                    str
+                    |> KeyValues.Values.String
+                    |> Some
+                | _ -> None
+            let mapSettings (sList: KeyValues list) =
+                sList
+                |> List.map (fun s ->
+                    let res = tryGetValue value s.Default
+                    if res.IsSome && s.Mutable.IsSome && s.Key = key
+                    then { s with Value = res }
+                    else s)
+
+            let mapOGroups (oList: OptionGroup list) =
+                oList |> List.map (fun o -> { o with Settings = mapSettings o.Settings })
+
+            let newPanels =
+                model.Panels
+                |> List.map (fun p ->
+                    if p.Expanded && (p.Items |> List.exists (fun o -> o.Expanded))
+                    then { p with Items = mapOGroups p.Items }
+                    else p)
+            { model with
+                  Submit = Submit.Init
+                  Panels = newPanels }, Cmd.none
         | Submit ->
             { model with Submit = Submit.Waiting },
             Cmd.bridgeSend
@@ -173,7 +209,9 @@ module State =
                     [ { File = ConfigFile.Engine
                         WorkingDir = model.EngineDir.Directory |> Some }
                       { File = ConfigFile.GameUserSettings
-                        WorkingDir = model.GameUserDir.Directory |> Some } ])
+                        WorkingDir = model.GameUserDir.Directory |> Some }
+                      { File = ConfigFile.Input
+                        WorkingDir = model.InputDir.Directory |> Some }])
         | SnackMsg msg' ->
             let m, cmd, actionCmd = Snackbar.State.update msg' model.Snack
             { model with Snack = m },

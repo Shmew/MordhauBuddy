@@ -12,6 +12,8 @@ open MordhauBuddy.Shared.ElectronBridge
 module Http =
     /// Helper module for streams
     module Streaming =
+        open Fake.IO
+        open Fake.IO.Globbing.Operators
         open Fake.IO.FileSystemOperators
         open System.IO
         open System.IO.Compression
@@ -23,7 +25,7 @@ module Http =
         let downloadZip (downloadFile: DownloadFile) (stream: Async<Result<Stream, string>>)
             (size: Result<string, string>) (cToken: CancellationToken) =
             let errorMsg (e: exn) = sprintf "Error fetching file: %s%c%s" downloadFile.FileName '\n' e.Message
-            let path = downloadFile.Directory.FullName @@ downloadFile.FileName
+            let path = downloadFile.CacheDirectory.FullName @@ downloadFile.FileName
 
             let download =
                 async {
@@ -74,13 +76,19 @@ module Http =
                         do! Async.Sleep 1000
                         request.Dispose()
                         streamDest.Dispose()
-                        deleteDir (downloadFile.Directory.FullName @@ downloadFile.Name)
                         do! Async.Sleep 1000
                         use zipStream = ZipFile.OpenRead path
-                        zipStream.ExtractToDirectory(downloadFile.Directory.FullName)
+                        zipStream.ExtractToDirectory(downloadFile.CacheDirectory.FullName)
                         do! Async.Sleep 1000
                         zipStream.Dispose()
                         deleteFileIgnore (path)
+
+                        Json.serialize downloadFile.ModInfo
+                        |> File.writeString false (downloadFile.CacheDirectory.FullName @@ (string downloadFile.ModInfo.ModId) + ".json")
+                        
+                        !! (downloadFile.CacheDirectory.FullName @@ "*.pak")
+                        |> List.ofSeq
+                        |> List.iter (fun src -> Shell.mv src (downloadFile.Directory.FullName @@ (sprintf "z%i-p.pak" downloadFile.ModInfo.ModId)))
                     }
                     |> fun a -> Async.RunSynchronously(a, cancellationToken = cToken)
                     |> ignore
@@ -160,15 +168,48 @@ module Http =
                      timeout = 100000)
             makeRequestStream req
 
-        let private getGDStream (downloadUrl: string, parameters: string option, headers: ReqHeaders) =
-            let req() =
-                Http.RequestStream
-                    (downloadUrl + defaultArg parameters "", httpMethod = "GET", headers = headers.Headers,
-                     timeout = 100000)
-            makeRequestStream req
+        let private head (path: string, parameters: string option, headers: ReqHeaders) =
+            Http.Request
+                (path + defaultArg parameters "", httpMethod = "HEAD", headers = headers.Headers, timeout = 100000)
+            |> fun res -> res.Headers
+
+        /// Get info file list
+        let getInfoFiles() =
+            let downloadInfoFiles (gList: Github.Contents list) =
+                gList
+                |> List.map (fun c ->
+                    async {
+                        try
+                            let! result = getStringAsync (c.DownloadUrl, None, ReqHeaders.Github)
+                            logger.LogInfo "%A" result
+
+                            let modInfoFile = Json.deserialize<ModInfoFile> result
+                            let size = 
+                                (head (modInfoFile.FileUrl, None, ReqHeaders.Generic)).TryFind("Content-Length")
+                                |> Option.map (int)
+                            return
+                                { modInfoFile with Size = size }
+                                |> Some
+                        with _ -> return None
+                    })
+                |> Async.Parallel
+                |> Async.RunSynchronously
+                |> List.ofArray
+                |> List.choose id
+
+            get (ghBaseUri + "/repos/MordhauMappingModding/local-mods-list/contents", None, ReqHeaders.Github)
+            |> Result.map ((Json.deserializeEx<Github.Contents list> Json.config) >> downloadInfoFiles)
+            |> function
+            | Ok(resList) -> resList
+            | Error(errMsg) -> 
+                logger.LogError "Error fetching info files: %s" errMsg
+                []
 
         /// Download a zip file to the given directory with continuations
         let downloadZipFile (cToken: CancellationToken) (download: DownloadFile) =
+            deleteDir download.CacheDirectory.FullName
+            FileOps.Mods.ensureModsFolder()
+            FileOps.Mods.ensureFolder (string download.ModInfo.ModId)
             async { return getStream (download.Url, None, ReqHeaders.Github) }
             |> fun s -> Streaming.downloadZip download s (Error("")) cToken
 

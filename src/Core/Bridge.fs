@@ -7,6 +7,7 @@ module App =
     open Helpers
     open INIReader
     open Saturn
+    open System.Threading
     open MordhauBuddy.Shared.ElectronBridge
 
     let logger = Logger "App"
@@ -21,6 +22,8 @@ module App =
             { Game: INIValue option
               Engine: INIValue option
               GameUserSettings: INIValue option
+              Input: INIValue option
+              InstallingMods: (ModInfoFile * CancellationTokenSource) list
               BackupSettings: BackupSettings
               UpdatePending: string option }
             member this.GetIVal(file: ConfigFile) =
@@ -28,6 +31,7 @@ module App =
                 | ConfigFile.Game -> this.Game
                 | ConfigFile.Engine -> this.Engine
                 | ConfigFile.GameUserSettings -> this.GameUserSettings
+                | ConfigFile.Input -> this.Input
 
         type ServerMsg = ClientMsg of RemoteServerMsg
 
@@ -62,6 +66,8 @@ module App =
             { Game = None
               GameUserSettings = None
               Engine = None
+              Input = None
+              InstallingMods = []
               BackupSettings = KeepAll
               UpdatePending = None }
             |> fun iModel ->
@@ -87,6 +93,7 @@ module App =
             | ConfigFile.Game -> { model with Game = iOpt }
             | ConfigFile.GameUserSettings -> { model with GameUserSettings = iOpt }
             | ConfigFile.Engine -> { model with Engine = iOpt }
+            | ConfigFile.Input -> { model with Input = iOpt }
 
         let update (clientDispatch: Dispatch<RemoteClientMsg>) (ClientMsg clientMsg) (model: Model) =
             logInc clientMsg
@@ -158,6 +165,10 @@ module App =
                                 { cmd.Value with Caller = Caller.MordhauConfig }
                                 |> Resp
                                 |> cDispatchWithLog clientDispatch
+                            | ConfigFile.Input when model.Engine.IsSome && model.GameUserSettings.IsSome ->
+                                { cmd.Value with Caller = Caller.MordhauConfig }
+                                |> Resp
+                                |> cDispatchWithLog clientDispatch
                             | _ -> ()
                             m, cmd
                         | INIFileOperation.Backup fList ->
@@ -176,6 +187,46 @@ module App =
                             |> List.forall id
                             |> INIOperationResult.CommitChanges
                             |> BridgeResult.INIOperation
+                            |> createClientResp caller None
+                    | ModOperation mCmd ->
+                        match mCmd with
+                        | ModFileOperation.DefaultDir ->
+                            model,
+                            Mods.defDir()
+                            |> ModOperationResult.DefaultDir
+                            |> BridgeResult.ModOperation
+                            |> createClientResp caller None
+                        | ModFileOperation.DirExists dir ->
+                            let result = Mods.dirExists dir
+
+                            let m, cmd =
+                                model,
+                                result
+                                |> ModOperationResult.DirExists
+                                |> BridgeResult.ModOperation
+                                |> createClientResp caller None
+                            if result then
+                                { cmd.Value with Caller = Caller.ModInstaller }
+                                |> Resp
+                                |> clientDispatch
+                            m, cmd
+                        | ModFileOperation.Delete(dir, modId) ->
+                            model,
+                            (modId, Mods.uninstallMod dir modId)
+                            |> ModOperationResult.Delete
+                            |> BridgeResult.ModOperation
+                            |> createClientResp caller None
+                        | ModFileOperation.Disable(dir, modId) ->
+                            model,
+                            (modId, Mods.disableMod dir modId)
+                            |> ModOperationResult.Disable
+                            |> BridgeResult.ModOperation
+                            |> createClientResp caller None
+                        | ModFileOperation.Enable(dir, modId) ->
+                            model,
+                            (modId, Mods.enableMod dir modId)
+                            |> ModOperationResult.Enable
+                            |> BridgeResult.ModOperation
                             |> createClientResp caller None
                     | Faces fCmd ->
                         let cResp br = createClientResp caller None br
@@ -196,20 +247,61 @@ module App =
                             fr
                             |> BridgeResult.Faces
                             |> cResp
+                    | Mods mCmd ->
+                        let cResp br = createClientResp caller None br
+                        match mCmd with
+                        | GetAvailableMods ->
+                            model,
+                            Mods.getAvailableMods()
+                            |> ModResult.AvailableMods
+                            |> BridgeResult.Mods
+                            |> cResp
+                        | GetInstalledMods dir ->
+                            model,
+                            Mods.getInstalledMods dir
+                            |> ModResult.InstalledMods
+                            |> BridgeResult.Mods
+                            |> cResp
+                        | InstallMod mCmd ->
+                            let cSource = new CancellationTokenSource()
+
+                            let dispatchWrapper (mr: ModResult) =
+                                BridgeResult.Mods(mr)
+                                |> createClientResp caller None
+                                |> Option.get
+                                |> Resp
+                                |> clientDispatch
+                            if Mods.installMod mCmd dispatchWrapper cSource.Token then
+                                { model with InstallingMods = ((mCmd.ModInfo, cSource) :: model.InstallingMods) }, None
+                            else
+                                model,
+                                (mCmd.ModInfo.ModId, Error("Unable to find mod archive file."))
+                                |> ModResult.InstallMod
+                                |> BridgeResult.Mods
+                                |> cResp
+                        | ConfirmInstalled modId ->
+                            { model with InstallingMods = (model.InstallingMods |> List.filter (fun (s, _) -> s.ModId <> modId)) },
+                            None
+                        | CancelMod modId ->
+                            let toCancel, installing =
+                                model.InstallingMods |> List.partition (fun (mi, _) -> mi.ModId = modId)
+                            toCancel |> List.iter (fun (_, cSource) -> cSource.Cancel())
+                            { model with InstallingMods = installing }, None
                     | Configs cCmd ->
                         let cResp br = createClientResp caller None br
                         let engine = model.GetIVal(ConfigFile.Engine).Value
                         let gameUser = model.GetIVal(ConfigFile.GameUserSettings).Value
+                        let input = model.GetIVal(ConfigFile.Input).Value
                         match cCmd with
                         | GetConfigs oList ->
                             model,
                             oList
-                            |> INI.getConfigs engine gameUser
+                            |> INI.getConfigs engine gameUser input
                             |> ConfigResult.GetConfigs
                         | MapConfigs oList ->
-                            let newEngine, newGameUser = oList |> INI.mapConfigs engine gameUser
+                            let newEngine, newGameUser, newInput = oList |> INI.mapConfigs engine gameUser input
                             model
-                            |> (updateModel ConfigFile.Engine newEngine >> updateModel ConfigFile.Game newGameUser),
+                            |> (updateModel ConfigFile.Engine newEngine >> updateModel ConfigFile.Game newGameUser >> updateModel ConfigFile.Input newInput),
                             (newEngine.IsSome && newGameUser.IsSome) |> ConfigResult.MapConfigs
                         |> fun (m, cr) ->
                             m,

@@ -13,28 +13,41 @@ module State =
     open Types
     open Node.Api
 
-    let init (bSet: BackupSettings, autoL: bool) =
+    let init (uSet: UpdateSettings, bSet: BackupSettings, autoL: bool) =
         { GameDir =
-              { Dir = ConfigFile.Game
+              { Dir = DirLoad.ConfigFiles ConfigFile.Game
                 Directory = ""
                 Label = "Mordhau Game.ini directory"
                 State = DirState.Init "" }
           EngineDir =
-              { Dir = ConfigFile.Engine
+              { Dir = DirLoad.ConfigFiles ConfigFile.Engine
                 Directory = ""
                 Label = "Mordhau Engine.ini directory"
                 State = DirState.Init "" }
           GameUserDir =
-              { Dir = ConfigFile.GameUserSettings
+              { Dir = DirLoad.ConfigFiles ConfigFile.GameUserSettings
                 Directory = ""
                 Label = "Mordhau GameUserSettings.ini directory"
                 State = DirState.Init "" }
+          InputDir =
+              { Dir = DirLoad.ConfigFiles ConfigFile.Input
+                Directory = ""
+                Label = "Mordhau Input.ini directory"
+                State = DirState.Init "" }
+          ModsDir =
+              { Dir = DirLoad.ModDir
+                Directory = ""
+                Label = "Mordhau mods directory"
+                State = DirState.Init "" }
+          ModUpdateSettings = uSet
           BackupSettings = bSet
           AutoLaunch = autoL }
 
     [<AutoOpen>]
     module private Helpers =
         let iniSender = new INIBridgeSender(Caller.Settings)
+        let modSender = new ModBridgeSender(Caller.Settings)
+        let modSenderMod = new ModBridgeSender(Caller.ModInstaller)
         let settingsSender = new SettingBridgeSender(Caller.Settings)
 
         let setDir (model: Model) (dirType: Dirs) (dir: ConfigDir) =
@@ -42,6 +55,12 @@ module State =
             | Game -> { model with GameDir = dir }
             | Engine -> { model with EngineDir = dir }
             | GameUser -> { model with GameUserDir = dir }
+            | Input -> { model with InputDir = dir }
+            | Mods -> { model with ModsDir = dir }
+
+        let iFileWithDir (cFile: ConfigFile) (dir: string) =
+            { File = cFile
+              WorkingDir = dir |> Some }
 
         let sendParse (cFile: ConfigFile) (dir: string) =
             match cFile with
@@ -53,6 +72,9 @@ module State =
                   WorkingDir = dir |> Some }
             | ConfigFile.GameUserSettings ->
                 { File = ConfigFile.GameUserSettings
+                  WorkingDir = dir |> Some }
+            | ConfigFile.Input ->
+                { File = ConfigFile.Input
                   WorkingDir = dir |> Some }
             |> iniSender.Parse
             |> Cmd.bridgeSend
@@ -76,12 +98,14 @@ module State =
                         | ConfigFile.GameUserSettings ->
                             setDir model GameUser
                             <| setDirError "Error parsing GameUserSettings.ini" model.GameUserDir
+                        | ConfigFile.Input -> setDir model Input <| setDirError "Error parsing Input.ini" model.InputDir
                         |> fun m -> m, Cmd.none
                     | Some(f), true ->
                         match f.File with
                         | ConfigFile.Game -> setDir model Game <| setDirSuccess "" model.GameDir
                         | ConfigFile.Engine -> setDir model Engine <| setDirSuccess "" model.EngineDir
                         | ConfigFile.GameUserSettings -> setDir model GameUser <| setDirSuccess "" model.GameUserDir
+                        | ConfigFile.Input -> setDir model Input <| setDirSuccess "" model.InputDir
                         |> fun m -> m, Cmd.none
                     | _ -> model, Cmd.none
                 | INIOperationResult.Exists b ->
@@ -106,6 +130,11 @@ module State =
                             then setDirSuccess "GameUserSettings.ini located" model.GameUserDir
                             else setDirError (setNotFound "GameUserSettings") model.GameUserDir
                             |> fun cDir -> setDir model GameUser cDir, model.GameUserDir.Directory
+                        | ConfigFile.Input ->
+                            if b
+                            then setDirSuccess "Input.ini located" model.InputDir
+                            else setDirError (setNotFound "Input") model.InputDir
+                            |> fun cDir -> setDir model Input cDir, model.InputDir.Directory
                         |> fun (m, dir) -> m, sendParseIf f.File dir b
                     | _ -> model, Cmd.none
                 | INIOperationResult.DefaultDir dOpt ->
@@ -134,7 +163,14 @@ module State =
                                          setDirInit initMsg m.GameUserDir
                                          |> setDirDirectory d
                                          |> setDir m GameUser
-                                 CmdF = fun m -> sendParse ConfigFile.GameUserSettings m.GameUserDir.Directory |} ]
+                                 CmdF = fun m -> sendParse ConfigFile.GameUserSettings m.GameUserDir.Directory |}
+                              {| IsEmpty = model.InputDir.Directory = ""
+                                 Func =
+                                     fun m ->
+                                         setDirInit initMsg m.InputDir
+                                         |> setDirDirectory d
+                                         |> setDir m Input
+                                 CmdF = fun m -> sendParse ConfigFile.Input m.InputDir.Directory |}]
                             |> List.filter (fun o -> o.IsEmpty)
 
                         let m = mList |> List.fold (fun acc o -> acc |> o.Func) model
@@ -145,14 +181,47 @@ module State =
                         let mList =
                             [ {| IsEmpty = model.GameDir.Directory = ""
                                  Func = fun m -> setDirError errMsg m.GameDir |> setDir m Game |}
-                              {| IsEmpty = model.GameDir.Directory = ""
+                              {| IsEmpty = model.EngineDir.Directory = ""
                                  Func = fun m -> setDirError errMsg m.EngineDir |> setDir m Engine |}
-                              {| IsEmpty = model.GameDir.Directory = ""
-                                 Func = fun m -> setDirError errMsg m.GameUserDir |> setDir m GameUser |} ]
+                              {| IsEmpty = model.GameUserDir.Directory = ""
+                                 Func = fun m -> setDirError errMsg m.GameUserDir |> setDir m GameUser |}
+                              {| IsEmpty = model.InputDir.Directory = ""
+                                 Func = fun m -> setDirError errMsg m.InputDir |> setDir m Input |} ]
                             |> List.filter (fun o -> o.IsEmpty)
 
                         let m = mList |> List.fold (fun acc o -> acc |> o.Func) model
                         m, Cmd.none
+                | _ -> model, Cmd.none
+            | BridgeResult.ModOperation mOp ->
+                match mOp with
+                | ModOperationResult.DefaultDir dOpt ->
+                    match dOpt with
+                    | Some(d) ->
+                        setDirInit "Mordhau mod directory located" model.ModsDir
+                        |> setDirDirectory d
+                        |> setDir model Mods
+                        |> fun m ->
+                            m,
+                            m.ModsDir.Directory
+                            |> modSender.DirExists
+                            |> Cmd.bridgeSend
+                    | None ->
+                        setDirError "Unable to automatically detect Mordhau map directory" model.ModsDir
+                        |> setDir model Mods
+                        |> fun m -> m, Cmd.none
+                | ModOperationResult.DirExists b ->
+                    if b then
+                        setDirSuccess "" model.ModsDir
+                        |> setDir model Mods
+                        |> fun m ->
+                            m,
+                            model.ModsDir.Directory
+                            |> modSenderMod.GetInstalled
+                            |> Cmd.bridgeSend
+                    else
+                        setDirError "Mods directory not found" model.ModsDir
+                        |> setDir model Mods
+                        |> fun m -> m, Cmd.none
                 | _ -> model, Cmd.none
             | BridgeResult.Settings sOp ->
                 match sOp with
@@ -160,6 +229,7 @@ module State =
                 | SettingResult.DisabledAutoLaunch b -> { model with AutoLaunch = b |> not }, Cmd.none
             | _ -> model, Cmd.none
         | GetDefaultDir -> model, iniSender.DefaultDir |> Cmd.bridgeSend
+        | GetModDir -> model, modSender.DefaultDir |> Cmd.bridgeSend
         | SetConfigDir(s, res, cFile) ->
             let setConfigDir (res: Result<string, string list>) (cDir: ConfigDir) (dirType: Dirs) =
                 match res with
@@ -184,14 +254,39 @@ module State =
             | ConfigFile.Game -> Game, model.GameDir
             | ConfigFile.Engine -> Engine, model.EngineDir
             | ConfigFile.GameUserSettings -> GameUser, model.GameUserDir
+            | ConfigFile.Input -> Input, model.InputDir
             |> fun (d, c) -> setConfigDir res c d
-        | RequestLoad cFile ->
+        | SetModDir(s, res) ->
+            match res with
+            | Ok s ->
+                setDirInit "" model.ModsDir
+                |> setDirDirectory s
+                |> setDir model Mods
+                |> fun m -> m, Cmd.bridgeSend (modSender.DirExists s)
+            | Error _ ->
+                errorStrings res
+                |> setDirError
+                <| model.ModsDir
+                |> setDirDirectory s
+                |> setDir model Mods
+                |> fun m -> m, Cmd.none
+        | RequestLoad dirLoad ->
             let handleLoaded =
-                function
-                | DirSelect.Selected s -> (s, validateDir s, cFile) |> SetConfigDir
-                | DirSelect.Canceled -> LoadCanceled
+                match dirLoad with
+                | ConfigFiles(cFile) ->
+                    function
+                    | DirSelect.Selected s -> (s, validateDir s, cFile) |> SetConfigDir
+                    | DirSelect.Canceled -> LoadCanceled
+                | ModDir ->
+                    function
+                    | DirSelect.Selected s -> (s, validateDir s) |> SetModDir
+                    | DirSelect.Canceled -> LoadCanceled
             model, Cmd.OfPromise.perform selectDir () handleLoaded
         | LoadCanceled -> model, Cmd.none
+        | ModUpdateSettings newSets ->
+            match newSets with
+            | Some(s) -> { model with ModUpdateSettings = s }, Cmd.none
+            | _ -> model, Cmd.none
         | BackupSetting newSets ->
             match newSets with
             | Some(s) -> { model with BackupSettings = s }, Cmd.bridgeSend (settingsSender.BackupPolicy(s))
@@ -201,6 +296,11 @@ module State =
             |> fun sender -> { model with AutoLaunch = model.AutoLaunch |> not }, Cmd.bridgeSend sender
         | RunSetup ->
             let cmds =
-                [ if ``process``.platform <> Node.Base.Platform.Win32 then
+                [ yield if model.AutoLaunch then settingsSender.EnableAutoLaunch
+                        else settingsSender.DisableAutoLaunch
+                        |> Cmd.bridgeSend
+                  if ``process``.platform <> Node.Base.Platform.Win32 then
+                      yield Cmd.bridgeSend (settingsSender.SetupLinux)
+                  if ``process``.platform <> Node.Base.Platform.Win32 then
                     yield Cmd.bridgeSend (settingsSender.SetupLinux) ]
             model, Cmd.batch cmds

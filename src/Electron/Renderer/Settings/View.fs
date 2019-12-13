@@ -11,6 +11,7 @@ module View =
     open FSharp.Core /// To avoid shadowing Result<_,_>
     open MordhauBuddy.App
     open MordhauBuddy.Shared.ElectronBridge
+    open BridgeUtils
     open RenderUtils
     open RenderUtils.Validation
     open RenderUtils.Directory
@@ -63,6 +64,20 @@ module View =
                         FormControlProp.Variant FormControlVariant.Outlined
                         Style [ CSSProp.MinWidth "25em" ] ] [ inputL; selects ] ] ]
 
+    let private selectUpdate (classes: IClasses) model dispatch =
+        let inputL = inputLabel [] [ str "Mod update settings" ]
+        select
+            [ HTMLAttr.Value model.ModUpdateSettings.Text
+              DOMAttr.OnChange <| fun ev ->
+                  ev.Value
+                  |> UpdateSettings.TryGetCaseFromText
+                  |> ModUpdateSettings
+                  |> dispatch
+              SelectProp.Variant SelectVariant.Outlined
+              SelectProp.Input <| outlinedInput [ OutlinedInputProp.LabelWidth 150 ] [] ]
+            (UpdateSettings.GetSettings |> Array.map (fun s -> selectMenuItems s.Text))
+        |> selectForm classes model dispatch inputL
+
     let private selectBackup (classes: IClasses) model dispatch =
         let inputL = inputLabel [] [ str "Backup settings" ]
         select
@@ -95,12 +110,16 @@ module View =
                 [ CSSProp.FlexDirection "column"
                   CSSProp.Display DisplayOptions.Flex
                   CSSProp.Height "inherit"
-                  CSSProp.Padding "2em" ] ]
+                  CSSProp.Padding "1em" ] ]
             [ card [ Style [ CSSProp.FlexGrow "1" ] ]
                   [ dConf model.GameDir
                     dConf model.EngineDir
                     dConf model.GameUserDir
-                    selectBackup classes model dispatch
+                    dConf model.InputDir
+                    dConf model.ModsDir
+                    div [ Style [ CSSProp.Display DisplayOptions.InlineFlex ] ]
+                        [ selectUpdate classes model dispatch
+                          selectBackup classes model dispatch ]
                     toggleAutoLaunch classes model dispatch ] ]
 
     /// Workaround for using JSS with Elmish

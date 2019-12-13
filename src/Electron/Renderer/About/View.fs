@@ -63,7 +63,7 @@ module View =
                           typography [ Class classes?padBottom ]
                               [ str (sprintf "Node: %s" (Bindings.Info.nodeVersion)) ]
                           typography [ Class classes?padBottom ] [ str (sprintf "V8: %s" (Bindings.Info.v8Version)) ]
-                          typography [ Class classes?padBottom ] [ str ".NET Core: 3.0" ]
+                          typography [ Class classes?padBottom ] [ str ".NET Core: 3.1" ]
                           typography [ Class classes?padBottom ]
                               [ str (sprintf "License: %s" (Bindings.Info.license)) ]
                           typography [ Class classes?padBottom ]

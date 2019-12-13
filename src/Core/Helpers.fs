@@ -14,6 +14,11 @@ module rec Helpers =
     open System
     open System.Net
 
+    /// Attempt to parse an int returning an option
+    let tryParseInt mId =
+        try Some (Int32.Parse mId)
+        with _ -> None
+
     /// Functions to gather information
     module Info =
         open System.Reflection
@@ -82,16 +87,18 @@ module rec Helpers =
             /// Name of the home json file
             let homeName = sprintf "home-%s.json" version
 
+        let updaterPath (subDir: string) =
+            if Environment.isLinux
+            then Info.Linux.homeShare @@ subDir
+            else Info.Windows.getWinExecDir() @@ subDir
+
     /// Logging helper functions and initialization
     [<AutoOpen>]
     module Logger =
         open Logary.Targets.FileSystem
 
         /// Determine logging directory path
-        let logPath: FolderPath =
-            if Environment.isLinux
-            then Info.Linux.homeShare @@ "logging"
-            else Info.Windows.getWinExecDir() @@ "logging"
+        let logPath: FolderPath = Info.updaterPath "logging"
 
         module private Impl =
             open Logary.Targets
@@ -213,7 +220,9 @@ module rec Helpers =
             { Url: string
               FileName: string
               Name: string
+              CacheDirectory: IO.DirectoryInfo
               Directory: IO.DirectoryInfo
+              ModInfo: ModInfoFile
               Size: float<MB>
               UpdateFun: int -> unit
               CompleteFun: unit -> unit

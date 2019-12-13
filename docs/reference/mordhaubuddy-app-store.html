@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Info - MordhauBuddy</title>
+    <title>Store - MordhauBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Shmew"/>
@@ -34,27 +34,32 @@
 
 
 
-<h1>Info</h1>
+<h1>Store</h1>
 <p>
-  <span>Namespace: MordhauBuddy.Core</span><br />
-  <span>Parent Module: <a href="mordhaubuddy-core-helpers.html">Helpers</a></span>
+  <span>Namespace: MordhauBuddy.App</span><br />
   </p>
 <div class="xmldoc">
-<p>Functions to gather information</p>
-
 </div>
 
 <!-- Render nested types and modules, if there are any -->
   <h2>Nested types and modules</h2>
   <div>
-      <table class="table table-bordered module-list">
+      <table class="table table-bordered type-list">
     <thead>
-      <tr><td>Module</td><td>Description</td></tr>
+      <tr><td>Type</td><td>Description</td></tr>
     </thead>
     <tbody>
         <tr>
-          <td class="module-name">
-            <a href="mordhaubuddy-core-helpers-info-linux.html">Linux</a>
+          <td class="type-name">
+            <a href="mordhaubuddy-app-store-model.html">Model</a>
+          </td>
+          <td class="xmldoc">
+          
+          </td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="mordhaubuddy-app-store-msg.html">Msg</a>
           </td>
           <td class="xmldoc">
           
@@ -74,101 +79,37 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '105', 105)" onmouseover="showTip(event, '105', 105)">
-            appFile(ver)
+          <code onmouseout="hideTip(event, '23', 23)" onmouseover="showTip(event, '23', 23)">
+            init()
           </code>
-          <div class="tip" id="105">
-            <strong>Signature:</strong> ver:string -&gt; string<br />
+          <div class="tip" id="23">
+            <strong>Signature:</strong> unit -&gt; Model<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L30-30" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Store.fs#L118-118" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Get application name</p>
-
-
+          
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '106', 106)" onmouseover="showTip(event, '106', 106)">
-            appPath
+          <code onmouseout="hideTip(event, '24', 24)" onmouseover="showTip(event, '24', 24)">
+            update msg m
           </code>
-          <div class="tip" id="106">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="24">
+            <strong>Signature:</strong> msg:Msg -&gt; m:Model -&gt; Model<br />
                                   </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L27-27" class="github-link">
+                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Electron/Renderer/Store.fs#L124-124" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Current executable directory</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '107', 107)" onmouseover="showTip(event, '107', 107)">
-            isMordhauRunning()
-          </code>
-          <div class="tip" id="107">
-            <strong>Signature:</strong> unit -&gt; bool<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L36-36" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Check if Mordhau is running</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '108', 108)" onmouseover="showTip(event, '108', 108)">
-            tryGetEnvVar(s)
-          </code>
-          <div class="tip" id="108">
-            <strong>Signature:</strong> s:string -&gt; string option<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L40-40" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Try to get an env variable with increasing scope</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '109', 109)" onmouseover="showTip(event, '109', 109)">
-            version
-          </code>
-          <div class="tip" id="109">
-            <strong>Signature:</strong> string<br />
-                                  </div>
-        </td>
-        <td class="xmldoc">
-                      <a href="https://github.com/Shmew/MordhauBuddy/tree/master/src/Core/Helpers.fs#L22-22" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Get application version</p>
-
-
+          
         </td>
       </tr>
     </tbody>
@@ -189,6 +130,7 @@
             <li><a href="/MordhauBuddy/index.html">Introduction</a></li>
             <li class="divider"></li>
             <li><a href="/MordhauBuddy/community.html">Community</a></li>
+            <li><a href="/MordhauBuddy/mod-installer.html">Mod Installer</a></li>
             <li><a href="/MordhauBuddy/mordhau-config.html">Mordhau Configuration</a></li>
             <li><a href="/MordhauBuddy/face-tools.html">Face Tools</a></li>
             <li><a href="/MordhauBuddy/settings.html">MordhauBuddy Settings</a></li>

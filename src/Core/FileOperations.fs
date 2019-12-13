@@ -5,6 +5,7 @@ open Fake.IO
 open Fake.IO.FileSystemOperators
 open Helpers
 open INIReader
+open MordhauBuddy.Shared
 open System
 
 /// Module for doing file operations
@@ -120,6 +121,138 @@ module FileOps =
             else
                 logger.LogError "Tried to read INI file that does not exist: %s" file
                 None
+
+    /// File operations for mods
+    module Mods =
+        open Fake.IO.Globbing.Operators
+        open FSharp.Json
+
+        /// Try to find the Mod directory
+        let defaultDir =
+            try
+                let modPath =
+                    match Environment.isWindows with
+                    | true ->
+                        [ @"C:\Program Files (x86)"; @"C:\Program Files" ]
+                        |> List.map (fun fol -> fol @@ @"Steam\steamapps\common\Mordhau\Mordhau\Content\Paks")
+                    | false ->
+                        [ ".steam/steam"; ".local/share/Steam" ]
+                        |> List.map
+                            ((fun s -> (Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath) @@ s)
+                             >> (fun fol -> fol @@ @"steamapps\common\Mordhau\Mordhau\Content\Paks"))
+
+                let bindDirectory (dir: string) =
+                    IO.DirectoryInfo dir
+                    |> DirectoryInfo.exists
+                    |> function
+                    | true -> Some(dir)
+                    | false -> None
+
+                modPath |> List.tryFind (bindDirectory >> Option.isSome)
+            with _ -> None
+
+        /// Determine if mods directory is valid
+        let tryFindMods (dir: string) =
+            try
+                let di = IO.DirectoryInfo(dir)
+                di.Parent.Name = "Content" && di.Exists && di.FullName.ToLower().Contains("steam") && di.Name = "Paks"
+            with _ -> false
+
+        /// Get all cached and installed mods
+        let getAllLocalMods () =
+            !! (Info.updaterPath "Mods" @@ "**/*.json")
+            |> List.ofSeq
+            |> List.choose (fun infoFilePath ->
+                try
+                    File.readAsString infoFilePath
+                    |> Json.deserialize<ElectronBridge.ModInfoFile>
+                    |> Some
+                with _ -> None)
+
+        /// Build pak name from Mod Id
+        let getPakName (modId: int) =
+            sprintf "z%i-p.pak" modId
+
+        /// Get all installed mods
+        let getInstalled (dir: string) =
+            let enabled = !! (dir @@ "z*-p.pak")
+            let disabled = !! (Info.updaterPath "Mods/**/*.pak")
+
+            let getData (paths: string seq) =
+                paths
+                |> List.ofSeq
+                |> List.choose (fun s ->
+                    (FileInfo.ofPath s).Name.Substring(1).Split('-')
+                    |> Array.tryHead
+                    |> Option.bind (fun s ->
+                        !! (Info.updaterPath "Mods" @@ s @@ (sprintf "%s.json" s))
+                        |> List.ofSeq
+                        |> List.tryHead
+                        |> Option.map (fun path -> 
+                            printfn "Path: %s" path
+                            File.readAsString path |> Json.deserialize<ElectronBridge.ModInfoFile>)))
+
+            (getData enabled, getData disabled)
+
+        /// Attempts to disable a mod by moving the pak into the cache
+        let tryDisable (dir: string) (modId: int) =
+            try
+                let pName = getPakName modId
+
+                !! (dir @@ pName)
+                |> List.ofSeq
+                |> List.iter (fun path ->
+                    Shell.mv path (Info.updaterPath "Mods" @@ (string modId) @@ pName))
+
+                Ok(true)
+            with e -> Error(e.Message)
+
+        /// Attempts to enable a mod by moving the pak into the mod folder
+        let tryEnable (dir: string) (modId: int) =
+            try
+                let pName = getPakName modId
+
+                !! (Info.updaterPath "Mods" @@ (string modId) @@ pName)
+                |> List.ofSeq
+                |> List.iter (fun path ->
+                    Shell.mv path (dir @@ pName))
+
+                Ok(true)
+            with e -> Error(e.Message)
+
+        /// Try to delete the given mod
+        let tryUninstall (dir: string) (modId: int) =
+            try
+                let pName = getPakName modId
+
+                !! (dir @@ pName)
+                |> List.ofSeq
+                |> List.iter File.delete
+
+                !! (Info.updaterPath "Mods" @@ (string modId))
+                |> List.ofSeq
+                |> List.iter Directory.delete
+
+                Ok(true)
+            with e -> Error(e.Message)
+
+        /// Delete a zip if it exists
+        let asyncDeleteZip (path: string) =
+            async {
+                if File.exists (path) then Shell.rm path
+            }
+
+        /// Delete a directory if it exists
+        let deleteDir (path: string) = Shell.deleteDir path
+
+        /// Creates the Mods directory if it does not exist
+        let ensureModsFolder () =
+            Info.updaterPath "Mods"
+            |> Directory.ensure
+
+        /// Creates a directory within the Mods directory if it does not exist
+        let ensureFolder (name: string) =
+            Directory.ensure (Info.updaterPath "Mods" @@ name)
 
     /// File operations for enabling auto launching
     module AutoLaunch =

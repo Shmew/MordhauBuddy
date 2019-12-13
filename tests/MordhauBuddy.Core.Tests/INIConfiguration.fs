@@ -20,6 +20,10 @@ module INIConfiguration =
             IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/EngineEmptySystemSettings.ini") |> INIValue.Parse
         let gameUserFile =
             IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/GameUserSettings.ini") |> INIValue.Parse
+        let inputFile =
+            IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/Input.ini") |> INIValue.Parse
+        let inputHangingFile =
+            IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/InputHanging.ini") |> INIValue.Parse
         let profileNames =
             [ "332 Bardiche"
               "333 Greatsword"
@@ -123,7 +127,7 @@ module INIConfiguration =
 
     let mordhauConfig =
         [ testCase "getSettings returns an OptionGroup list with values set" <| fun () ->
-            let result = getSettings engineFile gameUserFile optGroupList
+            let result = getSettings engineFile gameUserFile inputFile optGroupList
 
             let expected =
                 [ { Title = "Enable network parry debug"
@@ -149,7 +153,7 @@ module INIConfiguration =
                     Expanded = false } ]
             Expect.equal result expected ""
           testCase "tryMapSettings returns a INIValue tuple option with new results" <| fun () ->
-              let eFile, gFile = tryMapSettings engineFile gameUserFile newOptGroupList
+              let eFile, gFile, _ = tryMapSettings engineFile gameUserFile inputFile newOptGroupList
               (notOrigAndParses engineFile
                    (eFile
                     |> Option.get
@@ -173,7 +177,7 @@ module INIConfiguration =
                       Enabled = false
                       Expanded = false } ]
 
-              let eFile, _ = tryMapSettings engineFile gameUserFile disableFog
+              let eFile, _, _ = tryMapSettings engineFile gameUserFile inputFile disableFog
               notOrigAndParses engineFile
                   (eFile
                    |> Option.get
@@ -198,7 +202,7 @@ module INIConfiguration =
                       Enabled = true
                       Expanded = false } ]
 
-              let eFile, _ = tryMapSettings engineFile gameUserFile disableFisheye
+              let eFile, _, _ = tryMapSettings engineFile gameUserFile inputFile disableFisheye
               notOrigAndParses engineFile
                   (eFile
                    |> Option.get
@@ -218,8 +222,9 @@ module INIConfiguration =
                       Enabled = true
                       Expanded = false } ]
 
-              tryMapSettings engineBlankFile gameUserFile disableFog
-              |> fst
+              tryMapSettings engineBlankFile gameUserFile inputFile disableFog
+              |> function
+              | (res,_,_) -> res
               |> Option.map string
               |> Option.get
               |> fun eFile -> notOrigAndParses engineBlankFile eFile && eFile.Contains("[SystemSettings]")
@@ -238,12 +243,33 @@ module INIConfiguration =
                       Enabled = true
                       Expanded = false } ]
 
-              tryMapSettings engineEmptySystemSettingsFile gameUserFile disableFog
-              |> fst
+              tryMapSettings engineEmptySystemSettingsFile gameUserFile inputFile disableFog
+              |> function
+              | (res,_,_) -> res
               |> Option.map string
               |> Option.get
               |> fun eFile -> notOrigAndParses engineEmptySystemSettingsFile eFile && eFile.Contains("r.Fog=0")
               |> Expect.isTrue
+              <| ""
+          testCase "Removes sections if they have no children" <| fun () ->
+              let consoleBinding =
+                  [ { Title = "Console key binding"
+                      Caption = "Sets the console key binding."
+                      Settings =
+                          [ { Key = @"ConsoleKey"
+                              Default = KeyValues.Values.String("")
+                              Value = None
+                              Mutable = Some KeyValues.Mutable.MutableString } ]
+                      File = ConfigFile.Input
+                      Enabled = false
+                      Expanded = false } ]
+
+              tryMapSettings engineEmptySystemSettingsFile gameUserFile inputHangingFile consoleBinding
+              |> function
+              | (_,_,res) -> res
+              |> Option.map string
+              |> Option.get
+              |> Expect.equal (inputFile.ToString())
               <| "" ]
         |> testList "Mordhau Config"
 

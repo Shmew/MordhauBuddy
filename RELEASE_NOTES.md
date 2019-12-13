@@ -1,3 +1,7 @@
+### 1.4.0 - Friday, December 13, 2019
+* Added a mod manager for local content
+* Added support for input.ini console bindings
+
 ### 1.3.1 - Tuesday, December 10, 2019
 * Fixed graphical bug
 
