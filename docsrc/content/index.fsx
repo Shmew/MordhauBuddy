@@ -10,6 +10,7 @@ The main features that MordhauBuddy enables you to do is:
 
  - Keep up to date on community news
     - Displays latest Mordhau announcements.
+ - Manage local-only mods (such as skins, sounds, etc.)
  - Manage custom settings not available in the UI
     - Things like disabling sun glare, adjusting panini projection, and disabling in-game fog.
  - Modify character faces with multiple options:
