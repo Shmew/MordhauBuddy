@@ -114,4 +114,5 @@ module rec Types =
           ActiveEnabling: int option
           TabSelected: Tab
           Refreshing: bool
-          Updating: bool }
+          Updating: bool
+          MordhauRunning: bool }

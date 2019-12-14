@@ -67,10 +67,10 @@ for more information.</p>
 <li>Build the solution with Visual Studio, <code>build.cmd</code> or <code>build.sh</code>.</li>
 <li>All binaries will be in <code>./bin</code> after being built.</li>
 <li>
-When you're ready to commit the code use <code>build.cmd/sh -t "Release" --Msg="my commit message"</code>. This will clean up directories, stage,
-and commit all the changes with the given message. If you don't specify a commit message it will default to <code>Bump version to *.*.*</code> which pulls the
-version from the RELEASE_NOTES.md. Do note that this will enforce that your versioning is updated every release.
+When you're ready to commit the code use `build.cmd/sh -t "Release". This will clean up directories, stage,
+and build everything for release. Once you've confirmed it looks good, commit to your branch and make your PR.
 </li>
+<li>Please note in order to build the Linux images you must have <code>Docker</code> installed.</li>
 </ul>
 <h2><a name="Releasing" class="anchor" href="#Releasing">Releasing</a></h2>
 <ul>

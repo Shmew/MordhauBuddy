@@ -55,16 +55,20 @@ module FileOps =
 
         /// Create a backup of the given file into sub directory MordhauBuddy_backups
         let createBackup (file: string) =
-            let fi = FileInfo.ofPath (file)
-            match File.exists file with
-            | true ->
-                let backups = fi.DirectoryName @@ "MordhauBuddy_backups"
-                let newName = (fi.Name.Split('.').[0]) + DateTime.Now.ToString("yyyyMMdd-hhmm") + ".ini"
-                Directory.ensure backups
-                Shell.copyFile (backups @@ newName) file
-                File.exists (backups @@ newName)
-            | false ->
-                logger.LogError "Tried to backup non-existant file: %s" file
+            try
+                let fi = FileInfo.ofPath (file)
+                match File.exists file with
+                | true ->
+                    let backups = fi.DirectoryName @@ "MordhauBuddy_backups"
+                    let newName = (fi.Name.Split('.').[0]) + DateTime.Now.ToString("yyyyMMdd-hhmm") + ".ini"
+                    Directory.ensure backups
+                    Shell.copyFile (backups @@ newName) file
+                    File.exists (backups @@ newName)
+                | false ->
+                    logger.LogError "Tried to backup non-existant file: %s" file
+                    false
+            with e -> 
+                logger.LogError  "Error making backups: %s" e.Message
                 false
 
         /// Clean backups directory based on given backup settings
@@ -81,6 +85,7 @@ module FileOps =
                             | f when f.Name.StartsWith("GameUserSettings") -> "GameUserSettings"
                             | f when f.Name.StartsWith("Engine") -> "Engine"
                             | f when f.Name.StartsWith("Game") -> "Game"
+                            | f when f.Name.StartsWith("Input") -> "Input"
                             | _ -> "")
                         |> Array.iter (fun (k, fArr) ->
                             if k = "" then

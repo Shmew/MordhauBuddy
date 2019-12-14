@@ -33,7 +33,8 @@ module State =
           ActiveEnabling = None
           TabSelected = Available
           Refreshing = false
-          Updating = false }
+          Updating = false
+          MordhauRunning = false }
 
     [<AutoOpen>]
     module private Helpers =

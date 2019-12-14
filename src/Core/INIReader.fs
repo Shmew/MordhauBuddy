@@ -118,7 +118,7 @@ module rec INIReader =
             |>> ((fun _ -> None) >> INIValue.String)
 
         /// Parse a string
-        let iniString = parseQuoted <|> anyText |>> (Some >> INIValue.String) .>> spaces
+        let iniString = parseQuotedInc <|> anyText |>> (Some >> INIValue.String) .>> spaces
 
         /// Parse a field text value
         ///

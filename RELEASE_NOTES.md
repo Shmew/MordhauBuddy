@@ -1,3 +1,7 @@
+### 1.4.1 - Saturday, December 14, 2019
+* Fixed an issue with input.ini modifications
+* Adding user lockout when trying to modify mods while mordhau is running
+
 ### 1.4.0 - Friday, December 13, 2019
 * Added a mod manager for local content
 * Added support for input.ini console bindings

@@ -11,7 +11,7 @@ module State =
     let pageTitle =
         function
         | Community -> "Community"
-        | ModsInstaller -> "Mod Installer"
+        | ModsInstaller -> "Local Mod Installer"
         | FaceTools -> "Face Tools"
         | MordhauConfig -> "Mordhau Configuration"
         | Settings -> "Settings"
@@ -168,9 +168,15 @@ module State =
                           else RenderTypes.Submit.Init }
                 |> setFaceTools model
 
+            let mRunningMI (model: Model) =
+                { model.ModsInstaller with
+                      MordhauRunning = b }
+                |> setModInstaller model
+
             { model with MordhauRunning = b }
             |> mRunningMC
             |> mRunningFT
+            |> mRunningMI
 
         let settingsSender = BridgeUtils.SettingBridgeSender(Caller.Settings)
         let comSender = BridgeUtils.CommunityBridgeSender(Caller.Community)

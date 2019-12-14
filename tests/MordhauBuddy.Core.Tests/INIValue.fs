@@ -194,6 +194,17 @@ module INIValue =
                   |> serialI
 
               let expected = [ "[TestSection]"; "TestStr=" ] |> buildINIString
+              Expect.equal result expected ""
+          testCase "Can serialize document with tupled kv pairs with quoted strings" <| fun () ->
+              let result =
+                  [ kvPair "TestKV" "\"Some Text\""; kvPair "TestKV2" "False" ]
+                  |> INIValue.Tuple
+                  |> kvPairNested "TestStr"
+                  |> sectionOne "TestSection"
+                  |> fileOne
+                  |> serialI
+
+              let expected = [ "[TestSection]"; "TestStr=(TestKV=\"Some Text\",TestKV2=False)" ] |> buildINIString
               Expect.equal result expected "" ]
         |> testList "INI Serialization"
 

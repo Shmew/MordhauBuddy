@@ -40,8 +40,18 @@ module View =
               | Some(uMod), _ when mod'.Mod.ModId = uMod -> yield circularProg
               | _, uList when uList.IsEmpty |> not -> yield circularProg
               | _ ->
-                  yield iconButton
-                            [ DOMAttr.OnClick <| fun _ -> dispatch (ToggleMenu(model.TabSelected, mod'.Mod.ModId)) ]
+                  if model.MordhauRunning then
+                    yield 
+                        tooltip 
+                            [ TooltipProp.Title (str "Cannot make changes while Mordhau is running.") ] 
+                            [ div [] 
+                                  [ iconButton
+                                        [ HTMLAttr.Disabled model.MordhauRunning ]
+                                        [ moreVertIcon [] ] ] ]
+                  else
+                      yield iconButton
+                            [ DOMAttr.OnClick <| fun _ -> dispatch (ToggleMenu(model.TabSelected, mod'.Mod.ModId))
+                              HTMLAttr.Disabled model.MordhauRunning ]
                             [ moreVertIcon [] ]
                   match mod'.MenuState with
                   | MenuState.Open(pos) ->
@@ -320,10 +330,10 @@ module View =
                             [ CSSProp.MarginTop "auto"
                               CSSProp.MarginLeft "auto" ] ]
                         [ button
-                            [ HTMLAttr.Disabled <| match model.TabSelected with
-                                                   | Available -> model.Available.IsEmpty
-                                                   | Installed -> model.Installed.IsEmpty
-                                                   | Installing -> model.Installing.IsEmpty
+                            [ HTMLAttr.Disabled <| (match model.TabSelected with
+                                                    | Available -> model.Available.IsEmpty
+                                                    | Installed -> model.Installed.IsEmpty
+                                                    | Installing -> model.Installing.IsEmpty)
                               ButtonProp.Variant ButtonVariant.Contained
                               MaterialProp.Color ComponentColor.Primary
                               DOMAttr.OnClick <| fun _ ->
