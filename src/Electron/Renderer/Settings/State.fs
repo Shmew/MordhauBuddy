@@ -206,7 +206,7 @@ module State =
                             |> modSender.DirExists
                             |> Cmd.bridgeSend
                     | None ->
-                        setDirError "Unable to automatically detect Mordhau map directory" model.ModsDir
+                        setDirError "Unable to automatically detect Mordhau mod directory" model.ModsDir
                         |> setDir model Mods
                         |> fun m -> m, Cmd.none
                 | ModOperationResult.DirExists b ->
