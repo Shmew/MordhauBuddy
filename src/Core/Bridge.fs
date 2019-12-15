@@ -61,8 +61,22 @@ module App =
             | _ ->
                 logger.LogInfo "New server message:\n%O" clientMsg
 
+        let getAvailableModAsync (clientDispatch: Dispatch<RemoteClientMsg>) =
+            let dispatch modInfoFiles =
+                { Caller = Caller.ModInstaller
+                  File = None
+                  BridgeResult = 
+                    modInfoFiles
+                    |> ModResult.AvailableMods
+                    |> BridgeResult.Mods }
+                |> RemoteClientMsg.Resp
+                |> cDispatchWithLog clientDispatch  
+
+            Http.WebRequests.getInfoFilesAsync dispatch
+
         let private init (clientDispatch: Dispatch<RemoteClientMsg>) () =
             Connected |> cDispatchWithLog clientDispatch
+            getAvailableModAsync clientDispatch |> Async.Start
             { Game = None
               GameUserSettings = None
               Engine = None

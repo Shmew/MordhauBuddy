@@ -248,10 +248,20 @@ module View =
         <| match model.TabSelected with
            | Available ->
                let available = renderAvailableMods classes model dispatch
-               if available.IsEmpty then
+               if available.IsEmpty && model.Loaded = true then
                    [ typography
                        [ TypographyProp.Align TypographyAlign.Center
                          TypographyProp.Variant TypographyVariant.H6 ] [ str "No Mods available for download." ] ]
+               elif model.Loaded = false then
+                  div [ Style [ CSSProp.Padding "10em" ] ]
+                      [ typography
+                          [ TypographyProp.Variant TypographyVariant.H6
+                            TypographyProp.Align TypographyAlign.Center
+                            Style [ CSSProp.PaddingBottom "5em" ] ] [ str "Fetching mods..." ]
+                        circularProgress
+                            [ CircularProgressProp.Size <| CircularProgressSize.Case2 "5em"
+                              Style [ CSSProp.MarginLeft "45%" ] ] ]
+                  |> List.singleton
                else
                    available
            | Installed ->

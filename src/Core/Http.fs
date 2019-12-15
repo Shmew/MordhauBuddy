@@ -173,37 +173,58 @@ module Http =
                 (path + defaultArg parameters "", httpMethod = "HEAD", headers = headers.Headers, timeout = 100000)
             |> fun res -> res.Headers
 
+        /// Gets the info files from a github contents list
+        let downloadInfoFiles (gList: Github.Contents list) =
+            gList
+            |> List.map (fun c ->
+                async {
+                    try
+                        let! result = getStringAsync (c.DownloadUrl, None, ReqHeaders.Github)
+                        logger.LogInfo "%A" result
+
+                        let modInfoFile = Json.deserialize<ModInfoFile> result
+                        let size = 
+                            (head (modInfoFile.FileUrl, None, ReqHeaders.Generic)).TryFind("Content-Length")
+                            |> Option.map (int)
+                        return
+                            { modInfoFile with Size = size }
+                            |> Some
+                    with _ -> return None
+                })
+            |> Async.Parallel
+
         /// Get info file list
         let getInfoFiles() =
-            let downloadInfoFiles (gList: Github.Contents list) =
-                gList
-                |> List.map (fun c ->
-                    async {
-                        try
-                            let! result = getStringAsync (c.DownloadUrl, None, ReqHeaders.Github)
-                            logger.LogInfo "%A" result
-
-                            let modInfoFile = Json.deserialize<ModInfoFile> result
-                            let size = 
-                                (head (modInfoFile.FileUrl, None, ReqHeaders.Generic)).TryFind("Content-Length")
-                                |> Option.map (int)
-                            return
-                                { modInfoFile with Size = size }
-                                |> Some
-                        with _ -> return None
-                    })
-                |> Async.Parallel
-                |> Async.RunSynchronously
-                |> List.ofArray
-                |> List.choose id
-
             get (ghBaseUri + "/repos/MordhauMappingModding/local-mods-list/contents", None, ReqHeaders.Github)
             |> Result.map ((Json.deserializeEx<Github.Contents list> Json.config) >> downloadInfoFiles)
             |> function
-            | Ok(resList) -> resList
+            | Ok(resList) -> 
+                resList
+                |> Async.RunSynchronously
+                |> List.ofArray
+                |> List.choose id
             | Error(errMsg) -> 
                 logger.LogError "Error fetching info files: %s" errMsg
                 []
+
+        /// Gets info files and dispatches the result
+        let getInfoFilesAsync (dispatch: ModInfoFile list -> unit) =
+            async {
+                let res =
+                    get (ghBaseUri + "/repos/MordhauMappingModding/local-mods-list/contents", None, ReqHeaders.Github)
+                    |> Result.map ((Json.deserializeEx<Github.Contents list> Json.config) >> downloadInfoFiles)
+
+
+                let! infoFiles =
+                    match res with
+                    | Ok(resList) -> 
+                        resList
+                    | Error(errMsg) -> 
+                        logger.LogError "Error fetching info files: %s" errMsg
+                        async { return [||] }
+
+                dispatch (infoFiles |> List.ofArray |> List.choose id)
+            }
 
         /// Download a zip file to the given directory with continuations
         let downloadZipFile (cToken: CancellationToken) (download: DownloadFile) =

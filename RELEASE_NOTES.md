@@ -1,3 +1,7 @@
+### 1.4.2 - Sunday, December 15, 2019
+* Fixed an issue with update settings not being saved properly
+* Improved performance of mod installer fetching available mods
+
 ### 1.4.1 - Saturday, December 14, 2019
 * Fixed an issue with input.ini modifications
 * Adding user lockout when trying to modify mods while mordhau is running

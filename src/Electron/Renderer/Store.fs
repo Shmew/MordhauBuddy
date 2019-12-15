@@ -110,7 +110,8 @@ module Store =
                GameUserLocation = None
                InputLocation = None
                ModsLocation = None
-               BackupSettings = "KeepLast10" |} |> toPlainJsObj
+               BackupSettings = "KeepLast10"
+               UpdateSettings = "Installed" |} |> toPlainJsObj
 
         /// Create store object
         let store = getStore.Create(jsOptions<Options> (fun o -> o.defaults <- defaults))

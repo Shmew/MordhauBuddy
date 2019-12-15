@@ -34,7 +34,8 @@ module State =
           TabSelected = Available
           Refreshing = false
           Updating = false
-          MordhauRunning = false }
+          MordhauRunning = false
+          Loaded = false }
 
     [<AutoOpen>]
     module private Helpers =
@@ -215,7 +216,8 @@ module State =
                               Available =
                                   modList
                                   |> List.map ModWithState.Init
-                                  |> List.sortBy (fun k -> k.Mod.Name) }
+                                  |> List.sortBy (fun k -> k.Mod.Name)
+                              Loaded = true }
                         |> fun newM ->
                             { newM with
                                   Available = calcAvailableMods newM

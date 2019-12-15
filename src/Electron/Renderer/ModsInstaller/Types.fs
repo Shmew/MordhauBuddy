@@ -115,4 +115,5 @@ module rec Types =
           TabSelected: Tab
           Refreshing: bool
           Updating: bool
-          MordhauRunning: bool }
+          MordhauRunning: bool
+          Loaded: bool }
