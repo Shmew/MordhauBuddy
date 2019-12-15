@@ -24,7 +24,7 @@ module View =
     let private dirConfig (classes: IClasses) model dispatch (dir: ConfigDir) =
         div
             [ Style
-                [ CSSProp.Padding "2em"
+                [ CSSProp.Padding "1em 2em"
                   CSSProp.Display DisplayOptions.Flex
                   CSSProp.MinHeight "76px" ] ]
             [ textField
@@ -55,7 +55,7 @@ module View =
     let private selectForm (classes: IClasses) model dispatch (inputL: ReactElement) (selects: ReactElement) =
         div
             [ Style
-                [ CSSProp.Padding "2em"
+                [ CSSProp.Padding "1em 2em"
                   CSSProp.Display DisplayOptions.Flex
                   CSSProp.MinHeight "8em" ] ]
             [ form [ DOMAttr.OnSubmit <| fun ev -> ev.preventDefault() ]
@@ -111,7 +111,7 @@ module View =
                   CSSProp.Display DisplayOptions.Flex
                   CSSProp.Height "inherit"
                   CSSProp.Padding "1em" ] ]
-            [ card [ Style [ CSSProp.FlexGrow "1" ] ]
+            [ card [ Style [ CSSProp.PaddingTop "1em"; CSSProp.FlexGrow "1" ] ]
                   [ dConf model.GameDir
                     dConf model.EngineDir
                     dConf model.GameUserDir

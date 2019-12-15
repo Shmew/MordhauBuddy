@@ -69,7 +69,9 @@ module rec INIReader =
             w.GetStringBuilder().ToString()
 
     type private INIParser(iniText: string) =
-
+        let iniText =
+            Text.RegularExpressions.Regex(@"(HistoryBuffer=.*)").Replace(iniText, "")
+            
         /// Parses text surrounded by zero or more white spaces but stopping at newline
         let ws p = spaces >>. p .>> (skipMany (pchar ' ' <|> pchar '\t'))
 

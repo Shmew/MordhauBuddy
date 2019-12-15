@@ -140,6 +140,7 @@ module FileOps =
                     | true ->
                         [ @"C:\Program Files (x86)"; @"C:\Program Files" ]
                         |> List.map (fun fol -> fol @@ @"Steam\steamapps\common\Mordhau\Mordhau\Content\Paks")
+                        |> List.append (Info.Windows.tryGetSteamPath())
                     | false ->
                         [ ".steam/steam"; ".local/share/Steam" ]
                         |> List.map

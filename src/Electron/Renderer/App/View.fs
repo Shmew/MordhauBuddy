@@ -83,19 +83,25 @@ module View =
               Key(pageTitle page)
               DOMAttr.OnClick(fun _ -> Navigate page |> dispatch) ]
             [ listItemText []
-                  [ yield page
-                          |> pageTitle
-                          |> str
-                    if page = ModsInstaller then
-                        yield badge
-                                  [ Class classes?navBadge
-                                    BadgeProp.Color BadgeColor.Primary
-                                    BadgeProp.Max 20
-                                    BadgeProp.Invisible <| (model.ModsInstaller.UpdatesAvailable = 0 || match model.ModsInstaller.UpdateSettings with
-                                                                                                        | UpdateSettings.NotifyOnly ->
-                                                                                                            false
-                                                                                                        | _ -> true)
-                                    BadgeProp.BadgeContent <| ofInt (model.ModsInstaller.UpdatesAvailable) ] [] ] ]
+                  [ page |> pageTitle |> str
+                    match page with
+                    | ModsInstaller ->
+                        badge
+                            [ Class classes?navBadge
+                              BadgeProp.Color BadgeColor.Primary
+                              BadgeProp.Max 20
+                              BadgeProp.Invisible <| (model.ModsInstaller.UpdatesAvailable = 0 || match model.ModsInstaller.UpdateSettings with
+                                                                                                  | UpdateSettings.NotifyOnly -> false
+                                                                                                  | _ -> true)
+                              BadgeProp.BadgeContent <| ofInt (model.ModsInstaller.UpdatesAvailable) ] []
+                    | Settings ->
+                        badge
+                            [ Class classes?navBadge
+                              BadgeProp.Color BadgeColor.Error
+                              BadgeProp.Max 20
+                              BadgeProp.Invisible <| (model.SettingsErrors = 0)
+                              BadgeProp.BadgeContent <| ofInt model.SettingsErrors ] []
+                    | _ -> () ] ]
 
     let private pageView (classes: IClasses) model dispatch =
         match model.Page with
@@ -104,8 +110,9 @@ module View =
                 model.Resources.GameConfig.Loading || model.Resources.EngineConfig.Loading
                 || model.Resources.GameUserConfig.Loading || model.Resources.InputConfig.Loading
                 || model.Resources.Mods.Loading
+
             match model.IsBridgeConnected, allResourcesAttempted model, isAnyLoading with
-            | true, true, false ->
+            | true, true, _ ->
                 if model.Community.LoadingElem then dispatch ResourcesLoaded
             | true, false, false ->
                 match model.Resources with

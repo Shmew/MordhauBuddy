@@ -206,7 +206,8 @@ module State =
                             |> modSender.DirExists
                             |> Cmd.bridgeSend
                     | None ->
-                        setDirError "Unable to automatically detect Mordhau mod directory" model.ModsDir
+                        setDirError (sprintf "Unable to automatically detect Mordhau mod directory. It should be something similar to this: %s" 
+                            Samples.typicalModDir) model.ModsDir
                         |> setDir model Mods
                         |> fun m -> m, Cmd.none
                 | ModOperationResult.DirExists b ->
@@ -219,7 +220,8 @@ module State =
                             |> modSenderMod.GetInstalled
                             |> Cmd.bridgeSend
                     else
-                        setDirError "Mods directory not found" model.ModsDir
+                        setDirError (sprintf "Mods directory not found. It should be something similar to this: %s" 
+                        Samples.typicalModDir) model.ModsDir
                         |> setDir model Mods
                         |> fun m -> m, Cmd.none
                 | _ -> model, Cmd.none

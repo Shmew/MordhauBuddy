@@ -80,6 +80,7 @@ module State =
               FaceTools = FaceTools.State.init()
               MordhauConfig = MordhauConfig.State.init()
               Settings = Settings.State.init (updateSettings, backupSettings, store.AutoLaunch)
+              SettingsErrors = 0
               About = About.State.init() }
         m, Cmd.none
 
@@ -145,7 +146,16 @@ module State =
 
         let setUpdate (model: Model) (up: UpdatePending) = { model with UpdatePending = up }
         let setResource (model: Model) (res: Loaded) = { model with Resources = res }
-        let setSettings (model: Model) (set: Settings.Types.Model) = { model with Settings = set }
+        let setSettings (model: Model) (set: Settings.Types.Model) = 
+            let errors =
+                [ set.EngineDir.State.IsDirError
+                  set.GameDir.State.IsDirError
+                  set.GameUserDir.State.IsDirError
+                  set.InputDir.State.IsDirError
+                  set.ModsDir.State.IsDirError ]
+                |> List.sumBy (fun b -> if b then 1 else 0)
+
+            { model with Settings = set; SettingsErrors = errors }
         let setModInstaller (model: Model) (mInstall: ModsInstaller.Types.Model) =
             { model with ModsInstaller = mInstall }
         let setFaceTools (model: Model) (fTool: FaceTools.Types.Model) = { model with FaceTools = fTool }

@@ -85,6 +85,7 @@ module Types =
           FaceTools: FaceTools.Types.Model
           MordhauConfig: MordhauConfig.Types.Model
           Settings: Settings.Types.Model
+          SettingsErrors: int
           About: About.Types.Model }
 
     type AppTheme =

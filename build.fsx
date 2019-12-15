@@ -369,13 +369,15 @@ Target.create "PullDockerImage" <| fun _ ->
 
 // Build artifacts
 Target.create "DistLinux" <| fun _ ->
+    let sandboxPath = @"./node_modules/electron/dist/chrome-sandbox"
+
     CmdLine.Empty
     |> CmdLine.append "run"
     |> CmdLine.append "--rm"
     |> CmdLine.appendRaw (sprintf "-v %s:/project" __SOURCE_DIRECTORY__)
     |> CmdLine.appendRaw "-v electron:/root/.cache/electron"
     |> CmdLine.appendRaw "-v electron-builder:/root/.cache/electron-builder electronuserland/builder"
-    |> CmdLine.appendRaw "/bin/bash -c \"yarn --link-duplicates --pure-lockfile && yarn distLinux\""
+    |> CmdLine.appendRaw (sprintf "/bin/bash -c \"chown -R root %s && chmod 4755 %s && yarn --link-duplicates --pure-lockfile && yarn distLinux\"" sandboxPath sandboxPath)
     |> CmdLine.toString
     |> CreateProcess.fromRawCommandLine "docker"
     |> CreateProcess.ensureExitCodeWithMessage "Failed to build linux image."

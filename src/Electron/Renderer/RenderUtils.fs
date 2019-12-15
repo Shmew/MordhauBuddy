@@ -492,7 +492,7 @@ module RenderUtils =
             65535,5085,5085,4242,4242,0,0,24452,24452,65535,0,0,65535,65535,574,0,0,65535,574,21470,21470))"
 
         let typicalConfigDir = @"C:\Users\shmew\AppData\Local\Mordhau\Saved\Config\WindowsClient"
-        let typicalModDir = @"C:\Program Files (x86)\Steam\steamapps\common\Mordhau\Mordhau\Content\Mordhau\Maps"
+        let typicalModDir = @"C:\Program Files (x86)\Steam\steamapps\common\Mordhau\Mordhau\Content\Paks"
 
     /// Parsing rss feeds that return html
     module HtmlParsing =

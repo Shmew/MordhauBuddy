@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="Data\Input.ini" />
+    <None Include="Data\InputErrors.ini" />
     <None Include="Data\InputHanging.ini" />
     <None Include="Data\Engine.ini" />
     <None Include="Data\EngineBlank.ini" />

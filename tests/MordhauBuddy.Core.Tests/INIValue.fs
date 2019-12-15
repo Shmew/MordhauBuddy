@@ -143,7 +143,14 @@ module INIValue =
                   |> kvPairNested "Name"
                   |> kvPairNestedOne "TestStr"
 
-              Expect.equal result expected "" ]
+              Expect.equal result expected ""
+          testCase "Can serialize document with bad history buffers" <| fun () ->
+              let result =
+                  try 
+                    IO.File.ReadAllText("tests/MordhauBuddy.Core.Tests/Data/InputErrors.ini") |> INIValue.Parse
+                    |> Ok
+                  with _ -> Error ""
+              Expect.isOk result "" ]
         |> testList "INI Parsing"
 
     let serializing =

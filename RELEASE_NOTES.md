@@ -1,3 +1,9 @@
+### 1.4.3 - Sunday, December 15, 2019
+* Added additional lookups for default Steam directories for Windows users
+* No longer shows a loading screen when there is an error loading a resource - fixes #4
+* Fixed chrome sandbox permissions for linux users
+* Fixed an issue with parsing input.ini files when the `HistoryBuffer` has invalid ini - fixes #3 and #2
+
 ### 1.4.2 - Sunday, December 15, 2019
 * Fixed an issue with update settings not being saved properly
 * Improved performance of mod installer fetching available mods

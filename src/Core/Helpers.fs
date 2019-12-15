@@ -64,6 +64,11 @@ module rec Helpers =
             let regKey = @"Software\Microsoft\Windows\CurrentVersion\Run"
             let regSubValue = "MordhauBuddy"
 
+            let regSteamBase = Registry.RegistryBaseKey.HKEYLocalMachine
+            let regSteamKeys = 
+                [ @"SOFTWARE\Valve\Steam"
+                  @"SOFTWARE\Wow6432Node\Valve\Steam" ]
+
             /// Get Windows executable directory
             let getWinExecDir() =
                 Environment.SpecialFolder.LocalApplicationData
@@ -72,6 +77,21 @@ module rec Helpers =
 
             /// Get Windows executable path
             let getWinExecPath() = getWinExecDir() @@ "installer.exe"
+
+            /// Attempts to get the Steam path via registry key
+            let tryGetSteamPath() =
+                regSteamKeys
+                |> List.choose (fun rk ->
+                    use registryKey = Registry.getRegistryKey regSteamBase rk false
+                    let result = 
+                        try 
+                            let res = registryKey.GetValue("InstallPath").ToString()
+                            if res |> String.isNotNullOrEmpty then Some res
+                            else None
+                        with _ -> None
+                    registryKey.Flush()
+                    registryKey.Dispose()
+                    result)
 
         [<RequireQualifiedAccess>]
         module Linux =
