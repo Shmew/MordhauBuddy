@@ -34,6 +34,7 @@ With Linux:
  - Most distributions are supported, if you have an issue please let me know and I will try to fix it.
  - It is distributed in [AppImage](https://appimage.org/) format, which is plug and play for most popular distros.
    - You may need to right click and go to properties to give it permissions to execute.
+   - Some distributions such as Debian will need the start up flag `--no-sandbox` in order to run. 
 
 With Windows:
 
