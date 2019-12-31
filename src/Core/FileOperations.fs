@@ -138,9 +138,9 @@ module FileOps =
                 let modPath =
                     match Environment.isWindows with
                     | true ->
-                        [ @"C:\Program Files (x86)"; @"C:\Program Files" ]
-                        |> List.map (fun fol -> fol @@ @"Steam\steamapps\common\Mordhau\Mordhau\Content\Paks")
+                        [ @"C:\Program Files (x86)\Steam"; @"C:\Program Files\Steam" ]
                         |> List.append (Info.Windows.tryGetSteamPath())
+                        |> List.map (fun fol -> fol @@ @"steamapps\common\Mordhau\Mordhau\Content\Paks")
                     | false ->
                         [ ".steam/steam"; ".local/share/Steam" ]
                         |> List.map

@@ -1,3 +1,7 @@
+### 1.4.4 - Tuesday, December 31, 2019
+* Fixed an issue with the Windows version forgetting the mod directory path
+* Improved Windows mod directory path detection
+
 ### 1.4.3 - Sunday, December 15, 2019
 * Added additional lookups for default Steam directories for Windows users
 * No longer shows a loading screen when there is an error loading a resource - fixes #4
